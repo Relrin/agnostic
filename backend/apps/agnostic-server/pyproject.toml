@@ -1,0 +1,31 @@
+[project]
+name = "agnostic-server"
+version = "0.1.0"
+description = "Agnostic control plane composition root: API, worker and the `agnostic` CLI"
+requires-python = "==3.15.*"
+license = "BSD-3-Clause"
+dependencies = [
+  "agnostic-kernel",
+  "dishka==1.10.1",
+  "fastapi==0.162.0",
+  "orjson==3.13.0",
+  "procrastinate==3.10.0",
+  "pydantic==2.14.2",
+  "typer==0.27.3",
+  "uvicorn[standard]==0.54.0",
+  "uvloop==0.23.0; sys_platform != 'win32'",
+  "watchfiles==1.3.0",
+]
+
+[project.scripts]
+agnostic = "agnostic_server.cli:main"
+
+[tool.deptry.per_rule_ignores]
+DEP002 = ["uvloop"] # imported dynamically (see agnostic_server.loops)
+
+[tool.uv.sources]
+agnostic-kernel = { workspace = true }
+
+[build-system]
+requires = ["uv_build==0.13.6"]
+build-backend = "uv_build"

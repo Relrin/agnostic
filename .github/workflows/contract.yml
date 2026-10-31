@@ -1,0 +1,66 @@
+name: contract
+
+on:
+  pull_request:
+    paths: ["runtime/**", "backend/packages/agnostic-agentos-client/**", "backend/tests/contract/**"]
+  push:
+    branches: [master]
+    paths: ["runtime/**", "backend/packages/agnostic-agentos-client/**", "backend/tests/contract/**"]
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  UV_VERSION: "0.13.6"
+
+jobs:
+  agentos:
+    name: agnostic-runtime · AgentOS 3.1.x
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: pgvector/pgvector:0.8.7-pg18-trixie@sha256:5895949dfcdf308eb0cd31c950c93c14895c77f33fbedfecf1fa511ab1d4bcd2
+        env: { POSTGRES_USER: agnostic, POSTGRES_PASSWORD: agnostic, POSTGRES_DB: agentos_prod }
+        ports: ["5432:5432"]
+        options: --health-cmd "pg_isready -U agnostic" --health-interval 2s --health-retries 30
+      redis:
+        image: redis:8.10.3-alpine@sha256:21090af93f8324db2f0f0f4f38a7c60369d47d917e000c3423d89d2ae2883537
+        ports: ["6379:6379"]
+        options: --health-cmd "redis-cli ping" --health-interval 2s --health-retries 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with: { version: "${{ env.UV_VERSION }}", enable-cache: true }
+      - name: Enable pgvector
+        run: docker exec ${{ job.services.postgres.id }} psql -U agnostic -d agentos_prod -c "CREATE EXTENSION IF NOT EXISTS vector"
+      - name: Start the runtime
+        working-directory: runtime
+        env:
+          RUNTIME_DATABASE_URL: postgresql+psycopg://agnostic:agnostic@localhost:5432/agentos_prod
+          RUNTIME_REDIS_URL: redis://localhost:6379/1
+        run: |
+          uv sync --locked
+          nohup uv run python -m app.main > runtime.log 2>&1 &
+          for _ in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:7777/health; then exit 0; fi
+            sleep 2
+          done
+          cat runtime.log
+          exit 1
+      - name: Contract tests
+        working-directory: backend
+        env: { AGNOSTIC_CONTRACT_RUNTIME_URL: "http://127.0.0.1:7777" }
+        run: uv sync --locked && uv run pytest -m contract -v
+      - name: Pinned OpenAPI snapshot is current
+        run: |
+          cd runtime
+          uv run python -m app.dump_openapi ../backend/packages/agnostic-agentos-client/openapi/agentos-3.1.12.json
+          cd ..
+          if ! git diff --stat --exit-code -- backend/packages/agnostic-agentos-client/openapi; then
+            echo "::warning::The runtime's OpenAPI differs from the pinned snapshot. Run: just agentos-client-gen"
+          fi
+      - if: failure()
+        run: cat runtime/runtime.log

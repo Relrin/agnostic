@@ -1,0 +1,132 @@
+/*
+ * Agnostic design tokens, taken from the prototype "AgentOS Control Plane — redesign".
+ * Components use semantic tokens only (never raw hex), so a light theme after GA is a second token block
+ * (:root[data-theme="light"]) with no component changes. Dark is the only available theme.
+ */
+:root {
+  color-scheme: dark;
+
+  /* 2.1 Surfaces, back to front */
+  --bg: #0b0c0e;
+  --bg-canvas: #0d0f11;
+  --bg-rail: #0e1012;
+  --bg-inset: #0f1113;
+  --surface: #121417;
+  --surface-raised: #15171a;
+  --surface-selected: #17191c;
+  --row-selected: #171a1e;
+  --surface-hover: #1a1d22;
+  --track: #1c1f24;
+  --bubble-user: #1e2228;
+  --segment-active: #262a31;
+
+  /* 2.2 Lines */
+  --divider-row: #1a1d21;
+  --border-subtle: #1f2227;
+  --border: #23272d;
+  --border-input: #2a2e35;
+  --border-strong: #2e333a;
+  --border-dashed: #3a3f47;
+
+  /* 2.3 Text */
+  --fg-active: #f1f2f4;
+  --fg: #ecedef;
+  --fg-prose: #d6d9de;
+  --fg-secondary: #a9afb8;
+  --fg-muted: #8a919b;
+  --fg-faint: #7d848e;
+  --fg-disabled: #6b727c;
+  --fg-line-number: #5f6670;
+  --neutral-mark: #5b6472;
+
+  /* 2.4 Semantic accents */
+  --accent: #c5f25c;
+  --accent-fg: #0b0c0e;
+  --accent-diff-text: #e4f9b5;
+  --warning: #f2b54b;
+  --warning-pill-fg: #f5cb7e;
+  --warning-pill-bg: #241d12;
+  --danger: #ff8a80;
+  --danger-pre: #ffb3ac;
+  --info: #9dbbff;
+  --info-hover: #c9d9ff;
+  --info-tint: rgb(125 166 255 / 0.14);
+  --info-tint-strong: rgb(125 166 255 / 0.35);
+  --modified: #7da6ff;
+
+  /* 2.5 Entities and categories */
+  --entity-agent: #7da6ff;
+  --entity-team: #b79cff;
+  --entity-team-text: #cdbbff;
+  --entity-workflow: #59d4e8;
+  --entity-fn: #a9afb8;
+  --node-condition: #f2b54b;
+  --node-loop: #f28fc0;
+  --node-loop-bg: #1a1418;
+  --reg-schema: #f2a0c0;
+  --reg-function: #8fe0d0;
+  --reg-knowledge: #e8c27a;
+  --reg-model: #c5f25c;
+  --env-production: var(--warning);
+  --env-staging: var(--info);
+  --env-development: #a9afb8;
+  --scope-all: var(--accent);
+
+  /* Charts (separate from entity colors; colorblind-safer) */
+  --chart-1: #3987e5;
+  --chart-2: #d95926;
+  --chart-3: #199e70;
+
+  /* Syntax highlighting (CodeMirror, Shiki, JSON viewer) */
+  --syntax-keyword: #c79bff;
+  --syntax-string: #e8c27a;
+  --syntax-number: #f2a0c0;
+  --syntax-key: #7dc4ff;
+  --syntax-call: #8fe0d0;
+  --syntax-comment: #7d848e;
+  --syntax-punctuation: #a9afb8;
+  --syntax-identifier: #d6d9de;
+
+  /* Avatars (bg/fg pairs, picked by a stable hash of the user id) */
+  --avatar-1-bg: #2b3a55;
+  --avatar-1-fg: #cfe0ff;
+  --avatar-2-bg: #3a2f55;
+  --avatar-2-fg: #e1d6ff;
+  --avatar-3-bg: #4a3a22;
+  --avatar-3-fg: #ffe2b0;
+  --avatar-4-bg: #22443a;
+  --avatar-4-fg: #c8f5e2;
+  --avatar-5-bg: #4a2236;
+  --avatar-5-fg: #ffd0e4;
+  --avatar-6-bg: #23404a;
+  --avatar-6-fg: #cdeffa;
+  --avatar-7-bg: #3b3f22;
+  --avatar-7-fg: #ecf2c2;
+  --avatar-system-bg: #2a2e35;
+  --avatar-system-fg: #d5d9df;
+
+  /* 2.6 Elevation, focus, motion */
+  --shadow-popover: 0 12px 32px rgb(0 0 0 / 0.35);
+  --ring-selection: 0 0 0 3px rgb(197 242 92 / 0.14);
+  --motion-fast: 120ms;
+  --motion-panel: 180ms;
+  --motion-layout: 240ms;
+
+  /* shadcn/ui variable names, aliased so `shadcn add <component>` output keeps working */
+  --background: var(--bg);
+  --foreground: var(--fg);
+  --card: var(--surface);
+  --card-foreground: var(--fg);
+  --popover: var(--surface-raised);
+  --popover-foreground: var(--fg);
+  --primary: var(--accent);
+  --primary-foreground: var(--accent-fg);
+  --secondary: var(--surface);
+  --secondary-foreground: var(--fg);
+  --muted: var(--surface-hover);
+  --muted-foreground: var(--fg-muted);
+  --destructive: var(--danger);
+  --input: var(--border-input);
+  --ring: var(--accent);
+  --radius: 8px;
+}

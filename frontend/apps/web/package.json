@@ -1,0 +1,32 @@
+{
+  "name": "@agnostic/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Agnostic web app shell",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "e2e": "playwright test"
+  },
+  "dependencies": {
+    "@agnostic/api": "workspace:*",
+    "@agnostic/core": "workspace:*",
+    "@agnostic/module-hello": "workspace:*",
+    "@agnostic/ui": "workspace:*",
+    "@tanstack/react-query": "5.105.0",
+    "@tanstack/react-router": "1.170.46",
+    "lucide-react": "1.65.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@agnostic/testing": "workspace:*",
+    "@playwright/test": "1.64.1",
+    "@tailwindcss/vite": "4.3.3",
+    "@vitejs/plugin-react": "6.1.2",
+    "tailwindcss": "4.3.3",
+    "vite": "8.3.5"
+  }
+}

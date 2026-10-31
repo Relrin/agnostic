@@ -1,0 +1,32 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", ":dependencyDashboard", ":semanticCommits"],
+  "timezone": "Etc/UTC",
+  "schedule": ["before 6am on monday"],
+  "rangeStrategy": "pin",
+  "pinDigests": true,
+  "minimumReleaseAge": "3 days",
+  "lockFileMaintenance": { "enabled": true, "schedule": ["before 6am on the first day of the month"] },
+  "packageRules": [
+    { "matchManagers": ["github-actions"], "groupName": "GitHub Actions" },
+    { "matchManagers": ["docker-compose", "dockerfile"], "groupName": "container images" },
+    { "matchManagers": ["pre-commit"], "groupName": "pre-commit hooks" },
+    { "matchPackageNames": ["/^@storybook/", "storybook", "eslint-plugin-storybook"], "groupName": "Storybook" },
+    { "matchPackageNames": ["/^@tanstack/"], "groupName": "TanStack" },
+    { "matchPackageNames": ["/^@vitest/", "vitest"], "groupName": "Vitest" },
+    { "matchPackageNames": ["/^opentelemetry-/"], "groupName": "OpenTelemetry" },
+    { "matchPackageNames": ["tailwindcss", "/^@tailwindcss/"], "groupName": "Tailwind" },
+    {
+      "description": "agno upgrades need the contract suite and regenerated client models (07 §8)",
+      "matchPackageNames": ["agno"],
+      "labels": ["agentos-upgrade"],
+      "dependencyDashboardApproval": true
+    },
+    {
+      "description": "typescript-eslint supports TypeScript < 6.1; bump them together",
+      "matchPackageNames": ["typescript", "/^@typescript-eslint/", "typescript-eslint"],
+      "groupName": "TypeScript"
+    }
+  ],
+  "pre-commit": { "enabled": true }
+}

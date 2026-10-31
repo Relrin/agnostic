@@ -1,0 +1,161 @@
+/* Agnostic UI: Tailwind v4 theme on top of the design tokens. Import once from the app entry. */
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
+@import "./tokens.css";
+
+@source "../";
+
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+@theme inline {
+  --color-*: initial;
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  --color-background: var(--bg);
+  --color-bg: var(--bg);
+  --color-canvas: var(--bg-canvas);
+  --color-rail: var(--bg-rail);
+  --color-inset: var(--bg-inset);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-selected: var(--surface-selected);
+  --color-row-selected: var(--row-selected);
+  --color-surface-hover: var(--surface-hover);
+  --color-track: var(--track);
+  --color-bubble-user: var(--bubble-user);
+  --color-segment-active: var(--segment-active);
+
+  --color-divider-row: var(--divider-row);
+  --color-border-subtle: var(--border-subtle);
+  --color-border: var(--border);
+  --color-border-input: var(--border-input);
+  --color-border-strong: var(--border-strong);
+  --color-border-dashed: var(--border-dashed);
+
+  --color-fg-active: var(--fg-active);
+  --color-fg: var(--fg);
+  --color-foreground: var(--fg);
+  --color-fg-prose: var(--fg-prose);
+  --color-fg-secondary: var(--fg-secondary);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-faint: var(--fg-faint);
+  --color-fg-disabled: var(--fg-disabled);
+  --color-fg-line-number: var(--fg-line-number);
+  --color-neutral-mark: var(--neutral-mark);
+
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+  --color-primary: var(--accent);
+  --color-primary-foreground: var(--accent-fg);
+  --color-warning: var(--warning);
+  --color-warning-pill-fg: var(--warning-pill-fg);
+  --color-warning-pill-bg: var(--warning-pill-bg);
+  --color-danger: var(--danger);
+  --color-destructive: var(--danger);
+  --color-info: var(--info);
+  --color-info-hover: var(--info-hover);
+  --color-modified: var(--modified);
+
+  --color-entity-agent: var(--entity-agent);
+  --color-entity-team: var(--entity-team);
+  --color-entity-workflow: var(--entity-workflow);
+  --color-entity-fn: var(--entity-fn);
+  --color-env-production: var(--env-production);
+  --color-env-staging: var(--env-staging);
+  --color-env-development: var(--env-development);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+
+  --color-card: var(--surface);
+  --color-popover: var(--surface-raised);
+  --color-muted: var(--surface-hover);
+  --color-muted-foreground: var(--fg-muted);
+  --color-input: var(--border-input);
+  --color-ring: var(--accent);
+
+  --font-sans: "Geist Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Geist Mono Variable", ui-monospace, monospace;
+
+  --radius-type: 2px;
+  --radius-bar: 3px;
+  --radius-badge: 5px;
+  --radius-control: 7px;
+  --radius-button: 8px;
+  --radius-segment: 9px;
+  --radius-tile: 10px;
+  --radius-radio: 11px;
+  --radius-card: 12px;
+  --radius-panel: 14px;
+
+  --shadow-popover: var(--shadow-popover);
+  --shadow-selection: var(--ring-selection);
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  *,
+  ::before,
+  ::after {
+    border-color: var(--border);
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-strong) transparent;
+  }
+
+  a {
+    color: var(--info);
+  }
+
+  a:hover {
+    color: var(--info-hover);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer utilities {
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--fg-faint);
+  }
+}

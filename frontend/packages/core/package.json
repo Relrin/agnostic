@@ -1,0 +1,19 @@
+{
+  "name": "@agnostic/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Module SDK (defineModule), navigation catalog, commands, providers",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "5.105.0"
+  },
+  "peerDependencies": {
+    "react": "19.3.1"
+  },
+  "devDependencies": {
+    "react": "19.3.1"
+  }
+}

@@ -1,0 +1,57 @@
+# Git hooks (install with `just hooks`). Every hook is pinned to an exact release.
+default_install_hook_types: [pre-commit, commit-msg]
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-merge-conflict
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+      - id: check-toml
+      - id: end-of-file-fixer
+        exclude: ^frontend/packages/api/(src/generated/|openapi\.json)
+      - id: trailing-whitespace
+        exclude: ^frontend/packages/api/(src/generated/|openapi\.json)
+      - id: check-added-large-files
+        args: [--maxkb=1024]
+        exclude: ^backend/packages/agnostic-agentos-client/openapi/
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.17.3
+    hooks:
+      - id: ruff-check
+        args: [--fix]
+        files: ^(backend|runtime)/
+      - id: ruff-format
+        files: ^(backend|runtime)/
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.1
+    hooks:
+      - id: gitleaks
+
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v4.5.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+
+  - repo: local
+    hooks:
+      - id: basedpyright
+        name: basedpyright (strict)
+        entry: sh -c 'cd backend && uv run basedpyright'
+        language: system
+        files: ^backend/.*\.py$
+        pass_filenames: false
+      - id: eslint
+        name: eslint
+        entry: sh -c 'cd frontend && yarn eslint --max-warnings=0 --no-warn-ignored "$@"' --
+        language: system
+        files: ^frontend/.*\.(ts|tsx|js|mjs|cjs)$
+        args: []
+      - id: prettier
+        name: prettier
+        entry: sh -c 'cd frontend && yarn prettier --check --ignore-unknown "$@"' --
+        language: system
+        files: ^frontend/

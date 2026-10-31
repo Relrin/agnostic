@@ -1,0 +1,9 @@
+.yarn
+node_modules
+**/.tsbuild
+**/dist
+**/storybook-static
+**/playwright-report
+**/test-results
+packages/api/src/generated
+packages/api/openapi.json

@@ -1,0 +1,11 @@
+{
+  "files": [],
+  "references": [
+    { "path": "packages/ui" },
+    { "path": "packages/core" },
+    { "path": "packages/api" },
+    { "path": "packages/testing" },
+    { "path": "modules/hello" },
+    { "path": "apps/web" }
+  ]
+}

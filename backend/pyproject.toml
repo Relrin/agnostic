@@ -1,0 +1,174 @@
+# Workspace root for the Agnostic control-plane backend.
+# Every dependency is pinned to an exact version (see docs/how-to/dependencies.md).
+[project]
+name = "agnostic-workspace"
+version = "0.0.0"
+description = "Agnostic control plane: uv workspace root (not published)"
+requires-python = "==3.15.*"
+license = "BSD-3-Clause"
+dependencies = [
+  "agnostic-server",
+  "agnostic-kernel",
+  "agnostic-agentos-client",
+  "agnostic-hello",
+]
+
+[dependency-groups]
+dev = [
+  "asgi-lifespan==2.1.0",
+  "basedpyright==1.40.2",
+  "cryptography==50.0.2",
+  "datamodel-code-generator==0.87.0",
+  "deptry==0.25.1",
+  "hypothesis==6.170.14",
+  "import-linter==2.15",
+  "pip-audit==2.10.1",
+  "pip-licenses==5.5.5",
+  "pre-commit==4.7.0",
+  "pytest==9.2.0",
+  "pytest-asyncio==1.4.1",
+  "pytest-cov==7.1.0",
+  "respx==0.23.1",
+  "ruff==0.17.3",
+  "testcontainers==4.15.0",
+]
+
+[tool.uv]
+package = false
+required-version = "==0.13.6"
+
+[tool.uv.workspace]
+members = ["apps/*", "packages/*", "modules/*"]
+
+[tool.uv.sources]
+agnostic-server = { workspace = true }
+agnostic-kernel = { workspace = true }
+agnostic-agentos-client = { workspace = true }
+agnostic-hello = { workspace = true }
+
+# ---------------------------------------------------------------- lint & format
+[tool.ruff]
+line-length = 120
+target-version = "py314" # ruff's newest target; the project runs on 3.15
+src = ["apps/*/src", "packages/*/src", "modules/*/src", "tests"]
+extend-exclude = ["packages/agnostic-agentos-client/src/agnostic_agentos_client/_generated"]
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+  "COM812", "ISC001",     # conflict with the formatter
+  "D100", "D101", "D102", "D103", "D104", "D105", "D107", # docstrings where they add value, not everywhere
+  "D203", "D213",         # pick one docstring style (D211 + D212)
+  "EM101", "EM102", "TRY003", # short exception messages inline are fine
+  "FBT001", "FBT002",     # typer options are boolean flags
+  "TD002", "TD003", "FIX002",
+  "PLR0913",              # composition functions take many keyword arguments
+  "S101",                 # asserts narrow types
+  "A005",                 # module names like logging.py / http.py are namespaced in our packages
+  "RUF001", "RUF003",     # typographic quotes in user-facing text are intentional
+  "CPY001",               # the repository LICENSE covers every file
+  "TC001", "TC002", "TC003", # Python 3.15 evaluates annotations lazily; TYPE_CHECKING blocks only add noise
+  "D401",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**" = ["S", "PLR2004", "ANN", "ARG", "SLF001", "INP001", "D", "PT011"]
+"**/migrations/versions/*.py" = ["INP001", "D400", "D415"]
+"**/migrations/env.py" = ["INP001"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["agnostic_kernel", "agnostic_server", "agnostic_hello", "agnostic_agentos_client"]
+
+[tool.ruff.lint.flake8-type-checking]
+runtime-evaluated-base-classes = ["pydantic.BaseModel", "pydantic_settings.BaseSettings", "sqlalchemy.orm.DeclarativeBase"]
+runtime-evaluated-decorators = ["dishka.provide"]
+
+# ---------------------------------------------------------------- types
+[tool.basedpyright]
+pythonVersion = "3.15"
+typeCheckingMode = "strict"
+include = ["apps", "packages", "modules", "tests"]
+exclude = ["**/_generated", "**/.venv", "**/__pycache__"]
+reportMissingTypeStubs = false
+reportUnusedCallResult = false
+reportAny = false
+reportExplicitAny = false
+reportUnannotatedClassAttribute = false
+reportImplicitOverride = false
+reportPrivateUsage = "warning"
+
+[[tool.basedpyright.executionEnvironments]]
+root = "tests"
+reportPrivateUsage = false
+reportUnknownMemberType = false
+reportUnknownVariableType = false
+reportUnknownArgumentType = false
+
+# ---------------------------------------------------------------- tests
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
+addopts = ["--strict-markers", "-ra"]
+markers = [
+  "integration: needs Docker (testcontainers) or AGNOSTIC_TEST_DATABASE_URL / AGNOSTIC_TEST_REDIS_URL",
+  "contract: talks to a live agnostic-runtime (AGNOSTIC_CONTRACT_RUNTIME_URL)",
+]
+filterwarnings = ["error::pytest.PytestUnraisableExceptionWarning"]
+
+[tool.coverage.run]
+branch = true
+source = ["agnostic_kernel", "agnostic_server", "agnostic_hello", "agnostic_agentos_client"]
+omit = ["*/migrations/*", "*/_generated/*", "*/__main__.py"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+exclude_also = ["if TYPE_CHECKING:", "raise NotImplementedError", '\.\.\.$']
+
+# ---------------------------------------------------------------- boundaries (02 §2.2)
+[tool.importlinter]
+root_packages = ["agnostic_kernel", "agnostic_server", "agnostic_hello", "agnostic_agentos_client"]
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "Packages never import modules or the server"
+type = "forbidden"
+source_modules = ["agnostic_kernel", "agnostic_agentos_client"]
+forbidden_modules = ["agnostic_hello", "agnostic_server"]
+
+[[tool.importlinter.contracts]]
+name = "Modules never import the composition root"
+type = "forbidden"
+source_modules = ["agnostic_hello"]
+forbidden_modules = ["agnostic_server"]
+
+[[tool.importlinter.contracts]]
+name = "hello: hexagonal layers"
+type = "layers"
+layers = [
+  "agnostic_hello.module",
+  "agnostic_hello.providers | agnostic_hello.jobs",
+  "agnostic_hello.api | agnostic_hello.infrastructure",
+  "agnostic_hello.facade",
+  "agnostic_hello.application",
+  "agnostic_hello.domain",
+]
+
+[[tool.importlinter.contracts]]
+name = "hello: domain is pure (stdlib only)"
+type = "forbidden"
+source_modules = ["agnostic_hello.domain"]
+forbidden_modules = ["agnostic_kernel", "sqlalchemy", "fastapi", "pydantic", "procrastinate", "dishka", "redis"]
+
+# Template for module-to-module rules, enabled when a second module exists:
+# [[tool.importlinter.contracts]]
+# name = "approvals talks to instances only through its facade"
+# type = "forbidden"
+# source_modules = ["agnostic_approvals"]
+# forbidden_modules = ["agnostic_instances.api", "agnostic_instances.application", "agnostic_instances.domain", "agnostic_instances.infrastructure"]
+
+# ---------------------------------------------------------------- dependency hygiene
+[tool.deptry]
+known_first_party = ["agnostic_kernel", "agnostic_server", "agnostic_hello", "agnostic_agentos_client"]

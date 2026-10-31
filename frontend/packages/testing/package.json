@@ -1,0 +1,25 @@
+{
+  "name": "@agnostic/testing",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Test helpers: render with providers, MSW handlers with prototype sample data",
+  "exports": {
+    ".": "./src/index.tsx"
+  },
+  "dependencies": {
+    "@agnostic/api": "workspace:*",
+    "@tanstack/react-query": "5.105.0",
+    "@testing-library/dom": "10.4.2",
+    "@testing-library/react": "16.3.3",
+    "msw": "3.0.3"
+  },
+  "peerDependencies": {
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  }
+}

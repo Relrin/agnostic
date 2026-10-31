@@ -1,0 +1,40 @@
+# Development dependencies for contributor: customers point Agnostic at their own
+# PostgreSQL and Redis through AGNOSTIC_DATABASE__URL / AGNOSTIC_REDIS__URL.
+#
+#   docker compose -f deploy/dev/compose.yml up -d     (or: just up)
+#
+# Postgres uses the pgvector image so the two reference AgentOS runtimes (just runtimes) can keep their data and
+# vectors in the same server, in their own databases.
+name: agnostic-dev
+
+services:
+  postgres:
+    image: pgvector/pgvector:0.8.7-pg18-trixie@sha256:5895949dfcdf308eb0cd31c950c93c14895c77f33fbedfecf1fa511ab1d4bcd2
+    environment:
+      POSTGRES_USER: agnostic
+      POSTGRES_PASSWORD: agnostic
+      POSTGRES_DB: agnostic
+    ports:
+      - "${AGNOSTIC_DEV_POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql
+      - ./initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agnostic -d agnostic"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  redis:
+    image: redis:8.10.3-alpine@sha256:21090af93f8324db2f0f0f4f38a7c60369d47d917e000c3423d89d2ae2883537
+    command: ["redis-server", "--appendonly", "no", "--save", ""]
+    ports:
+      - "${AGNOSTIC_DEV_REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  postgres-data:

@@ -1,0 +1,50 @@
+# Testing
+
+| Layer | Where | Run | Needs |
+|---|---|---|---|
+| Backend unit + API | `backend/tests/unit` | `just test` | nothing (SQLite, in-process worker) |
+| Backend integration | `backend/tests/integration` (`-m integration`) | `just test-int` | Docker, or the dev stack |
+| Contract | `backend/tests/contract` (`-m contract`) | `just test-contract` | a running reference runtime |
+| Runtime | `runtime/tests` | `just test` | nothing |
+| Frontend unit | `**/src/**/*.test.ts(x)` | `just test` | nothing (jsdom, MSW) |
+| Storybook a11y | every story | `yarn workspace @agnostic/ui storybook:test` | Playwright Chromium |
+| E2E | `frontend/apps/web/e2e` | `yarn e2e` | Playwright Chromium |
+
+Install the browser once: `cd frontend && yarn workspace @agnostic/web playwright install chromium`.
+
+## Backend
+
+- Unit tests build the real app with `make_settings(sqlite_url(tmp_path))` and drive it through
+  `httpx.ASGITransport` + `asgi-lifespan`, so routes, DI, migrations and jobs are all exercised.
+- Integration tests get PostgreSQL and Redis from testcontainers, or from your dev stack:
+
+  ```bash
+  AGNOSTIC_TEST_DATABASE_URL=postgresql://agnostic:agnostic@localhost:5432/agnostic \
+  AGNOSTIC_TEST_REDIS_URL=redis://localhost:6379/0 just test-int
+  ```
+
+  Each test that needs a database gets a fresh one (`fresh_postgres`), dropped afterwards.
+- Cache compatibility (manual; CI tests Redis only): `AGNOSTIC_TEST_REDIS_IMAGE=valkey/valkey:9.1.3-alpine just test-int`.
+- Coverage: the kernel must stay at 90 % or more (`--cov-fail-under=90` in `just test` and CI).
+
+## Frontend
+
+- Render with `renderWithProviders()` from `@agnostic/testing`; mock the API with MSW (`helloHandlers()` shows the
+  pattern). Unhandled requests fail the test.
+- Every story is rendered in Chromium and checked with axe (WCAG 2.2 AA); a violation fails the run.
+- `packages/ui/src/lib/tokens.test.ts` checks text/background contrast ratios and that the token mirror matches
+  `tokens.css`.
+
+## Visual baselines
+
+`e2e/shell.spec.ts` compares the sidebar with a committed screenshot (`@visual`). Font rendering differs by OS, so
+baselines are per platform (`sidebar-chromium-win32.png`, `-linux.png`, …). CI runs on Linux and skips `@visual`
+until a Linux baseline is committed. To record it, run Playwright in its Linux image:
+
+```bash
+docker run --rm -v "$PWD/frontend:/work" -w /work/apps/web mcr.microsoft.com/playwright:v1.64.1-noble \
+  sh -c "corepack enable && yarn install --immutable && yarn e2e --grep @visual --update-snapshots"
+```
+
+then commit `e2e/shell.spec.ts-snapshots/sidebar-chromium-linux.png` and drop `--grep-invert @visual` from
+`ci.yml`.

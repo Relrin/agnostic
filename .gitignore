@@ -1,0 +1,42 @@
+# Planning documents (local only)
+/plans/
+/docs/adr/
+
+# Environment
+.env
+*.env.local
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+*.egg-info/
+dist/
+build/
+
+# Node / frontend
+node_modules/
+**/.yarn/*
+!**/.yarn/releases
+!**/.yarn/plugins
+.pnp.*
+storybook-static/
+playwright-report/
+test-results/
+blob-report/
+*.tsbuildinfo
+.vite/
+
+# Editors / OS
+.idea/
+.vscode/*
+!.vscode/extensions.json
+.DS_Store
+Thumbs.db
+**/.tsbuild/
