@@ -75,11 +75,34 @@ class AuditActionDecl:
 
 
 @dataclass(frozen=True, slots=True)
+class SearchDocument:
+    """One searchable entity for the command palette (indexed by the ``search`` module)."""
+
+    kind: str
+    """``member``, ``instance``, ``agent``, ``team``, ``workflow``, …"""
+    ref: str
+    """The entity's id; unique per ``(kind, instance_id)``."""
+    title: str
+    body: str = ""
+    """Extra text that should match (email, description, slug)."""
+    url_path: str = ""
+    """Where the palette navigates: ``/i/{slug}/chat/agents/support-triage`` or ``/access/people``."""
+    instance_id: str | None = None
+    required_scope: str | None = None
+    """Hidden from people who don't hold it (on ``instance_id`` when set)."""
+
+
+@dataclass(frozen=True, slots=True)
 class SearchProvider:
-    """Command-palette entity search contributed by a module."""
+    """Command-palette entity search contributed by a module.
+
+    ``documents`` lists everything of ``entity`` to index (called by the search module's reindex job with a
+    request-scoped container); ``search`` answers live queries for entities that can't be indexed.
+    """
 
     entity: str
-    search: Callable[[str, int], Awaitable[Sequence[Mapping[str, Any]]]]
+    search: Callable[[str, int], Awaitable[Sequence[Mapping[str, Any]]]] | None = None
+    documents: Callable[[AsyncContainer], Awaitable[Sequence[SearchDocument]]] | None = None
 
 
 @dataclass(frozen=True, slots=True)

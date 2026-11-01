@@ -14,8 +14,17 @@ from agnostic_instances.api.router import router, well_known
 from agnostic_instances.domain.instances import CAPABILITIES
 from agnostic_instances.infrastructure.tables import InstancesBase
 from agnostic_instances.providers import InstancesProvider
+from agnostic_instances.search import instance_documents
 from agnostic_instances.settings import InstancesSettings
-from agnostic_kernel.modules import AuditActionDecl, BaseModule, CapabilityProbe, JobSpec, RouterSpec, ScopeDecl
+from agnostic_kernel.modules import (
+    AuditActionDecl,
+    BaseModule,
+    CapabilityProbe,
+    JobSpec,
+    RouterSpec,
+    ScopeDecl,
+    SearchProvider,
+)
 
 
 class InstancesModule(BaseModule):
@@ -71,3 +80,6 @@ class InstancesModule(BaseModule):
 
     def capabilities(self) -> Iterable[CapabilityProbe]:
         return (CapabilityProbe(name, description) for name, description in CAPABILITIES.items())
+
+    def search_providers(self) -> Iterable[SearchProvider]:
+        return (SearchProvider(entity="instance", documents=instance_documents),)

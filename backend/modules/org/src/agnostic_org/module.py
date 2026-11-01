@@ -8,10 +8,11 @@ from pathlib import Path
 from dishka import Provider
 from sqlalchemy import MetaData
 
-from agnostic_kernel.modules import AuditActionDecl, BaseModule, RouterSpec, ScopeDecl
+from agnostic_kernel.modules import AuditActionDecl, BaseModule, RouterSpec, ScopeDecl, SearchProvider
 from agnostic_org.api.router import invitations_router, members_router, onboarding_router, org_router
 from agnostic_org.infrastructure.tables import OrgBase
 from agnostic_org.providers import OrgProvider
+from agnostic_org.search import member_documents
 
 
 class OrgModule(BaseModule):
@@ -60,3 +61,6 @@ class OrgModule(BaseModule):
             AuditActionDecl("invitations.revoke", "{actor} revoked the invitation to {email}"),
             AuditActionDecl("invitations.accept", "{actor} accepted the invitation and joined as {role}"),
         )
+
+    def search_providers(self) -> Iterable[SearchProvider]:
+        return (SearchProvider(entity="member", documents=member_documents),)

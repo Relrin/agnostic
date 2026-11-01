@@ -5,6 +5,8 @@ import type { Problem } from "./generated/types.gen";
 export * from "./generated";
 export * from "./generated/@tanstack/react-query.gen";
 export { client };
+/** AgentOS response and request types (generated from the pinned AgentOS OpenAPI; called through the gateway). */
+export type * as AgentOS from "./agentos";
 
 const CSRF_COOKIE = "agnostic_csrf";
 const CSRF_HEADER = "X-CSRF-Token";
@@ -74,6 +76,37 @@ export function problemCode(error: unknown): string | undefined {
   return isProblem(error) ? error.code : undefined;
 }
 
+/** An AgentOS error passed through the gateway as it is (`{detail}` bodies, e.g. 404 under user isolation). */
+export class AgentOSHttpError extends Error {
+  readonly status: number;
+  readonly detail: string | undefined;
+
+  constructor(method: string, path: string, status: number, detail: string | undefined) {
+    super(detail ?? `${method} ${path}: HTTP ${String(status)}`);
+    this.name = "AgentOSHttpError";
+    this.status = status;
+    this.detail = detail;
+  }
+}
+
+/** Absolute API URL for paths the generated client doesn't cover (SSE streams). */
+export function apiUrl(path: string): string {
+  return `${configuredBaseUrl}${path}`;
+}
+
+/** The gateway URL of an AgentOS route on `instance`. */
+export function gatewayUrl(instance: string, path: string): string {
+  return apiUrl(`/api/v1/instances/${encodeURIComponent(instance)}/os/${path.replace(/^\/+/, "")}`);
+}
+
+/** Headers for a non-generated call: the CSRF token on writes. */
+export function writeHeaders(method: string, init?: HeadersInit): Headers {
+  const headers = new Headers(init);
+  const token = csrfToken();
+  if (token && !SAFE_METHODS.has(method.toUpperCase())) headers.set(CSRF_HEADER, token);
+  return headers;
+}
+
 /**
  * Call an AgentOS route on an instance through the gateway, as the signed-in person (scoped JWT, audited).
  * Throws the problem body (403 `scope_missing` with an explanation, 503 `capability_disabled`, …) on errors.
@@ -84,11 +117,13 @@ export async function gatewayFetch(
   init: RequestInit = {},
 ): Promise<Response> {
   const method = (init.method ?? "GET").toUpperCase();
-  const headers = new Headers(init.headers);
-  const token = csrfToken();
-  if (token && !SAFE_METHODS.has(method)) headers.set(CSRF_HEADER, token);
-  const url = `${configuredBaseUrl}/api/v1/instances/${encodeURIComponent(instance)}/os/${path.replace(/^\/+/, "")}`;
-  const response = await fetch(url, { ...init, method, headers, credentials: "same-origin" });
+  const headers = writeHeaders(method, init.headers);
+  const response = await fetch(gatewayUrl(instance, path), {
+    ...init,
+    method,
+    headers,
+    credentials: "same-origin",
+  });
   if (!response.ok) {
     let body: unknown = undefined;
     try {
@@ -101,7 +136,23 @@ export async function gatewayFetch(
       // eslint-disable-next-line @typescript-eslint/only-throw-error
       throw body;
     }
-    throw new Error(`${method} ${path}: HTTP ${String(response.status)}`);
+    const detail =
+      typeof body === "object" && body !== null && "detail" in body && typeof body.detail === "string"
+        ? body.detail
+        : undefined;
+    throw new AgentOSHttpError(method, path, response.status, detail);
   }
   return response;
+}
+
+/** `gatewayFetch` + JSON (or `undefined` for 204). */
+export async function gatewayJson<T>(instance: string, path: string, init: RequestInit = {}): Promise<T> {
+  const response = await gatewayFetch(instance, path, init);
+  if (response.status === 204) return undefined as T;
+  return (await response.json()) as T;
+}
+
+/** A JSON body for `gatewayFetch` writes. */
+export function jsonBody(value: unknown): RequestInit {
+  return { body: JSON.stringify(value), headers: { "Content-Type": "application/json" } };
 }

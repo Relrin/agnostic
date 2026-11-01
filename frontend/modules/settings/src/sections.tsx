@@ -30,6 +30,7 @@ import {
   SegmentedControl,
   StatusPill,
   StepList,
+  Switch,
   Textarea,
   type Environment,
 } from "@agnostic/ui";
@@ -259,6 +260,8 @@ export function AuthorizationSection({ instance }: { instance: InstanceOut }) {
     },
   });
   const verify = useMutation(instancesVerifyTokenMutation());
+  const invalidate = useInvalidateInstance(instance);
+  const elevation = useMutation({ ...instancesUpdateInstanceMutation(), onSuccess: invalidate });
   const [token, setToken] = useState("");
   const mode = MODE_TEXT[instance.auth_mode];
   const staged = keys.data?.keys.some((key) => key.status === "next") ?? false;
@@ -278,6 +281,41 @@ export function AuthorizationSection({ instance }: { instance: InstanceOut }) {
           </p>
         </Card>
       </div>
+
+      <Card title="Delegated elevation">
+        <PermissionGate
+          scope="os:write"
+          fallback={
+            <p className="text-[13px] text-fg-secondary">
+              {instance.elevation_enabled
+                ? "On: people with approvals:write can decide approvals of other people's runs."
+                : "Off: only Instance admins can decide approvals of other people's runs."}
+            </p>
+          }
+        >
+          <Switch
+            checked={instance.elevation_enabled}
+            disabled={elevation.isPending}
+            onCheckedChange={(checked) => {
+              elevation.mutate({
+                path: { instance: instance.id },
+                body: { elevation_enabled: checked, version: instance.version },
+              });
+            }}
+            label="Let typed actions act as Instance admin for one request"
+            description={
+              <>
+                Inline approval decisions resolve and continue other people's runs with a single-use,
+                60-second <code className="font-mono">agent_os:admin</code> token whose subject is the person
+                deciding. The control plane checks <code className="font-mono">approvals:write</code> first
+                and audits every use as <code className="font-mono">gateway.elevated</code>. Off: only
+                Instance admins can decide approvals of other people&apos;s runs.
+              </>
+            }
+          />
+        </PermissionGate>
+        {elevation.error && <Callout tone="danger">{describeError(elevation.error).reason}</Callout>}
+      </Card>
 
       <Card
         title="JWT verification"

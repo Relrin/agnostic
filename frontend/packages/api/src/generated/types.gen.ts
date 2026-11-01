@@ -5,6 +5,73 @@ export type ClientOptions = {
 };
 
 /**
+ * ActionOut
+ */
+export type ActionOut = {
+    /**
+     * Label
+     */
+    label: string;
+    /**
+     * Target
+     *
+     * Path inside the instance, e.g. approvals?tool=refund_customer
+     */
+    target: string;
+};
+
+/**
+ * ActivityActorOut
+ */
+export type ActivityActorOut = {
+    /**
+     * Display
+     */
+    display: string;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Kind
+     */
+    kind: string;
+};
+
+/**
+ * ActivityOut
+ */
+export type ActivityOut = {
+    /**
+     * Action
+     */
+    action: string;
+    actor: ActivityActorOut;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Links
+     */
+    links: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Occurred At
+     */
+    occurred_at: string;
+    /**
+     * Resource Display
+     */
+    resource_display: string | null;
+    /**
+     * Summary
+     */
+    summary: string;
+};
+
+/**
  * ActorOut
  */
 export type ActorOut = {
@@ -38,6 +105,33 @@ export type AlternativeOut = {
      * Role Name
      */
     role_name: string | null;
+};
+
+/**
+ * AttentionOut
+ */
+export type AttentionOut = {
+    action: ActionOut | null;
+    /**
+     * Detail
+     */
+    detail: string;
+    /**
+     * Key
+     */
+    key: string;
+    /**
+     * Kind
+     */
+    kind: 'approval_backlog' | 'error_spike' | 'schedule_failing' | 'eval_regression';
+    /**
+     * Severity
+     */
+    severity: 'warning' | 'danger';
+    /**
+     * Title
+     */
+    title: string;
 };
 
 /**
@@ -368,6 +462,132 @@ export type ConnectedOut = {
 };
 
 /**
+ * CountOut
+ */
+export type CountOut = {
+    /**
+     * Available
+     */
+    available: boolean;
+    /**
+     * Count
+     *
+     * None when the instance has approvals disabled or didn't answer
+     */
+    count: number | null;
+    /**
+     * Instance Id
+     */
+    instance_id: string;
+};
+
+/**
+ * CountsOut
+ */
+export type CountsOut = {
+    /**
+     * Agents
+     */
+    agents?: number;
+    /**
+     * Teams
+     */
+    teams?: number;
+    /**
+     * Workflows
+     */
+    workflows?: number;
+};
+
+/**
+ * DayRunsOut
+ */
+export type DayRunsOut = {
+    /**
+     * Completed
+     */
+    completed: number;
+    /**
+     * Date
+     */
+    date: string;
+    /**
+     * Failed
+     */
+    failed: number;
+};
+
+/**
+ * DecideIn
+ */
+export type DecideIn = {
+    /**
+     * Decision
+     */
+    decision: 'approve' | 'reject';
+    /**
+     * Edited Args
+     *
+     * Replacement tool arguments (approve only); the change is audited as a diff
+     */
+    edited_args?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Note
+     */
+    note?: string | null;
+};
+
+/**
+ * DecideOut
+ */
+export type DecideOut = {
+    /**
+     * Already Resolved
+     */
+    already_resolved: boolean;
+    /**
+     * Approval Id
+     */
+    approval_id: string;
+    /**
+     * Args Changed
+     */
+    args_changed: Array<string>;
+    /**
+     * Continue Detail
+     */
+    continue_detail: string | null;
+    /**
+     * Continue State
+     */
+    continue_state: 'continued' | 'pending_admin' | 'conflict' | 'failed' | 'skipped';
+    /**
+     * Decision
+     */
+    decision: 'approve' | 'reject';
+    /**
+     * Instance Id
+     */
+    instance_id: string;
+    /**
+     * Run Id
+     */
+    run_id: string | null;
+    /**
+     * Session Id
+     */
+    session_id: string | null;
+    /**
+     * Status
+     *
+     * approved, rejected, or what someone else decided first
+     */
+    status: string;
+};
+
+/**
  * DiscoveryOut
  */
 export type DiscoveryOut = {
@@ -628,6 +848,12 @@ export type InstanceOut = {
      */
     display_name: string;
     /**
+     * Elevation Enabled
+     *
+     * Typed actions (inline approval decisions) may act as Instance admin for one audited request
+     */
+    elevation_enabled: boolean;
+    /**
      * Endpoint Url
      */
     endpoint_url: string;
@@ -710,6 +936,10 @@ export type InstanceUpdate = {
      * Display Name
      */
     display_name?: string | null;
+    /**
+     * Elevation Enabled
+     */
+    elevation_enabled?: boolean | null;
     /**
      * Endpoint Url
      */
@@ -936,6 +1166,42 @@ export type KeysOut = {
 };
 
 /**
+ * KpiOut
+ */
+export type KpiOut = {
+    /**
+     * Delta
+     */
+    delta: number | null;
+    /**
+     * Delta Pct
+     */
+    delta_pct: number | null;
+    /**
+     * Previous
+     */
+    previous: number | null;
+    /**
+     * Value
+     */
+    value: number | null;
+};
+
+/**
+ * KpisOut
+ */
+export type KpisOut = {
+    /**
+     * Share of failed runs (0–1), from traces
+     */
+    error_rate?: KpiOut | null;
+    failed_runs?: KpiOut | null;
+    p95_latency_ms?: KpiOut | null;
+    runs?: KpiOut | null;
+    sessions?: KpiOut | null;
+};
+
+/**
  * Liveness
  */
 export type Liveness = {
@@ -1083,6 +1349,24 @@ export type MemberOut = {
  */
 export type MemberUpdate = {
     org_role: OrgRoleName;
+};
+
+/**
+ * ModelUsageOut
+ */
+export type ModelUsageOut = {
+    /**
+     * Model Id
+     */
+    model_id: string;
+    /**
+     * Runs
+     */
+    runs: number;
+    /**
+     * Share
+     */
+    share: number;
 };
 
 /**
@@ -1299,6 +1583,76 @@ export type OrgUpdate = {
 };
 
 /**
+ * OverviewOut
+ */
+export type OverviewOut = {
+    /**
+     * Activity
+     */
+    activity: Array<ActivityOut> | null;
+    /**
+     * Attention
+     */
+    attention: Array<AttentionOut>;
+    /**
+     * Cached
+     */
+    cached: boolean;
+    counts: CountsOut | null;
+    /**
+     * End
+     */
+    end: string;
+    /**
+     * Generated At
+     */
+    generated_at: string;
+    /**
+     * Instance Id
+     */
+    instance_id: string;
+    kpis: KpisOut | null;
+    /**
+     * Model Usage
+     */
+    model_usage: Array<ModelUsageOut> | null;
+    /**
+     * Pending Approvals
+     */
+    pending_approvals: number | null;
+    /**
+     * Primitives
+     */
+    primitives: Array<PrimitiveOut> | null;
+    /**
+     * Range
+     */
+    range: '24h' | '7d' | '30d';
+    /**
+     * Runs Per Day
+     */
+    runs_per_day: Array<DayRunsOut> | null;
+    /**
+     * Sampled
+     *
+     * Trace-derived numbers come from the newest traces only (large instances)
+     */
+    sampled: boolean;
+    /**
+     * Start
+     */
+    start: string;
+    /**
+     * Unavailable
+     *
+     * Section → why it is missing (disabled, unreachable, no scope)
+     */
+    unavailable: {
+        [key: string]: string;
+    };
+};
+
+/**
  * Page[AuditEventOut]
  */
 export type PageAuditEventOut = {
@@ -1338,6 +1692,48 @@ export type PasswordResetRequest = {
      * Email
      */
     email: string;
+};
+
+/**
+ * PrimitiveOut
+ */
+export type PrimitiveOut = {
+    /**
+     * Draft Version
+     */
+    draft_version: number | null;
+    /**
+     * Error Rate
+     */
+    error_rate: number | null;
+    /**
+     * Errors
+     */
+    errors: number;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Last Run At
+     */
+    last_run_at: string | null;
+    /**
+     * Live Version
+     */
+    live_version: number | null;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Runs
+     */
+    runs: number;
+    /**
+     * Type
+     */
+    type: 'agent' | 'team' | 'workflow';
 };
 
 /**
@@ -1585,6 +1981,52 @@ export type ScopeOut = {
      * Source
      */
     source: 'agentos' | 'control_plane';
+};
+
+/**
+ * SearchHitOut
+ */
+export type SearchHitOut = {
+    /**
+     * Instance Id
+     */
+    instance_id: string | null;
+    /**
+     * Kind
+     *
+     * member, instance, agent, team, workflow, …
+     */
+    kind: string;
+    /**
+     * Ref
+     */
+    ref: string;
+    /**
+     * Score
+     */
+    score: number;
+    /**
+     * Subtitle
+     */
+    subtitle: string;
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Url Path
+     */
+    url_path: string;
+};
+
+/**
+ * SearchOut
+ */
+export type SearchOut = {
+    /**
+     * Data
+     */
+    data: Array<SearchHitOut>;
 };
 
 /**
@@ -2361,6 +2803,39 @@ export type AuthSsoStartErrors = {
 
 export type AuthSsoStartError = AuthSsoStartErrors[keyof AuthSsoStartErrors];
 
+export type NotificationsEventsData = {
+    body?: never;
+    headers?: {
+        /**
+         * Last-Event-Id
+         */
+        'Last-Event-ID'?: string | null;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/v1/events';
+};
+
+export type NotificationsEventsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type NotificationsEventsError = NotificationsEventsErrors[keyof NotificationsEventsErrors];
+
+export type NotificationsEventsResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
+
 export type GatewayListPoliciesData = {
     body?: never;
     path?: never;
@@ -2589,6 +3064,78 @@ export type InstancesUpdateInstanceResponses = {
 };
 
 export type InstancesUpdateInstanceResponse = InstancesUpdateInstanceResponses[keyof InstancesUpdateInstanceResponses];
+
+export type ApprovalsCountData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/approvals/count';
+};
+
+export type ApprovalsCountErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ApprovalsCountError = ApprovalsCountErrors[keyof ApprovalsCountErrors];
+
+export type ApprovalsCountResponses = {
+    /**
+     * Successful Response
+     */
+    200: CountOut;
+};
+
+export type ApprovalsCountResponse = ApprovalsCountResponses[keyof ApprovalsCountResponses];
+
+export type ApprovalsDecideData = {
+    body: DecideIn;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Approval Id
+         */
+        approval_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/approvals/{approval_id}/decide';
+};
+
+export type ApprovalsDecideErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ApprovalsDecideError = ApprovalsDecideErrors[keyof ApprovalsDecideErrors];
+
+export type ApprovalsDecideResponses = {
+    /**
+     * Successful Response
+     */
+    200: DecideOut;
+};
+
+export type ApprovalsDecideResponse = ApprovalsDecideResponses[keyof ApprovalsDecideResponses];
 
 export type InstancesGetCapabilitiesData = {
     body?: never;
@@ -2836,6 +3383,49 @@ export type InstancesVerifyTokenResponses = {
 };
 
 export type InstancesVerifyTokenResponse = InstancesVerifyTokenResponses[keyof InstancesVerifyTokenResponses];
+
+export type ObserveOverviewData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: {
+        /**
+         * Range
+         */
+        range?: '24h' | '7d' | '30d';
+        /**
+         * Refresh
+         */
+        refresh?: boolean;
+    };
+    url: '/api/v1/instances/{instance}/overview';
+};
+
+export type ObserveOverviewErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ObserveOverviewError = ObserveOverviewErrors[keyof ObserveOverviewErrors];
+
+export type ObserveOverviewResponses = {
+    /**
+     * Successful Response
+     */
+    200: OverviewOut;
+};
+
+export type ObserveOverviewResponse = ObserveOverviewResponses[keyof ObserveOverviewResponses];
 
 export type InstancesTestInstanceData = {
     body?: never;
@@ -3474,6 +4064,50 @@ export type OrgUpdateOrgResponses = {
 };
 
 export type OrgUpdateOrgResponse = OrgUpdateOrgResponses[keyof OrgUpdateOrgResponses];
+
+export type SearchSearchData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Q
+         */
+        q: string;
+        /**
+         * Instance
+         *
+         * Instance id or slug: its components rank first
+         */
+        instance?: string | null;
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/api/v1/search';
+};
+
+export type SearchSearchErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SearchSearchError = SearchSearchErrors[keyof SearchSearchErrors];
+
+export type SearchSearchResponses = {
+    /**
+     * Successful Response
+     */
+    200: SearchOut;
+};
+
+export type SearchSearchResponse = SearchSearchResponses[keyof SearchSearchResponses];
 
 export type SystemListModulesData = {
     body?: never;

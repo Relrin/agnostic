@@ -1,0 +1,32 @@
+[project]
+name = "agnostic-approvals"
+version = "0.1.0"
+description = "Approvals: inline decide (resolve + continue through delegated elevation), pending-count badge feed"
+requires-python = "==3.15.*"
+license = "BSD-3-Clause"
+dependencies = [
+  "agnostic-agentos-client",
+  "agnostic-audit",
+  "agnostic-gateway",
+  "agnostic-instances",
+  "agnostic-kernel",
+  "dishka==1.10.1",
+  "fastapi==0.162.0",
+  "orjson==3.13.0",
+  "pydantic==2.14.2",
+  "pydantic-settings==2.16.2",
+]
+
+[project.entry-points."agnostic.modules"]
+approvals = "agnostic_approvals.module:ApprovalsModule"
+
+[tool.uv.sources]
+agnostic-agentos-client = { workspace = true }
+agnostic-audit = { workspace = true }
+agnostic-gateway = { workspace = true }
+agnostic-instances = { workspace = true }
+agnostic-kernel = { workspace = true }
+
+[build-system]
+requires = ["uv_build==0.13.6"]
+build-backend = "uv_build"

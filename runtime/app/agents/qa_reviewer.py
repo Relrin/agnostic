@@ -11,4 +11,5 @@ qa_reviewer = Agent(
     model=MockModel(persona="qa-reviewer"),
     instructions="Review the draft. Point out factual errors first, tone second.",
     markdown=True,
+    store_events=True,
 )

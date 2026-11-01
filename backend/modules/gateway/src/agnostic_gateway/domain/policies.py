@@ -100,7 +100,7 @@ def _components(family: str, key: str) -> list[RoutePolicy]:
         _p("GET", f"{base}/runs", read, run),
         _p("GET", f"{base}/runs/{{run_id}}", read, run),
         _p("POST", f"{base}/runs/{{run_id}}/continue", run, bucket="run"),
-        _p("POST", f"{base}/runs/{{run_id}}/cancel", run),
+        _p("POST", f"{base}/runs/{{run_id}}/cancel", run, bucket="run"),
         _p("POST", f"{base}/runs/{{run_id}}/resume", run, audit="decision", bucket="read"),
         _p("GET", f"{base}/runs/{{run_id}}/checkpoints", read, run),
         _p("GET", f"{base}/runs/{{run_id}}/checkpoints/{{message_index}}", read, run),

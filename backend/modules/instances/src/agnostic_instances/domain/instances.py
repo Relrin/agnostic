@@ -76,6 +76,8 @@ class Instance:
     created_at: datetime
     updated_at: datetime
     version: int
+    elevation_enabled: bool = True
+    """Delegated elevation: typed control-plane actions may act as Instance admin for one request."""
 
 
 @dataclass(frozen=True, slots=True)

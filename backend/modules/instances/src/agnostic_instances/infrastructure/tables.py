@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Index, Integer, String, Text, func
+from sqlalchemy import Boolean, DateTime, ForeignKey, Index, Integer, String, Text, func, true
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 from agnostic_kernel.db import JsonDocument, make_metadata
@@ -41,6 +41,7 @@ class InstanceRow(InstancesBase):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     version: Mapped[int] = mapped_column(Integer, default=1)
+    elevation_enabled: Mapped[bool] = mapped_column(Boolean, default=True, server_default=true())
 
 
 class SnapshotRow(InstancesBase):

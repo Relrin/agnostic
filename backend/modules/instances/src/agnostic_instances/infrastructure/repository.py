@@ -53,6 +53,7 @@ def _instance(row: InstanceRow) -> Instance:
         created_at=aware(row.created_at),
         updated_at=aware(row.updated_at),
         version=row.version,
+        elevation_enabled=row.elevation_enabled,
     )
 
 
@@ -75,6 +76,7 @@ def _apply(row: InstanceRow, instance: Instance) -> None:
     row.previous_agno_version = instance.previous_agno_version
     row.version_changed_at = instance.version_changed_at
     row.updated_at = instance.updated_at
+    row.elevation_enabled = instance.elevation_enabled
 
 
 class SqlInstanceRepository:

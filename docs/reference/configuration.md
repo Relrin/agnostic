@@ -118,6 +118,18 @@ See [sign-in providers](../how-to/sign-in-providers.md) for setup per identity p
 |---|---|---|
 | `AGNOSTIC_MODULES__DISABLED` | — | modules to turn off, e.g. `assistant,sources` |
 
+## Operate (P02)
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `AGNOSTIC_APPROVALS__POLL_SECONDS` | `15` | how often one replica reads each instance's pending-approval count (`0` turns the poller off) |
+| `AGNOSTIC_APPROVALS__CONTINUE_RETRY_DELAYS` | `[0.5, 1.0, 2.0]` | backoff (seconds) while AgentOS answers 409 to a continuation |
+| `AGNOSTIC_OBSERVE__MAX_TRACE_PAGES` | `10` | pages of 100 traces scanned per overview (error rate, p95, per-component runs) |
+| `AGNOSTIC_OBSERVE__WARM_CRON` | `* * * * *` | recompute the 7-day overview of connected instances; empty turns it off |
+| `AGNOSTIC_SEARCH__REINDEX_CRON` | `*/5 * * * *` | rebuild the ⌘K index; empty turns it off |
+| `AGNOSTIC_NOTIFICATIONS__HEARTBEAT_SECONDS` | `15` | keepalive interval on `/api/v1/events` |
+| `AGNOSTIC_NOTIFICATIONS__MAX_STREAM_SECONDS` | `1800` | streams end after this; browsers reconnect with `Last-Event-ID` |
+
 ## Tests only
 
 | Variable | Meaning |

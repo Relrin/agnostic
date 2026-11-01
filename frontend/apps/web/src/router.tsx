@@ -52,10 +52,9 @@ export function buildRouter(modules: readonly ModuleManifest[], queryClient: Que
       });
       const remembered = lastInstance();
       const target = instances.find((item) => item.slug === remembered) ?? instances[0];
-      // Home arrives in P02; until then an instance opens on its settings (connection and health).
       // eslint-disable-next-line @typescript-eslint/only-throw-error -- TanStack Router's redirect protocol
       throw target
-        ? redirect({ to: "/i/$instance/settings", params: { instance: target.slug } })
+        ? redirect({ to: "/i/$instance/home", params: { instance: target.slug } })
         : redirect({ to: "/instances" });
     },
   });
@@ -86,10 +85,11 @@ export function buildRouter(modules: readonly ModuleManifest[], queryClient: Que
 
   for (const entry of NAV_CATALOG) {
     if (implemented.has(entry.id)) continue;
+    // A splat: the entry and anything below it (links like traces/<id> from shipped pages land here too).
     children[entry.scope].push(
       createRoute({
         getParentRoute: () => parentFor(entry.scope),
-        path: entry.path,
+        path: `${entry.path}/$`,
         component: () => <NotBuiltYet label={entry.label} phase={entry.phase} />,
       }),
     );

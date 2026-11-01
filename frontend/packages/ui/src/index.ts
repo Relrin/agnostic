@@ -102,3 +102,37 @@ export {
 } from "./patterns/page-header";
 export { CodeBlock, StepList, type StepState } from "./patterns/code-block";
 export { EmptyState, ErrorState, LoadingRows } from "./patterns/states";
+export {
+  ApiHint,
+  AttentionCard,
+  Card,
+  DataTable,
+  FilterChip,
+  KeyValueList,
+  KpiTile,
+  Pager,
+  Provenance,
+  type Column,
+  type KpiDelta,
+} from "./patterns/data";
+export { JsonEditor, JsonView, MarkdownView, Toaster, toast } from "./patterns/content";
+export { ShareList, StackedBarChart, type BarSeries } from "./patterns/chart";
+export {
+  ApprovalCard,
+  EntitySquare,
+  RunBlock,
+  RunCard,
+  RunTimelineSeparator,
+  RunToolbar,
+  StepHitlForm,
+  StepTimeline,
+  ToolCallChip,
+  UserBubble,
+  type EntityKind,
+  type HitlField,
+  type HitlRequest,
+  type HitlResolution,
+  type StepView,
+  type ToolChipStatus,
+} from "./domain/run";
+export { Composer, SessionList, type AttachmentRule, type SessionListItem } from "./domain/chat";

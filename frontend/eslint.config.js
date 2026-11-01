@@ -28,6 +28,7 @@ export default tseslint.config(
       "**/test-results/**",
       ".yarn/**",
       "packages/api/src/generated/**",
+      "packages/api/src/agentos/**",
     ],
   },
   js.configs.recommended,

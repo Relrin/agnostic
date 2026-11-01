@@ -16,8 +16,8 @@ pytestmark = pytest.mark.contract
 RUNTIME_URL = os.environ.get("AGNOSTIC_CONTRACT_RUNTIME_URL")
 
 SAMPLE_AGENTS = {"support-triage", "billing-agent", "kb-researcher", "qa-reviewer", "web-researcher", "summarizer"}
-SAMPLE_TEAMS = {"research-team", "escalation-team"}
-SAMPLE_WORKFLOWS = {"ticket-router", "daily-brief"}
+SAMPLE_TEAMS = {"research-team", "escalation-team", "onboarding-team"}
+SAMPLE_WORKFLOWS = {"ticket-router", "daily-brief", "refund-review"}
 
 
 @pytest.fixture
@@ -36,7 +36,7 @@ async def test_info_matches_pinned_version(runtime: AgentOSClient) -> None:
     info = await runtime.info()
     assert info.agno_version == AGENTOS_VERSION
     assert info.auth_mode in {"none", "security_key", "jwt"}
-    assert (info.agent_count, info.team_count, info.workflow_count) == (6, 2, 2)
+    assert (info.agent_count, info.team_count, info.workflow_count) == (6, 3, 3)
 
 
 async def test_config_lists_sample_components(runtime: AgentOSClient) -> None:

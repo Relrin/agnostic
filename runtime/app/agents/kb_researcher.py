@@ -13,4 +13,5 @@ kb_researcher = Agent(
     tools=[search_knowledge],
     instructions="Search the knowledge base and cite the article you used.",
     markdown=True,
+    store_events=True,
 )

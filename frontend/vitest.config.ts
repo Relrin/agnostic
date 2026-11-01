@@ -14,7 +14,12 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       include: ["{apps,packages,modules}/*/src/**/*.{ts,tsx}"],
-      exclude: ["**/*.stories.tsx", "**/*.test.{ts,tsx}", "packages/api/src/generated/**"],
+      exclude: [
+        "**/*.stories.tsx",
+        "**/*.test.{ts,tsx}",
+        "packages/api/src/generated/**",
+        "packages/api/src/agentos/**",
+      ],
     },
   },
 });

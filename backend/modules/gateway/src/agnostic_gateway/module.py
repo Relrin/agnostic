@@ -43,4 +43,5 @@ class GatewayModule(BaseModule):
         return (
             AuditActionDecl("gateway.request", "{actor} called {route} on {instance}"),
             AuditActionDecl("gateway.denied", "{actor} was denied {route} on {instance}: missing {scope}"),
+            AuditActionDecl("gateway.elevated", "{actor} called {route} on {instance} as Instance admin ({scope})"),
         )

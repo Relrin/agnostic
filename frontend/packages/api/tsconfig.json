@@ -1,7 +1,7 @@
 {
   "extends": "../../tsconfig.base.json",
-  // The generated client (src/generated) isn't written for exactOptionalPropertyTypes; it's never hand-edited,
+  // The generated code (src/generated, src/agentos) isn't written for exactOptionalPropertyTypes; it's never hand-edited,
   // so this project alone relaxes that flag. Its public types are still checked strictly where they're used.
   "compilerOptions": { "types": ["node"], "exactOptionalPropertyTypes": false },
-  "include": ["src", "openapi-ts.config.ts"]
+  "include": ["src", "openapi-ts.config.ts", "openapi-ts.agentos.config.ts"]
 }

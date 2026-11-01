@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 
 from agnostic_audit.application.ports import AuditRepository, PartitionMaintenance, StandaloneAuditWriter
 from agnostic_audit.application.use_cases import AuditVocabulary, GetEvent, ListEvents, MaintainPartitions, RecordEvent
-from agnostic_audit.facade import AuditLog, AuditLogImpl
+from agnostic_audit.facade import AuditLog, AuditLogImpl, AuditReader, AuditReaderImpl
 from agnostic_audit.infrastructure.repository import (
     SqlAuditRepository,
     SqlPartitionMaintenance,
@@ -28,6 +28,7 @@ class AuditProvider(Provider):
     standalone = provide(SqlStandaloneAuditWriter, provides=StandaloneAuditWriter, scope=Scope.APP)
     record = provide(RecordEvent)
     audit_log = provide(AuditLogImpl, provides=AuditLog)
+    reader = provide(AuditReaderImpl, provides=AuditReader)
     list_events = provide(ListEvents)
     get_event = provide(GetEvent)
 

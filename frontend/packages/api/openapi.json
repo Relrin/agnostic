@@ -1,6 +1,106 @@
 {
   "components": {
     "schemas": {
+      "ActionOut": {
+        "properties": {
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "target": {
+            "description": "Path inside the instance, e.g. approvals?tool=refund_customer",
+            "title": "Target",
+            "type": "string"
+          }
+        },
+        "required": [
+          "label",
+          "target"
+        ],
+        "title": "ActionOut",
+        "type": "object"
+      },
+      "ActivityActorOut": {
+        "properties": {
+          "display": {
+            "title": "Display",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "id",
+          "display"
+        ],
+        "title": "ActivityActorOut",
+        "type": "object"
+      },
+      "ActivityOut": {
+        "properties": {
+          "action": {
+            "title": "Action",
+            "type": "string"
+          },
+          "actor": {
+            "$ref": "#/components/schemas/ActivityActorOut"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "links": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Links"
+          },
+          "occurred_at": {
+            "format": "date-time",
+            "title": "Occurred At",
+            "type": "string"
+          },
+          "resource_display": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resource Display"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "occurred_at",
+          "actor",
+          "action",
+          "summary",
+          "resource_display",
+          "links"
+        ],
+        "title": "ActivityOut",
+        "type": "object"
+      },
       "ActorOut": {
         "properties": {
           "display": {
@@ -62,6 +162,60 @@
           "role_name"
         ],
         "title": "AlternativeOut",
+        "type": "object"
+      },
+      "AttentionOut": {
+        "properties": {
+          "action": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ActionOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "approval_backlog",
+              "error_spike",
+              "schedule_failing",
+              "eval_regression"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "severity": {
+            "enum": [
+              "warning",
+              "danger"
+            ],
+            "title": "Severity",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "kind",
+          "severity",
+          "title",
+          "detail",
+          "action"
+        ],
+        "title": "AttentionOut",
         "type": "object"
       },
       "AuditActionOut": {
@@ -722,6 +876,218 @@
         "title": "ConnectedOut",
         "type": "object"
       },
+      "CountOut": {
+        "properties": {
+          "available": {
+            "title": "Available",
+            "type": "boolean"
+          },
+          "count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "None when the instance has approvals disabled or didn't answer",
+            "title": "Count"
+          },
+          "instance_id": {
+            "title": "Instance Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "instance_id",
+          "count",
+          "available"
+        ],
+        "title": "CountOut",
+        "type": "object"
+      },
+      "CountsOut": {
+        "properties": {
+          "agents": {
+            "default": 0,
+            "title": "Agents",
+            "type": "integer"
+          },
+          "teams": {
+            "default": 0,
+            "title": "Teams",
+            "type": "integer"
+          },
+          "workflows": {
+            "default": 0,
+            "title": "Workflows",
+            "type": "integer"
+          }
+        },
+        "title": "CountsOut",
+        "type": "object"
+      },
+      "DayRunsOut": {
+        "properties": {
+          "completed": {
+            "title": "Completed",
+            "type": "integer"
+          },
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "failed": {
+            "title": "Failed",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "date",
+          "completed",
+          "failed"
+        ],
+        "title": "DayRunsOut",
+        "type": "object"
+      },
+      "DecideIn": {
+        "properties": {
+          "decision": {
+            "enum": [
+              "approve",
+              "reject"
+            ],
+            "title": "Decision",
+            "type": "string"
+          },
+          "edited_args": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Replacement tool arguments (approve only); the change is audited as a diff",
+            "title": "Edited Args"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "required": [
+          "decision"
+        ],
+        "title": "DecideIn",
+        "type": "object"
+      },
+      "DecideOut": {
+        "properties": {
+          "already_resolved": {
+            "title": "Already Resolved",
+            "type": "boolean"
+          },
+          "approval_id": {
+            "title": "Approval Id",
+            "type": "string"
+          },
+          "args_changed": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Args Changed",
+            "type": "array"
+          },
+          "continue_detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Continue Detail"
+          },
+          "continue_state": {
+            "enum": [
+              "continued",
+              "pending_admin",
+              "conflict",
+              "failed",
+              "skipped"
+            ],
+            "title": "Continue State",
+            "type": "string"
+          },
+          "decision": {
+            "enum": [
+              "approve",
+              "reject"
+            ],
+            "title": "Decision",
+            "type": "string"
+          },
+          "instance_id": {
+            "title": "Instance Id",
+            "type": "string"
+          },
+          "run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Id"
+          },
+          "session_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Id"
+          },
+          "status": {
+            "description": "approved, rejected, or what someone else decided first",
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "approval_id",
+          "instance_id",
+          "decision",
+          "status",
+          "run_id",
+          "session_id",
+          "continue_state",
+          "continue_detail",
+          "already_resolved",
+          "args_changed"
+        ],
+        "title": "DecideOut",
+        "type": "object"
+      },
       "DiscoveryOut": {
         "properties": {
           "agent_count": {
@@ -1219,6 +1585,11 @@
             "title": "Display Name",
             "type": "string"
           },
+          "elevation_enabled": {
+            "description": "Typed actions (inline approval decisions) may act as Instance admin for one audited request",
+            "title": "Elevation Enabled",
+            "type": "boolean"
+          },
           "endpoint_url": {
             "title": "Endpoint Url",
             "type": "string"
@@ -1358,6 +1729,7 @@
           "latency_ms",
           "sub_claim_mode",
           "tls_verify",
+          "elevation_enabled",
           "has_ca_bundle",
           "has_security_key",
           "version_drift",
@@ -1394,6 +1766,17 @@
               }
             ],
             "title": "Display Name"
+          },
+          "elevation_enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Elevation Enabled"
           },
           "endpoint_url": {
             "anyOf": [
@@ -1819,6 +2202,119 @@
         "title": "KeysOut",
         "type": "object"
       },
+      "KpiOut": {
+        "properties": {
+          "delta": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delta"
+          },
+          "delta_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delta Pct"
+          },
+          "previous": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "value",
+          "previous",
+          "delta",
+          "delta_pct"
+        ],
+        "title": "KpiOut",
+        "type": "object"
+      },
+      "KpisOut": {
+        "properties": {
+          "error_rate": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/KpiOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Share of failed runs (0–1), from traces"
+          },
+          "failed_runs": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/KpiOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "p95_latency_ms": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/KpiOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "runs": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/KpiOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sessions": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/KpiOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "title": "KpisOut",
+        "type": "object"
+      },
       "Liveness": {
         "properties": {
           "status": {
@@ -2098,6 +2594,29 @@
           "org_role"
         ],
         "title": "MemberUpdate",
+        "type": "object"
+      },
+      "ModelUsageOut": {
+        "properties": {
+          "model_id": {
+            "title": "Model Id",
+            "type": "string"
+          },
+          "runs": {
+            "title": "Runs",
+            "type": "integer"
+          },
+          "share": {
+            "title": "Share",
+            "type": "number"
+          }
+        },
+        "required": [
+          "model_id",
+          "runs",
+          "share"
+        ],
+        "title": "ModelUsageOut",
         "type": "object"
       },
       "ModuleInfo": {
@@ -2508,6 +3027,169 @@
         "title": "OrgUpdate",
         "type": "object"
       },
+      "OverviewOut": {
+        "properties": {
+          "activity": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/ActivityOut"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Activity"
+          },
+          "attention": {
+            "items": {
+              "$ref": "#/components/schemas/AttentionOut"
+            },
+            "title": "Attention",
+            "type": "array"
+          },
+          "cached": {
+            "title": "Cached",
+            "type": "boolean"
+          },
+          "counts": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CountsOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "end": {
+            "format": "date-time",
+            "title": "End",
+            "type": "string"
+          },
+          "generated_at": {
+            "format": "date-time",
+            "title": "Generated At",
+            "type": "string"
+          },
+          "instance_id": {
+            "title": "Instance Id",
+            "type": "string"
+          },
+          "kpis": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/KpisOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "model_usage": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/ModelUsageOut"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Usage"
+          },
+          "pending_approvals": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pending Approvals"
+          },
+          "primitives": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/PrimitiveOut"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Primitives"
+          },
+          "range": {
+            "enum": [
+              "24h",
+              "7d",
+              "30d"
+            ],
+            "title": "Range",
+            "type": "string"
+          },
+          "runs_per_day": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/DayRunsOut"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Runs Per Day"
+          },
+          "sampled": {
+            "description": "Trace-derived numbers come from the newest traces only (large instances)",
+            "title": "Sampled",
+            "type": "boolean"
+          },
+          "start": {
+            "format": "date-time",
+            "title": "Start",
+            "type": "string"
+          },
+          "unavailable": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Section → why it is missing (disabled, unreachable, no scope)",
+            "title": "Unavailable",
+            "type": "object"
+          }
+        },
+        "required": [
+          "instance_id",
+          "range",
+          "start",
+          "end",
+          "generated_at",
+          "cached",
+          "sampled",
+          "counts",
+          "kpis",
+          "runs_per_day",
+          "model_usage",
+          "primitives",
+          "pending_approvals",
+          "attention",
+          "activity",
+          "unavailable"
+        ],
+        "title": "OverviewOut",
+        "type": "object"
+      },
       "Page_AuditEventOut_": {
         "properties": {
           "data": {
@@ -2579,6 +3261,93 @@
           "email"
         ],
         "title": "PasswordResetRequest",
+        "type": "object"
+      },
+      "PrimitiveOut": {
+        "properties": {
+          "draft_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Draft Version"
+          },
+          "error_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Rate"
+          },
+          "errors": {
+            "title": "Errors",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "last_run_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Run At"
+          },
+          "live_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Live Version"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "runs": {
+            "title": "Runs",
+            "type": "integer"
+          },
+          "type": {
+            "enum": [
+              "agent",
+              "team",
+              "workflow"
+            ],
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "name",
+          "live_version",
+          "draft_version",
+          "runs",
+          "errors",
+          "error_rate",
+          "last_run_at"
+        ],
+        "title": "PrimitiveOut",
         "type": "object"
       },
       "ProbeIn": {
@@ -2998,6 +3767,73 @@
           "hidden"
         ],
         "title": "ScopeOut",
+        "type": "object"
+      },
+      "SearchHitOut": {
+        "properties": {
+          "instance_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instance Id"
+          },
+          "kind": {
+            "description": "member, instance, agent, team, workflow, …",
+            "title": "Kind",
+            "type": "string"
+          },
+          "ref": {
+            "title": "Ref",
+            "type": "string"
+          },
+          "score": {
+            "title": "Score",
+            "type": "number"
+          },
+          "subtitle": {
+            "title": "Subtitle",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "url_path": {
+            "title": "Url Path",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "ref",
+          "instance_id",
+          "title",
+          "subtitle",
+          "url_path",
+          "score"
+        ],
+        "title": "SearchHitOut",
+        "type": "object"
+      },
+      "SearchOut": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/SearchHitOut"
+            },
+            "title": "Data",
+            "type": "array"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "SearchOut",
         "type": "object"
       },
       "SessionOut": {
@@ -4405,6 +5241,64 @@
         ]
       }
     },
+    "/api/v1/events": {
+      "get": {
+        "operationId": "notifications_events",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Last-Event-ID",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Last-Event-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {}
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Realtime control-plane events for the signed-in person (text/event-stream)",
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
     "/api/v1/gateway/policies": {
       "get": {
         "operationId": "gateway_list_policies",
@@ -4769,9 +5663,136 @@
             "description": "Server error"
           }
         },
-        "summary": "Change an instance's name, environment, endpoint, TLS or security key",
+        "summary": "Change an instance's name, environment, endpoint, TLS, security key or elevation",
         "tags": [
           "instances"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/approvals/count": {
+      "get": {
+        "operationId": "approvals_count",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CountOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Pending approvals on the instance (the nav badge; live updates arrive as approvals.count events)",
+        "tags": [
+          "approvals"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/approvals/{approval_id}/decide": {
+      "post": {
+        "operationId": "approvals_decide",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "approval_id",
+            "required": true,
+            "schema": {
+              "title": "Approval Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DecideIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecideOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Approve or reject a paused run's approval, then continue the run (needs approvals:write)",
+        "tags": [
+          "approvals"
         ]
       }
     },
@@ -5186,6 +6207,85 @@
         "summary": "Verify a token against this instance's keys",
         "tags": [
           "instances"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/overview": {
+      "get": {
+        "operationId": "observe_overview",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "range",
+            "required": false,
+            "schema": {
+              "default": "7d",
+              "enum": [
+                "24h",
+                "7d",
+                "30d"
+              ],
+              "title": "Range",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "refresh",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Refresh",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OverviewOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Home: what needs attention, KPIs, runs per day, model usage, primitives and recent activity",
+        "tags": [
+          "observe"
         ]
       }
     },
@@ -6206,6 +7306,92 @@
         "summary": "Change the org profile or org settings",
         "tags": [
           "org"
+        ]
+      }
+    },
+    "/api/v1/search": {
+      "get": {
+        "operationId": "search_search",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "required": true,
+            "schema": {
+              "maxLength": 200,
+              "minLength": 1,
+              "title": "Q",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Instance id or slug: its components rank first",
+            "in": "query",
+            "name": "instance",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Instance id or slug: its components rank first",
+              "title": "Instance"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 50,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Command-palette search over people, instances, agents, teams and workflows",
+        "tags": [
+          "search"
         ]
       }
     },

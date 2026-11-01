@@ -12,6 +12,11 @@
 
 Install the browser once: `cd frontend && yarn workspace @agnostic/web playwright install chromium`.
 
+The P02 approval contract test (`test_p02_approvals.py`) talks to the runtime without a token, so point it at a
+runtime started without `JWT_VERIFICATION_KEY` (`auth_mode=none`). The same runtime records the RunStream fixtures:
+`cd backend && uv run python ../scripts/record_sse_fixtures.py --url http://127.0.0.1:7777` rewrites
+`frontend/packages/core/src/run-stream/__fixtures__/recorded/`, which `recorded.test.ts` checks against the reducer.
+
 ## Backend
 
 - Unit tests build the real app with `make_settings(sqlite_url(tmp_path))` and drive it through

@@ -4,8 +4,11 @@ import type { ModuleManifest } from "@agnostic/core";
 import { accessPeopleModule } from "@agnostic/module-access-people";
 import { accountModule } from "@agnostic/module-account";
 import { auditModule } from "@agnostic/module-audit";
+import { chatModule } from "@agnostic/module-chat";
+import { homeModule } from "@agnostic/module-home";
 import { identityModule } from "@agnostic/module-identity";
 import { instancesModule } from "@agnostic/module-instances";
+import { sessionsModule } from "@agnostic/module-sessions";
 import { settingsModule } from "@agnostic/module-settings";
 
 export const MODULES: readonly ModuleManifest[] = [
@@ -15,4 +18,7 @@ export const MODULES: readonly ModuleManifest[] = [
   settingsModule,
   accessPeopleModule,
   auditModule,
+  homeModule,
+  chatModule,
+  sessionsModule,
 ];

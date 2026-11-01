@@ -32,6 +32,15 @@
       "path": "modules/audit"
     },
     {
+      "path": "modules/home"
+    },
+    {
+      "path": "modules/chat"
+    },
+    {
+      "path": "modules/sessions"
+    },
+    {
       "path": "apps/web"
     }
   ]

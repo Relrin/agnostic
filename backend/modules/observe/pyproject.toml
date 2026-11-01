@@ -1,0 +1,31 @@
+[project]
+name = "agnostic-observe"
+version = "0.1.0"
+description = "Observe: Home overview aggregation (metrics, traces, approvals, schedules), attention rules, activity feed"
+requires-python = "==3.15.*"
+license = "BSD-3-Clause"
+dependencies = [
+  "agnostic-agentos-client",
+  "agnostic-audit",
+  "agnostic-instances",
+  "agnostic-kernel",
+  "dishka==1.10.1",
+  "fastapi==0.162.0",
+  "orjson==3.13.0",
+  "procrastinate==3.10.0",
+  "pydantic==2.14.2",
+  "pydantic-settings==2.16.2",
+]
+
+[project.entry-points."agnostic.modules"]
+observe = "agnostic_observe.module:ObserveModule"
+
+[tool.uv.sources]
+agnostic-agentos-client = { workspace = true }
+agnostic-audit = { workspace = true }
+agnostic-instances = { workspace = true }
+agnostic-kernel = { workspace = true }
+
+[build-system]
+requires = ["uv_build==0.13.6"]
+build-backend = "uv_build"

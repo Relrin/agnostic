@@ -13,4 +13,5 @@ web_researcher = Agent(
     tools=[web_search],
     instructions="Search the web and summarise the three most relevant results.",
     markdown=True,
+    store_events=True,
 )

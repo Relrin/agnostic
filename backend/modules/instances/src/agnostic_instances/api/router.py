@@ -94,7 +94,7 @@ async def get_instance(
     return InstanceOut.from_domain(await use_case(principal, instance))
 
 
-@router.patch("/{instance}", summary="Change an instance's name, environment, endpoint, TLS or security key")
+@router.patch("/{instance}", summary="Change an instance's name, environment, endpoint, TLS, security key or elevation")
 async def update_instance(
     instance: str, body: InstanceUpdate, principal: FromDishka[Principal], use_case: FromDishka[UpdateInstance]
 ) -> InstanceOut:
@@ -108,6 +108,7 @@ async def update_instance(
         ca_bundle_pem=body.ca_bundle_pem,
         security_key=body.security_key,
         status=body.status,
+        elevation_enabled=body.elevation_enabled,
     )
     return InstanceOut.from_domain(await use_case(principal, instance, changes, body.version))
 

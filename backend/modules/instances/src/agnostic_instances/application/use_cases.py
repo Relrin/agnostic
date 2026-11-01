@@ -343,6 +343,7 @@ class InstanceChanges:
     ca_bundle_pem: str | None = None
     security_key: str | None = None
     status: Literal["disabled", "enabled"] | None = None
+    elevation_enabled: bool | None = None
 
 
 class UpdateInstance(_UseCase):
@@ -372,6 +373,8 @@ class UpdateInstance(_UseCase):
             updated = replace(updated, tls_verify=changes.tls_verify)
         if changes.ca_bundle_pem is not None:
             updated = replace(updated, ca_bundle_pem=changes.ca_bundle_pem or None)
+        if changes.elevation_enabled is not None:
+            updated = replace(updated, elevation_enabled=changes.elevation_enabled)
         if changes.status == "disabled":
             updated = replace(updated, status=InstanceStatus.DISABLED)
         elif changes.status == "enabled" and instance.status is InstanceStatus.DISABLED:
@@ -380,7 +383,16 @@ class UpdateInstance(_UseCase):
             sealed = self.c.box.seal(changes.security_key.encode()) if changes.security_key else None
             await self.c.instances.set_security_key(instance.id, sealed)
             updated = replace(updated, has_security_key=sealed is not None)
-        fields = ("display_name", "slug", "env_tag", "endpoint_url", "sub_claim_mode", "tls_verify", "status")
+        fields = (
+            "display_name",
+            "slug",
+            "env_tag",
+            "endpoint_url",
+            "sub_claim_mode",
+            "tls_verify",
+            "status",
+            "elevation_enabled",
+        )
         diff = {
             name: {"before": str(getattr(instance, name)), "after": str(getattr(updated, name))}
             for name in fields

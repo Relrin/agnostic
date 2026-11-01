@@ -10,9 +10,11 @@ from dishka import (
     provide,  # pyright: ignore[reportUnknownVariableType]
 )
 
+from agnostic_gateway.application.elevation import Elevation
 from agnostic_gateway.application.ports import RoutePolicyRepository, Upstream
 from agnostic_gateway.application.proxy import Gateway, GatewaySettingsView, InstanceCache, PolicyTableCache
 from agnostic_gateway.application.streaming import CircuitBreaker
+from agnostic_gateway.facade import GatewayFacade, GatewayFacadeImpl
 from agnostic_gateway.infrastructure.upstream import SqlRoutePolicyRepository, UpstreamPool
 from agnostic_gateway.settings import GatewaySettings
 
@@ -24,6 +26,8 @@ class GatewayProvider(Provider):
     table_cache = provide(PolicyTableCache, scope=Scope.APP)
     instance_cache = provide(InstanceCache, scope=Scope.APP)
     gateway = provide(Gateway)
+    elevation = provide(Elevation)
+    facade = provide(GatewayFacadeImpl, provides=GatewayFacade)
 
     @provide(scope=Scope.APP)
     def view(self, settings: GatewaySettings) -> GatewaySettingsView:

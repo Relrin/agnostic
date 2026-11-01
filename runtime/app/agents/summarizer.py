@@ -11,4 +11,5 @@ summarizer = Agent(
     model=MockModel(persona="summarizer"),
     instructions="Summarise in at most five bullet points.",
     markdown=True,
+    store_events=True,
 )

@@ -36,6 +36,9 @@ class InstanceOut(BaseModel):
     latency_ms: int | None
     sub_claim_mode: Literal["user_id", "email"]
     tls_verify: bool
+    elevation_enabled: bool = Field(
+        description="Typed actions (inline approval decisions) may act as Instance admin for one audited request"
+    )
     has_ca_bundle: bool
     has_security_key: bool
     version_drift: str | None = Field(description='e.g. "agno 3.1.12 → 3.2.0", when the minor version changed')
@@ -66,6 +69,7 @@ class InstanceOut(BaseModel):
             latency_ms=instance.latency_ms,
             sub_claim_mode=instance.sub_claim_mode.value,
             tls_verify=instance.tls_verify,
+            elevation_enabled=instance.elevation_enabled,
             has_ca_bundle=instance.ca_bundle_pem is not None,
             has_security_key=instance.has_security_key,
             version_drift=drift,
@@ -161,6 +165,7 @@ class InstanceUpdate(BaseModel):
     ca_bundle_pem: str | None = Field(default=None, max_length=65536, description="Empty string removes it")
     security_key: str | None = Field(default=None, max_length=4096, description="Empty string removes it")
     status: Literal["disabled", "enabled"] | None = None
+    elevation_enabled: bool | None = None
     version: int | None = Field(default=None, description="Expected version (optimistic concurrency)")
 
 

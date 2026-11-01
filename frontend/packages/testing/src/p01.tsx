@@ -106,6 +106,7 @@ function instance(
     os_version: "3.1.12",
     auth_mode: "jwt",
     user_isolation: env === "production",
+    elevation_enabled: true,
     status,
     last_seen_at: T,
     latency_ms: 38,

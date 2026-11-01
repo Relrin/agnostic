@@ -76,6 +76,17 @@ class RuntimeClient(Protocol):
     async def probe(
         self, target: Target, path: str, headers: Mapping[str, str], params: Mapping[str, str | int] | None = None
     ) -> tuple[int, str]: ...
+    async def request_json(
+        self,
+        target: Target,
+        method: str,
+        path: str,
+        headers: Mapping[str, str],
+        *,
+        params: Mapping[str, str | int] | None = None,
+        json: Any = None,  # noqa: ANN401
+        form: Mapping[str, str] | None = None,
+    ) -> Any: ...  # noqa: ANN401
 
 
 @dataclass(frozen=True, slots=True)

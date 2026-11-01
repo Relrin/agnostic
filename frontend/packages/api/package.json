@@ -8,7 +8,7 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "gen": "openapi-ts"
+    "gen": "openapi-ts && openapi-ts -f openapi-ts.agentos.config.ts"
   },
   "dependencies": {
     "@tanstack/react-query": "5.105.0"

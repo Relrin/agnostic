@@ -6,4 +6,5 @@ node_modules
 **/playwright-report
 **/test-results
 packages/api/src/generated
+packages/api/src/agentos
 packages/api/openapi.json

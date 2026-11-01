@@ -23,6 +23,7 @@ from agnostic_kernel.cache import create_redis
 from agnostic_kernel.crypto import SecretBox, load_master_key
 from agnostic_kernel.db import create_engine, create_sessionmaker
 from agnostic_kernel.ephemeral import EphemeralStore, MemoryStore, RedisStore
+from agnostic_kernel.events import EventBus, MemoryEventBus, RedisEventBus
 from agnostic_kernel.jobs import JobProgressReporter, JobQueue, create_jobs_app, register_jobs
 from agnostic_kernel.mail import Mailer, create_mailer
 from agnostic_kernel.modules import LoadedModules
@@ -67,6 +68,12 @@ class KernelProvider(Provider):
         if settings.cache_backend() == "memory":
             return MemoryStore()
         return RedisStore(redis)
+
+    @provide(scope=Scope.APP)
+    def event_bus(self, settings: Settings, redis: Redis) -> EventBus:
+        if settings.cache_backend() == "memory":
+            return MemoryEventBus()
+        return RedisEventBus(redis)
 
     @provide(scope=Scope.APP)
     def secret_box(self, settings: Settings) -> SecretBox:

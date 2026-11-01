@@ -6,7 +6,10 @@ import {
   findInstance,
   moduleAvailable,
   ORG_ROLE_LABELS,
+  RealtimeProvider,
   scopedPath,
+  useApprovalsCount,
+  useCan,
   useInstanceHealth,
   useInstances,
   useMe,
@@ -15,6 +18,7 @@ import {
   type HealthOut,
   type InstanceOut,
   type ModuleManifest,
+  type NavBadge,
   type ResolvedNavEntry,
 } from "@agnostic/core";
 import {
@@ -33,6 +37,7 @@ import {
   HealthIndicator,
   InstanceSwitcher,
   PageHeader,
+  Toaster,
   TooltipProvider,
   type AppSidebarItem,
   type Health,
@@ -73,14 +78,32 @@ function toHealth(instance: InstanceOut | undefined, health: HealthOut | undefin
   };
 }
 
-function toSidebarItem(entry: ResolvedNavEntry, instance: string): AppSidebarItem {
+function toSidebarItem(
+  entry: ResolvedNavEntry,
+  instance: string,
+  badges: Readonly<Record<string, NavBadge>>,
+): AppSidebarItem {
   return {
     id: entry.id,
     label: entry.label,
     icon: entry.icon,
     to: scopedPath(entry.scope, entry.path, instance),
-    badge: entry.badge,
+    badge: badges[entry.id] ?? entry.badge,
   };
+}
+
+/** Live nav badges: the pending-approvals count, kept current by realtime `approvals.count` events. */
+function useNavBadges(instance: InstanceOut | undefined): Record<string, NavBadge> {
+  const canRead = useCan("approvals:read", instance?.slug).allowed === true;
+  const approvals = useApprovalsCount(instance?.id, canRead);
+  const count = approvals.data?.count;
+  return useMemo(
+    () =>
+      count
+        ? { approvals: { kind: "count", value: count, tone: "warning", label: `${String(count)} pending` } }
+        : {},
+    [count],
+  );
 }
 
 function InstanceMenu({
@@ -210,6 +233,7 @@ export function RootLayout() {
     [healthQuery.data],
   );
   const visibleModules = useVisibleModules(capabilities);
+  const badges = useNavBadges(active);
   const navigation = useMemo(() => buildNavigation(NAV_CATALOG, visibleModules), [visibleModules]);
   const commands = useMemo(() => collectCommands(MODULES), []);
   const activeId = activeNavId(navigation, pathname, instanceSlug);
@@ -237,9 +261,9 @@ export function RootLayout() {
       groups={navigation.groups.map((group) => ({
         id: group.id,
         ...(group.label ? { label: group.label } : {}),
-        items: group.items.map((entry) => toSidebarItem(entry, instanceSlug)),
+        items: group.items.map((entry) => toSidebarItem(entry, instanceSlug, badges)),
       }))}
-      footer={navigation.footer.map((entry) => toSidebarItem(entry, instanceSlug))}
+      footer={navigation.footer.map((entry) => toSidebarItem(entry, instanceSlug, badges))}
       activeId={activeId}
       onSearch={() => {
         setPaletteOpen(true);
@@ -260,50 +284,54 @@ export function RootLayout() {
     fromPath !== undefined && instances.data !== undefined && !findInstance(instances.data, fromPath);
 
   return (
-    <TooltipProvider delayDuration={300}>
-      <AppShell sidebar={sidebar}>
-        <PageHeader
-          start={
-            <>
-              <InstanceMenu instances={instances.data ?? []} active={active} />
-              <Breadcrumb
-                items={[
-                  ...(groupLabel ? [{ label: groupLabel }] : []),
-                  {
-                    label:
-                      activeEntry?.label ??
-                      (pathname.startsWith("/account")
-                        ? "Account"
-                        : pathname.startsWith("/instances")
-                          ? "Instances"
-                          : ""),
-                  },
-                ]}
-              />
-            </>
-          }
-          end={active ? <HealthIndicator health={health} /> : undefined}
+    <RealtimeProvider>
+      <TooltipProvider delayDuration={300}>
+        <AppShell sidebar={sidebar}>
+          <PageHeader
+            start={
+              <>
+                <InstanceMenu instances={instances.data ?? []} active={active} />
+                <Breadcrumb
+                  items={[
+                    ...(groupLabel ? [{ label: groupLabel }] : []),
+                    {
+                      label:
+                        activeEntry?.label ??
+                        (pathname.startsWith("/account")
+                          ? "Account"
+                          : pathname.startsWith("/instances")
+                            ? "Instances"
+                            : ""),
+                    },
+                  ]}
+                />
+              </>
+            }
+            end={active ? <HealthIndicator health={health} /> : undefined}
+          />
+          <UnreachableBanner instance={fromPath ? active : undefined} health={health} />
+          <div className="min-h-0 flex-1 overflow-auto">
+            {unknownInstance ? (
+              <div className="mx-auto w-full max-w-[1320px] px-8 pt-6">
+                <Callout tone="danger" title={`There is no instance ${fromPath}`}>
+                  It may have been renamed or deleted. <Link to="/instances">See all instances</Link>.
+                </Callout>
+              </div>
+            ) : (
+              <Outlet />
+            )}
+          </div>
+        </AppShell>
+        <CommandPalette
+          open={paletteOpen}
+          onOpenChange={setPaletteOpen}
+          navigation={navigation}
+          commands={commands}
+          instance={instanceSlug}
+          instanceId={active?.id}
         />
-        <UnreachableBanner instance={fromPath ? active : undefined} health={health} />
-        <div className="min-h-0 flex-1 overflow-auto">
-          {unknownInstance ? (
-            <div className="mx-auto w-full max-w-[1320px] px-8 pt-6">
-              <Callout tone="danger" title={`There is no instance ${fromPath}`}>
-                It may have been renamed or deleted. <Link to="/instances">See all instances</Link>.
-              </Callout>
-            </div>
-          ) : (
-            <Outlet />
-          )}
-        </div>
-      </AppShell>
-      <CommandPalette
-        open={paletteOpen}
-        onOpenChange={setPaletteOpen}
-        navigation={navigation}
-        commands={commands}
-        instance={instanceSlug}
-      />
-    </TooltipProvider>
+        <Toaster />
+      </TooltipProvider>
+    </RealtimeProvider>
   );
 }

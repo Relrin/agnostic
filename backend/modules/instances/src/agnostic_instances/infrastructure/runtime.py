@@ -92,6 +92,20 @@ class HttpRuntimeClient:
         async with self._client(target, _HeaderAuth(headers)) as client:
             return await client.probe(path, params=params)
 
+    async def request_json(
+        self,
+        target: Target,
+        method: str,
+        path: str,
+        headers: Mapping[str, str],
+        *,
+        params: Mapping[str, str | int] | None = None,
+        json: Any = None,  # noqa: ANN401
+        form: Mapping[str, str] | None = None,
+    ) -> Any:  # noqa: ANN401
+        async with self._client(target, _HeaderAuth(headers)) as client:
+            return await client.request_json(method, path, params=params, json=json, form=form)
+
 
 def _b64(data: bytes) -> str:
     return base64.urlsafe_b64encode(data).decode().rstrip("=")

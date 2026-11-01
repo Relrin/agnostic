@@ -89,6 +89,36 @@ class AgentOSClient:
             msg = f"GET {path}: the response is not JSON"
             raise UnexpectedResponseError(msg, status=response.status_code, body=response.text[:2000]) from exc
 
+    async def request_json(
+        self,
+        method: str,
+        path: str,
+        *,
+        params: Mapping[str, str | int] | None = None,
+        json: Any = None,  # noqa: ANN401
+        form: Mapping[str, str] | None = None,
+    ) -> Any:  # noqa: ANN401
+        """Send one JSON or form request (no retries unless it is a GET); errors are mapped like everywhere else.
+
+        Returns the decoded JSON body, or ``None`` for an empty body (204).
+        """
+        if method.upper() == "GET" and json is None and form is None:
+            return await self.get_json(path, params=params)
+        headers = await self._auth.headers()
+        try:
+            response = await self._http.request(method, path, params=params, json=json, data=form, headers=headers)
+        except httpx.TransportError as exc:
+            msg = f"{method} {path}: {type(exc).__name__}: {exc}"
+            raise InstanceUnreachableError(msg) from exc
+        _ = _raise_for_status(path, response, method=method)
+        if not response.content:
+            return None
+        try:
+            return response.json()
+        except ValueError as exc:
+            msg = f"{method} {path}: the response is not JSON"
+            raise UnexpectedResponseError(msg, status=response.status_code, body=response.text[:2000]) from exc
+
     async def probe(self, path: str, *, params: Mapping[str, str | int] | None = None) -> tuple[int, str]:
         """``(status, body excerpt)`` of a GET without retries or error mapping (capability probes).
 
@@ -160,7 +190,7 @@ class AgentOSClient:
             await asyncio.sleep(self._backoff * 2 ** (attempt - 1))
 
 
-def _raise_for_status(path: str, response: httpx.Response) -> httpx.Response:
+def _raise_for_status(path: str, response: httpx.Response, *, method: str = "GET") -> httpx.Response:
     status = response.status_code
     if status < 400:  # noqa: PLR2004
         return response
@@ -171,4 +201,4 @@ def _raise_for_status(path: str, response: httpx.Response) -> httpx.Response:
         404: NotFoundError,
         503: CapabilityDisabledError,
     }.get(status, UnexpectedResponseError)
-    raise error(f"GET {path}: HTTP {status}", status=status, body=body)
+    raise error(f"{method} {path}: HTTP {status}", status=status, body=body)

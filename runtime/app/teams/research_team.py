@@ -16,4 +16,5 @@ research_team = Team(
     model=MockModel(persona="research-team"),
     members=[kb_researcher, web_researcher, summarizer],
     instructions="Ask kb-researcher first, web-researcher for anything missing, and summarizer for the final brief.",
+    store_events=True,
 )

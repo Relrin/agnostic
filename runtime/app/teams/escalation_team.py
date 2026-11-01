@@ -15,4 +15,5 @@ escalation_team = Team(
     model=MockModel(persona="escalation-team"),
     members=[billing_agent, qa_reviewer],
     instructions="Billing and refund questions go to billing-agent; complaints about answers go to qa-reviewer.",
+    store_events=True,
 )

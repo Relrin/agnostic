@@ -7,6 +7,7 @@ import { API, configureTestApi } from "./base";
 
 export { API, configureTestApi };
 export * from "./p01";
+export * from "./p02";
 
 export function renderWithProviders(ui: ReactElement): RenderResult & { queryClient: QueryClient } {
   configureTestApi();

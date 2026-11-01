@@ -13,7 +13,7 @@ volume is initialised. If your volume predates that script, run `just nuke && ju
 ```bash
 just up
 just runtimes                     # Ctrl+C stops both
-curl http://127.0.0.1:7777/info   # agno_version 3.1.12, 6 agents, 2 teams, 2 workflows
+curl http://127.0.0.1:7777/info   # agno_version 3.1.12, 6 agents, 3 teams, 3 workflows
 just test-contract                # against dev-prod; pass url=http://127.0.0.1:7778 for staging
 ```
 
@@ -29,6 +29,51 @@ curl http://127.0.0.1:7777/approvals          # the pending refund_customer appr
 
 Interactive API docs are at `/docs` on each runtime.
 
+## Sample components
+
+Every component runs on `MockModel` (`runtime/app/models/mock.py`), so runs are deterministic and never call an LLM.
+All of them set `store_events=True`, so `/resume` can replay a run from the database after AgentOS's in-memory event
+buffer has evicted it.
+
+| Kind | Id | What it does |
+|---|---|---|
+| agent | `support-triage` | Triage with `lookup_order`, `search_knowledge` and `refund_customer` (`@approval`: the run pauses) |
+| agent | `billing-agent` | Billing questions; refunds through `refund_customer` |
+| agent | `kb-researcher`, `web-researcher`, `qa-reviewer`, `summarizer` | One tool each (or none), canned answers |
+| team | `research-team` | `TeamMode.coordinate` over kb-researcher, web-researcher, summarizer |
+| team | `escalation-team` | `TeamMode.route` over billing-agent, qa-reviewer |
+| team | `onboarding-team` | `TeamMode.tasks` over kb-researcher and summarizer: creates a task per member, runs them, completes |
+| workflow | `ticket-router` | Step `triage`, then a `Router` that pauses for route selection (`billing` or `research`) |
+| workflow | `daily-brief` | research-team, then summarizer |
+| workflow | `refund-review` | Step `triage`, a `Loop` over kb-researcher (at most 2 iterations), then step `approve` with HITL |
+
+How the mock model behaves:
+
+- It calls a tool when the latest user message names its trigger word and the tool is attached: `refund` →
+  `refund_customer`, `order` → `lookup_order`, `search` → `search_knowledge`, `web` → `web_search`. After a tool
+  result it answers `Done. <result>`; otherwise `[<persona>] <phrase>: <your message>`.
+- The refund amount is the number right after `refund` (`refund 49`, `refund of $12.50`) or after `$`; failing that,
+  the first standalone number (ids like `cus_42` or `ord_7` don't count); failing that, `42`. So
+  `order 4471, refund 49 to cus_7` refunds 49 to `cus_7`.
+- As the leader of a tasks-mode team it creates one task per member, executes them in member order, then calls
+  `mark_all_complete`, so a run emits `TaskCreated`, `TaskUpdated` and the member runs. Coordinate and route teams
+  answer without delegating.
+
+The workflow pauses you can drive from Chat (or with `continue_run` in agno):
+
+- **`support-triage` in a step**: a message with `refund` pauses the `triage` step on the `refund_customer` approval.
+- **`ticket-router`, step `route`**: route selection. The run pauses with `available_choices` `billing` and
+  `research` and continues with the route you pick. agno doesn't evaluate the CEL selector while route selection is
+  on; it stays in the config.
+- **`refund-review`, loop `research`**: ends early once kb-researcher's answer mentions a help-center article,
+  otherwise after the second pass.
+- **`refund-review`, step `approve`**: confirmation plus user input (`amount: float`, `reason: str`), then output
+  review of `Refund of <amount> approved: <reason>.`
+
+`just seed` also creates the DB component `support-triage-studio` on both runtimes, through the gateway and AgentOS's
+`/components` API: published versions v1-v3 (v3 current) and a draft v4, all on the registry's `agnostic-mock`
+model and tools. It gives Chat's version and draft selectors something to show.
+
 ## Connect them to your control plane
 
 The control plane signs a short-lived RS256 JWT for every call it makes to a runtime, with a key pair per
@@ -42,7 +87,8 @@ just dev                          # terminal 1: API + web app
 just runtimes                     # terminal 2: both runtimes, still auth_mode=none
 just bootstrap                    # once: org "Localhost Company", Owner daniel@localhost.company
 just seed                         # connects dev-prod (production) and dev-staging (staging),
-                                  # writes runtime/.jwt/dev-prod.pem and dev-staging.pem
+                                  # writes runtime/.jwt/dev-prod.pem and dev-staging.pem,
+                                  # creates support-triage-studio v1-v3 (+ draft v4) on both
 # restart `just runtimes` (Ctrl+C, run it again): it prints "JWT authorization on" for each key it found
 just seed --test                  # Test connection for both: token accepted, scopes enforced, capabilities
 ```
@@ -52,8 +98,8 @@ You can do the same in the web app: **Instances › Connect**, then **Settings �
 - `just bootstrap` and `just seed` use `AGNOSTIC_DEV_OWNER_EMAIL` / `AGNOSTIC_DEV_OWNER_PASSWORD` from `.env`
   (defaults: `daniel@localhost.company` / `localhost-dev-password`). `just seed` talks to `http://127.0.0.1:8000`; set
   `AGNOSTIC_DEV_API_URL` or pass `--api-url` for another address.
-- It's safe to run again: instances that are already connected (same slug or URL) are reused, and a key file is
-  only rewritten when the active key changed. Restart the runtimes whenever it says it wrote a key, for example
+- It's safe to run again: instances that are already connected (same slug or URL) are reused, a key file is
+  only rewritten when the active key changed, and `support-triage-studio` versions that exist are left alone. Restart the runtimes whenever it says it wrote a key, for example
   after a key rotation or after you reset the control-plane database.
 - `runtime/.jwt/` is git-ignored. Delete it to put the runtimes back in `auth_mode=none`.
 - `just runtimes` also passes `RUNTIME_JWT_ISSUER` (from `AGNOSTIC_INSTANCES__ISSUER`, else

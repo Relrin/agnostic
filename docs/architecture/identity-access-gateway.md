@@ -106,6 +106,13 @@ For each call to `/api/v1/instances/{instance}/os/{path}`:
 
 The request's database session is closed before streaming, so long SSE streams don't hold connections.
 
+### Delegated elevation
+
+Typed control-plane actions (inline approval decisions) may act as Instance admin for exactly one request: the
+control plane checks the justifying scope, mints a single-use 60-second `agent_os:admin` token whose `sub` is still the
+person, and audits `gateway.elevated`. The passthrough never elevates. Instances can turn it off
+(`elevation_enabled`). See [Operate and realtime](operate-and-realtime.md#delegated-elevation-adr-0014).
+
 ## Audit
 
 `audit_events` is append-only (a trigger refuses `UPDATE`/`DELETE` on PostgreSQL) and range-partitioned by month

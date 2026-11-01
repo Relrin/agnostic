@@ -15,6 +15,7 @@
 | [Frontend](architecture/frontend.md) | shell, module SDK, routing, data layer, design tokens and primitives |
 | [AgentOS runtime and client](architecture/agentos-runtime-and-client.md) | `agnostic-runtime`, the mock model, `agnostic-agentos-client`, contract tests |
 | [Identity, access and the gateway](architecture/identity-access-gateway.md) | sign-in, sessions, org roles, bindings, effective scopes, instances and keys, the gateway pipeline, audit |
+| [Operate and realtime](architecture/operate-and-realtime.md) | RunStream, approvals and delegated elevation, Home overview, realtime events, ⌘K search |
 
 ## How-to guides
 

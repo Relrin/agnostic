@@ -13,4 +13,5 @@ billing_agent = Agent(
     tools=[lookup_order, refund_customer],
     instructions="Resolve billing questions. Refunds always go through refund_customer, which a human approves.",
     markdown=True,
+    store_events=True,
 )

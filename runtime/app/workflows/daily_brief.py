@@ -13,4 +13,5 @@ daily_brief = Workflow(
         Step(name="research", team=research_team),
         Step(name="brief", agent=summarizer),
     ],
+    store_events=True,
 )

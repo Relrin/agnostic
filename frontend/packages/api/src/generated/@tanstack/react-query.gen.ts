@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { accessCreateBinding, accessDeleteBinding, accessExplain, accessListBindings, accessListRoles, accessListScopes, auditGetEvent, auditListActions, auditListEvents, authConfirmPasswordReset, authLogin, authLogout, authRequestPasswordReset, authSignInOptions, authSsoCallback, authSsoStart, gatewayListPolicies, instancesConnectInstance, instancesDeleteInstance, instancesDiscoverInstance, instancesGetCapabilities, instancesGetConfig, instancesGetHealth, instancesGetInstance, instancesGetKeys, instancesListInstances, instancesProbeEndpoint, instancesRotateKeys, instancesTestInstance, instancesUpdateInstance, instancesVerifyToken, invitationsAcceptInvitation, invitationsCreateInvitation, invitationsListInvitations, invitationsPreviewInvitation, invitationsResendInvitation, invitationsRevokeInvitation, jwksJwks, meGetMe, meListMySessions, membersGetMember, membersListMembers, membersRemoveMember, membersUpdateMember, meMyAccess, meRevokeMySession, meUpdateMe, onboardingCompleteOnboarding, onboardingOnboardingStatus, type Options, orgGetOrg, orgUpdateOrg, systemListModules, systemLiveness, systemReadiness } from '../sdk.gen';
-import type { AccessCreateBindingData, AccessCreateBindingError, AccessCreateBindingResponse, AccessDeleteBindingData, AccessDeleteBindingError, AccessDeleteBindingResponse, AccessExplainData, AccessExplainError, AccessExplainResponse, AccessListBindingsData, AccessListBindingsError, AccessListBindingsResponse, AccessListRolesData, AccessListRolesError, AccessListRolesResponse, AccessListScopesData, AccessListScopesError, AccessListScopesResponse, AuditGetEventData, AuditGetEventError, AuditGetEventResponse, AuditListActionsData, AuditListActionsError, AuditListActionsResponse, AuditListEventsData, AuditListEventsError, AuditListEventsResponse, AuthConfirmPasswordResetData, AuthConfirmPasswordResetError, AuthConfirmPasswordResetResponse, AuthLoginData, AuthLoginError, AuthLoginResponse, AuthLogoutData, AuthLogoutError, AuthLogoutResponse, AuthRequestPasswordResetData, AuthRequestPasswordResetError, AuthSignInOptionsData, AuthSignInOptionsError, AuthSignInOptionsResponse, AuthSsoCallbackData, AuthSsoCallbackError, AuthSsoStartData, AuthSsoStartError, GatewayListPoliciesData, GatewayListPoliciesError, GatewayListPoliciesResponse, InstancesConnectInstanceData, InstancesConnectInstanceError, InstancesConnectInstanceResponse, InstancesDeleteInstanceData, InstancesDeleteInstanceError, InstancesDeleteInstanceResponse, InstancesDiscoverInstanceData, InstancesDiscoverInstanceError, InstancesDiscoverInstanceResponse, InstancesGetCapabilitiesData, InstancesGetCapabilitiesError, InstancesGetCapabilitiesResponse, InstancesGetConfigData, InstancesGetConfigError, InstancesGetConfigResponse, InstancesGetHealthData, InstancesGetHealthError, InstancesGetHealthResponse, InstancesGetInstanceData, InstancesGetInstanceError, InstancesGetInstanceResponse, InstancesGetKeysData, InstancesGetKeysError, InstancesGetKeysResponse, InstancesListInstancesData, InstancesListInstancesError, InstancesListInstancesResponse, InstancesProbeEndpointData, InstancesProbeEndpointError, InstancesProbeEndpointResponse, InstancesRotateKeysData, InstancesRotateKeysError, InstancesRotateKeysResponse, InstancesTestInstanceData, InstancesTestInstanceError, InstancesTestInstanceResponse, InstancesUpdateInstanceData, InstancesUpdateInstanceError, InstancesUpdateInstanceResponse, InstancesVerifyTokenData, InstancesVerifyTokenError, InstancesVerifyTokenResponse, InvitationsAcceptInvitationData, InvitationsAcceptInvitationError, InvitationsAcceptInvitationResponse, InvitationsCreateInvitationData, InvitationsCreateInvitationError, InvitationsCreateInvitationResponse, InvitationsListInvitationsData, InvitationsListInvitationsError, InvitationsListInvitationsResponse, InvitationsPreviewInvitationData, InvitationsPreviewInvitationError, InvitationsPreviewInvitationResponse, InvitationsResendInvitationData, InvitationsResendInvitationError, InvitationsResendInvitationResponse, InvitationsRevokeInvitationData, InvitationsRevokeInvitationError, InvitationsRevokeInvitationResponse, JwksJwksData, JwksJwksError, JwksJwksResponse, MeGetMeData, MeGetMeError, MeGetMeResponse, MeListMySessionsData, MeListMySessionsError, MeListMySessionsResponse, MembersGetMemberData, MembersGetMemberError, MembersGetMemberResponse, MembersListMembersData, MembersListMembersError, MembersListMembersResponse, MembersRemoveMemberData, MembersRemoveMemberError, MembersRemoveMemberResponse, MembersUpdateMemberData, MembersUpdateMemberError, MembersUpdateMemberResponse, MeMyAccessData, MeMyAccessError, MeMyAccessResponse, MeRevokeMySessionData, MeRevokeMySessionError, MeRevokeMySessionResponse, MeUpdateMeData, MeUpdateMeError, MeUpdateMeResponse, OnboardingCompleteOnboardingData, OnboardingCompleteOnboardingError, OnboardingCompleteOnboardingResponse, OnboardingOnboardingStatusData, OnboardingOnboardingStatusError, OnboardingOnboardingStatusResponse, OrgGetOrgData, OrgGetOrgError, OrgGetOrgResponse, OrgUpdateOrgData, OrgUpdateOrgError, OrgUpdateOrgResponse, SystemListModulesData, SystemListModulesError, SystemListModulesResponse, SystemLivenessData, SystemLivenessResponse, SystemReadinessData, SystemReadinessError, SystemReadinessResponse } from '../types.gen';
+import { accessCreateBinding, accessDeleteBinding, accessExplain, accessListBindings, accessListRoles, accessListScopes, approvalsCount, approvalsDecide, auditGetEvent, auditListActions, auditListEvents, authConfirmPasswordReset, authLogin, authLogout, authRequestPasswordReset, authSignInOptions, authSsoCallback, authSsoStart, gatewayListPolicies, instancesConnectInstance, instancesDeleteInstance, instancesDiscoverInstance, instancesGetCapabilities, instancesGetConfig, instancesGetHealth, instancesGetInstance, instancesGetKeys, instancesListInstances, instancesProbeEndpoint, instancesRotateKeys, instancesTestInstance, instancesUpdateInstance, instancesVerifyToken, invitationsAcceptInvitation, invitationsCreateInvitation, invitationsListInvitations, invitationsPreviewInvitation, invitationsResendInvitation, invitationsRevokeInvitation, jwksJwks, meGetMe, meListMySessions, membersGetMember, membersListMembers, membersRemoveMember, membersUpdateMember, meMyAccess, meRevokeMySession, meUpdateMe, observeOverview, onboardingCompleteOnboarding, onboardingOnboardingStatus, type Options, orgGetOrg, orgUpdateOrg, searchSearch, systemListModules, systemLiveness, systemReadiness } from '../sdk.gen';
+import type { AccessCreateBindingData, AccessCreateBindingError, AccessCreateBindingResponse, AccessDeleteBindingData, AccessDeleteBindingError, AccessDeleteBindingResponse, AccessExplainData, AccessExplainError, AccessExplainResponse, AccessListBindingsData, AccessListBindingsError, AccessListBindingsResponse, AccessListRolesData, AccessListRolesError, AccessListRolesResponse, AccessListScopesData, AccessListScopesError, AccessListScopesResponse, ApprovalsCountData, ApprovalsCountError, ApprovalsCountResponse, ApprovalsDecideData, ApprovalsDecideError, ApprovalsDecideResponse, AuditGetEventData, AuditGetEventError, AuditGetEventResponse, AuditListActionsData, AuditListActionsError, AuditListActionsResponse, AuditListEventsData, AuditListEventsError, AuditListEventsResponse, AuthConfirmPasswordResetData, AuthConfirmPasswordResetError, AuthConfirmPasswordResetResponse, AuthLoginData, AuthLoginError, AuthLoginResponse, AuthLogoutData, AuthLogoutError, AuthLogoutResponse, AuthRequestPasswordResetData, AuthRequestPasswordResetError, AuthSignInOptionsData, AuthSignInOptionsError, AuthSignInOptionsResponse, AuthSsoCallbackData, AuthSsoCallbackError, AuthSsoStartData, AuthSsoStartError, GatewayListPoliciesData, GatewayListPoliciesError, GatewayListPoliciesResponse, InstancesConnectInstanceData, InstancesConnectInstanceError, InstancesConnectInstanceResponse, InstancesDeleteInstanceData, InstancesDeleteInstanceError, InstancesDeleteInstanceResponse, InstancesDiscoverInstanceData, InstancesDiscoverInstanceError, InstancesDiscoverInstanceResponse, InstancesGetCapabilitiesData, InstancesGetCapabilitiesError, InstancesGetCapabilitiesResponse, InstancesGetConfigData, InstancesGetConfigError, InstancesGetConfigResponse, InstancesGetHealthData, InstancesGetHealthError, InstancesGetHealthResponse, InstancesGetInstanceData, InstancesGetInstanceError, InstancesGetInstanceResponse, InstancesGetKeysData, InstancesGetKeysError, InstancesGetKeysResponse, InstancesListInstancesData, InstancesListInstancesError, InstancesListInstancesResponse, InstancesProbeEndpointData, InstancesProbeEndpointError, InstancesProbeEndpointResponse, InstancesRotateKeysData, InstancesRotateKeysError, InstancesRotateKeysResponse, InstancesTestInstanceData, InstancesTestInstanceError, InstancesTestInstanceResponse, InstancesUpdateInstanceData, InstancesUpdateInstanceError, InstancesUpdateInstanceResponse, InstancesVerifyTokenData, InstancesVerifyTokenError, InstancesVerifyTokenResponse, InvitationsAcceptInvitationData, InvitationsAcceptInvitationError, InvitationsAcceptInvitationResponse, InvitationsCreateInvitationData, InvitationsCreateInvitationError, InvitationsCreateInvitationResponse, InvitationsListInvitationsData, InvitationsListInvitationsError, InvitationsListInvitationsResponse, InvitationsPreviewInvitationData, InvitationsPreviewInvitationError, InvitationsPreviewInvitationResponse, InvitationsResendInvitationData, InvitationsResendInvitationError, InvitationsResendInvitationResponse, InvitationsRevokeInvitationData, InvitationsRevokeInvitationError, InvitationsRevokeInvitationResponse, JwksJwksData, JwksJwksError, JwksJwksResponse, MeGetMeData, MeGetMeError, MeGetMeResponse, MeListMySessionsData, MeListMySessionsError, MeListMySessionsResponse, MembersGetMemberData, MembersGetMemberError, MembersGetMemberResponse, MembersListMembersData, MembersListMembersError, MembersListMembersResponse, MembersRemoveMemberData, MembersRemoveMemberError, MembersRemoveMemberResponse, MembersUpdateMemberData, MembersUpdateMemberError, MembersUpdateMemberResponse, MeMyAccessData, MeMyAccessError, MeMyAccessResponse, MeRevokeMySessionData, MeRevokeMySessionError, MeRevokeMySessionResponse, MeUpdateMeData, MeUpdateMeError, MeUpdateMeResponse, ObserveOverviewData, ObserveOverviewError, ObserveOverviewResponse, OnboardingCompleteOnboardingData, OnboardingCompleteOnboardingError, OnboardingCompleteOnboardingResponse, OnboardingOnboardingStatusData, OnboardingOnboardingStatusError, OnboardingOnboardingStatusResponse, OrgGetOrgData, OrgGetOrgError, OrgGetOrgResponse, OrgUpdateOrgData, OrgUpdateOrgError, OrgUpdateOrgResponse, SearchSearchData, SearchSearchError, SearchSearchResponse, SystemListModulesData, SystemListModulesError, SystemListModulesResponse, SystemLivenessData, SystemLivenessResponse, SystemReadinessData, SystemReadinessError, SystemReadinessResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -503,12 +503,47 @@ export const instancesGetInstanceOptions = (options: Options<InstancesGetInstanc
 });
 
 /**
- * Change an instance's name, environment, endpoint, TLS or security key
+ * Change an instance's name, environment, endpoint, TLS, security key or elevation
  */
 export const instancesUpdateInstanceMutation = (options?: Partial<Options<InstancesUpdateInstanceData>>): UseMutationOptions<InstancesUpdateInstanceResponse, InstancesUpdateInstanceError, Options<InstancesUpdateInstanceData>> => {
     const mutationOptions: UseMutationOptions<InstancesUpdateInstanceResponse, InstancesUpdateInstanceError, Options<InstancesUpdateInstanceData>> = {
         mutationFn: async (fnOptions) => {
             const { data } = await instancesUpdateInstance({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const approvalsCountQueryKey = (options: Options<ApprovalsCountData>) => createQueryKey('approvalsCount', options);
+
+/**
+ * Pending approvals on the instance (the nav badge; live updates arrive as approvals.count events)
+ */
+export const approvalsCountOptions = (options: Options<ApprovalsCountData>) => queryOptions<ApprovalsCountResponse, ApprovalsCountError, ApprovalsCountResponse, ReturnType<typeof approvalsCountQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await approvalsCount({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: approvalsCountQueryKey(options)
+});
+
+/**
+ * Approve or reject a paused run's approval, then continue the run (needs approvals:write)
+ */
+export const approvalsDecideMutation = (options?: Partial<Options<ApprovalsDecideData>>): UseMutationOptions<ApprovalsDecideResponse, ApprovalsDecideError, Options<ApprovalsDecideData>> => {
+    const mutationOptions: UseMutationOptions<ApprovalsDecideResponse, ApprovalsDecideError, Options<ApprovalsDecideData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await approvalsDecide({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -641,6 +676,24 @@ export const instancesVerifyTokenMutation = (options?: Partial<Options<Instances
     };
     return mutationOptions;
 };
+
+export const observeOverviewQueryKey = (options: Options<ObserveOverviewData>) => createQueryKey('observeOverview', options);
+
+/**
+ * Home: what needs attention, KPIs, runs per day, model usage, primitives and recent activity
+ */
+export const observeOverviewOptions = (options: Options<ObserveOverviewData>) => queryOptions<ObserveOverviewResponse, ObserveOverviewError, ObserveOverviewResponse, ReturnType<typeof observeOverviewQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await observeOverview({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: observeOverviewQueryKey(options)
+});
 
 /**
  * Test connection: DNS, TLS, AgentOS, version, token, enforced scopes
@@ -990,6 +1043,24 @@ export const orgUpdateOrgMutation = (options?: Partial<Options<OrgUpdateOrgData>
     };
     return mutationOptions;
 };
+
+export const searchSearchQueryKey = (options: Options<SearchSearchData>) => createQueryKey('searchSearch', options);
+
+/**
+ * Command-palette search over people, instances, agents, teams and workflows
+ */
+export const searchSearchOptions = (options: Options<SearchSearchData>) => queryOptions<SearchSearchResponse, SearchSearchError, SearchSearchResponse, ReturnType<typeof searchSearchQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await searchSearch({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: searchSearchQueryKey(options)
+});
 
 export const systemListModulesQueryKey = (options?: Options<SystemListModulesData>) => createQueryKey('systemListModules', options);
 

@@ -1,4 +1,4 @@
-"""Connect the two reference runtimes to a local control plane and hand them its public keys (`just seed`).
+"""Connect the two reference runtimes to a local control plane, hand them its public keys and seed Studio data.
 
     cd backend && uv run python ../scripts/dev_seed.py [--test]
 
@@ -6,6 +6,9 @@ Needs the API (`just dev` or `just api`), the runtimes (`just runtimes`) and a b
 It signs in as the Owner, connects dev-prod and dev-staging unless they're already connected, and writes each one's
 active public key to runtime/.jwt/<slug>.pem, where `just runtimes` picks it up as JWT_VERIFICATION_KEY. Restart the
 runtimes after a key changes, then test the connection (here with --test, or in the web app).
+
+It also creates the DB component `support-triage-studio` on each runtime through the gateway (AgentOS `/components`):
+published versions v1-v3 with v3 current, and a draft v4. Versions that already exist are left alone.
 
 Environment: AGNOSTIC_DEV_API_URL (default http://127.0.0.1:8000), AGNOSTIC_DEV_OWNER_EMAIL and
 AGNOSTIC_DEV_OWNER_PASSWORD (the `just bootstrap` defaults).
@@ -42,6 +45,91 @@ RUNTIMES = (
 
 class SeedError(Exception):
     pass
+
+
+STUDIO_COMPONENT = "support-triage-studio"
+
+
+def _tool(name: str, description: str, properties: dict[str, str], **flags: Any) -> dict[str, Any]:
+    """A tool as ``Function.to_dict()`` writes it; the runtime's registry reattaches the code by name."""
+    return {
+        "name": name,
+        "description": description,
+        "parameters": {
+            "type": "object",
+            "properties": {key: {"type": kind} for key, kind in properties.items()},
+            "required": list(properties),
+            "additionalProperties": False,
+        },
+        **flags,
+    }
+
+
+LOOKUP_ORDER = _tool("lookup_order", "Look up an order's status.", {"order_id": "string"})
+SEARCH_KNOWLEDGE = _tool("search_knowledge", "Search the help center.", {"query": "string"})
+REFUND_CUSTOMER = _tool(
+    "refund_customer",
+    "Refund a customer. Blocks until a human approves.",
+    {"customer_id": "string", "amount": "number", "reason": "string"},
+    requires_confirmation=True,
+    approval_type="required",
+)
+
+
+def _studio_config(tools: list[dict[str, Any]], instructions: str) -> dict[str, Any]:
+    return {
+        "id": STUDIO_COMPONENT,
+        "name": STUDIO_COMPONENT,
+        "description": "Support triage, built in Studio.",
+        "model": {"id": "agnostic-mock", "provider": "Agnostic", "name": "MockModel"},
+        "tools": tools,
+        "instructions": instructions,
+        "markdown": True,
+        "store_events": True,
+    }
+
+
+# (version, stage, notes, config); v3 is the current version.
+STUDIO_VERSIONS: tuple[tuple[int, str, str, dict[str, Any]], ...] = (
+    (
+        1,
+        "published",
+        "First cut: order lookups and help-center answers",
+        _studio_config(
+            [LOOKUP_ORDER, SEARCH_KNOWLEDGE], "Triage the ticket and answer from the help center when you can."
+        ),
+    ),
+    (
+        2,
+        "published",
+        "Refunds through refund_customer (needs approval)",
+        _studio_config(
+            [LOOKUP_ORDER, SEARCH_KNOWLEDGE, REFUND_CUSTOMER],
+            "Triage the ticket. Refunds go through refund_customer, which a human approves.",
+        ),
+    ),
+    (
+        3,
+        "published",
+        "Cite the help-center article",
+        _studio_config(
+            [LOOKUP_ORDER, SEARCH_KNOWLEDGE, REFUND_CUSTOMER],
+            "Triage the ticket and cite the help-center article you used. "
+            "Refunds go through refund_customer, which a human approves.",
+        ),
+    ),
+    (
+        4,
+        "draft",
+        "Draft: ask for the order id before refunding",
+        _studio_config(
+            [LOOKUP_ORDER, SEARCH_KNOWLEDGE, REFUND_CUSTOMER],
+            "Triage the ticket and cite the help-center article you used. Ask for the order id before any refund; "
+            "refunds go through refund_customer, which a human approves.",
+        ),
+    ),
+)
+STUDIO_CURRENT = 3
 
 
 def _problem(response: httpx.Response) -> str:
@@ -121,6 +209,55 @@ def write_key(client: httpx.Client, instance: dict[str, Any]) -> bool:
     return True
 
 
+def seed_studio_component(client: httpx.Client, prefix: str, label: str) -> None:
+    """Create support-triage-studio v1-v4 under ``prefix`` (the gateway's ``/api/v1/instances/<id>/os``)."""
+    base = f"{prefix}/components/{STUDIO_COMPONENT}"
+    response = client.get(base)
+    if response.status_code == 404:
+        version, stage, notes, config = STUDIO_VERSIONS[0]
+        _check(
+            client.post(
+                f"{prefix}/components",
+                json={
+                    "component_id": STUDIO_COMPONENT,
+                    "component_type": "agent",
+                    "name": STUDIO_COMPONENT,
+                    "description": config["description"],
+                    "config": config,
+                    "stage": stage,
+                    "notes": notes,
+                    "set_current": True,
+                },
+            ),
+            f"creating {STUDIO_COMPONENT}",
+        )
+    else:
+        _check(response, f"reading {STUDIO_COMPONENT}")
+    listed = _check(client.get(f"{base}/configs"), f"listing {STUDIO_COMPONENT} versions")
+    items = listed.get("data", listed) if isinstance(listed, dict) else listed
+    existing = {int(item["version"]) for item in items}
+    created = []
+    for version, stage, notes, config in STUDIO_VERSIONS:
+        if version in existing:
+            continue
+        body = {"config": config, "version": version, "stage": stage, "notes": notes, "set_current": False}
+        _check(client.post(f"{base}/configs", json=body), f"creating {STUDIO_COMPONENT} v{version}")
+        created.append(f"v{version}")
+    component = _check(client.get(base), f"reading {STUDIO_COMPONENT}")
+    if component.get("current_version") != STUDIO_CURRENT:
+        _check(client.post(f"{base}/configs/{STUDIO_CURRENT}/set-current"), f"making v{STUDIO_CURRENT} current")
+    summary = f"created {', '.join(created)}" if created else "versions unchanged"
+    print(f"  {label}: {STUDIO_COMPONENT} {summary}; v{STUDIO_CURRENT} current, draft v{STUDIO_VERSIONS[-1][0]}")
+
+
+def seed_components(client: httpx.Client, instance: dict[str, Any]) -> None:
+    try:
+        seed_studio_component(client, f"/api/v1/instances/{instance['id']}/os", instance["slug"])
+    except SeedError as exc:
+        # Not fatal: a runtime that still trusts an old key rejects the call until it's restarted.
+        print(f"  {instance['slug']}: skipped ({exc}). Restart the runtimes, then run `just seed` again.")
+
+
 def test_connection(client: httpx.Client, instance: dict[str, Any]) -> bool:
     report = _check(client.post(f"/api/v1/instances/{instance['id']}/test"), f"testing {instance['slug']}")
     print(f"  {instance['slug']}: {'ok' if report['ok'] else 'FAILED'}")
@@ -152,6 +289,9 @@ def main() -> int:
             instances = [ensure_connected(client, runtime, existing) for runtime in RUNTIMES]
             print("Keys")
             changed = [instance["slug"] for instance in instances if write_key(client, instance)]
+            print("Components")
+            for instance in instances:
+                seed_components(client, instance)
             if args.test:
                 print("Test connection")
                 results = [test_connection(client, instance) for instance in instances]

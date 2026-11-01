@@ -19,7 +19,19 @@ def make(name: str, *depends_on: str) -> Module:
 
 def test_entry_points_discover_the_installed_modules() -> None:
     loaded = load_modules()
-    assert loaded.names() == ["audit", "identity", "instances", "settings", "org", "access", "gateway"]
+    assert loaded.names() == [
+        "audit",
+        "identity",
+        "instances",
+        "settings",
+        "search",
+        "org",
+        "access",
+        "gateway",
+        "notifications",
+        "observe",
+        "approvals",
+    ]
     assert isinstance(loaded.installed["instances"], InstancesModule)
 
 

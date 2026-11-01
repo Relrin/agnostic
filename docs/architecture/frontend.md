@@ -62,7 +62,11 @@ the only theme through GA; a light theme later is a second token block.
 Primitives: `Button` (10 variants, 5 sizes), `Badge`/`StatusPill`, `Input`, `Select`, `SegmentedControl`, `Tabs`
 (underline and pill), `Tooltip`, `Dialog`, `Sheet`, `DropdownMenu`, `Command`, `Sidebar` parts, `Breadcrumb`,
 `Kbd`, `Avatar`, `Skeleton`, `Callout`. Patterns: `AppShell`, `AppSidebar`, `PageHeader`, `PageIntro`,
-`InstanceSwitcher`, `EnvBadge`, `HealthIndicator`, `OrgBadge`, `EmptyState`, `ErrorState`, `LoadingRows`.
+`InstanceSwitcher`, `EnvBadge`, `HealthIndicator`, `OrgBadge`, `EmptyState`, `ErrorState`, `LoadingRows`, `Card`,
+`KpiTile`, `AttentionCard`, `DataTable`/`Pager`, `FilterChip`, `KeyValueList`, `ApiHint`, `MarkdownView` (Shiki on
+demand), `JsonView`, `JsonEditor`, `StackedBarChart` (with "View as table"), `ShareList`, `Toaster`. Domain widgets:
+`RunBlock`, `ToolCallChip`, `ApprovalCard`, `StepTimeline`, `StepHitlForm`, `Composer`, `SessionList`, `RunCard`,
+`RunTimelineSeparator`, `UserBubble`, `EntitySquare`.
 
 Fonts (Geist, Geist Mono) are self-hosted through `@fontsource-variable`; there are no runtime CDN calls.
 
@@ -70,7 +74,11 @@ Storybook (`just storybook`) has a **Tokens** page, every primitive, and the she
 data. Every story runs through axe in CI; a unit test checks the WCAG contrast of the text/background pairs the
 design relies on and that the TypeScript token mirror matches `tokens.css`.
 
-## Placeholders until P01
+## Operate pages
 
-The org, the signed-in user and the instance list are placeholders (`apps/web/src/shell/session.ts`). The header's
-health line shows the control plane's readiness; it becomes instance health when instances exist.
+Home, Chat and Sessions (`modules/home`, `modules/chat`, `modules/sessions`) read AgentOS through the gateway with the
+helpers in `@agnostic/core` (`useComponents`, `useSessions`, `useSessionRuns`, `useSessionActions`) and render runs
+from one `RunState`, whether live (`RunStream`) or stored (`fromStoredRun`). `RealtimeProvider` (mounted by the shell)
+holds the realtime connection and updates the query cache; the approvals nav badge comes from `useApprovalsCount`.
+Catalog entries without a module are splat routes, so links below them (`traces/<id>`) land on the placeholder. See
+[Operate and realtime](operate-and-realtime.md).
