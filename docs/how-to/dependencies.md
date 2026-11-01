@@ -45,6 +45,14 @@ release, and refreshes lockfiles monthly. Some upgrades need extra steps:
 - **Procrastinate**: add a kernel migration applying its SQL migrations ([migrations](migrations.md)).
 - **FastAPI / Pydantic**: run `just api-gen`; the generated client may change.
 
+## Security audits
+
+`just audit` (and CI's security job) audits the locked Python pins exported from `uv.lock` (our own workspace
+packages aren't on PyPI) and the frontend's production dependency tree.
+
+When an advisory hits a transitive frontend dependency whose parent hasn't released a fix, override it in
+`frontend/package.json` `resolutions`, scoped to that parent (`"parent/child": "x.y.z"`).
+
 ## Python 3.15 compatibility
 
 See for the wheel matrix. libcst has no 3.15 wheels yet and builds from source (Rust toolchain needed).

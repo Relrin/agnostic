@@ -168,7 +168,13 @@ jobs:
         with: { version: "${{ env.UV_VERSION }}", enable-cache: true }
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with: { node-version-file: .nvmrc }
-      - run: cd backend && uv sync --locked && uv run pip-audit --strict --progress-spinner off
+      # Audit the locked third-party pins; our own workspace packages aren't on PyPI.
+      - name: pip-audit (uv.lock)
+        working-directory: backend
+        run: |
+          uv sync --locked
+          uv export --locked --no-emit-workspace --all-groups --format requirements-txt -o "$RUNNER_TEMP/requirements-audit.txt"
+          uv run pip-audit --strict --progress-spinner off --disable-pip --require-hashes -r "$RUNNER_TEMP/requirements-audit.txt"
       - run: cd frontend && yarn install --immutable && yarn npm audit --all --recursive --environment production
       - name: gitleaks
         run: >-

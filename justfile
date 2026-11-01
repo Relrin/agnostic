@@ -147,8 +147,9 @@ licenses:
 
 # Known-vulnerability audit
 audit:
-    cd backend && uv run pip-audit --strict --progress-spinner off
-    cd frontend && yarn npm audit --all --recursive
+    cd backend && uv export --locked --no-emit-workspace --all-groups --format requirements-txt -o .venv/requirements-audit.txt > /dev/null \
+        && uv run pip-audit --strict --progress-spinner off --disable-pip --require-hashes -r .venv/requirements-audit.txt
+    cd frontend && yarn npm audit --all --recursive --environment production
 
 # Install git hooks (lint on commit, conventional commit messages)
 hooks:
