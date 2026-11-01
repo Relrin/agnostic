@@ -1,5 +1,6 @@
 export {
   defineModule,
+  moduleAvailable,
   type Capability,
   type CommandDefinition,
   type ModuleManifest,
@@ -21,4 +22,27 @@ export {
   type Navigation,
   type ResolvedNavEntry,
 } from "./navigation";
-export { STALE_TIME, createQueryClient } from "./query";
+export { STALE_TIME, createQueryClient, withQueryFn } from "./query";
+export {
+  PermissionGate,
+  WhyVisible,
+  decide,
+  isControlPlaneScope,
+  scopeSatisfies,
+  useCan,
+  type Can,
+} from "./permissions";
+export {
+  ORG_ROLE_LABELS,
+  findInstance,
+  useInstanceHealth,
+  useInstances,
+  useMe,
+  useMyAccess,
+  useOrg,
+  type HealthOut,
+  type InstanceOut,
+  type MeOut,
+  type MyAccessOut,
+  type OrgOut,
+} from "./session";

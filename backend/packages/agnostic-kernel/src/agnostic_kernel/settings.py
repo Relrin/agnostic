@@ -28,6 +28,7 @@ CONFIG_FILE_ENV = "AGNOSTIC_CONFIG_FILE"
 type SslMode = Literal["disable", "allow", "prefer", "require", "verify-ca", "verify-full"]
 type DatabaseBackend = Literal["postgresql", "sqlite"]
 type JobMode = Literal["worker", "embedded"]
+type CacheBackend = Literal["redis", "memory"]
 
 
 def _split_csv(value: object) -> object:
@@ -112,6 +113,11 @@ class HttpSettings(BaseModel):
     host: str = "127.0.0.1"
     port: int = Field(default=8000, ge=1, le=65535)
     cors_origins: Annotated[list[str], NoDecode] = []
+    public_url: str | None = None
+    """The URL people open in their browser (behind the reverse proxy). Used for links in emails, SSO redirect
+    URIs and the JWT issuer. Defaults to ``http://{host}:{port}``."""
+    secure_cookies: bool | None = None
+    """Mark session cookies ``Secure``. Defaults to on unless ``public_url`` is plain ``http://``."""
 
     _split_origins = field_validator("cors_origins", mode="before")(_split_csv)
 
@@ -140,6 +146,41 @@ class JobsSettings(BaseModel):
     _split_queues = field_validator("queues", mode="before")(_split_csv)
 
 
+class CacheSettings(BaseModel):
+    """Where ephemeral state (sessions, caches, rate limits) lives.
+
+    ``"auto"`` picks Redis on PostgreSQL and an in-process store on SQLite, mirroring :class:`JobsSettings`. The
+    in-process store is for single-process development and evaluation only: it is lost on restart and not shared
+    between replicas.
+    """
+
+    mode: Literal["auto", "redis", "memory"] = "auto"
+
+
+class SecretsSettings(BaseModel):
+    """Key-encryption key for secrets at rest (envelope encryption, AES-256-GCM).
+
+    ``master_key`` (or the file it is read from) holds 32 random bytes, base64-encoded:
+    ``python -c "import os, base64; print(base64.b64encode(os.urandom(32)).decode())"``. Outside production a fixed
+    development key is used when neither is set, with a warning.
+    """
+
+    master_key: SecretStr | None = None
+    master_key_file: Path | None = None
+
+
+class SmtpSettings(BaseModel):
+    """Outgoing email (invitations, password resets). Without a URL, emails are written to the log instead.
+
+    ``smtp://user:pass@host:587`` uses STARTTLS when the server offers it; ``smtps://host:465`` is implicit TLS.
+    """
+
+    url: SecretStr | None = None
+    sender: str = "Agnostic <agnostic@localhost>"
+    tls: TlsOptions = TlsOptions()
+    timeout: float = Field(default=10.0, gt=0)
+
+
 class Settings(BaseSettings):
     """Root settings object; module settings live in their own ``AGNOSTIC_<MODULE>__*`` namespaces."""
 
@@ -159,6 +200,9 @@ class Settings(BaseSettings):
     http: HttpSettings = HttpSettings()
     modules: ModulesSettings = ModulesSettings()
     jobs: JobsSettings = JobsSettings()
+    cache: CacheSettings = CacheSettings()
+    secrets: SecretsSettings = SecretsSettings()
+    smtp: SmtpSettings = SmtpSettings()
 
     @classmethod
     @override
@@ -182,11 +226,27 @@ class Settings(BaseSettings):
             return self.jobs.mode
         return "embedded" if self.database.backend == "sqlite" else "worker"
 
+    def cache_backend(self) -> CacheBackend:
+        if self.cache.mode != "auto":
+            return self.cache.mode
+        return "memory" if self.database.backend == "sqlite" else "redis"
+
+    def public_url(self) -> str:
+        """Base URL of the web app as browsers see it, without a trailing slash."""
+        return (self.http.public_url or f"http://{self.http.host}:{self.http.port}").rstrip("/")
+
+    def secure_cookies(self) -> bool:
+        if self.http.secure_cookies is not None:
+            return self.http.secure_cookies
+        return not self.public_url().startswith("http://")
+
     def redacted(self) -> dict[str, Any]:
         """Effective configuration with secrets removed, for ``agnostic config check``."""
         data = self.model_dump(mode="json")
         data["database"]["url"] = redact_url(self.database.url.get_secret_value())
         data["redis"]["url"] = redact_url(self.redis.url.get_secret_value())
+        if self.smtp.url is not None:
+            data["smtp"]["url"] = redact_url(self.smtp.url.get_secret_value())
         return data
 
 

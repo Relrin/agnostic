@@ -10,6 +10,7 @@
   "dependencies": {
     "@agnostic/api": "workspace:*",
     "@tanstack/react-query": "5.105.0",
+    "@tanstack/react-router": "1.170.46",
     "@testing-library/dom": "10.4.2",
     "@testing-library/react": "16.3.3",
     "msw": "3.0.3"

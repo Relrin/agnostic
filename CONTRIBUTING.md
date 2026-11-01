@@ -16,7 +16,7 @@ The hooks run ruff, basedpyright, ESLint, Prettier and gitleaks on commit, and c
 
 - Trunk-based: short-lived branches off `master`, merged by pull request.
 - [Conventional Commits](https://www.conventionalcommits.org/): `feat(kernel): …`, `fix(web): …`, `docs: …`,
-  `chore(deps): …`. Scopes are package or module names (`kernel`, `server`, `hello`, `ui`, `core`, `api`,
+  `chore(deps): …`. Scopes are package or module names (`kernel`, `server`, `identity`, `gateway`, `ui`, `core`, `api`,
   `runtime`, `client`, `ci`).
 
 ## Before you open a pull request

@@ -1,5 +1,5 @@
 import { ChevronsUpDown, Globe } from "lucide-react";
-import type { ReactNode } from "react";
+import type { ComponentProps, ReactNode } from "react";
 
 import { cn } from "../lib/cn";
 import { Badge } from "../primitives/badge";
@@ -16,18 +16,16 @@ export function EnvBadge({ env }: { env: Environment }) {
 export function InstanceSwitcher({
   name,
   env,
-  onClick,
   className,
-}: {
+  ...props
+}: Omit<ComponentProps<"button">, "children"> & {
   name: string;
   env: Environment;
-  onClick?: () => void;
-  className?: string;
 }) {
   return (
     <button
       type="button"
-      onClick={onClick}
+      {...props}
       className={cn(
         "flex h-9 cursor-pointer items-center gap-2 rounded-segment border border-border bg-surface px-2.5 text-[13.5px] hover:border-border-strong",
         className,

@@ -1,6 +1,7 @@
 # Add a backend module
 
-Use `backend/modules/hello` as the template. This guide adds a module called `notes`.
+Use a small existing module as the template: `backend/modules/audit` has a router, a job, settings, a migration
+and a facade; `backend/modules/settings` is the smallest. This guide adds a module called `notes`.
 
 ## 1. Create the distribution
 
@@ -101,10 +102,18 @@ class NotesModule(BaseModule):
     def scopes(self): return (ScopeDecl("notes:read", "See notes"),)
 ```
 
+Routes that need a signed-in person take `principal: FromDishka[Principal]` and check scopes with
+`await authorizer.require(principal, "notes:read")` (`Authorizer` from `agnostic_kernel.auth`). Record changes with
+`AuditLog.record(...)` from `agnostic_audit.facade` and declare the action in `audit_actions()`; add `"audit"` to
+`depends_on` then.
+
 ## 6. Boundaries
 
-Add the module's layer contracts to `[tool.importlinter]` in `backend/pyproject.toml` (copy the `hello` ones),
-add `agnostic_notes` to `root_packages`, `known-first-party` and `[tool.coverage.run] source`.
+Add the module's three contracts to `[tool.importlinter]` in `backend/pyproject.toml` (copy the `audit` ones:
+hexagonal layers, pure domain, "other modules use notes only through its facade"), and add `agnostic_notes` to
+`root_packages`, the other modules' facade contracts, `known-first-party` and `[tool.coverage.run] source`. Other
+modules may import only `agnostic_notes.facade`; when a dependency would point the wrong way, declare a port in the
+lower module's facade and provide it from the higher one ([module system](../architecture/module-system.md)).
 
 ## 7. Verify
 

@@ -15,28 +15,31 @@ modules. Migrations cover every **installed** module, including disabled ones.
 ```bash
 uv run agnostic db upgrade                 # everything to head
 uv run agnostic db current                 # applied revisions, heads, pending
-uv run agnostic db downgrade hello@base    # remove one module's tables
+uv run agnostic db downgrade gateway@base  # remove one module's tables
 uv run agnostic db downgrade base          # everything (development only)
 ```
 
 ## Writing a revision
 
 Revisions are plain Alembic scripts. Revision ids are readable: `<module letter><4 digits>_<slug>`, e.g.
-`h0002_greeting_tags`.
+`n0002_instance_labels`.
 
 ```python
-revision = "h0002_greeting_tags"
-down_revision = "h0001_greetings"
+revision = "n0002_instance_labels"
+down_revision = "n0001_instances"
 branch_labels = None
 depends_on = None
 
 def upgrade() -> None:
-    op.add_column("hello_greetings", sa.Column("tags", sa.JSON().with_variant(postgresql.JSONB(), "postgresql")),
+    op.add_column("inst_instances", sa.Column("labels", sa.JSON().with_variant(postgresql.JSONB(), "postgresql")),
                   schema="agnostic")
 
 def downgrade() -> None:
-    op.drop_column("hello_greetings", "tags", schema="agnostic")
+    op.drop_column("inst_instances", "labels", schema="agnostic")
 ```
+
+A migration that needs another module's tables (a foreign key to `identity_users`, say) lists that module's
+revision in `depends_on`, as `o0001_org` does with `i0001_identity`.
 
 Rules:
 

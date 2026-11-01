@@ -1,23 +1,18 @@
-// Placeholders until identity (P01) and the instance registry (P01) exist: the prototype's sample org, user
-// and instance, so the shell renders exactly as designed.
-import type { Environment, SidebarOrg, SidebarUser } from "@agnostic/ui";
+// Small per-browser conveniences for the shell (03 §4: localStorage only for conveniences, wrapped in try/catch).
+const LAST_INSTANCE_KEY = "agnostic.last-instance";
 
-export const DEFAULT_INSTANCE = "dev-prod";
+export function lastInstance(): string | undefined {
+  try {
+    return window.localStorage.getItem(LAST_INSTANCE_KEY) ?? undefined;
+  } catch {
+    return undefined;
+  }
+}
 
-export const PLACEHOLDER_ORG: SidebarOrg = {
-  name: "Northwind Labs",
-  detail: "Enterprise · 24 seats",
-  logoLetter: "N",
-};
-
-export const PLACEHOLDER_USER: SidebarUser = {
-  id: "usr_dana",
-  name: "Dana Okafor",
-  role: "Owner",
-  email: "dana@northwind.dev",
-};
-
-export const PLACEHOLDER_INSTANCES: Record<string, { name: string; env: Environment }> = {
-  "dev-prod": { name: "dev-prod", env: "production" },
-  "dev-staging": { name: "dev-staging", env: "staging" },
-};
+export function rememberInstance(slug: string): void {
+  try {
+    window.localStorage.setItem(LAST_INSTANCE_KEY, slug);
+  } catch {
+    // Private windows and blocked storage: nothing to remember, nothing breaks.
+  }
+}

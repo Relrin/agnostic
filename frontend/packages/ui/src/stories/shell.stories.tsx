@@ -1,4 +1,4 @@
-// The shell with the prototype's sample data: Northwind Labs, Dana Okafor, a conflict dot on
+// The shell with the prototype's sample data: Localhost Company, Daniel Okafor, a conflict dot on
 // Code sources and 3 pending approvals.
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import {
@@ -105,8 +105,8 @@ const footer = [item("settings", "Settings", Settings), item("ask", "Ask your OS
 function PrototypeSidebar({ activeId }: { activeId: string }) {
   return (
     <AppSidebar
-      org={{ name: "Northwind Labs", detail: "Enterprise · 24 seats", logoLetter: "N" }}
-      user={{ id: "usr_dana", name: "Dana Okafor", role: "Owner", email: "dana@northwind.dev" }}
+      org={{ name: "Localhost Company", detail: "24 members · 24 seats", logoLetter: "L" }}
+      user={{ id: "usr_dana", name: "Daniel Okafor", role: "Owner", email: "daniel@localhost.company" }}
       groups={groups}
       footer={footer}
       activeId={activeId}

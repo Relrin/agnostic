@@ -1,0 +1,30 @@
+[project]
+name = "agnostic-org"
+version = "0.1.0"
+description = "The single org: profile, members with org roles, invitations, seats, first-run bootstrap"
+requires-python = "==3.15.*"
+license = "BSD-3-Clause"
+dependencies = [
+  "agnostic-audit",
+  "agnostic-identity",
+  "agnostic-kernel",
+  "agnostic-settings",
+  "alembic==1.20.1",
+  "dishka==1.10.1",
+  "fastapi==0.162.0",
+  "pydantic==2.14.2",
+  "sqlalchemy[asyncio]==2.1.6",
+]
+
+[project.entry-points."agnostic.modules"]
+org = "agnostic_org.module:OrgModule"
+
+[tool.uv.sources]
+agnostic-audit = { workspace = true }
+agnostic-identity = { workspace = true }
+agnostic-kernel = { workspace = true }
+agnostic-settings = { workspace = true }
+
+[build-system]
+requires = ["uv_build==0.13.6"]
+build-backend = "uv_build"

@@ -5,6 +5,479 @@ export type ClientOptions = {
 };
 
 /**
+ * ActorOut
+ */
+export type ActorOut = {
+    /**
+     * Display
+     */
+    display: string;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Kind
+     */
+    kind: 'user' | 'service_account' | 'system' | 'anonymous';
+};
+
+/**
+ * AlternativeOut
+ */
+export type AlternativeOut = {
+    /**
+     * Kind
+     */
+    kind: 'role' | 'instance';
+    /**
+     * Label
+     */
+    label: string;
+    /**
+     * Role Name
+     */
+    role_name: string | null;
+};
+
+/**
+ * AuditActionOut
+ */
+export type AuditActionOut = {
+    /**
+     * Action
+     */
+    action: string;
+    /**
+     * Summary Template
+     */
+    summary_template: string;
+};
+
+/**
+ * AuditEventOut
+ */
+export type AuditEventOut = {
+    /**
+     * Action
+     */
+    action: string;
+    actor: ActorOut;
+    /**
+     * Client
+     */
+    client: string | null;
+    /**
+     * Decision
+     */
+    decision: 'allowed' | 'denied' | 'n_a';
+    /**
+     * Diff
+     */
+    diff: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Instance Id
+     */
+    instance_id: string | null;
+    /**
+     * Ip
+     */
+    ip: string | null;
+    /**
+     * Links
+     */
+    links: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Missing Scopes
+     */
+    missing_scopes: Array<string>;
+    /**
+     * Occurred At
+     */
+    occurred_at: string;
+    /**
+     * Request Id
+     */
+    request_id: string | null;
+    /**
+     * Resource Display
+     */
+    resource_display: string | null;
+    /**
+     * Resource Id
+     */
+    resource_id: string | null;
+    /**
+     * Resource Kind
+     */
+    resource_kind: string | null;
+    /**
+     * Response Status
+     */
+    response_status: number | null;
+    /**
+     * Scope Checked
+     */
+    scope_checked: string | null;
+    /**
+     * Source
+     */
+    source: 'control_plane' | 'agentos';
+    /**
+     * Summary
+     */
+    summary: string;
+    /**
+     * Via
+     */
+    via: string;
+};
+
+/**
+ * AuthOptions
+ */
+export type AuthOptions = {
+    /**
+     * Local Login
+     */
+    local_login: boolean;
+    /**
+     * Providers
+     */
+    providers: Array<SignInProviderOut>;
+};
+
+/**
+ * BindingCreate
+ */
+export type BindingCreate = {
+    /**
+     * Expires At
+     */
+    expires_at?: string | null;
+    /**
+     * Instance
+     *
+     * Instance id or slug; null binds on all instances
+     */
+    instance?: string | null;
+    /**
+     * Reason
+     */
+    reason?: string | null;
+    /**
+     * Role Id
+     */
+    role_id?: string | null;
+    /**
+     * Scopes
+     */
+    scopes?: Array<string>;
+    /**
+     * User Id
+     */
+    user_id: string;
+};
+
+/**
+ * BindingOut
+ */
+export type BindingOut = {
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Created By
+     */
+    created_by: string;
+    /**
+     * Expires At
+     */
+    expires_at: string | null;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Instance Id
+     */
+    instance_id: string | null;
+    /**
+     * Principal Id
+     */
+    principal_id: string;
+    /**
+     * Principal Kind
+     */
+    principal_kind: 'user' | 'group' | 'service_account';
+    /**
+     * Reason
+     */
+    reason: string | null;
+    /**
+     * Role Id
+     */
+    role_id: string | null;
+    /**
+     * Scopes
+     */
+    scopes: Array<string>;
+};
+
+/**
+ * CapabilityOut
+ */
+export type CapabilityOut = {
+    /**
+     * Detail
+     */
+    detail: string;
+    /**
+     * Label
+     */
+    label: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Status
+     */
+    status: 'available' | 'disabled' | 'unsupported' | 'unknown';
+};
+
+/**
+ * ConfigOut
+ *
+ * ``GET /config`` of the runtime, as last fetched; sections are passed through as AgentOS returns them.
+ */
+export type ConfigOut = {
+    /**
+     * Agents
+     */
+    agents: Array<unknown>;
+    /**
+     * Available Models
+     */
+    available_models: Array<unknown>;
+    /**
+     * Databases
+     */
+    databases: Array<unknown>;
+    /**
+     * Description
+     */
+    description: string | null;
+    /**
+     * Fetched At
+     */
+    fetched_at: string | null;
+    /**
+     * Instance Id
+     */
+    instance_id: string;
+    /**
+     * Interfaces
+     */
+    interfaces: Array<unknown>;
+    /**
+     * Name
+     */
+    name: string | null;
+    /**
+     * Os Database
+     */
+    os_database: unknown;
+    /**
+     * Os Id
+     */
+    os_id: string | null;
+    /**
+     * Sections
+     *
+     * traces, queue, memory, knowledge, learning, session, …
+     */
+    sections: {
+        [key: string]: unknown;
+    };
+    /**
+     * Teams
+     */
+    teams: Array<unknown>;
+    /**
+     * Workflows
+     */
+    workflows: Array<unknown>;
+};
+
+/**
+ * ConnectIn
+ */
+export type ConnectIn = {
+    /**
+     * Ca Bundle Pem
+     */
+    ca_bundle_pem?: string | null;
+    /**
+     * Display Name
+     */
+    display_name?: string | null;
+    /**
+     * Endpoint Url
+     */
+    endpoint_url: string;
+    env_tag?: EnvTagName;
+    /**
+     * Security Key
+     *
+     * Only for OS_SECURITY_KEY runtimes
+     */
+    security_key?: string | null;
+    /**
+     * Slug
+     */
+    slug?: string | null;
+    /**
+     * Sub Claim Mode
+     */
+    sub_claim_mode?: 'user_id' | 'email';
+    /**
+     * Tls Verify
+     */
+    tls_verify?: boolean;
+};
+
+/**
+ * ConnectedOut
+ */
+export type ConnectedOut = {
+    instance: InstanceOut;
+    /**
+     * Steps
+     */
+    steps: Array<StepOut>;
+};
+
+/**
+ * DiscoveryOut
+ */
+export type DiscoveryOut = {
+    /**
+     * Agent Count
+     */
+    agent_count: number;
+    /**
+     * Agno Version
+     */
+    agno_version: string;
+    /**
+     * Auth Mode
+     */
+    auth_mode: 'none' | 'security_key' | 'jwt' | 'unknown';
+    /**
+     * Mcp Enabled
+     */
+    mcp_enabled: boolean;
+    /**
+     * Name
+     */
+    name: string | null;
+    /**
+     * Os Id
+     */
+    os_id: string;
+    /**
+     * Os Version
+     */
+    os_version: string | null;
+    /**
+     * Team Count
+     */
+    team_count: number;
+    /**
+     * User Isolation
+     */
+    user_isolation: boolean | null;
+    /**
+     * Workflow Count
+     */
+    workflow_count: number;
+};
+
+export type EnvTagName = 'production' | 'staging' | 'development';
+
+/**
+ * ExplainIn
+ */
+export type ExplainIn = {
+    /**
+     * Action
+     *
+     * What they tried, e.g. "Publish support-triage"
+     */
+    action?: string | null;
+    /**
+     * Instance
+     *
+     * Instance id or slug (runtime scopes)
+     */
+    instance?: string | null;
+    /**
+     * Scope
+     */
+    scope: string;
+    /**
+     * User Id
+     *
+     * Whose access to explain (usr_…)
+     */
+    user_id: string;
+};
+
+/**
+ * ExplanationOut
+ */
+export type ExplanationOut = {
+    /**
+     * Allowed
+     */
+    allowed: boolean;
+    /**
+     * Alternatives
+     */
+    alternatives: Array<AlternativeOut>;
+    /**
+     * Explanation
+     */
+    explanation: string;
+    /**
+     * Granted By
+     */
+    granted_by: Array<GrantOut>;
+    /**
+     * Instance Id
+     */
+    instance_id: string | null;
+    /**
+     * Missing Scopes
+     */
+    missing_scopes: Array<string>;
+    /**
+     * Scope
+     */
+    scope: string;
+};
+
+/**
  * FieldError
  */
 export type FieldError = {
@@ -23,46 +496,444 @@ export type FieldError = {
 };
 
 /**
- * GreetingCreate
+ * GrantOut
  */
-export type GreetingCreate = {
+export type GrantOut = {
     /**
-     * Message
+     * Binding Id
      */
-    message: string;
+    binding_id: string | null;
+    /**
+     * Expires At
+     */
+    expires_at: string | null;
+    /**
+     * Instance Id
+     */
+    instance_id: string | null;
+    /**
+     * Role Id
+     */
+    role_id: string | null;
+    /**
+     * Role Name
+     */
+    role_name: string;
+    /**
+     * Scope
+     */
+    scope: string;
+    /**
+     * Source
+     */
+    source: 'org_role' | 'implicit' | 'binding';
 };
 
 /**
- * GreetingOut
+ * HTTPValidationError
  */
-export type GreetingOut = {
+export type HttpValidationError = {
+    /**
+     * Detail
+     */
+    detail?: Array<ValidationError>;
+};
+
+/**
+ * HealthOut
+ */
+export type HealthOut = {
+    /**
+     * Agno Version
+     */
+    agno_version: string | null;
+    /**
+     * Capabilities
+     */
+    capabilities: Array<CapabilityOut>;
+    /**
+     * Instance Id
+     */
+    instance_id: string;
+    /**
+     * Last Seen At
+     */
+    last_seen_at: string | null;
+    /**
+     * Latency Ms
+     */
+    latency_ms: number | null;
+    /**
+     * Probed At
+     */
+    probed_at: string | null;
+    /**
+     * Status
+     */
+    status: 'pending' | 'connected' | 'unreachable' | 'disabled';
+    /**
+     * Version Drift
+     */
+    version_drift: string | null;
+};
+
+/**
+ * InitialBindingIn
+ */
+export type InitialBindingIn = {
+    /**
+     * Instance Id
+     *
+     * null binds the role on all instances
+     */
+    instance_id?: string | null;
+    /**
+     * Role Id
+     */
+    role_id: string;
+};
+
+/**
+ * InitialBindingOut
+ */
+export type InitialBindingOut = {
+    /**
+     * Instance Id
+     */
+    instance_id: string | null;
+    /**
+     * Role Id
+     */
+    role_id: string;
+};
+
+/**
+ * InstanceOut
+ */
+export type InstanceOut = {
+    /**
+     * Agno Version
+     */
+    agno_version: string | null;
+    /**
+     * Auth Mode
+     */
+    auth_mode: 'none' | 'security_key' | 'jwt' | 'unknown';
     /**
      * Created At
      */
     created_at: string;
     /**
+     * Display Name
+     */
+    display_name: string;
+    /**
+     * Endpoint Url
+     */
+    endpoint_url: string;
+    env_tag: EnvTagName;
+    /**
+     * Has Ca Bundle
+     */
+    has_ca_bundle: boolean;
+    /**
+     * Has Security Key
+     */
+    has_security_key: boolean;
+    /**
      * Id
      */
     id: string;
     /**
-     * Message
+     * Last Seen At
      */
-    message: string;
+    last_seen_at: string | null;
     /**
-     * Reply
+     * Latency Ms
      */
-    reply: string | null;
-    status: GreetingStatus;
+    latency_ms: number | null;
+    /**
+     * Os Id
+     */
+    os_id: string | null;
+    /**
+     * Os Version
+     */
+    os_version: string | null;
+    /**
+     * Slug
+     */
+    slug: string;
+    /**
+     * Status
+     */
+    status: 'pending' | 'connected' | 'unreachable' | 'disabled';
+    /**
+     * Sub Claim Mode
+     */
+    sub_claim_mode: 'user_id' | 'email';
+    /**
+     * Tls Verify
+     */
+    tls_verify: boolean;
     /**
      * Updated At
      */
     updated_at: string;
+    /**
+     * User Isolation
+     */
+    user_isolation: boolean | null;
+    /**
+     * Version
+     */
+    version: number;
+    /**
+     * Version Drift
+     *
+     * e.g. "agno 3.1.12 → 3.2.0", when the minor version changed
+     */
+    version_drift: string | null;
 };
 
 /**
- * GreetingStatus
+ * InstanceUpdate
  */
-export type GreetingStatus = 'pending' | 'replied';
+export type InstanceUpdate = {
+    /**
+     * Ca Bundle Pem
+     *
+     * Empty string removes it
+     */
+    ca_bundle_pem?: string | null;
+    /**
+     * Display Name
+     */
+    display_name?: string | null;
+    /**
+     * Endpoint Url
+     */
+    endpoint_url?: string | null;
+    env_tag?: EnvTagName | null;
+    /**
+     * Security Key
+     *
+     * Empty string removes it
+     */
+    security_key?: string | null;
+    /**
+     * Slug
+     */
+    slug?: string | null;
+    /**
+     * Status
+     */
+    status?: 'disabled' | 'enabled' | null;
+    /**
+     * Sub Claim Mode
+     */
+    sub_claim_mode?: 'user_id' | 'email' | null;
+    /**
+     * Tls Verify
+     */
+    tls_verify?: boolean | null;
+    /**
+     * Version
+     *
+     * Expected version (optimistic concurrency)
+     */
+    version?: number | null;
+};
+
+/**
+ * InvitationAccept
+ */
+export type InvitationAccept = {
+    /**
+     * Display Name
+     */
+    display_name?: string | null;
+    /**
+     * Password
+     */
+    password: string;
+};
+
+/**
+ * InvitationCreate
+ */
+export type InvitationCreate = {
+    /**
+     * Access Ends At
+     */
+    access_ends_at?: string | null;
+    /**
+     * Bindings
+     */
+    bindings?: Array<InitialBindingIn>;
+    /**
+     * Email
+     */
+    email: string;
+    org_role?: OrgRoleName;
+};
+
+/**
+ * InvitationOut
+ */
+export type InvitationOut = {
+    /**
+     * Access Ends At
+     */
+    access_ends_at: string | null;
+    /**
+     * Bindings
+     */
+    bindings: Array<InitialBindingOut>;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Email
+     */
+    email: string;
+    /**
+     * Expires At
+     */
+    expires_at: string;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Invited By
+     */
+    invited_by: string;
+    org_role: OrgRoleName;
+    /**
+     * Status
+     */
+    status: 'pending' | 'accepted' | 'revoked';
+};
+
+/**
+ * InvitationPreviewOut
+ */
+export type InvitationPreviewOut = {
+    /**
+     * Email
+     */
+    email: string;
+    /**
+     * Expires At
+     */
+    expires_at: string;
+    /**
+     * Has Account
+     */
+    has_account: boolean;
+    /**
+     * Invited By
+     */
+    invited_by: string;
+    /**
+     * Org Name
+     */
+    org_name: string;
+    org_role: OrgRoleName;
+};
+
+/**
+ * IssuedInvitationOut
+ */
+export type IssuedInvitationOut = {
+    /**
+     * Accept Url
+     *
+     * Shown once; share it yourself when email isn't configured
+     */
+    accept_url: string;
+    invitation: InvitationOut;
+};
+
+/**
+ * Joined
+ */
+export type Joined = {
+    /**
+     * Csrf Token
+     */
+    csrf_token: string;
+    /**
+     * User Id
+     */
+    user_id: string;
+};
+
+/**
+ * KeyOut
+ */
+export type KeyOut = {
+    /**
+     * Activated At
+     */
+    activated_at: string | null;
+    /**
+     * Alg
+     */
+    alg: string;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Kid
+     */
+    kid: string;
+    /**
+     * Public Pem
+     */
+    public_pem: string;
+    /**
+     * Status
+     */
+    status: 'active' | 'next' | 'retired';
+};
+
+/**
+ * KeysOut
+ */
+export type KeysOut = {
+    /**
+     * Audience
+     */
+    audience: string;
+    /**
+     * Env Snippet
+     */
+    env_snippet: string | null;
+    /**
+     * Issuer
+     */
+    issuer: string;
+    /**
+     * Jwks Path
+     */
+    jwks_path: string;
+    /**
+     * Keys
+     */
+    keys: Array<KeyOut>;
+    /**
+     * Python Snippet
+     */
+    python_snippet: string | null;
+    /**
+     * Rotation Note
+     */
+    rotation_note: string;
+};
 
 /**
  * Liveness
@@ -72,6 +943,146 @@ export type Liveness = {
      * Status
      */
     status?: 'ok';
+};
+
+/**
+ * LoginRequest
+ */
+export type LoginRequest = {
+    /**
+     * Email
+     */
+    email: string;
+    /**
+     * Password
+     */
+    password: string;
+};
+
+/**
+ * MeOut
+ */
+export type MeOut = {
+    /**
+     * Avatar Seed
+     */
+    avatar_seed: string;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Display Name
+     */
+    display_name: string;
+    /**
+     * Email
+     */
+    email: string;
+    /**
+     * Has Password
+     */
+    has_password: boolean;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Last Active At
+     */
+    last_active_at: string | null;
+    /**
+     * Locale
+     */
+    locale: string | null;
+    /**
+     * Org Role
+     */
+    org_role: 'owner' | 'administrator' | 'member' | null;
+    /**
+     * Preferences
+     */
+    preferences: {
+        [key: string]: unknown;
+    };
+    /**
+     * Session Method
+     */
+    session_method: string | null;
+    /**
+     * Sso Providers
+     */
+    sso_providers: Array<string>;
+    /**
+     * Timezone
+     */
+    timezone: string | null;
+};
+
+/**
+ * MeUpdate
+ */
+export type MeUpdate = {
+    /**
+     * Display Name
+     */
+    display_name?: string | null;
+    /**
+     * Locale
+     */
+    locale?: string | null;
+    /**
+     * Preferences
+     */
+    preferences?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Timezone
+     */
+    timezone?: string | null;
+};
+
+/**
+ * MemberOut
+ */
+export type MemberOut = {
+    /**
+     * Avatar Seed
+     */
+    avatar_seed: string;
+    /**
+     * Display Name
+     */
+    display_name: string;
+    /**
+     * Email
+     */
+    email: string;
+    /**
+     * Joined At
+     */
+    joined_at: string;
+    /**
+     * Joined Via
+     */
+    joined_via: string;
+    /**
+     * Last Active At
+     */
+    last_active_at: string | null;
+    org_role: OrgRoleName;
+    /**
+     * User Id
+     */
+    user_id: string;
+};
+
+/**
+ * MemberUpdate
+ */
+export type MemberUpdate = {
+    org_role: OrgRoleName;
 };
 
 /**
@@ -105,13 +1116,196 @@ export type ModuleInfo = {
 };
 
 /**
- * Page[GreetingOut]
+ * MyAccessOut
  */
-export type PageGreetingOut = {
+export type MyAccessOut = {
+    /**
+     * Control Plane Scopes
+     */
+    control_plane_scopes: Array<string>;
+    /**
+     * Grants
+     */
+    grants: Array<GrantOut>;
+    /**
+     * Implicit Full Access
+     */
+    implicit_full_access: boolean;
+    /**
+     * Instance Id
+     */
+    instance_id: string | null;
+    /**
+     * Org Role
+     */
+    org_role: 'owner' | 'administrator' | 'member' | null;
+    /**
+     * Roles
+     *
+     * Roles held on the instance as people see them ("Operator", "Full access")
+     */
+    roles: Array<string>;
+    /**
+     * Runtime Scopes
+     */
+    runtime_scopes: Array<string>;
+    /**
+     * Token Scopes
+     *
+     * What the gateway puts in this person's JWT for the instance
+     */
+    token_scopes: Array<string>;
+};
+
+/**
+ * OnboardingComplete
+ */
+export type OnboardingComplete = {
+    /**
+     * Display Name
+     */
+    display_name: string;
+    /**
+     * Email
+     */
+    email: string;
+    /**
+     * Org Name
+     */
+    org_name?: string | null;
+    /**
+     * Password
+     */
+    password: string;
+    /**
+     * Token
+     */
+    token: string;
+};
+
+/**
+ * OnboardingStatusOut
+ */
+export type OnboardingStatusOut = {
+    /**
+     * Org Exists
+     */
+    org_exists: boolean;
+    /**
+     * Org Name
+     */
+    org_name: string | null;
+    /**
+     * Owner Exists
+     */
+    owner_exists: boolean;
+};
+
+/**
+ * OrgOut
+ */
+export type OrgOut = {
+    /**
+     * Logo Url
+     */
+    logo_url: string | null;
+    /**
+     * Member Count
+     */
+    member_count: number;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Pending Invitations
+     */
+    pending_invitations: number;
+    /**
+     * Plan Label
+     */
+    plan_label: string | null;
+    /**
+     * Seat Limit
+     */
+    seat_limit: number | null;
+    settings: OrgSettingsOut;
+    /**
+     * Slug
+     */
+    slug: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+    viewer_role: OrgRoleName | null;
+};
+
+export type OrgRoleName = 'owner' | 'administrator' | 'member';
+
+/**
+ * OrgSettingsOut
+ */
+export type OrgSettingsOut = {
+    /**
+     * Audit Log All Reads
+     */
+    audit_log_all_reads: boolean;
+    /**
+     * Require Explicit Bindings
+     */
+    require_explicit_bindings: boolean;
+};
+
+/**
+ * OrgSettingsUpdate
+ */
+export type OrgSettingsUpdate = {
+    /**
+     * Audit Log All Reads
+     */
+    audit_log_all_reads?: boolean | null;
+    /**
+     * Require Explicit Bindings
+     */
+    require_explicit_bindings?: boolean | null;
+};
+
+/**
+ * OrgUpdate
+ */
+export type OrgUpdate = {
+    /**
+     * Clear Seat Limit
+     */
+    clear_seat_limit?: boolean;
+    /**
+     * Logo Url
+     *
+     * Empty string removes the logo
+     */
+    logo_url?: string | null;
+    /**
+     * Name
+     */
+    name?: string | null;
+    /**
+     * Seat Limit
+     *
+     * Use clear_seat_limit to remove the limit
+     */
+    seat_limit?: number | null;
+    settings?: OrgSettingsUpdate | null;
+};
+
+/**
+ * Page[AuditEventOut]
+ */
+export type PageAuditEventOut = {
     /**
      * Data
      */
-    data: Array<GreetingOut>;
+    data: Array<AuditEventOut>;
     /**
      * Next Cursor
      */
@@ -120,6 +1314,63 @@ export type PageGreetingOut = {
      * Total Estimate
      */
     total_estimate?: number | null;
+};
+
+/**
+ * PasswordResetConfirm
+ */
+export type PasswordResetConfirm = {
+    /**
+     * Password
+     */
+    password: string;
+    /**
+     * Token
+     */
+    token: string;
+};
+
+/**
+ * PasswordResetRequest
+ */
+export type PasswordResetRequest = {
+    /**
+     * Email
+     */
+    email: string;
+};
+
+/**
+ * ProbeIn
+ */
+export type ProbeIn = {
+    /**
+     * Ca Bundle Pem
+     */
+    ca_bundle_pem?: string | null;
+    /**
+     * Endpoint Url
+     */
+    endpoint_url: string;
+    /**
+     * Tls Verify
+     */
+    tls_verify?: boolean;
+};
+
+/**
+ * ProbeOut
+ */
+export type ProbeOut = {
+    discovery: DiscoveryOut | null;
+    /**
+     * Ok
+     */
+    ok: boolean;
+    /**
+     * Steps
+     */
+    steps: Array<StepOut>;
 };
 
 /**
@@ -193,6 +1444,235 @@ export type ReadinessCheck = {
 };
 
 /**
+ * RoleOut
+ */
+export type RoleOut = {
+    /**
+     * Bindable Instance Ids
+     */
+    bindable_instance_ids: Array<string> | null;
+    /**
+     * Color
+     */
+    color: string;
+    /**
+     * Description
+     */
+    description: string;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Kind
+     */
+    kind: 'built_in' | 'custom';
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * People
+     */
+    people: number;
+    /**
+     * Permissions
+     */
+    permissions: {
+        [key: string]: Array<string>;
+    };
+    /**
+     * Run Scope
+     */
+    run_scope: {
+        [key: string]: Array<string> | 'all';
+    };
+    /**
+     * Scopes
+     */
+    scopes: Array<string>;
+    /**
+     * Slug
+     */
+    slug: string;
+    /**
+     * Version
+     */
+    version: number;
+};
+
+/**
+ * RotateIn
+ */
+export type RotateIn = {
+    /**
+     * Action
+     */
+    action: 'stage' | 'activate' | 'cancel';
+};
+
+/**
+ * RoutePolicyOut
+ */
+export type RoutePolicyOut = {
+    /**
+     * Audit Level
+     */
+    audit_level: string;
+    /**
+     * Cache Ttl S
+     */
+    cache_ttl_s: number;
+    /**
+     * List Filter
+     */
+    list_filter: boolean;
+    /**
+     * Method
+     */
+    method: string;
+    /**
+     * Pattern
+     */
+    pattern: string;
+    /**
+     * Rate Bucket
+     */
+    rate_bucket: string;
+    /**
+     * Scopes
+     */
+    scopes: Array<string>;
+    /**
+     * Source
+     */
+    source: string;
+};
+
+/**
+ * ScopeOut
+ */
+export type ScopeOut = {
+    /**
+     * Action
+     */
+    action: string;
+    /**
+     * Description
+     */
+    description: string;
+    /**
+     * Family
+     */
+    family: string;
+    /**
+     * Hidden
+     */
+    hidden: boolean;
+    /**
+     * Privileged
+     */
+    privileged: boolean;
+    /**
+     * Resource Kind
+     */
+    resource_kind: 'global' | 'per_component';
+    /**
+     * Scope
+     */
+    scope: string;
+    /**
+     * Source
+     */
+    source: 'agentos' | 'control_plane';
+};
+
+/**
+ * SessionOut
+ */
+export type SessionOut = {
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Current
+     */
+    current: boolean;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Ip
+     */
+    ip: string | null;
+    /**
+     * Method
+     */
+    method: string;
+    /**
+     * User Agent
+     */
+    user_agent: string | null;
+};
+
+/**
+ * SignInProviderOut
+ */
+export type SignInProviderOut = {
+    /**
+     * Display Name
+     */
+    display_name: string;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Preset
+     */
+    preset: 'github' | 'gitlab' | 'google' | 'okta' | 'oidc';
+};
+
+/**
+ * SignedIn
+ */
+export type SignedIn = {
+    /**
+     * Csrf Token
+     */
+    csrf_token: string;
+    user: MeOut;
+};
+
+/**
+ * StepOut
+ */
+export type StepOut = {
+    /**
+     * Detail
+     */
+    detail: string;
+    /**
+     * Hint
+     */
+    hint: string | null;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Label
+     */
+    label: string;
+    /**
+     * Status
+     */
+    status: 'ok' | 'failed' | 'warning' | 'skipped';
+};
+
+/**
  * SystemModules
  */
 export type SystemModules = {
@@ -206,10 +1686,396 @@ export type SystemModules = {
     enabled: Array<ModuleInfo>;
 };
 
-export type HelloListGreetingsData = {
+/**
+ * TestReportOut
+ */
+export type TestReportOut = {
+    /**
+     * Capabilities
+     */
+    capabilities: Array<CapabilityOut>;
+    instance: InstanceOut;
+    /**
+     * Ok
+     */
+    ok: boolean;
+    /**
+     * Steps
+     */
+    steps: Array<StepOut>;
+};
+
+/**
+ * TokenCheckOut
+ */
+export type TokenCheckOut = {
+    /**
+     * Claims
+     */
+    claims: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Error
+     */
+    error: string | null;
+    /**
+     * Key Status
+     */
+    key_status: string | null;
+    /**
+     * Kid
+     */
+    kid: string | null;
+    /**
+     * Valid
+     */
+    valid: boolean;
+};
+
+/**
+ * ValidationError
+ */
+export type ValidationError = {
+    /**
+     * Context
+     */
+    ctx?: {
+        [key: string]: unknown;
+    };
+    /**
+     * Input
+     */
+    input?: unknown;
+    /**
+     * Location
+     */
+    loc: Array<string | number>;
+    /**
+     * Message
+     */
+    msg: string;
+    /**
+     * Error Type
+     */
+    type: string;
+};
+
+/**
+ * VerifyTokenIn
+ */
+export type VerifyTokenIn = {
+    /**
+     * Token
+     */
+    token: string;
+};
+
+export type JwksJwksData = {
+    body?: never;
+    path: {
+        /**
+         * Instance Id
+         */
+        instance_id: string;
+    };
+    query?: never;
+    url: '/.well-known/agnostic/instances/{instance_id}/jwks.json';
+};
+
+export type JwksJwksErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type JwksJwksError = JwksJwksErrors[keyof JwksJwksErrors];
+
+export type JwksJwksResponses = {
+    /**
+     * Response Jwks Jwks
+     *
+     * Successful Response
+     */
+    200: {
+        [key: string]: Array<{
+            [key: string]: string;
+        }>;
+    };
+};
+
+export type JwksJwksResponse = JwksJwksResponses[keyof JwksJwksResponses];
+
+export type AccessListBindingsData = {
     body?: never;
     path?: never;
     query?: {
+        /**
+         * Principal
+         *
+         * usr_…
+         */
+        principal?: string | null;
+        /**
+         * Instance
+         *
+         * Instance id or slug
+         */
+        instance?: string | null;
+    };
+    url: '/api/v1/access/bindings';
+};
+
+export type AccessListBindingsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AccessListBindingsError = AccessListBindingsErrors[keyof AccessListBindingsErrors];
+
+export type AccessListBindingsResponses = {
+    /**
+     * Response Access List Bindings
+     *
+     * Successful Response
+     */
+    200: Array<BindingOut>;
+};
+
+export type AccessListBindingsResponse = AccessListBindingsResponses[keyof AccessListBindingsResponses];
+
+export type AccessCreateBindingData = {
+    body: BindingCreate;
+    path?: never;
+    query?: never;
+    url: '/api/v1/access/bindings';
+};
+
+export type AccessCreateBindingErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AccessCreateBindingError = AccessCreateBindingErrors[keyof AccessCreateBindingErrors];
+
+export type AccessCreateBindingResponses = {
+    /**
+     * Successful Response
+     */
+    201: BindingOut;
+};
+
+export type AccessCreateBindingResponse = AccessCreateBindingResponses[keyof AccessCreateBindingResponses];
+
+export type AccessDeleteBindingData = {
+    body?: never;
+    path: {
+        /**
+         * Binding Id
+         */
+        binding_id: string;
+    };
+    query?: never;
+    url: '/api/v1/access/bindings/{binding_id}';
+};
+
+export type AccessDeleteBindingErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AccessDeleteBindingError = AccessDeleteBindingErrors[keyof AccessDeleteBindingErrors];
+
+export type AccessDeleteBindingResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type AccessDeleteBindingResponse = AccessDeleteBindingResponses[keyof AccessDeleteBindingResponses];
+
+export type AccessExplainData = {
+    body: ExplainIn;
+    path?: never;
+    query?: never;
+    url: '/api/v1/access/explain';
+};
+
+export type AccessExplainErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AccessExplainError = AccessExplainErrors[keyof AccessExplainErrors];
+
+export type AccessExplainResponses = {
+    /**
+     * Successful Response
+     */
+    200: ExplanationOut;
+};
+
+export type AccessExplainResponse = AccessExplainResponses[keyof AccessExplainResponses];
+
+export type AccessListRolesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/access/roles';
+};
+
+export type AccessListRolesErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AccessListRolesError = AccessListRolesErrors[keyof AccessListRolesErrors];
+
+export type AccessListRolesResponses = {
+    /**
+     * Response Access List Roles
+     *
+     * Successful Response
+     */
+    200: Array<RoleOut>;
+};
+
+export type AccessListRolesResponse = AccessListRolesResponses[keyof AccessListRolesResponses];
+
+export type AccessListScopesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/access/scopes';
+};
+
+export type AccessListScopesErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AccessListScopesError = AccessListScopesErrors[keyof AccessListScopesErrors];
+
+export type AccessListScopesResponses = {
+    /**
+     * Response Access List Scopes
+     *
+     * Successful Response
+     */
+    200: Array<ScopeOut>;
+};
+
+export type AccessListScopesResponse = AccessListScopesResponses[keyof AccessListScopesResponses];
+
+export type AuditListActionsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/audit/actions';
+};
+
+export type AuditListActionsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuditListActionsError = AuditListActionsErrors[keyof AuditListActionsErrors];
+
+export type AuditListActionsResponses = {
+    /**
+     * Response Audit List Actions
+     *
+     * Successful Response
+     */
+    200: Array<AuditActionOut>;
+};
+
+export type AuditListActionsResponse = AuditListActionsResponses[keyof AuditListActionsResponses];
+
+export type AuditListEventsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Actor
+         *
+         * Actor id (usr_…, sa:…, system)
+         */
+        actor?: string | null;
+        /**
+         * Action
+         *
+         * Action, or a prefix ending in * (gateway.*)
+         */
+        action?: string | null;
+        /**
+         * Decision
+         */
+        decision?: 'allowed' | 'denied' | 'n_a' | null;
+        /**
+         * Instance
+         *
+         * Instance id
+         */
+        instance?: string | null;
+        /**
+         * Resource
+         *
+         * Resource id
+         */
+        resource?: string | null;
+        /**
+         * Since
+         */
+        since?: string | null;
+        /**
+         * Until
+         */
+        until?: string | null;
         /**
          * Limit
          *
@@ -223,10 +2089,10 @@ export type HelloListGreetingsData = {
          */
         cursor?: string | null;
     };
-    url: '/api/v1/hello/greetings';
+    url: '/api/v1/audit/events';
 };
 
-export type HelloListGreetingsErrors = {
+export type AuditListEventsErrors = {
     /**
      * Client error
      */
@@ -237,59 +2103,30 @@ export type HelloListGreetingsErrors = {
     '5XX': Problem;
 };
 
-export type HelloListGreetingsError = HelloListGreetingsErrors[keyof HelloListGreetingsErrors];
+export type AuditListEventsError = AuditListEventsErrors[keyof AuditListEventsErrors];
 
-export type HelloListGreetingsResponses = {
+export type AuditListEventsResponses = {
     /**
      * Successful Response
      */
-    200: PageGreetingOut;
+    200: PageAuditEventOut;
 };
 
-export type HelloListGreetingsResponse = HelloListGreetingsResponses[keyof HelloListGreetingsResponses];
+export type AuditListEventsResponse = AuditListEventsResponses[keyof AuditListEventsResponses];
 
-export type HelloCreateGreetingData = {
-    body: GreetingCreate;
-    path?: never;
-    query?: never;
-    url: '/api/v1/hello/greetings';
-};
-
-export type HelloCreateGreetingErrors = {
-    /**
-     * Client error
-     */
-    '4XX': Problem;
-    /**
-     * Server error
-     */
-    '5XX': Problem;
-};
-
-export type HelloCreateGreetingError = HelloCreateGreetingErrors[keyof HelloCreateGreetingErrors];
-
-export type HelloCreateGreetingResponses = {
-    /**
-     * Successful Response
-     */
-    201: GreetingOut;
-};
-
-export type HelloCreateGreetingResponse = HelloCreateGreetingResponses[keyof HelloCreateGreetingResponses];
-
-export type HelloGetGreetingData = {
+export type AuditGetEventData = {
     body?: never;
     path: {
         /**
-         * Greeting Id
+         * Event Id
          */
-        greeting_id: string;
+        event_id: string;
     };
     query?: never;
-    url: '/api/v1/hello/greetings/{greeting_id}';
+    url: '/api/v1/audit/events/{event_id}';
 };
 
-export type HelloGetGreetingErrors = {
+export type AuditGetEventErrors = {
     /**
      * Client error
      */
@@ -300,16 +2137,1343 @@ export type HelloGetGreetingErrors = {
     '5XX': Problem;
 };
 
-export type HelloGetGreetingError = HelloGetGreetingErrors[keyof HelloGetGreetingErrors];
+export type AuditGetEventError = AuditGetEventErrors[keyof AuditGetEventErrors];
 
-export type HelloGetGreetingResponses = {
+export type AuditGetEventResponses = {
     /**
      * Successful Response
      */
-    200: GreetingOut;
+    200: AuditEventOut;
 };
 
-export type HelloGetGreetingResponse = HelloGetGreetingResponses[keyof HelloGetGreetingResponses];
+export type AuditGetEventResponse = AuditGetEventResponses[keyof AuditGetEventResponses];
+
+export type AuthLoginData = {
+    body: LoginRequest;
+    path?: never;
+    query?: never;
+    url: '/api/v1/auth/login';
+};
+
+export type AuthLoginErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuthLoginError = AuthLoginErrors[keyof AuthLoginErrors];
+
+export type AuthLoginResponses = {
+    /**
+     * Successful Response
+     */
+    200: SignedIn;
+};
+
+export type AuthLoginResponse = AuthLoginResponses[keyof AuthLoginResponses];
+
+export type AuthLogoutData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/auth/logout';
+};
+
+export type AuthLogoutErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuthLogoutError = AuthLogoutErrors[keyof AuthLogoutErrors];
+
+export type AuthLogoutResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type AuthLogoutResponse = AuthLogoutResponses[keyof AuthLogoutResponses];
+
+export type AuthRequestPasswordResetData = {
+    body: PasswordResetRequest;
+    path?: never;
+    query?: never;
+    url: '/api/v1/auth/password/reset';
+};
+
+export type AuthRequestPasswordResetErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuthRequestPasswordResetError = AuthRequestPasswordResetErrors[keyof AuthRequestPasswordResetErrors];
+
+export type AuthRequestPasswordResetResponses = {
+    /**
+     * Successful Response
+     */
+    202: unknown;
+};
+
+export type AuthConfirmPasswordResetData = {
+    body: PasswordResetConfirm;
+    path?: never;
+    query?: never;
+    url: '/api/v1/auth/password/reset/confirm';
+};
+
+export type AuthConfirmPasswordResetErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuthConfirmPasswordResetError = AuthConfirmPasswordResetErrors[keyof AuthConfirmPasswordResetErrors];
+
+export type AuthConfirmPasswordResetResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type AuthConfirmPasswordResetResponse = AuthConfirmPasswordResetResponses[keyof AuthConfirmPasswordResetResponses];
+
+export type AuthSignInOptionsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/auth/providers';
+};
+
+export type AuthSignInOptionsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuthSignInOptionsError = AuthSignInOptionsErrors[keyof AuthSignInOptionsErrors];
+
+export type AuthSignInOptionsResponses = {
+    /**
+     * Successful Response
+     */
+    200: AuthOptions;
+};
+
+export type AuthSignInOptionsResponse = AuthSignInOptionsResponses[keyof AuthSignInOptionsResponses];
+
+export type AuthSsoCallbackData = {
+    body?: never;
+    path: {
+        /**
+         * Provider
+         */
+        provider: string;
+    };
+    query?: {
+        /**
+         * Code
+         */
+        code?: string | null;
+        /**
+         * State
+         */
+        state?: string | null;
+        /**
+         * Error
+         */
+        error?: string | null;
+    };
+    url: '/api/v1/auth/sso/{provider}/callback';
+};
+
+export type AuthSsoCallbackErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuthSsoCallbackError = AuthSsoCallbackErrors[keyof AuthSsoCallbackErrors];
+
+export type AuthSsoStartData = {
+    body?: never;
+    path: {
+        /**
+         * Provider
+         */
+        provider: string;
+    };
+    query?: {
+        /**
+         * Next
+         *
+         * Where to go after signing in (a path)
+         */
+        next?: string | null;
+    };
+    url: '/api/v1/auth/sso/{provider}/start';
+};
+
+export type AuthSsoStartErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuthSsoStartError = AuthSsoStartErrors[keyof AuthSsoStartErrors];
+
+export type GatewayListPoliciesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/gateway/policies';
+};
+
+export type GatewayListPoliciesErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type GatewayListPoliciesError = GatewayListPoliciesErrors[keyof GatewayListPoliciesErrors];
+
+export type GatewayListPoliciesResponses = {
+    /**
+     * Response Gateway List Policies
+     *
+     * Successful Response
+     */
+    200: Array<RoutePolicyOut>;
+};
+
+export type GatewayListPoliciesResponse = GatewayListPoliciesResponses[keyof GatewayListPoliciesResponses];
+
+export type InstancesListInstancesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/instances';
+};
+
+export type InstancesListInstancesErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type InstancesListInstancesError = InstancesListInstancesErrors[keyof InstancesListInstancesErrors];
+
+export type InstancesListInstancesResponses = {
+    /**
+     * Response Instances List Instances
+     *
+     * Successful Response
+     */
+    200: Array<InstanceOut>;
+};
+
+export type InstancesListInstancesResponse = InstancesListInstancesResponses[keyof InstancesListInstancesResponses];
+
+export type InstancesConnectInstanceData = {
+    body: ConnectIn;
+    path?: never;
+    query?: never;
+    url: '/api/v1/instances';
+};
+
+export type InstancesConnectInstanceErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type InstancesConnectInstanceError = InstancesConnectInstanceErrors[keyof InstancesConnectInstanceErrors];
+
+export type InstancesConnectInstanceResponses = {
+    /**
+     * Successful Response
+     */
+    201: ConnectedOut;
+};
+
+export type InstancesConnectInstanceResponse = InstancesConnectInstanceResponses[keyof InstancesConnectInstanceResponses];
+
+export type InstancesProbeEndpointData = {
+    body: ProbeIn;
+    path?: never;
+    query?: never;
+    url: '/api/v1/instances/probe';
+};
+
+export type InstancesProbeEndpointErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type InstancesProbeEndpointError = InstancesProbeEndpointErrors[keyof InstancesProbeEndpointErrors];
+
+export type InstancesProbeEndpointResponses = {
+    /**
+     * Successful Response
+     */
+    200: ProbeOut;
+};
+
+export type InstancesProbeEndpointResponse = InstancesProbeEndpointResponses[keyof InstancesProbeEndpointResponses];
+
+export type InstancesDeleteInstanceData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query: {
+        /**
+         * Confirm
+         *
+         * The instance slug, typed to confirm
+         */
+        confirm: string;
+    };
+    url: '/api/v1/instances/{instance}';
+};
+
+export type InstancesDeleteInstanceErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type InstancesDeleteInstanceError = InstancesDeleteInstanceErrors[keyof InstancesDeleteInstanceErrors];
+
+export type InstancesDeleteInstanceResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type InstancesDeleteInstanceResponse = InstancesDeleteInstanceResponses[keyof InstancesDeleteInstanceResponses];
+
+export type InstancesGetInstanceData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}';
+};
+
+export type InstancesGetInstanceErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type InstancesGetInstanceError = InstancesGetInstanceErrors[keyof InstancesGetInstanceErrors];
+
+export type InstancesGetInstanceResponses = {
+    /**
+     * Successful Response
+     */
+    200: InstanceOut;
+};
+
+export type InstancesGetInstanceResponse = InstancesGetInstanceResponses[keyof InstancesGetInstanceResponses];
+
+export type InstancesUpdateInstanceData = {
+    body: InstanceUpdate;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}';
+};
+
+export type InstancesUpdateInstanceErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type InstancesUpdateInstanceError = InstancesUpdateInstanceErrors[keyof InstancesUpdateInstanceErrors];
+
+export type InstancesUpdateInstanceResponses = {
+    /**
+     * Successful Response
+     */
+    200: InstanceOut;
+};
+
+export type InstancesUpdateInstanceResponse = InstancesUpdateInstanceResponses[keyof InstancesUpdateInstanceResponses];
+
+export type InstancesGetCapabilitiesData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/capabilities';
+};
+
+export type InstancesGetCapabilitiesErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type InstancesGetCapabilitiesError = InstancesGetCapabilitiesErrors[keyof InstancesGetCapabilitiesErrors];
+
+export type InstancesGetCapabilitiesResponses = {
+    /**
+     * Response Instances Get Capabilities
+     *
+     * Successful Response
+     */
+    200: Array<CapabilityOut>;
+};
+
+export type InstancesGetCapabilitiesResponse = InstancesGetCapabilitiesResponses[keyof InstancesGetCapabilitiesResponses];
+
+export type InstancesGetConfigData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: {
+        /**
+         * Refresh
+         *
+         * Fetch it from the runtime now
+         */
+        refresh?: boolean;
+    };
+    url: '/api/v1/instances/{instance}/config';
+};
+
+export type InstancesGetConfigErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type InstancesGetConfigError = InstancesGetConfigErrors[keyof InstancesGetConfigErrors];
+
+export type InstancesGetConfigResponses = {
+    /**
+     * Successful Response
+     */
+    200: ConfigOut;
+};
+
+export type InstancesGetConfigResponse = InstancesGetConfigResponses[keyof InstancesGetConfigResponses];
+
+export type InstancesDiscoverInstanceData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/discover';
+};
+
+export type InstancesDiscoverInstanceErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type InstancesDiscoverInstanceError = InstancesDiscoverInstanceErrors[keyof InstancesDiscoverInstanceErrors];
+
+export type InstancesDiscoverInstanceResponses = {
+    /**
+     * Successful Response
+     */
+    200: ConnectedOut;
+};
+
+export type InstancesDiscoverInstanceResponse = InstancesDiscoverInstanceResponses[keyof InstancesDiscoverInstanceResponses];
+
+export type InstancesGetHealthData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/health';
+};
+
+export type InstancesGetHealthErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type InstancesGetHealthError = InstancesGetHealthErrors[keyof InstancesGetHealthErrors];
+
+export type InstancesGetHealthResponses = {
+    /**
+     * Successful Response
+     */
+    200: HealthOut;
+};
+
+export type InstancesGetHealthResponse = InstancesGetHealthResponses[keyof InstancesGetHealthResponses];
+
+export type InstancesGetKeysData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/keys/public';
+};
+
+export type InstancesGetKeysErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type InstancesGetKeysError = InstancesGetKeysErrors[keyof InstancesGetKeysErrors];
+
+export type InstancesGetKeysResponses = {
+    /**
+     * Successful Response
+     */
+    200: KeysOut;
+};
+
+export type InstancesGetKeysResponse = InstancesGetKeysResponses[keyof InstancesGetKeysResponses];
+
+export type InstancesRotateKeysData = {
+    body: RotateIn;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/keys/rotate';
+};
+
+export type InstancesRotateKeysErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type InstancesRotateKeysError = InstancesRotateKeysErrors[keyof InstancesRotateKeysErrors];
+
+export type InstancesRotateKeysResponses = {
+    /**
+     * Successful Response
+     */
+    200: KeysOut;
+};
+
+export type InstancesRotateKeysResponse = InstancesRotateKeysResponses[keyof InstancesRotateKeysResponses];
+
+export type InstancesVerifyTokenData = {
+    body: VerifyTokenIn;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/keys/verify';
+};
+
+export type InstancesVerifyTokenErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type InstancesVerifyTokenError = InstancesVerifyTokenErrors[keyof InstancesVerifyTokenErrors];
+
+export type InstancesVerifyTokenResponses = {
+    /**
+     * Successful Response
+     */
+    200: TokenCheckOut;
+};
+
+export type InstancesVerifyTokenResponse = InstancesVerifyTokenResponses[keyof InstancesVerifyTokenResponses];
+
+export type InstancesTestInstanceData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/test';
+};
+
+export type InstancesTestInstanceErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type InstancesTestInstanceError = InstancesTestInstanceErrors[keyof InstancesTestInstanceErrors];
+
+export type InstancesTestInstanceResponses = {
+    /**
+     * Successful Response
+     */
+    200: TestReportOut;
+};
+
+export type InstancesTestInstanceResponse = InstancesTestInstanceResponses[keyof InstancesTestInstanceResponses];
+
+export type InvitationsListInvitationsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/invitations';
+};
+
+export type InvitationsListInvitationsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type InvitationsListInvitationsError = InvitationsListInvitationsErrors[keyof InvitationsListInvitationsErrors];
+
+export type InvitationsListInvitationsResponses = {
+    /**
+     * Response Invitations List Invitations
+     *
+     * Successful Response
+     */
+    200: Array<InvitationOut>;
+};
+
+export type InvitationsListInvitationsResponse = InvitationsListInvitationsResponses[keyof InvitationsListInvitationsResponses];
+
+export type InvitationsCreateInvitationData = {
+    body: InvitationCreate;
+    path?: never;
+    query?: never;
+    url: '/api/v1/invitations';
+};
+
+export type InvitationsCreateInvitationErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type InvitationsCreateInvitationError = InvitationsCreateInvitationErrors[keyof InvitationsCreateInvitationErrors];
+
+export type InvitationsCreateInvitationResponses = {
+    /**
+     * Successful Response
+     */
+    201: IssuedInvitationOut;
+};
+
+export type InvitationsCreateInvitationResponse = InvitationsCreateInvitationResponses[keyof InvitationsCreateInvitationResponses];
+
+export type InvitationsRevokeInvitationData = {
+    body?: never;
+    path: {
+        /**
+         * Invitation Id
+         */
+        invitation_id: string;
+    };
+    query?: never;
+    url: '/api/v1/invitations/{invitation_id}';
+};
+
+export type InvitationsRevokeInvitationErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type InvitationsRevokeInvitationError = InvitationsRevokeInvitationErrors[keyof InvitationsRevokeInvitationErrors];
+
+export type InvitationsRevokeInvitationResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type InvitationsRevokeInvitationResponse = InvitationsRevokeInvitationResponses[keyof InvitationsRevokeInvitationResponses];
+
+export type InvitationsResendInvitationData = {
+    body?: never;
+    path: {
+        /**
+         * Invitation Id
+         */
+        invitation_id: string;
+    };
+    query?: never;
+    url: '/api/v1/invitations/{invitation_id}/resend';
+};
+
+export type InvitationsResendInvitationErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type InvitationsResendInvitationError = InvitationsResendInvitationErrors[keyof InvitationsResendInvitationErrors];
+
+export type InvitationsResendInvitationResponses = {
+    /**
+     * Successful Response
+     */
+    200: IssuedInvitationOut;
+};
+
+export type InvitationsResendInvitationResponse = InvitationsResendInvitationResponses[keyof InvitationsResendInvitationResponses];
+
+export type InvitationsAcceptInvitationData = {
+    body: InvitationAccept;
+    path: {
+        /**
+         * Token
+         */
+        token: string;
+    };
+    query?: never;
+    url: '/api/v1/invitations/{token}/accept';
+};
+
+export type InvitationsAcceptInvitationErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type InvitationsAcceptInvitationError = InvitationsAcceptInvitationErrors[keyof InvitationsAcceptInvitationErrors];
+
+export type InvitationsAcceptInvitationResponses = {
+    /**
+     * Successful Response
+     */
+    200: Joined;
+};
+
+export type InvitationsAcceptInvitationResponse = InvitationsAcceptInvitationResponses[keyof InvitationsAcceptInvitationResponses];
+
+export type InvitationsPreviewInvitationData = {
+    body?: never;
+    path: {
+        /**
+         * Token
+         */
+        token: string;
+    };
+    query?: never;
+    url: '/api/v1/invitations/{token}/preview';
+};
+
+export type InvitationsPreviewInvitationErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type InvitationsPreviewInvitationError = InvitationsPreviewInvitationErrors[keyof InvitationsPreviewInvitationErrors];
+
+export type InvitationsPreviewInvitationResponses = {
+    /**
+     * Successful Response
+     */
+    200: InvitationPreviewOut;
+};
+
+export type InvitationsPreviewInvitationResponse = InvitationsPreviewInvitationResponses[keyof InvitationsPreviewInvitationResponses];
+
+export type MeGetMeData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/me';
+};
+
+export type MeGetMeErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type MeGetMeError = MeGetMeErrors[keyof MeGetMeErrors];
+
+export type MeGetMeResponses = {
+    /**
+     * Successful Response
+     */
+    200: MeOut;
+};
+
+export type MeGetMeResponse = MeGetMeResponses[keyof MeGetMeResponses];
+
+export type MeUpdateMeData = {
+    body: MeUpdate;
+    path?: never;
+    query?: never;
+    url: '/api/v1/me';
+};
+
+export type MeUpdateMeErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type MeUpdateMeError = MeUpdateMeErrors[keyof MeUpdateMeErrors];
+
+export type MeUpdateMeResponses = {
+    /**
+     * Successful Response
+     */
+    200: MeOut;
+};
+
+export type MeUpdateMeResponse = MeUpdateMeResponses[keyof MeUpdateMeResponses];
+
+export type MeMyAccessData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Instance
+         *
+         * Instance id or slug
+         */
+        instance?: string | null;
+    };
+    url: '/api/v1/me/access';
+};
+
+export type MeMyAccessErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type MeMyAccessError = MeMyAccessErrors[keyof MeMyAccessErrors];
+
+export type MeMyAccessResponses = {
+    /**
+     * Successful Response
+     */
+    200: MyAccessOut;
+};
+
+export type MeMyAccessResponse = MeMyAccessResponses[keyof MeMyAccessResponses];
+
+export type MeListMySessionsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/me/sessions';
+};
+
+export type MeListMySessionsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type MeListMySessionsError = MeListMySessionsErrors[keyof MeListMySessionsErrors];
+
+export type MeListMySessionsResponses = {
+    /**
+     * Response Me List My Sessions
+     *
+     * Successful Response
+     */
+    200: Array<SessionOut>;
+};
+
+export type MeListMySessionsResponse = MeListMySessionsResponses[keyof MeListMySessionsResponses];
+
+export type MeRevokeMySessionData = {
+    body?: never;
+    path: {
+        /**
+         * Session Id
+         */
+        session_id: string;
+    };
+    query?: never;
+    url: '/api/v1/me/sessions/{session_id}';
+};
+
+export type MeRevokeMySessionErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type MeRevokeMySessionError = MeRevokeMySessionErrors[keyof MeRevokeMySessionErrors];
+
+export type MeRevokeMySessionResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type MeRevokeMySessionResponse = MeRevokeMySessionResponses[keyof MeRevokeMySessionResponses];
+
+export type MembersListMembersData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/members';
+};
+
+export type MembersListMembersErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type MembersListMembersError = MembersListMembersErrors[keyof MembersListMembersErrors];
+
+export type MembersListMembersResponses = {
+    /**
+     * Response Members List Members
+     *
+     * Successful Response
+     */
+    200: Array<MemberOut>;
+};
+
+export type MembersListMembersResponse = MembersListMembersResponses[keyof MembersListMembersResponses];
+
+export type MembersRemoveMemberData = {
+    body?: never;
+    path: {
+        /**
+         * User Id
+         */
+        user_id: string;
+    };
+    query?: never;
+    url: '/api/v1/members/{user_id}';
+};
+
+export type MembersRemoveMemberErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type MembersRemoveMemberError = MembersRemoveMemberErrors[keyof MembersRemoveMemberErrors];
+
+export type MembersRemoveMemberResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type MembersRemoveMemberResponse = MembersRemoveMemberResponses[keyof MembersRemoveMemberResponses];
+
+export type MembersGetMemberData = {
+    body?: never;
+    path: {
+        /**
+         * User Id
+         */
+        user_id: string;
+    };
+    query?: never;
+    url: '/api/v1/members/{user_id}';
+};
+
+export type MembersGetMemberErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type MembersGetMemberError = MembersGetMemberErrors[keyof MembersGetMemberErrors];
+
+export type MembersGetMemberResponses = {
+    /**
+     * Successful Response
+     */
+    200: MemberOut;
+};
+
+export type MembersGetMemberResponse = MembersGetMemberResponses[keyof MembersGetMemberResponses];
+
+export type MembersUpdateMemberData = {
+    body: MemberUpdate;
+    path: {
+        /**
+         * User Id
+         */
+        user_id: string;
+    };
+    query?: never;
+    url: '/api/v1/members/{user_id}';
+};
+
+export type MembersUpdateMemberErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type MembersUpdateMemberError = MembersUpdateMemberErrors[keyof MembersUpdateMemberErrors];
+
+export type MembersUpdateMemberResponses = {
+    /**
+     * Successful Response
+     */
+    200: MemberOut;
+};
+
+export type MembersUpdateMemberResponse = MembersUpdateMemberResponses[keyof MembersUpdateMemberResponses];
+
+export type OnboardingCompleteOnboardingData = {
+    body: OnboardingComplete;
+    path?: never;
+    query?: never;
+    url: '/api/v1/onboarding/complete';
+};
+
+export type OnboardingCompleteOnboardingErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type OnboardingCompleteOnboardingError = OnboardingCompleteOnboardingErrors[keyof OnboardingCompleteOnboardingErrors];
+
+export type OnboardingCompleteOnboardingResponses = {
+    /**
+     * Successful Response
+     */
+    200: Joined;
+};
+
+export type OnboardingCompleteOnboardingResponse = OnboardingCompleteOnboardingResponses[keyof OnboardingCompleteOnboardingResponses];
+
+export type OnboardingOnboardingStatusData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/onboarding/status';
+};
+
+export type OnboardingOnboardingStatusErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type OnboardingOnboardingStatusError = OnboardingOnboardingStatusErrors[keyof OnboardingOnboardingStatusErrors];
+
+export type OnboardingOnboardingStatusResponses = {
+    /**
+     * Successful Response
+     */
+    200: OnboardingStatusOut;
+};
+
+export type OnboardingOnboardingStatusResponse = OnboardingOnboardingStatusResponses[keyof OnboardingOnboardingStatusResponses];
+
+export type OrgGetOrgData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/org';
+};
+
+export type OrgGetOrgErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type OrgGetOrgError = OrgGetOrgErrors[keyof OrgGetOrgErrors];
+
+export type OrgGetOrgResponses = {
+    /**
+     * Successful Response
+     */
+    200: OrgOut;
+};
+
+export type OrgGetOrgResponse = OrgGetOrgResponses[keyof OrgGetOrgResponses];
+
+export type OrgUpdateOrgData = {
+    body: OrgUpdate;
+    path?: never;
+    query?: never;
+    url: '/api/v1/org';
+};
+
+export type OrgUpdateOrgErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type OrgUpdateOrgError = OrgUpdateOrgErrors[keyof OrgUpdateOrgErrors];
+
+export type OrgUpdateOrgResponses = {
+    /**
+     * Successful Response
+     */
+    200: OrgOut;
+};
+
+export type OrgUpdateOrgResponse = OrgUpdateOrgResponses[keyof OrgUpdateOrgResponses];
 
 export type SystemListModulesData = {
     body?: never;

@@ -2,10 +2,10 @@ name: contract
 
 on:
   pull_request:
-    paths: ["runtime/**", "backend/packages/agnostic-agentos-client/**", "backend/tests/contract/**"]
+    paths: ["runtime/**", "bridge/**", "backend/packages/agnostic-agentos-client/**", "backend/tests/contract/**"]
   push:
     branches: [master]
-    paths: ["runtime/**", "backend/packages/agnostic-agentos-client/**", "backend/tests/contract/**"]
+    paths: ["runtime/**", "bridge/**", "backend/packages/agnostic-agentos-client/**", "backend/tests/contract/**"]
   schedule:
     - cron: "17 3 * * *"
   workflow_dispatch:

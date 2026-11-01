@@ -29,16 +29,119 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@agnostic/core@workspace:packages/core"
   dependencies:
+    "@agnostic/api": "workspace:*"
+    "@agnostic/ui": "workspace:*"
     "@tanstack/react-query": "npm:5.105.0"
+    lucide-react: "npm:1.65.0"
     react: "npm:19.3.1"
   peerDependencies:
     react: 19.3.1
   languageName: unknown
   linkType: soft
 
-"@agnostic/module-hello@workspace:*, @agnostic/module-hello@workspace:modules/hello":
+"@agnostic/module-access-people@workspace:*, @agnostic/module-access-people@workspace:modules/access-people":
   version: 0.0.0-use.local
-  resolution: "@agnostic/module-hello@workspace:modules/hello"
+  resolution: "@agnostic/module-access-people@workspace:modules/access-people"
+  dependencies:
+    "@agnostic/api": "workspace:*"
+    "@agnostic/core": "workspace:*"
+    "@agnostic/testing": "workspace:*"
+    "@agnostic/ui": "workspace:*"
+    "@tanstack/react-query": "npm:5.105.0"
+    "@tanstack/react-router": "npm:1.170.46"
+    "@testing-library/jest-dom": "npm:7.0.1"
+    lucide-react: "npm:1.65.0"
+    msw: "npm:3.0.3"
+    react: "npm:19.3.1"
+    react-dom: "npm:19.3.1"
+  peerDependencies:
+    react: 19.3.1
+  languageName: unknown
+  linkType: soft
+
+"@agnostic/module-account@workspace:*, @agnostic/module-account@workspace:modules/account":
+  version: 0.0.0-use.local
+  resolution: "@agnostic/module-account@workspace:modules/account"
+  dependencies:
+    "@agnostic/api": "workspace:*"
+    "@agnostic/core": "workspace:*"
+    "@agnostic/testing": "workspace:*"
+    "@agnostic/ui": "workspace:*"
+    "@tanstack/react-query": "npm:5.105.0"
+    "@tanstack/react-router": "npm:1.170.46"
+    "@testing-library/jest-dom": "npm:7.0.1"
+    lucide-react: "npm:1.65.0"
+    msw: "npm:3.0.3"
+    react: "npm:19.3.1"
+    react-dom: "npm:19.3.1"
+  peerDependencies:
+    react: 19.3.1
+  languageName: unknown
+  linkType: soft
+
+"@agnostic/module-audit@workspace:*, @agnostic/module-audit@workspace:modules/audit":
+  version: 0.0.0-use.local
+  resolution: "@agnostic/module-audit@workspace:modules/audit"
+  dependencies:
+    "@agnostic/api": "workspace:*"
+    "@agnostic/core": "workspace:*"
+    "@agnostic/testing": "workspace:*"
+    "@agnostic/ui": "workspace:*"
+    "@tanstack/react-query": "npm:5.105.0"
+    "@tanstack/react-router": "npm:1.170.46"
+    "@testing-library/jest-dom": "npm:7.0.1"
+    lucide-react: "npm:1.65.0"
+    msw: "npm:3.0.3"
+    react: "npm:19.3.1"
+    react-dom: "npm:19.3.1"
+  peerDependencies:
+    react: 19.3.1
+  languageName: unknown
+  linkType: soft
+
+"@agnostic/module-identity@workspace:*, @agnostic/module-identity@workspace:modules/identity":
+  version: 0.0.0-use.local
+  resolution: "@agnostic/module-identity@workspace:modules/identity"
+  dependencies:
+    "@agnostic/api": "workspace:*"
+    "@agnostic/core": "workspace:*"
+    "@agnostic/testing": "workspace:*"
+    "@agnostic/ui": "workspace:*"
+    "@tanstack/react-query": "npm:5.105.0"
+    "@tanstack/react-router": "npm:1.170.46"
+    "@testing-library/jest-dom": "npm:7.0.1"
+    lucide-react: "npm:1.65.0"
+    msw: "npm:3.0.3"
+    react: "npm:19.3.1"
+    react-dom: "npm:19.3.1"
+  peerDependencies:
+    react: 19.3.1
+  languageName: unknown
+  linkType: soft
+
+"@agnostic/module-instances@workspace:*, @agnostic/module-instances@workspace:modules/instances":
+  version: 0.0.0-use.local
+  resolution: "@agnostic/module-instances@workspace:modules/instances"
+  dependencies:
+    "@agnostic/api": "workspace:*"
+    "@agnostic/core": "workspace:*"
+    "@agnostic/testing": "workspace:*"
+    "@agnostic/ui": "workspace:*"
+    "@tanstack/react-query": "npm:5.105.0"
+    "@tanstack/react-router": "npm:1.170.46"
+    "@testing-library/jest-dom": "npm:7.0.1"
+    lucide-react: "npm:1.65.0"
+    msw: "npm:3.0.3"
+    react: "npm:19.3.1"
+    react-dom: "npm:19.3.1"
+  peerDependencies:
+    react: 19.3.1
+  languageName: unknown
+  linkType: soft
+
+"@agnostic/module-settings@workspace:*, @agnostic/module-settings@workspace:modules/settings":
+  version: 0.0.0-use.local
+  resolution: "@agnostic/module-settings@workspace:modules/settings"
   dependencies:
     "@agnostic/api": "workspace:*"
     "@agnostic/core": "workspace:*"
@@ -62,6 +165,7 @@ __metadata:
   dependencies:
     "@agnostic/api": "workspace:*"
     "@tanstack/react-query": "npm:5.105.0"
+    "@tanstack/react-router": "npm:1.170.46"
     "@testing-library/dom": "npm:10.4.2"
     "@testing-library/react": "npm:16.3.3"
     msw: "npm:3.0.3"
@@ -112,7 +216,12 @@ __metadata:
   dependencies:
     "@agnostic/api": "workspace:*"
     "@agnostic/core": "workspace:*"
-    "@agnostic/module-hello": "workspace:*"
+    "@agnostic/module-access-people": "workspace:*"
+    "@agnostic/module-account": "workspace:*"
+    "@agnostic/module-audit": "workspace:*"
+    "@agnostic/module-identity": "workspace:*"
+    "@agnostic/module-instances": "workspace:*"
+    "@agnostic/module-settings": "workspace:*"
     "@agnostic/testing": "workspace:*"
     "@agnostic/ui": "workspace:*"
     "@playwright/test": "npm:1.64.1"

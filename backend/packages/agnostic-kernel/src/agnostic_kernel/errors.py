@@ -93,6 +93,18 @@ class ScopeMissingError(AppError):
     title = "You don't have permission to do this"
 
 
+class ForbiddenError(AppError):
+    status = HTTPStatus.FORBIDDEN
+    code = "forbidden"
+    title = "Not allowed"
+
+
+class RateLimitedError(AppError):
+    status = HTTPStatus.TOO_MANY_REQUESTS
+    code = "rate_limited"
+    title = "Too many requests"
+
+
 class ServiceUnavailableError(AppError):
     status = HTTPStatus.SERVICE_UNAVAILABLE
     code = "unavailable"

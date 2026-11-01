@@ -1,0 +1,46 @@
+"""Module declaration: the gateway to AgentOS instances."""
+
+from __future__ import annotations
+
+from collections.abc import Iterable
+from pathlib import Path
+
+from dishka import Provider
+from pydantic_settings import BaseSettings
+from sqlalchemy import MetaData
+
+from agnostic_gateway.api.router import policies_router, router
+from agnostic_gateway.infrastructure.upstream import GatewayBase
+from agnostic_gateway.providers import GatewayProvider
+from agnostic_gateway.settings import GatewaySettings
+from agnostic_kernel.modules import AuditActionDecl, BaseModule, RouterSpec
+
+
+class GatewayModule(BaseModule):
+    name = "gateway"
+    version = "0.1.0"
+    depends_on = ("access", "instances", "settings", "audit")
+
+    def settings_model(self) -> type[BaseSettings] | None:
+        return GatewaySettings
+
+    def provide(self) -> Iterable[Provider]:
+        return (GatewayProvider(),)
+
+    def routers(self) -> Iterable[RouterSpec]:
+        return (
+            RouterSpec(router=router, prefix="/instances", tags=("gateway",)),
+            RouterSpec(router=policies_router, prefix="/gateway", tags=("gateway",)),
+        )
+
+    def metadata(self) -> MetaData | None:
+        return GatewayBase.metadata
+
+    def migrations(self) -> Path | None:
+        return Path(__file__).with_name("migrations") / "versions"
+
+    def audit_actions(self) -> Iterable[AuditActionDecl]:
+        return (
+            AuditActionDecl("gateway.request", "{actor} called {route} on {instance}"),
+            AuditActionDecl("gateway.denied", "{actor} was denied {route} on {instance}: missing {scope}"),
+        )

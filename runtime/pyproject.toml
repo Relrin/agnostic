@@ -8,7 +8,9 @@ requires-python = "==3.13.*"
 license = "BSD-3-Clause"
 dependencies = [
   "agno[cel,os,postgres,pgvector,redis]==3.1.12",
+  "agnostic-bridge==0.1.0",
   "cel-python==0.5.0",
+  "cryptography==50.0.2",
   "fastapi==0.162.0",
   "pgvector==0.5.1",
   "psycopg[binary]==3.3.6",
@@ -31,6 +33,10 @@ dev = [
 [tool.uv]
 package = false
 required-version = "==0.13.6"
+
+[tool.uv.sources]
+# Developed in this repository; customers install the published package.
+agnostic-bridge = { path = "../bridge", editable = true }
 
 [tool.ruff]
 line-length = 120

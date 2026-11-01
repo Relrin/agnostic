@@ -1,10 +1,11 @@
 # Development dependencies for contributor: customers point Agnostic at their own
-# PostgreSQL and Redis through AGNOSTIC_DATABASE__URL / AGNOSTIC_REDIS__URL.
+# PostgreSQL, Redis, SMTP server and identity provider through AGNOSTIC_* settings.
 #
-#   docker compose -f deploy/dev/compose.yml up -d     (or: just up)
+#   docker compose -f deploy/dev/compose.yml up -d --wait     (or: just up)
 #
 # Postgres uses the pgvector image so the two reference AgentOS runtimes (just runtimes) can keep their data and
-# vectors in the same server, in their own databases.
+# vectors in the same server, in their own databases. Mailpit catches every email the control plane sends
+# (http://localhost:8025).
 name: agnostic-dev
 
 services:
@@ -32,6 +33,21 @@ services:
       - "${AGNOSTIC_DEV_REDIS_PORT:-6379}:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  mailpit:
+    image: axllent/mailpit:v1.32.0@sha256:0790692be935ea4420d085694f7985b1f692ca6a8771ab0e0bd8ba75ac180498
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: "true"
+      MP_SMTP_AUTH_ALLOW_INSECURE: "true"
+      MP_MAX_MESSAGES: "1000"
+    ports:
+      - "${AGNOSTIC_DEV_SMTP_PORT:-1025}:1025"
+      - "${AGNOSTIC_DEV_MAILPIT_PORT:-8025}:8025"
+    healthcheck:
+      test: ["CMD", "/mailpit", "readyz"]
       interval: 2s
       timeout: 3s
       retries: 30

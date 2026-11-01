@@ -15,6 +15,10 @@
 
 - **Port 5432 or 6379 is taken.** Set `AGNOSTIC_DEV_POSTGRES_PORT` / `AGNOSTIC_DEV_REDIS_PORT` before `just up`
   and point `AGNOSTIC_DATABASE__URL` / `AGNOSTIC_REDIS__URL` at the new ports.
+- **Port 1025 or 8025 is taken** (Mailpit SMTP, Mailpit UI). Set `AGNOSTIC_DEV_SMTP_PORT` or
+  `AGNOSTIC_DEV_MAILPIT_PORT`, and change `AGNOSTIC_SMTP__URL` to match.
+- **A runtime answers 401 after `just seed`.** Its key in `runtime/.jwt/` is from another control-plane database
+  (you reset it, or rotated a key). Run `just seed` again and restart `just runtimes`.
 - **`agentos_prod` doesn't exist.** The init script runs only on a new volume: `just nuke && just up`.
 - **No Docker at all.** Use SQLite (`AGNOSTIC_DATABASE__URL=sqlite:///agnostic.db`) and skip `just up`; Redis is
   optional for development (readiness will report it as down).

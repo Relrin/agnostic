@@ -12,16 +12,17 @@ compose := "docker compose -f deploy/dev/compose.yml"
 default:
     @just --list
 
-# Install every toolchain dependency (backend, runtime, frontend) from the lockfiles
+# Install every toolchain dependency (backend, runtime, bridge, frontend) from the lockfiles
 setup:
     [ -f .env ] || cp .env.example .env
     cd backend && uv sync --locked
     cd runtime && uv sync --locked
+    cd bridge && uv sync --locked
     cd frontend && yarn install --immutable
 
 # ---------------------------------------------------------------- dev stack
 
-# Start PostgreSQL and Redis for development
+# Start PostgreSQL, Redis and Mailpit (mail UI on http://localhost:8025) for development
 up:
     {{compose}} up -d --wait
 
@@ -56,16 +57,36 @@ worker:
 web:
     cd frontend && yarn dev
 
+# Each runtime verifies control-plane JWTs once `just seed` has written runtime/.jwt/<id>.pem; restart after it does.
 # Two reference AgentOS runtimes: dev-prod on :7777 and dev-staging on :7778 (needs `just up`)
 runtimes:
     trap 'kill 0' INT TERM EXIT; \
+    for id in dev-prod dev-staging; do \
+        if [ -f "runtime/.jwt/$id.pem" ]; then echo "$id: JWT authorization on (key: runtime/.jwt/$id.pem)"; \
+        else echo "$id: auth_mode=none until 'just seed' writes runtime/.jwt/$id.pem"; fi; \
+    done; \
+    prod_key="$(cat runtime/.jwt/dev-prod.pem 2>/dev/null || true)"; \
+    staging_key="$(cat runtime/.jwt/dev-staging.pem 2>/dev/null || true)"; \
     (cd runtime && RUNTIME_ID=dev-prod RUNTIME_NAME=dev-prod RUNTIME_PORT=7777 \
         RUNTIME_DATABASE_URL=postgresql+psycopg://agnostic:agnostic@localhost:5432/agentos_prod \
-        RUNTIME_REDIS_URL=redis://localhost:6379/1 uv run python -m app.main) & \
+        RUNTIME_REDIS_URL=redis://localhost:6379/1 JWT_VERIFICATION_KEY="$prod_key" \
+        RUNTIME_JWT_ISSUER="${AGNOSTIC_INSTANCES__ISSUER:-${AGNOSTIC_HTTP__PUBLIC_URL:-}}" uv run python -m app.main) & \
     (cd runtime && RUNTIME_ID=dev-staging RUNTIME_NAME=dev-staging RUNTIME_PORT=7778 \
         RUNTIME_DATABASE_URL=postgresql+psycopg://agnostic:agnostic@localhost:5432/agentos_staging \
-        RUNTIME_REDIS_URL=redis://localhost:6379/2 uv run python -m app.main) & \
+        RUNTIME_REDIS_URL=redis://localhost:6379/2 JWT_VERIFICATION_KEY="$staging_key" \
+        RUNTIME_JWT_ISSUER="${AGNOSTIC_INSTANCES__ISSUER:-${AGNOSTIC_HTTP__PUBLIC_URL:-}}" uv run python -m app.main) & \
     wait
+
+# Create the org and the dev Owner (AGNOSTIC_DEV_OWNER_EMAIL/_PASSWORD); once per database, after `just migrate`
+bootstrap:
+    printf '%s\n' "${AGNOSTIC_DEV_OWNER_PASSWORD:-localhost-dev-password}" | (cd backend && uv run agnostic bootstrap \
+        --org-name "Localhost Company" --owner-email "${AGNOSTIC_DEV_OWNER_EMAIL:-daniel@localhost.company}" \
+        --owner-name "Daniel Okafor" --password-stdin)
+
+# First run: up → migrate → dev → runtimes → bootstrap → seed → restart runtimes → seed --test
+# Connect dev-prod and dev-staging to the running API and write their keys to runtime/.jwt (--test: test them)
+seed *args:
+    cd backend && uv run python ../scripts/dev_seed.py {{args}}
 
 # Print the effective configuration and probe every endpoint
 check-config:
@@ -73,10 +94,11 @@ check-config:
 
 # ---------------------------------------------------------------- quality gates
 
-# Lint and format checks (backend, runtime, frontend)
+# Lint and format checks (backend, runtime, bridge, frontend)
 lint:
     cd backend && uv run ruff check . && uv run ruff format --check . && uv run lint-imports
     cd runtime && uv run ruff check . && uv run ruff format --check .
+    cd bridge && uv run ruff check . && uv run ruff format --check .
     cd frontend && yarn lint && yarn format:check && yarn constraints
 
 # Type checks (basedpyright strict, tsc -b)
@@ -88,12 +110,14 @@ typecheck:
 fmt:
     cd backend && uv run ruff format . && uv run ruff check --fix .
     cd runtime && uv run ruff format . && uv run ruff check --fix .
+    cd bridge && uv run ruff format . && uv run ruff check --fix .
     cd frontend && yarn format
 
 # Unit tests (no Docker needed: the backend runs on SQLite)
 test:
     cd backend && uv run pytest -m "not integration and not contract" --cov=agnostic_kernel --cov-fail-under=90
     cd runtime && uv run pytest
+    cd bridge && uv run pytest
     cd frontend && yarn test
 
 # Integration tests on PostgreSQL + Redis (testcontainers, or the dev stack via AGNOSTIC_TEST_*_URL)

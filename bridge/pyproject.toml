@@ -1,0 +1,50 @@
+# agnostic-bridge: an optional companion that customers install inside their AgentOS app. It adds a few read-only
+# routes under /agnostic/v1 that the Agnostic control plane uses for features AgentOS itself doesn't expose.
+# It runs wherever AgentOS runs, so it supports agno's Pythons rather than the control plane's.
+[project]
+name = "agnostic-bridge"
+version = "0.1.0"
+description = "Agnostic control-plane companion routes for Agno AgentOS 3.1.x"
+requires-python = ">=3.10"
+license = "BSD-3-Clause"
+classifiers = [
+  "Framework :: FastAPI",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+]
+dependencies = [
+  "agno[os]==3.1.12",
+  "fastapi==0.162.0",
+  "pydantic==2.14.2",
+]
+
+[dependency-groups]
+dev = [
+  "cryptography==50.0.2",
+  "fastmcp==4.1.4",
+  "httpx==0.28.1",
+  "pytest==9.2.0",
+  "ruff==0.17.3",
+]
+
+[build-system]
+requires = ["uv_build==0.13.6"]
+build-backend = "uv_build"
+
+[tool.uv]
+required-version = "==0.13.6"
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM", "RUF"]
+ignore = ["RUF001", "RUF003"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

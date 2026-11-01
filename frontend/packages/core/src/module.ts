@@ -10,8 +10,11 @@ export type NavBadge =
   | { kind: "count"; value: number; tone?: "warning" | "danger" | "muted"; label: string }
   | { kind: "dot"; tone?: "danger" | "warning" | "accent"; label: string };
 
-/** Where a module page lives: under an instance (`/i/:instance/...`) or org-wide (`/...`). */
-export type ModuleScope = "instance" | "org";
+/**
+ * Where a module page lives: under an instance (`/i/:instance/...`), org-wide (`/...`), or public (outside the
+ * signed-in shell: sign-in, invitations, first run).
+ */
+export type ModuleScope = "instance" | "org" | "public";
 
 export type NavEntry = {
   /** Sidebar key (matches the prototype's nav ids, e.g. "approvals"). */
@@ -19,7 +22,7 @@ export type NavEntry = {
   group: NavGroupId;
   label: string;
   icon: NavIcon;
-  /** Path relative to the module scope, e.g. "hello" → `/i/:instance/hello`. */
+  /** Path relative to the module scope, e.g. "settings" → `/i/:instance/settings`. */
   path: string;
   /** Position inside its group; catalog entries use multiples of 10. */
   order?: number;
@@ -40,7 +43,7 @@ export type Capability = string;
 export type Scope = string;
 
 export type ModuleRoute = {
-  /** Path relative to the scope root, e.g. "hello" or "hello/$greetingId". */
+  /** Path relative to the scope root, e.g. "settings" or "settings/$section". */
   path: string;
   component: () => ReactNode;
 };
@@ -51,9 +54,22 @@ export type ModuleManifest = {
   routes: readonly ModuleRoute[];
   nav?: readonly NavEntry[];
   commands?: readonly CommandDefinition[];
-  /** When to show the module at all (capability matrix and effective scopes; wired in P01). */
+  /** When to show the module at all: the active instance's capability matrix and the person's scopes. */
   requires?: { capabilities?: readonly Capability[]; anyScope?: readonly Scope[] };
 };
+
+/** Whether a module's nav entries show for the active instance (unknown capabilities don't hide anything). */
+export function moduleAvailable(
+  manifest: Pick<ModuleManifest, "requires">,
+  capabilities: ReadonlyMap<string, string> | undefined,
+): boolean {
+  const needed = manifest.requires?.capabilities ?? [];
+  if (!capabilities || needed.length === 0) return true;
+  return needed.every((name) => {
+    const status = capabilities.get(name);
+    return status === undefined || status === "available" || status === "unknown";
+  });
+}
 
 /** Identity helper that type-checks a manifest. */
 export function defineModule<const M extends ModuleManifest>(manifest: M): M {

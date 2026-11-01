@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { helloCreateGreeting, helloGetGreeting, helloListGreetings, type Options, systemListModules, systemLiveness, systemReadiness } from '../sdk.gen';
-import type { HelloCreateGreetingData, HelloCreateGreetingError, HelloCreateGreetingResponse, HelloGetGreetingData, HelloGetGreetingError, HelloGetGreetingResponse, HelloListGreetingsData, HelloListGreetingsError, HelloListGreetingsResponse, SystemListModulesData, SystemListModulesError, SystemListModulesResponse, SystemLivenessData, SystemLivenessResponse, SystemReadinessData, SystemReadinessError, SystemReadinessResponse } from '../types.gen';
+import { accessCreateBinding, accessDeleteBinding, accessExplain, accessListBindings, accessListRoles, accessListScopes, auditGetEvent, auditListActions, auditListEvents, authConfirmPasswordReset, authLogin, authLogout, authRequestPasswordReset, authSignInOptions, authSsoCallback, authSsoStart, gatewayListPolicies, instancesConnectInstance, instancesDeleteInstance, instancesDiscoverInstance, instancesGetCapabilities, instancesGetConfig, instancesGetHealth, instancesGetInstance, instancesGetKeys, instancesListInstances, instancesProbeEndpoint, instancesRotateKeys, instancesTestInstance, instancesUpdateInstance, instancesVerifyToken, invitationsAcceptInvitation, invitationsCreateInvitation, invitationsListInvitations, invitationsPreviewInvitation, invitationsResendInvitation, invitationsRevokeInvitation, jwksJwks, meGetMe, meListMySessions, membersGetMember, membersListMembers, membersRemoveMember, membersUpdateMember, meMyAccess, meRevokeMySession, meUpdateMe, onboardingCompleteOnboarding, onboardingOnboardingStatus, type Options, orgGetOrg, orgUpdateOrg, systemListModules, systemLiveness, systemReadiness } from '../sdk.gen';
+import type { AccessCreateBindingData, AccessCreateBindingError, AccessCreateBindingResponse, AccessDeleteBindingData, AccessDeleteBindingError, AccessDeleteBindingResponse, AccessExplainData, AccessExplainError, AccessExplainResponse, AccessListBindingsData, AccessListBindingsError, AccessListBindingsResponse, AccessListRolesData, AccessListRolesError, AccessListRolesResponse, AccessListScopesData, AccessListScopesError, AccessListScopesResponse, AuditGetEventData, AuditGetEventError, AuditGetEventResponse, AuditListActionsData, AuditListActionsError, AuditListActionsResponse, AuditListEventsData, AuditListEventsError, AuditListEventsResponse, AuthConfirmPasswordResetData, AuthConfirmPasswordResetError, AuthConfirmPasswordResetResponse, AuthLoginData, AuthLoginError, AuthLoginResponse, AuthLogoutData, AuthLogoutError, AuthLogoutResponse, AuthRequestPasswordResetData, AuthRequestPasswordResetError, AuthSignInOptionsData, AuthSignInOptionsError, AuthSignInOptionsResponse, AuthSsoCallbackData, AuthSsoCallbackError, AuthSsoStartData, AuthSsoStartError, GatewayListPoliciesData, GatewayListPoliciesError, GatewayListPoliciesResponse, InstancesConnectInstanceData, InstancesConnectInstanceError, InstancesConnectInstanceResponse, InstancesDeleteInstanceData, InstancesDeleteInstanceError, InstancesDeleteInstanceResponse, InstancesDiscoverInstanceData, InstancesDiscoverInstanceError, InstancesDiscoverInstanceResponse, InstancesGetCapabilitiesData, InstancesGetCapabilitiesError, InstancesGetCapabilitiesResponse, InstancesGetConfigData, InstancesGetConfigError, InstancesGetConfigResponse, InstancesGetHealthData, InstancesGetHealthError, InstancesGetHealthResponse, InstancesGetInstanceData, InstancesGetInstanceError, InstancesGetInstanceResponse, InstancesGetKeysData, InstancesGetKeysError, InstancesGetKeysResponse, InstancesListInstancesData, InstancesListInstancesError, InstancesListInstancesResponse, InstancesProbeEndpointData, InstancesProbeEndpointError, InstancesProbeEndpointResponse, InstancesRotateKeysData, InstancesRotateKeysError, InstancesRotateKeysResponse, InstancesTestInstanceData, InstancesTestInstanceError, InstancesTestInstanceResponse, InstancesUpdateInstanceData, InstancesUpdateInstanceError, InstancesUpdateInstanceResponse, InstancesVerifyTokenData, InstancesVerifyTokenError, InstancesVerifyTokenResponse, InvitationsAcceptInvitationData, InvitationsAcceptInvitationError, InvitationsAcceptInvitationResponse, InvitationsCreateInvitationData, InvitationsCreateInvitationError, InvitationsCreateInvitationResponse, InvitationsListInvitationsData, InvitationsListInvitationsError, InvitationsListInvitationsResponse, InvitationsPreviewInvitationData, InvitationsPreviewInvitationError, InvitationsPreviewInvitationResponse, InvitationsResendInvitationData, InvitationsResendInvitationError, InvitationsResendInvitationResponse, InvitationsRevokeInvitationData, InvitationsRevokeInvitationError, InvitationsRevokeInvitationResponse, JwksJwksData, JwksJwksError, JwksJwksResponse, MeGetMeData, MeGetMeError, MeGetMeResponse, MeListMySessionsData, MeListMySessionsError, MeListMySessionsResponse, MembersGetMemberData, MembersGetMemberError, MembersGetMemberResponse, MembersListMembersData, MembersListMembersError, MembersListMembersResponse, MembersRemoveMemberData, MembersRemoveMemberError, MembersRemoveMemberResponse, MembersUpdateMemberData, MembersUpdateMemberError, MembersUpdateMemberResponse, MeMyAccessData, MeMyAccessError, MeMyAccessResponse, MeRevokeMySessionData, MeRevokeMySessionError, MeRevokeMySessionResponse, MeUpdateMeData, MeUpdateMeError, MeUpdateMeResponse, OnboardingCompleteOnboardingData, OnboardingCompleteOnboardingError, OnboardingCompleteOnboardingResponse, OnboardingOnboardingStatusData, OnboardingOnboardingStatusError, OnboardingOnboardingStatusResponse, OrgGetOrgData, OrgGetOrgError, OrgGetOrgResponse, OrgUpdateOrgData, OrgUpdateOrgError, OrgUpdateOrgResponse, SystemListModulesData, SystemListModulesError, SystemListModulesResponse, SystemLivenessData, SystemLivenessResponse, SystemReadinessData, SystemReadinessError, SystemReadinessResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -39,14 +39,14 @@ const createQueryKey = <TOptions extends Options>(id: string, options?: TOptions
     return [params];
 };
 
-export const helloListGreetingsQueryKey = (options?: Options<HelloListGreetingsData>) => createQueryKey('helloListGreetings', options);
+export const jwksJwksQueryKey = (options: Options<JwksJwksData>) => createQueryKey('jwksJwks', options);
 
 /**
- * List greetings, newest first
+ * Public keys of an instance (current and next), JWKS
  */
-export const helloListGreetingsOptions = (options?: Options<HelloListGreetingsData>) => queryOptions<HelloListGreetingsResponse, HelloListGreetingsError, HelloListGreetingsResponse, ReturnType<typeof helloListGreetingsQueryKey>>({
+export const jwksJwksOptions = (options: Options<JwksJwksData>) => queryOptions<JwksJwksResponse, JwksJwksError, JwksJwksResponse, ReturnType<typeof jwksJwksQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
-        const { data } = await helloListGreetings({
+        const { data } = await jwksJwks({
             ...options,
             ...queryKey[0],
             signal,
@@ -54,7 +54,148 @@ export const helloListGreetingsOptions = (options?: Options<HelloListGreetingsDa
         });
         return data;
     },
-    queryKey: helloListGreetingsQueryKey(options)
+    queryKey: jwksJwksQueryKey(options)
+});
+
+export const accessListBindingsQueryKey = (options?: Options<AccessListBindingsData>) => createQueryKey('accessListBindings', options);
+
+/**
+ * Role bindings, optionally for one person or one instance
+ */
+export const accessListBindingsOptions = (options?: Options<AccessListBindingsData>) => queryOptions<AccessListBindingsResponse, AccessListBindingsError, AccessListBindingsResponse, ReturnType<typeof accessListBindingsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await accessListBindings({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: accessListBindingsQueryKey(options)
+});
+
+/**
+ * Give someone a role (or scopes) on an instance
+ */
+export const accessCreateBindingMutation = (options?: Partial<Options<AccessCreateBindingData>>): UseMutationOptions<AccessCreateBindingResponse, AccessCreateBindingError, Options<AccessCreateBindingData>> => {
+    const mutationOptions: UseMutationOptions<AccessCreateBindingResponse, AccessCreateBindingError, Options<AccessCreateBindingData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await accessCreateBinding({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Remove a binding
+ */
+export const accessDeleteBindingMutation = (options?: Partial<Options<AccessDeleteBindingData>>): UseMutationOptions<AccessDeleteBindingResponse, AccessDeleteBindingError, Options<AccessDeleteBindingData>> => {
+    const mutationOptions: UseMutationOptions<AccessDeleteBindingResponse, AccessDeleteBindingError, Options<AccessDeleteBindingData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await accessDeleteBinding({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Why someone can or can't do something, and what would grant it
+ */
+export const accessExplainMutation = (options?: Partial<Options<AccessExplainData>>): UseMutationOptions<AccessExplainResponse, AccessExplainError, Options<AccessExplainData>> => {
+    const mutationOptions: UseMutationOptions<AccessExplainResponse, AccessExplainError, Options<AccessExplainData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await accessExplain({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const accessListRolesQueryKey = (options?: Options<AccessListRolesData>) => createQueryKey('accessListRoles', options);
+
+/**
+ * Access roles (built-in in this phase) with their scopes
+ */
+export const accessListRolesOptions = (options?: Options<AccessListRolesData>) => queryOptions<AccessListRolesResponse, AccessListRolesError, AccessListRolesResponse, ReturnType<typeof accessListRolesQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await accessListRoles({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: accessListRolesQueryKey(options)
+});
+
+export const accessListScopesQueryKey = (options?: Options<AccessListScopesData>) => createQueryKey('accessListScopes', options);
+
+/**
+ * The scope catalog: AgentOS 3.1 and control-plane scopes
+ */
+export const accessListScopesOptions = (options?: Options<AccessListScopesData>) => queryOptions<AccessListScopesResponse, AccessListScopesError, AccessListScopesResponse, ReturnType<typeof accessListScopesQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await accessListScopes({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: accessListScopesQueryKey(options)
+});
+
+export const auditListActionsQueryKey = (options?: Options<AuditListActionsData>) => createQueryKey('auditListActions', options);
+
+/**
+ * The audit vocabulary: every action and its summary template
+ */
+export const auditListActionsOptions = (options?: Options<AuditListActionsData>) => queryOptions<AuditListActionsResponse, AuditListActionsError, AuditListActionsResponse, ReturnType<typeof auditListActionsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await auditListActions({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: auditListActionsQueryKey(options)
+});
+
+export const auditListEventsQueryKey = (options?: Options<AuditListEventsData>) => createQueryKey('auditListEvents', options);
+
+/**
+ * Audit events, newest first
+ */
+export const auditListEventsOptions = (options?: Options<AuditListEventsData>) => queryOptions<AuditListEventsResponse, AuditListEventsError, AuditListEventsResponse, ReturnType<typeof auditListEventsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await auditListEvents({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: auditListEventsQueryKey(options)
 });
 
 const createInfiniteParams = <K extends Pick<QueryKey<Options>[0], 'body' | 'headers' | 'path' | 'query'>>(queryKey: QueryKey<Options>, page: K) => {
@@ -86,24 +227,24 @@ const createInfiniteParams = <K extends Pick<QueryKey<Options>[0], 'body' | 'hea
     return params as unknown as typeof page;
 };
 
-export const helloListGreetingsInfiniteQueryKey = (options?: Options<HelloListGreetingsData>): QueryKey<Options<HelloListGreetingsData>> => createQueryKey('helloListGreetings', options, true);
+export const auditListEventsInfiniteQueryKey = (options?: Options<AuditListEventsData>): QueryKey<Options<AuditListEventsData>> => createQueryKey('auditListEvents', options, true);
 
 /**
- * List greetings, newest first
+ * Audit events, newest first
  */
-export const helloListGreetingsInfiniteOptions = (options?: Options<HelloListGreetingsData>) => {
-    const opts = infiniteQueryOptions<HelloListGreetingsResponse, HelloListGreetingsError, InfiniteData<HelloListGreetingsResponse>, QueryKey<Options<HelloListGreetingsData>>, string | null | Pick<QueryKey<Options<HelloListGreetingsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+export const auditListEventsInfiniteOptions = (options?: Options<AuditListEventsData>) => {
+    const opts = infiniteQueryOptions<AuditListEventsResponse, AuditListEventsError, InfiniteData<AuditListEventsResponse>, QueryKey<Options<AuditListEventsData>>, string | null | Pick<QueryKey<Options<AuditListEventsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
     // @ts-ignore
     {
         queryFn: async ({ pageParam, queryKey, signal }) => {
             // @ts-ignore
-            const page: Pick<QueryKey<Options<HelloListGreetingsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            const page: Pick<QueryKey<Options<AuditListEventsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
                 query: {
                     cursor: pageParam
                 }
             };
             const params = createInfiniteParams(queryKey, page);
-            const { data } = await helloListGreetings({
+            const { data } = await auditListEvents({
                 ...options,
                 ...params,
                 signal,
@@ -111,18 +252,36 @@ export const helloListGreetingsInfiniteOptions = (options?: Options<HelloListGre
             });
             return data;
         },
-        queryKey: helloListGreetingsInfiniteQueryKey(options)
+        queryKey: auditListEventsInfiniteQueryKey(options)
     });
     return opts as Omit<typeof opts, 'initialData'>;
 };
 
+export const auditGetEventQueryKey = (options: Options<AuditGetEventData>) => createQueryKey('auditGetEvent', options);
+
 /**
- * Create a greeting and queue its reply
+ * One audit event
  */
-export const helloCreateGreetingMutation = (options?: Partial<Options<HelloCreateGreetingData>>): UseMutationOptions<HelloCreateGreetingResponse, HelloCreateGreetingError, Options<HelloCreateGreetingData>> => {
-    const mutationOptions: UseMutationOptions<HelloCreateGreetingResponse, HelloCreateGreetingError, Options<HelloCreateGreetingData>> = {
+export const auditGetEventOptions = (options: Options<AuditGetEventData>) => queryOptions<AuditGetEventResponse, AuditGetEventError, AuditGetEventResponse, ReturnType<typeof auditGetEventQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await auditGetEvent({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: auditGetEventQueryKey(options)
+});
+
+/**
+ * Sign in with email and password
+ */
+export const authLoginMutation = (options?: Partial<Options<AuthLoginData>>): UseMutationOptions<AuthLoginResponse, AuthLoginError, Options<AuthLoginData>> => {
+    const mutationOptions: UseMutationOptions<AuthLoginResponse, AuthLoginError, Options<AuthLoginData>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await helloCreateGreeting({
+            const { data } = await authLogin({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -133,14 +292,65 @@ export const helloCreateGreetingMutation = (options?: Partial<Options<HelloCreat
     return mutationOptions;
 };
 
-export const helloGetGreetingQueryKey = (options: Options<HelloGetGreetingData>) => createQueryKey('helloGetGreeting', options);
+/**
+ * Sign out of this browser
+ */
+export const authLogoutMutation = (options?: Partial<Options<AuthLogoutData>>): UseMutationOptions<AuthLogoutResponse, AuthLogoutError, Options<AuthLogoutData>> => {
+    const mutationOptions: UseMutationOptions<AuthLogoutResponse, AuthLogoutError, Options<AuthLogoutData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await authLogout({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 /**
- * Get one greeting
+ * Email a password-reset link (always accepted, so accounts can't be discovered)
  */
-export const helloGetGreetingOptions = (options: Options<HelloGetGreetingData>) => queryOptions<HelloGetGreetingResponse, HelloGetGreetingError, HelloGetGreetingResponse, ReturnType<typeof helloGetGreetingQueryKey>>({
+export const authRequestPasswordResetMutation = (options?: Partial<Options<AuthRequestPasswordResetData>>): UseMutationOptions<unknown, AuthRequestPasswordResetError, Options<AuthRequestPasswordResetData>> => {
+    const mutationOptions: UseMutationOptions<unknown, AuthRequestPasswordResetError, Options<AuthRequestPasswordResetData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await authRequestPasswordReset({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Choose a new password with a reset token; signs out every session
+ */
+export const authConfirmPasswordResetMutation = (options?: Partial<Options<AuthConfirmPasswordResetData>>): UseMutationOptions<AuthConfirmPasswordResetResponse, AuthConfirmPasswordResetError, Options<AuthConfirmPasswordResetData>> => {
+    const mutationOptions: UseMutationOptions<AuthConfirmPasswordResetResponse, AuthConfirmPasswordResetError, Options<AuthConfirmPasswordResetData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await authConfirmPasswordReset({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const authSignInOptionsQueryKey = (options?: Options<AuthSignInOptionsData>) => createQueryKey('authSignInOptions', options);
+
+/**
+ * How people can sign in: password and/or SSO providers
+ */
+export const authSignInOptionsOptions = (options?: Options<AuthSignInOptionsData>) => queryOptions<AuthSignInOptionsResponse, AuthSignInOptionsError, AuthSignInOptionsResponse, ReturnType<typeof authSignInOptionsQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
-        const { data } = await helloGetGreeting({
+        const { data } = await authSignInOptions({
             ...options,
             ...queryKey[0],
             signal,
@@ -148,8 +358,638 @@ export const helloGetGreetingOptions = (options: Options<HelloGetGreetingData>) 
         });
         return data;
     },
-    queryKey: helloGetGreetingQueryKey(options)
+    queryKey: authSignInOptionsQueryKey(options)
 });
+
+export const authSsoCallbackQueryKey = (options: Options<AuthSsoCallbackData>) => createQueryKey('authSsoCallback', options);
+
+/**
+ * Where the SSO provider sends people back (redirects into the app)
+ */
+export const authSsoCallbackOptions = (options: Options<AuthSsoCallbackData>) => queryOptions<unknown, AuthSsoCallbackError, unknown, ReturnType<typeof authSsoCallbackQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await authSsoCallback({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: authSsoCallbackQueryKey(options)
+});
+
+export const authSsoStartQueryKey = (options: Options<AuthSsoStartData>) => createQueryKey('authSsoStart', options);
+
+/**
+ * Start signing in with an SSO provider (redirects to it)
+ */
+export const authSsoStartOptions = (options: Options<AuthSsoStartData>) => queryOptions<unknown, AuthSsoStartError, unknown, ReturnType<typeof authSsoStartQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await authSsoStart({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: authSsoStartQueryKey(options)
+});
+
+export const gatewayListPoliciesQueryKey = (options?: Options<GatewayListPoliciesData>) => createQueryKey('gatewayListPolicies', options);
+
+/**
+ * The route policy table: which scopes each AgentOS route needs
+ */
+export const gatewayListPoliciesOptions = (options?: Options<GatewayListPoliciesData>) => queryOptions<GatewayListPoliciesResponse, GatewayListPoliciesError, GatewayListPoliciesResponse, ReturnType<typeof gatewayListPoliciesQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await gatewayListPolicies({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: gatewayListPoliciesQueryKey(options)
+});
+
+export const instancesListInstancesQueryKey = (options?: Options<InstancesListInstancesData>) => createQueryKey('instancesListInstances', options);
+
+/**
+ * Connected AgentOS instances
+ */
+export const instancesListInstancesOptions = (options?: Options<InstancesListInstancesData>) => queryOptions<InstancesListInstancesResponse, InstancesListInstancesError, InstancesListInstancesResponse, ReturnType<typeof instancesListInstancesQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await instancesListInstances({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: instancesListInstancesQueryKey(options)
+});
+
+/**
+ * Connect wizard, step 2: register an instance and its key pair
+ */
+export const instancesConnectInstanceMutation = (options?: Partial<Options<InstancesConnectInstanceData>>): UseMutationOptions<InstancesConnectInstanceResponse, InstancesConnectInstanceError, Options<InstancesConnectInstanceData>> => {
+    const mutationOptions: UseMutationOptions<InstancesConnectInstanceResponse, InstancesConnectInstanceError, Options<InstancesConnectInstanceData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await instancesConnectInstance({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Connect wizard, step 1: discover what is at an endpoint (nothing is saved)
+ */
+export const instancesProbeEndpointMutation = (options?: Partial<Options<InstancesProbeEndpointData>>): UseMutationOptions<InstancesProbeEndpointResponse, InstancesProbeEndpointError, Options<InstancesProbeEndpointData>> => {
+    const mutationOptions: UseMutationOptions<InstancesProbeEndpointResponse, InstancesProbeEndpointError, Options<InstancesProbeEndpointData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await instancesProbeEndpoint({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Delete the instance record (the runtime keeps running; its tokens stop being minted)
+ */
+export const instancesDeleteInstanceMutation = (options?: Partial<Options<InstancesDeleteInstanceData>>): UseMutationOptions<InstancesDeleteInstanceResponse, InstancesDeleteInstanceError, Options<InstancesDeleteInstanceData>> => {
+    const mutationOptions: UseMutationOptions<InstancesDeleteInstanceResponse, InstancesDeleteInstanceError, Options<InstancesDeleteInstanceData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await instancesDeleteInstance({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const instancesGetInstanceQueryKey = (options: Options<InstancesGetInstanceData>) => createQueryKey('instancesGetInstance', options);
+
+/**
+ * One instance (by id or slug)
+ */
+export const instancesGetInstanceOptions = (options: Options<InstancesGetInstanceData>) => queryOptions<InstancesGetInstanceResponse, InstancesGetInstanceError, InstancesGetInstanceResponse, ReturnType<typeof instancesGetInstanceQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await instancesGetInstance({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: instancesGetInstanceQueryKey(options)
+});
+
+/**
+ * Change an instance's name, environment, endpoint, TLS or security key
+ */
+export const instancesUpdateInstanceMutation = (options?: Partial<Options<InstancesUpdateInstanceData>>): UseMutationOptions<InstancesUpdateInstanceResponse, InstancesUpdateInstanceError, Options<InstancesUpdateInstanceData>> => {
+    const mutationOptions: UseMutationOptions<InstancesUpdateInstanceResponse, InstancesUpdateInstanceError, Options<InstancesUpdateInstanceData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await instancesUpdateInstance({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const instancesGetCapabilitiesQueryKey = (options: Options<InstancesGetCapabilitiesData>) => createQueryKey('instancesGetCapabilities', options);
+
+/**
+ * The capability matrix (07 §3)
+ */
+export const instancesGetCapabilitiesOptions = (options: Options<InstancesGetCapabilitiesData>) => queryOptions<InstancesGetCapabilitiesResponse, InstancesGetCapabilitiesError, InstancesGetCapabilitiesResponse, ReturnType<typeof instancesGetCapabilitiesQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await instancesGetCapabilities({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: instancesGetCapabilitiesQueryKey(options)
+});
+
+export const instancesGetConfigQueryKey = (options: Options<InstancesGetConfigData>) => createQueryKey('instancesGetConfig', options);
+
+/**
+ * The runtime's /config, as last fetched (needs config:read there)
+ */
+export const instancesGetConfigOptions = (options: Options<InstancesGetConfigData>) => queryOptions<InstancesGetConfigResponse, InstancesGetConfigError, InstancesGetConfigResponse, ReturnType<typeof instancesGetConfigQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await instancesGetConfig({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: instancesGetConfigQueryKey(options)
+});
+
+/**
+ * Read /info again (version, auth mode, isolation)
+ */
+export const instancesDiscoverInstanceMutation = (options?: Partial<Options<InstancesDiscoverInstanceData>>): UseMutationOptions<InstancesDiscoverInstanceResponse, InstancesDiscoverInstanceError, Options<InstancesDiscoverInstanceData>> => {
+    const mutationOptions: UseMutationOptions<InstancesDiscoverInstanceResponse, InstancesDiscoverInstanceError, Options<InstancesDiscoverInstanceData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await instancesDiscoverInstance({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const instancesGetHealthQueryKey = (options: Options<InstancesGetHealthData>) => createQueryKey('instancesGetHealth', options);
+
+/**
+ * Reachability, latency, version drift and capabilities
+ */
+export const instancesGetHealthOptions = (options: Options<InstancesGetHealthData>) => queryOptions<InstancesGetHealthResponse, InstancesGetHealthError, InstancesGetHealthResponse, ReturnType<typeof instancesGetHealthQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await instancesGetHealth({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: instancesGetHealthQueryKey(options)
+});
+
+export const instancesGetKeysQueryKey = (options: Options<InstancesGetKeysData>) => createQueryKey('instancesGetKeys', options);
+
+/**
+ * Public keys, the config snippet and the JWKS location
+ */
+export const instancesGetKeysOptions = (options: Options<InstancesGetKeysData>) => queryOptions<InstancesGetKeysResponse, InstancesGetKeysError, InstancesGetKeysResponse, ReturnType<typeof instancesGetKeysQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await instancesGetKeys({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: instancesGetKeysQueryKey(options)
+});
+
+/**
+ * Rotate the key pair: stage a next key, then activate it
+ */
+export const instancesRotateKeysMutation = (options?: Partial<Options<InstancesRotateKeysData>>): UseMutationOptions<InstancesRotateKeysResponse, InstancesRotateKeysError, Options<InstancesRotateKeysData>> => {
+    const mutationOptions: UseMutationOptions<InstancesRotateKeysResponse, InstancesRotateKeysError, Options<InstancesRotateKeysData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await instancesRotateKeys({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Verify a token against this instance's keys
+ */
+export const instancesVerifyTokenMutation = (options?: Partial<Options<InstancesVerifyTokenData>>): UseMutationOptions<InstancesVerifyTokenResponse, InstancesVerifyTokenError, Options<InstancesVerifyTokenData>> => {
+    const mutationOptions: UseMutationOptions<InstancesVerifyTokenResponse, InstancesVerifyTokenError, Options<InstancesVerifyTokenData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await instancesVerifyToken({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Test connection: DNS, TLS, AgentOS, version, token, enforced scopes
+ */
+export const instancesTestInstanceMutation = (options?: Partial<Options<InstancesTestInstanceData>>): UseMutationOptions<InstancesTestInstanceResponse, InstancesTestInstanceError, Options<InstancesTestInstanceData>> => {
+    const mutationOptions: UseMutationOptions<InstancesTestInstanceResponse, InstancesTestInstanceError, Options<InstancesTestInstanceData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await instancesTestInstance({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const invitationsListInvitationsQueryKey = (options?: Options<InvitationsListInvitationsData>) => createQueryKey('invitationsListInvitations', options);
+
+/**
+ * Pending invitations
+ */
+export const invitationsListInvitationsOptions = (options?: Options<InvitationsListInvitationsData>) => queryOptions<InvitationsListInvitationsResponse, InvitationsListInvitationsError, InvitationsListInvitationsResponse, ReturnType<typeof invitationsListInvitationsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await invitationsListInvitations({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: invitationsListInvitationsQueryKey(options)
+});
+
+/**
+ * Invite someone by email
+ */
+export const invitationsCreateInvitationMutation = (options?: Partial<Options<InvitationsCreateInvitationData>>): UseMutationOptions<InvitationsCreateInvitationResponse, InvitationsCreateInvitationError, Options<InvitationsCreateInvitationData>> => {
+    const mutationOptions: UseMutationOptions<InvitationsCreateInvitationResponse, InvitationsCreateInvitationError, Options<InvitationsCreateInvitationData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await invitationsCreateInvitation({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Revoke an invitation
+ */
+export const invitationsRevokeInvitationMutation = (options?: Partial<Options<InvitationsRevokeInvitationData>>): UseMutationOptions<InvitationsRevokeInvitationResponse, InvitationsRevokeInvitationError, Options<InvitationsRevokeInvitationData>> => {
+    const mutationOptions: UseMutationOptions<InvitationsRevokeInvitationResponse, InvitationsRevokeInvitationError, Options<InvitationsRevokeInvitationData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await invitationsRevokeInvitation({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Send the invitation again with a fresh link
+ */
+export const invitationsResendInvitationMutation = (options?: Partial<Options<InvitationsResendInvitationData>>): UseMutationOptions<InvitationsResendInvitationResponse, InvitationsResendInvitationError, Options<InvitationsResendInvitationData>> => {
+    const mutationOptions: UseMutationOptions<InvitationsResendInvitationResponse, InvitationsResendInvitationError, Options<InvitationsResendInvitationData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await invitationsResendInvitation({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Accept an invitation with a password; signs you in
+ */
+export const invitationsAcceptInvitationMutation = (options?: Partial<Options<InvitationsAcceptInvitationData>>): UseMutationOptions<InvitationsAcceptInvitationResponse, InvitationsAcceptInvitationError, Options<InvitationsAcceptInvitationData>> => {
+    const mutationOptions: UseMutationOptions<InvitationsAcceptInvitationResponse, InvitationsAcceptInvitationError, Options<InvitationsAcceptInvitationData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await invitationsAcceptInvitation({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const invitationsPreviewInvitationQueryKey = (options: Options<InvitationsPreviewInvitationData>) => createQueryKey('invitationsPreviewInvitation', options);
+
+/**
+ * What an invitation link is for (no sign-in needed)
+ */
+export const invitationsPreviewInvitationOptions = (options: Options<InvitationsPreviewInvitationData>) => queryOptions<InvitationsPreviewInvitationResponse, InvitationsPreviewInvitationError, InvitationsPreviewInvitationResponse, ReturnType<typeof invitationsPreviewInvitationQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await invitationsPreviewInvitation({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: invitationsPreviewInvitationQueryKey(options)
+});
+
+export const meGetMeQueryKey = (options?: Options<MeGetMeData>) => createQueryKey('meGetMe', options);
+
+/**
+ * The signed-in person: profile, org role, preferences
+ */
+export const meGetMeOptions = (options?: Options<MeGetMeData>) => queryOptions<MeGetMeResponse, MeGetMeError, MeGetMeResponse, ReturnType<typeof meGetMeQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await meGetMe({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: meGetMeQueryKey(options)
+});
+
+/**
+ * Change your name, locale, time zone or preferences
+ */
+export const meUpdateMeMutation = (options?: Partial<Options<MeUpdateMeData>>): UseMutationOptions<MeUpdateMeResponse, MeUpdateMeError, Options<MeUpdateMeData>> => {
+    const mutationOptions: UseMutationOptions<MeUpdateMeResponse, MeUpdateMeError, Options<MeUpdateMeData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await meUpdateMe({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const meMyAccessQueryKey = (options?: Options<MeMyAccessData>) => createQueryKey('meMyAccess', options);
+
+/**
+ * Your effective access, on an instance or org-wide
+ */
+export const meMyAccessOptions = (options?: Options<MeMyAccessData>) => queryOptions<MeMyAccessResponse, MeMyAccessError, MeMyAccessResponse, ReturnType<typeof meMyAccessQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await meMyAccess({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: meMyAccessQueryKey(options)
+});
+
+export const meListMySessionsQueryKey = (options?: Options<MeListMySessionsData>) => createQueryKey('meListMySessions', options);
+
+/**
+ * Your signed-in browsers
+ */
+export const meListMySessionsOptions = (options?: Options<MeListMySessionsData>) => queryOptions<MeListMySessionsResponse, MeListMySessionsError, MeListMySessionsResponse, ReturnType<typeof meListMySessionsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await meListMySessions({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: meListMySessionsQueryKey(options)
+});
+
+/**
+ * Sign out a browser
+ */
+export const meRevokeMySessionMutation = (options?: Partial<Options<MeRevokeMySessionData>>): UseMutationOptions<MeRevokeMySessionResponse, MeRevokeMySessionError, Options<MeRevokeMySessionData>> => {
+    const mutationOptions: UseMutationOptions<MeRevokeMySessionResponse, MeRevokeMySessionError, Options<MeRevokeMySessionData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await meRevokeMySession({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const membersListMembersQueryKey = (options?: Options<MembersListMembersData>) => createQueryKey('membersListMembers', options);
+
+/**
+ * Members of the org with their org roles
+ */
+export const membersListMembersOptions = (options?: Options<MembersListMembersData>) => queryOptions<MembersListMembersResponse, MembersListMembersError, MembersListMembersResponse, ReturnType<typeof membersListMembersQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await membersListMembers({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: membersListMembersQueryKey(options)
+});
+
+/**
+ * Remove someone from the org (signs them out)
+ */
+export const membersRemoveMemberMutation = (options?: Partial<Options<MembersRemoveMemberData>>): UseMutationOptions<MembersRemoveMemberResponse, MembersRemoveMemberError, Options<MembersRemoveMemberData>> => {
+    const mutationOptions: UseMutationOptions<MembersRemoveMemberResponse, MembersRemoveMemberError, Options<MembersRemoveMemberData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await membersRemoveMember({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const membersGetMemberQueryKey = (options: Options<MembersGetMemberData>) => createQueryKey('membersGetMember', options);
+
+/**
+ * One member
+ */
+export const membersGetMemberOptions = (options: Options<MembersGetMemberData>) => queryOptions<MembersGetMemberResponse, MembersGetMemberError, MembersGetMemberResponse, ReturnType<typeof membersGetMemberQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await membersGetMember({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: membersGetMemberQueryKey(options)
+});
+
+/**
+ * Change a member's org role
+ */
+export const membersUpdateMemberMutation = (options?: Partial<Options<MembersUpdateMemberData>>): UseMutationOptions<MembersUpdateMemberResponse, MembersUpdateMemberError, Options<MembersUpdateMemberData>> => {
+    const mutationOptions: UseMutationOptions<MembersUpdateMemberResponse, MembersUpdateMemberError, Options<MembersUpdateMemberData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await membersUpdateMember({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Create the first Owner with the setup link from `agnostic bootstrap`
+ */
+export const onboardingCompleteOnboardingMutation = (options?: Partial<Options<OnboardingCompleteOnboardingData>>): UseMutationOptions<OnboardingCompleteOnboardingResponse, OnboardingCompleteOnboardingError, Options<OnboardingCompleteOnboardingData>> => {
+    const mutationOptions: UseMutationOptions<OnboardingCompleteOnboardingResponse, OnboardingCompleteOnboardingError, Options<OnboardingCompleteOnboardingData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await onboardingCompleteOnboarding({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const onboardingOnboardingStatusQueryKey = (options?: Options<OnboardingOnboardingStatusData>) => createQueryKey('onboardingOnboardingStatus', options);
+
+/**
+ * Whether the installation still needs its first Owner
+ */
+export const onboardingOnboardingStatusOptions = (options?: Options<OnboardingOnboardingStatusData>) => queryOptions<OnboardingOnboardingStatusResponse, OnboardingOnboardingStatusError, OnboardingOnboardingStatusResponse, ReturnType<typeof onboardingOnboardingStatusQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await onboardingOnboardingStatus({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: onboardingOnboardingStatusQueryKey(options)
+});
+
+export const orgGetOrgQueryKey = (options?: Options<OrgGetOrgData>) => createQueryKey('orgGetOrg', options);
+
+/**
+ * The org: profile, seats, settings and your org role
+ */
+export const orgGetOrgOptions = (options?: Options<OrgGetOrgData>) => queryOptions<OrgGetOrgResponse, OrgGetOrgError, OrgGetOrgResponse, ReturnType<typeof orgGetOrgQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await orgGetOrg({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: orgGetOrgQueryKey(options)
+});
+
+/**
+ * Change the org profile or org settings
+ */
+export const orgUpdateOrgMutation = (options?: Partial<Options<OrgUpdateOrgData>>): UseMutationOptions<OrgUpdateOrgResponse, OrgUpdateOrgError, Options<OrgUpdateOrgData>> => {
+    const mutationOptions: UseMutationOptions<OrgUpdateOrgResponse, OrgUpdateOrgError, Options<OrgUpdateOrgData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await orgUpdateOrg({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const systemListModulesQueryKey = (options?: Options<SystemListModulesData>) => createQueryKey('systemListModules', options);
 

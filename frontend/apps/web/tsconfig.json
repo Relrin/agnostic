@@ -1,12 +1,39 @@
 {
   "extends": "../../tsconfig.base.json",
-  "compilerOptions": { "types": ["vite/client", "node"] },
+  "compilerOptions": {
+    "types": ["vite/client", "node"]
+  },
   "include": ["src", "e2e", "vite.config.ts", "playwright.config.ts"],
   "references": [
-    { "path": "../../packages/ui" },
-    { "path": "../../packages/core" },
-    { "path": "../../packages/api" },
-    { "path": "../../packages/testing" },
-    { "path": "../../modules/hello" }
+    {
+      "path": "../../packages/ui"
+    },
+    {
+      "path": "../../packages/core"
+    },
+    {
+      "path": "../../packages/api"
+    },
+    {
+      "path": "../../packages/testing"
+    },
+    {
+      "path": "../../modules/identity"
+    },
+    {
+      "path": "../../modules/account"
+    },
+    {
+      "path": "../../modules/instances"
+    },
+    {
+      "path": "../../modules/settings"
+    },
+    {
+      "path": "../../modules/access-people"
+    },
+    {
+      "path": "../../modules/audit"
+    }
   ]
 }

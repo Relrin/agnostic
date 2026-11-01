@@ -20,24 +20,29 @@ table. Feature code never imports Radix directly; it uses `@agnostic/ui`.
 ## Module SDK
 
 ```ts
-export const helloModule = defineModule({
-  id: "hello",
-  scope: "instance",                       // lives under /i/:instance/…
-  routes: [{ path: "hello", component: HelloPage }],
-  nav: [{ id: "hello", group: "main", label: "Hello", icon: Hand, path: "hello", order: 30 }],
-  commands: [{ id: "hello.open", label: "Open Hello", path: "hello" }],
+export const settingsModule = defineModule({
+  id: "settings",
+  scope: "instance",                       // lives under /i/:instance/… ("org" at the root, "public" outside the shell)
+  routes: [
+    { path: "settings", component: SettingsPage },
+    { path: "settings/$section", component: SettingsPage },
+  ],
+  nav: [{ id: "settings", group: "footer", label: "Settings", icon: Settings, path: "settings", order: 10 }],
+  commands: [{ id: "settings.keys", label: "Rotate the instance key pair", path: "settings/authorization" }],
 });
 ```
 
 The shell lists modules in `apps/web/src/modules.ts`, then:
 
-- builds routes: instance-scoped modules under `/i/$instance`, org-scoped ones at the root;
+- builds routes: instance-scoped modules under `/i/$instance`, org-scoped ones at the root, both inside the
+  signed-in shell (anonymous visitors go to `/login`); public ones (sign-in, invitations, first run) outside it;
 - builds the sidebar from the **nav catalog** (`apps/web/src/shell/nav-catalog.ts`, the prototype's full
   navigation) merged with module nav entries. Catalog entries no module implements yet open a "not built yet"
   page naming the phase that ships them;
 - builds the ⌘K palette from nav entries and module commands.
 
-`requires` (capabilities, scopes) is declared now and enforced once instances and access arrive in P01.
+`requires.capabilities` hides an instance module's nav entry when the active instance lacks the capability
+(from its health/capability matrix); `requires.anyScope` hides it when the person holds none of the scopes. Inside pages, `useCan(scope, instance)` and `<PermissionGate>` from `@agnostic/core` hide or disable actions, and `<WhyVisible>` says which grant allows them.
 
 ## Data layer
 

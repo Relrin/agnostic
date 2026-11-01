@@ -25,7 +25,7 @@ One codebase, one image, two process types:
 
 | Process | Command | Does |
 |---|---|---|
-| api | `agnostic api` | HTTP API under `/api/v1`, health endpoints, (later) the AgentOS gateway and the built web app |
+| api | `agnostic api` | HTTP API under `/api/v1`, health endpoints, the AgentOS gateway, (later) the built web app |
 | worker | `agnostic worker` | background jobs and periodic schedules from every module |
 | migrate | `agnostic db upgrade` | one-shot schema migration before a rollout |
 
@@ -51,7 +51,7 @@ and only ephemeral state in Redis; losing Redis degrades caching and live update
 backend/                 uv workspace (Python 3.15)
   packages/agnostic-kernel/          shared kernel: no business logic
   packages/agnostic-agentos-client/  typed AgentOS 3.1.x client
-  modules/hello/                     sample module (removed after P01)
+  modules/{audit,settings,identity,org,instances,access,gateway}/   P01: identity, instances, gateway
   apps/agnostic-server/              composition root: app factory, worker, CLI
   tests/{unit,integration,contract}/
 frontend/                Yarn 4 workspaces (React 19, Vite, Tailwind v4)
@@ -60,7 +60,7 @@ frontend/                Yarn 4 workspaces (React 19, Vite, Tailwind v4)
   packages/core/         module SDK, navigation, query defaults
   packages/api/          generated OpenAPI client + TanStack Query options
   packages/testing/      render helpers, MSW handlers
-  modules/hello/         sample module page
+  modules/{identity,account,instances,settings,access-people,audit}/   P01 pages
 runtime/                 agnostic-runtime: reference AgentOS (Python 3.13, agno 3.1.12)
 deploy/dev/              Compose: PostgreSQL + Redis for development
 scripts/                 repository tooling (license policy)
@@ -71,3 +71,4 @@ scripts/                 repository tooling (license policy)
 - [Backend kernel](backend-kernel.md) and [module system](module-system.md)
 - [Frontend](frontend.md)
 - [AgentOS runtime and client](agentos-runtime-and-client.md)
+- [Identity, access and the gateway](identity-access-gateway.md)

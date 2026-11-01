@@ -7,8 +7,10 @@ generated models. One ``AgentOSClient`` per instance; share it, it's safe for co
 from __future__ import annotations
 
 import asyncio
+import ssl
+from collections.abc import AsyncIterable, Mapping
 from types import TracebackType
-from typing import Self
+from typing import Any, Self, cast
 
 import httpx
 from pydantic import BaseModel, ValidationError
@@ -38,8 +40,9 @@ class AgentOSClient:
         timeout: float = 10.0,
         retries: int = 2,
         backoff: float = 0.2,
-        verify: bool | str = True,
+        verify: bool | str | ssl.SSLContext = True,
         transport: httpx.AsyncBaseTransport | None = None,
+        max_connections: int = 50,
     ) -> None:
         self._auth = auth or NoAuth()
         self._retries = retries
@@ -51,7 +54,7 @@ class AgentOSClient:
             verify=verify,
             transport=transport,
             headers={"User-Agent": USER_AGENT, "Accept": "application/json"},
-            limits=httpx.Limits(max_connections=50, max_keepalive_connections=10),
+            limits=httpx.Limits(max_connections=max_connections, max_keepalive_connections=10),
         )
 
     async def __aenter__(self) -> Self:
@@ -77,6 +80,57 @@ class AgentOSClient:
     async def config(self) -> OsConfig:
         return await self._get_model("/config", OsConfig)
 
+    async def get_json(self, path: str, *, params: Mapping[str, str | int] | None = None) -> Any:  # noqa: ANN401
+        """GET a route the typed methods don't cover; errors are mapped like everywhere else."""
+        response = await self._get(path, params=params)
+        try:
+            return response.json()
+        except ValueError as exc:
+            msg = f"GET {path}: the response is not JSON"
+            raise UnexpectedResponseError(msg, status=response.status_code, body=response.text[:2000]) from exc
+
+    async def probe(self, path: str, *, params: Mapping[str, str | int] | None = None) -> tuple[int, str]:
+        """``(status, body excerpt)`` of a GET without retries or error mapping (capability probes).
+
+        Transport failures still raise :class:`InstanceUnreachableError`.
+        """
+        headers = await self._auth.headers()
+        try:
+            response = await self._http.get(path, params=params, headers=headers)
+        except httpx.TransportError as exc:
+            msg = f"GET {path}: {type(exc).__name__}: {exc}"
+            raise InstanceUnreachableError(msg) from exc
+        return response.status_code, response.text[:2000]
+
+    async def open_stream(
+        self,
+        method: str,
+        path: str,
+        *,
+        params: list[tuple[str, str]] | None = None,
+        headers: Mapping[str, str] | None = None,
+        content: AsyncIterable[bytes] | bytes | None = None,
+        request_timeout: httpx.Timeout | None = None,
+    ) -> httpx.Response:
+        """Send a request and return the response unread (``stream=True``); the caller must ``aclose()`` it.
+
+        The gateway uses this for passthrough: bodies stream both ways, nothing is buffered, and statuses are
+        returned as they are (no error mapping, no retries: the request may not be idempotent).
+        """
+        request = self._http.build_request(
+            method,
+            path,
+            params=httpx.QueryParams(cast("Any", params)) if params else None,
+            headers=dict(headers or {}),
+            content=content,
+            timeout=request_timeout if request_timeout is not None else self._http.timeout,
+        )
+        try:
+            return await self._http.send(request, stream=True)
+        except httpx.TransportError as exc:
+            msg = f"{method} {path}: {type(exc).__name__}: {exc}"
+            raise InstanceUnreachableError(msg) from exc
+
     async def _get_model[M: BaseModel](self, path: str, model: type[M]) -> M:
         response = await self._get(path)
         try:
@@ -85,14 +139,16 @@ class AgentOSClient:
             msg = f"GET {path}: response doesn't match the pinned AgentOS schema: {exc}"
             raise UnexpectedResponseError(msg, status=response.status_code, body=response.text[:2000]) from exc
 
-    async def _get(self, path: str, *, request_id: str | None = None) -> httpx.Response:
+    async def _get(
+        self, path: str, *, params: Mapping[str, str | int] | None = None, request_id: str | None = None
+    ) -> httpx.Response:
         headers = await self._auth.headers()
         if request_id:
             headers["X-Request-Id"] = request_id
         attempt = 0
         while True:
             try:
-                response = await self._http.get(path, headers=headers)
+                response = await self._http.get(path, params=params, headers=headers)
             except httpx.TransportError as exc:
                 if attempt >= self._retries:
                     msg = f"GET {path}: {type(exc).__name__}: {exc}"

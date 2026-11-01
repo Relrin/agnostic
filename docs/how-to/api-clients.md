@@ -17,7 +17,7 @@ This runs `agnostic openapi --out frontend/packages/api/openapi.json` and then `
 CI's **api-drift** job regenerates both files and fails if they differ from what's committed. `just api-check` does
 the same locally.
 
-Operation ids are `<tag>_<function name>` (e.g. `hello_list_greetings` → `helloListGreetingsOptions`), so name
+Operation ids are `<tag>_<function name>` (e.g. `instances_list_instances` → `instancesListInstancesOptions`), so name
 route functions for what they do.
 
 ## AgentOS client (runtime OpenAPI → Python models)

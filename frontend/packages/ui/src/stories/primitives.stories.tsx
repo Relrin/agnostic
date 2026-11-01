@@ -128,7 +128,7 @@ export const TabsVariants: Story = {
           </TabsTrigger>
         </TabsList>
         <TabsContent value="members" className="text-[13px] text-fg-secondary">
-          24 people in Northwind Labs.
+          24 people in Localhost Company.
         </TabsContent>
         <TabsContent value="groups" className="text-[13px] text-fg-secondary">
           6 groups, 4 synced from Okta.
@@ -150,7 +150,7 @@ export const Feedback: Story = {
       </Callout>
       <Callout tone="insight" title="3 agents share this tool" />
       <div className="flex items-center gap-2">
-        <Avatar id="usr_dana" name="Dana Okafor" />
+        <Avatar id="usr_dana" name="Daniel Okafor" />
         <Avatar id="usr_sam" name="Sam Rivera" />
         <Avatar id="sa_ci" name="ci bot" kind="machine" />
         <Avatar id="system" name="Scheduler" kind="system" />

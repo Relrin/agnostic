@@ -1,0 +1,38 @@
+[project]
+name = "agnostic-gateway"
+version = "0.1.0"
+description = "Reverse proxy to AgentOS: route policies, scope pre-check, JWT minting, SSE passthrough, caching, audit"
+requires-python = "==3.15.*"
+license = "BSD-3-Clause"
+dependencies = [
+  "agnostic-access",
+  "agnostic-agentos-client",
+  "agnostic-audit",
+  "agnostic-instances",
+  "agnostic-kernel",
+  "agnostic-settings",
+  "alembic==1.20.1",
+  "dishka==1.10.1",
+  "fastapi==0.162.0",
+  "httpx==0.28.1",
+  "orjson==3.13.0",
+  "pydantic==2.14.2",
+  "pydantic-settings==2.16.2",
+  "sqlalchemy[asyncio]==2.1.6",
+  "starlette==1.10.0",
+]
+
+[project.entry-points."agnostic.modules"]
+gateway = "agnostic_gateway.module:GatewayModule"
+
+[tool.uv.sources]
+agnostic-access = { workspace = true }
+agnostic-agentos-client = { workspace = true }
+agnostic-audit = { workspace = true }
+agnostic-instances = { workspace = true }
+agnostic-kernel = { workspace = true }
+agnostic-settings = { workspace = true }
+
+[build-system]
+requires = ["uv_build==0.13.6"]
+build-backend = "uv_build"

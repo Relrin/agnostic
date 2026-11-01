@@ -22,11 +22,14 @@ git clone <this repository> agnostic && cd agnostic
 just setup      # .env from .env.example, uv sync (backend + runtime), yarn install — all from lockfiles
 just up         # PostgreSQL 18 (+pgvector) and Redis 8 in Docker
 just migrate    # agnostic schema, Procrastinate tables, module tables
+cd backend && uv run agnostic bootstrap --org-name "Localhost Company" --owner-email you@example.com && cd ..
 just dev        # API + worker on :8000, web app on :5173
 ```
 
-Open <http://localhost:5173>. The shell opens on the `dev-prod` instance; the **Hello** page writes a greeting,
-a background job replies to it.
+Open <http://localhost:5173> and sign in with the Owner you just created (or run `agnostic bootstrap` without
+`--owner-email` and open the setup link it prints). **Instances › Connect** walks you through adding an AgentOS;
+`just runtimes` starts two reference ones. Sign-in with GitHub, GitLab, Google, Okta or any OIDC provider is
+configured with environment variables ([sign-in providers](docs/how-to/sign-in-providers.md)).
 
 No Docker? Set `AGNOSTIC_DATABASE__URL=sqlite:///agnostic.db` in `.env`, then `just migrate && just dev`. Jobs run
 inside the API process in that mode (see [configuration](docs/how-to/configuration.md)).
@@ -46,8 +49,8 @@ just --list     # everything else
 
 | Path | What it is |
 |---|---|
-| `backend/` | uv workspace: `agnostic-kernel`, `agnostic-agentos-client`, the `hello` module, the `agnostic` server and CLI |
-| `frontend/` | Yarn workspaces: `apps/web` shell, `@agnostic/ui`, `@agnostic/core`, `@agnostic/api`, `modules/hello` |
+| `backend/` | uv workspace: `agnostic-kernel`, `agnostic-agentos-client`, the feature modules (`identity`, `org`, `access`, `instances`, `gateway`, `audit`, `settings`), the `agnostic` server and CLI |
+| `frontend/` | Yarn workspaces: `apps/web` shell, `@agnostic/ui`, `@agnostic/core`, `@agnostic/api`, feature modules in `modules/*` |
 | `runtime/` | `agnostic-runtime`, the reference AgentOS app (contract tests, demos, customer template) |
 | `deploy/dev/` | Docker Compose for development dependencies (never shipped) |
 | `docs/` | architecture, how-to guides, reference - [start here](docs/README.md) |

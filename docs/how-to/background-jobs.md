@@ -6,23 +6,21 @@ used for live progress events.
 ## Declare a job
 
 ```python
-# jobs.py
-async def compose_reply(context: procrastinate.JobContext, greeting_id: str) -> None:
-    job_id = context.job.id
+# agnostic_instances/jobs.py
+async def check_health(context: procrastinate.JobContext, timestamp: int) -> None:  # periodic jobs get `timestamp`
     async with job_container(context) as container:      # request-scoped DI, like an HTTP request
-        use_case = await container.get(ComposeReply)
-        await use_case(greeting_id, job_id)
-
-async def heartbeat(context: procrastinate.JobContext, timestamp: int) -> None:   # periodic jobs get `timestamp`
-    ...
+        results = await (await container.get(CheckHealth))()
+    log.debug("instances.health", results=results)
 ```
 
 ```python
-# module.py
+# agnostic_instances/module.py
 def jobs(self) -> Iterable[JobSpec]:
+    settings = InstancesSettings()
     return (
-        JobSpec(name="hello.compose_reply", func=jobs.compose_reply, retry=3),
-        JobSpec(name="hello.heartbeat", func=jobs.heartbeat, periodic="*/5 * * * *"),
+        JobSpec(name="instances.check_health", func=jobs.check_health, queue="instances", periodic=settings.health_cron),
+        JobSpec(name="instances.refresh_snapshots", func=jobs.refresh_snapshots, queue="instances",
+                periodic=settings.snapshot_cron),
     )
 ```
 
@@ -37,16 +35,16 @@ def jobs(self) -> Iterable[JobSpec]:
 From a use case, through a port, using the kernel's `JobQueue`:
 
 ```python
-await job_queue.defer("hello.compose_reply", greeting_id=greeting.id)
+job_id = await job_queue.defer("notes.reindex", note_id=note.id)
 ```
 
-Commit your data before deferring (see `CreateGreeting`): the job runs in another transaction and may start at
-once. A transactional outbox arrives in P01.
+Commit your data before deferring: the job runs in another transaction and may start at once. A transactional
+outbox arrives in a later phase.
 
 ## Report progress
 
 ```python
-await reporter.report(job_id, "hello.compose_reply", 0.5, message="Half way")
+await reporter.report(job_id, "notes.reindex", 0.5, message="Half way")
 ```
 
 This upserts a row in `kernel_job_progress` and publishes it on `evt:job:{job_id}`. If Redis is down the row is

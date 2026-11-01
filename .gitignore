@@ -6,6 +6,9 @@
 .env
 *.env.local
 
+# Dev runtime JWT verification keys written by `just seed`
+runtime/.jwt/
+
 # Python
 __pycache__/
 *.py[cod]

@@ -1,4 +1,8 @@
-"""HTTP middleware: request ids (accepted from ``X-Request-Id`` or generated, echoed back, bound to logs)."""
+"""HTTP middleware.
+
+Request ids (accepted from ``X-Request-Id`` or generated, echoed back, bound to logs), plus the client address and
+user agent for audit records.
+"""
 
 from __future__ import annotations
 
@@ -8,7 +12,7 @@ import structlog
 from starlette.datastructures import MutableHeaders
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
-from agnostic_kernel.context import set_request_id
+from agnostic_kernel.context import ClientInfo, set_client, set_request_id
 from agnostic_kernel.ids import new_id
 
 REQUEST_ID_HEADER = "X-Request-Id"
@@ -27,6 +31,9 @@ class RequestIdMiddleware:
         incoming = _header(scope, REQUEST_ID_HEADER.lower().encode())
         request_id = incoming if incoming and _VALID_INCOMING.fullmatch(incoming) else new_id("req")
         set_request_id(request_id)
+        client: tuple[str, int] | None = scope.get("client")
+        user_agent = _header(scope, b"user-agent")
+        set_client(ClientInfo(ip=client[0] if client else None, user_agent=user_agent[:512] if user_agent else None))
         structlog.contextvars.bind_contextvars(request_id=request_id)
 
         async def send_with_id(message: Message) -> None:

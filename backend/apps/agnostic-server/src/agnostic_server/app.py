@@ -16,13 +16,14 @@ from fastapi.routing import APIRoute
 from pydantic import BaseModel
 
 from agnostic_kernel import __version__ as kernel_version
+from agnostic_kernel.auth import HttpAuthProvider
 from agnostic_kernel.container import Telemetry, build_container
 from agnostic_kernel.errors import PROBLEM_RESPONSES, install_problem_handlers
 from agnostic_kernel.health import health_router
 from agnostic_kernel.http import RequestIdMiddleware
 from agnostic_kernel.jobs import worker_options
 from agnostic_kernel.logging import configure_logging, get_logger
-from agnostic_kernel.modules import LoadedModules, load_modules
+from agnostic_kernel.modules import LoadedModules, RouterSpec, load_modules
 from agnostic_kernel.settings import Settings
 from agnostic_kernel.telemetry import configure_tracing, instrument_app
 from agnostic_server import __version__
@@ -47,7 +48,7 @@ class SystemModules(BaseModel):
 
 
 def operation_id(route: APIRoute) -> str:
-    """Stable operation ids (``hello_list_greetings``) so the generated TS client has readable names."""
+    """Stable operation ids (``instances_list_instances``) so the generated TS client has readable names."""
     prefix = str(route.tags[0]) if route.tags else "api"
     return f"{prefix}_{route.name}"
 
@@ -110,7 +111,7 @@ def create_app(
     modules = modules or load_modules(settings.modules.disabled)
     tracer_provider = configure_tracing(settings.otel)
     container = container or build_container(
-        settings, modules, telemetry=Telemetry(tracer_provider), extra=(FastapiProvider(),)
+        settings, modules, telemetry=Telemetry(tracer_provider), extra=(FastapiProvider(), HttpAuthProvider())
     )
 
     @asynccontextmanager
@@ -144,10 +145,16 @@ def create_app(
 
     api = APIRouter(prefix=API_PREFIX, responses=PROBLEM_RESPONSES)
     api.include_router(system_router(modules))
+    root_specs: list[tuple[str, RouterSpec]] = []
     for module in modules.enabled:
         for spec in module.routers():
-            api.include_router(spec.router, prefix=spec.prefix, tags=list(spec.tags or (module.name,)))
+            if spec.root:
+                root_specs.append((module.name, spec))
+            else:
+                api.include_router(spec.router, prefix=spec.prefix, tags=list(spec.tags or (module.name,)))
     app.include_router(api)
+    for name, spec in root_specs:
+        app.include_router(spec.router, prefix=spec.prefix, tags=list(spec.tags or (name,)))
     app.include_router(health_router())
 
     install_problem_handlers(app)

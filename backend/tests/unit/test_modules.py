@@ -4,7 +4,7 @@ from typing import ClassVar
 
 import pytest
 
-from agnostic_hello.module import HelloModule
+from agnostic_instances.module import InstancesModule
 from agnostic_kernel.modules import BaseModule, Module, ModuleGraphError, load_modules, resolve_modules
 
 
@@ -17,10 +17,10 @@ def make(name: str, *depends_on: str) -> Module:
     return _Module()
 
 
-def test_entry_points_discover_hello() -> None:
+def test_entry_points_discover_the_installed_modules() -> None:
     loaded = load_modules()
-    assert "hello" in loaded.names()
-    assert isinstance(loaded.installed["hello"], HelloModule)
+    assert loaded.names() == ["audit", "identity", "instances", "settings", "org", "access", "gateway"]
+    assert isinstance(loaded.installed["instances"], InstancesModule)
 
 
 def test_dependency_order() -> None:
@@ -70,14 +70,15 @@ async def test_base_module_defaults() -> None:
     await module.on_shutdown(None)  # pyright: ignore[reportArgumentType]
 
 
-def test_hello_contributes_everything_the_contract_needs() -> None:
-    hello = HelloModule()
-    assert [s.name for s in hello.scopes()] == ["hello:read", "hello:write"]
-    jobs: dict[str, str | None] = {j.name: j.periodic for j in hello.jobs()}
-    assert jobs["hello.compose_reply"] is None
-    assert jobs["hello.heartbeat"]
-    assert [a.action for a in hello.audit_actions()] == ["hello.greeting.create"]
-    migrations = hello.migrations()
+def test_a_module_contributes_everything_the_contract_needs() -> None:
+    instances = InstancesModule()
+    assert [s.name for s in instances.scopes()] == ["os:read", "os:write", "os:delete", "os:keys:rotate"]
+    jobs: dict[str, str | None] = {j.name: j.periodic for j in instances.jobs()}
+    assert jobs["instances.check_health"]
+    assert jobs["instances.refresh_snapshots"]
+    assert "instances.create" in [a.action for a in instances.audit_actions()]
+    assert [spec.root for spec in instances.routers()] == [False, True]  # the JWKS document sits at the root
+    migrations = instances.migrations()
     assert migrations is not None
     assert migrations.is_dir()
 

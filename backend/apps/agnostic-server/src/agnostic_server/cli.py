@@ -13,8 +13,11 @@ import uvicorn
 import watchfiles
 
 from agnostic_kernel import migrations_runner
+from agnostic_kernel.bootstrap import Bootstrapper, BootstrapResult, OwnerAccount
 from agnostic_kernel.checks import run_endpoint_checks
+from agnostic_kernel.container import build_container
 from agnostic_kernel.db import create_engine
+from agnostic_kernel.errors import AppError
 from agnostic_kernel.logging import configure_logging
 from agnostic_kernel.modules import ModuleGraphError, discover_modules, load_modules, resolve_modules
 from agnostic_kernel.settings import Settings
@@ -125,7 +128,7 @@ def db_upgrade(revision: Annotated[str, typer.Argument(help="Target revision")] 
 
 
 @db_app.command("downgrade")
-def db_downgrade(revision: Annotated[str, typer.Argument(help="Target, e.g. 'hello@base' or 'base'")]) -> None:
+def db_downgrade(revision: Annotated[str, typer.Argument(help="Target, e.g. 'gateway@base' or 'base'")]) -> None:
     """Revert migrations down to a revision."""
     configure_logging(Settings().log)
     loops.run(lambda: _migrate("downgrade", revision))
@@ -178,6 +181,53 @@ def modules_list() -> None:
         jobs = ", ".join(spec.name for spec in module.jobs()) or "-"
         depends = ", ".join(module.depends_on) or "-"
         typer.echo(f"{name:<16} {module.version:<8} {state}  depends: {depends}  routes: {routes}  jobs: {jobs}")
+
+
+async def _bootstrap(org_name: str, owner: OwnerAccount | None) -> BootstrapResult:
+    settings = Settings()
+    configure_logging(settings.log)
+    container = build_container(settings, load_modules(settings.modules.disabled))
+    try:
+        async with container() as request:
+            bootstrapper = await request.get(Bootstrapper)
+            return await bootstrapper.bootstrap(org_name, owner)
+    finally:
+        await container.close()
+
+
+@app.command()
+def bootstrap(
+    org_name: Annotated[str, typer.Option("--org-name", help="The org's name, shown in the sidebar")],
+    owner_email: Annotated[
+        str | None, typer.Option("--owner-email", help="Create the first Owner now (asks for a password)")
+    ] = None,
+    owner_name: Annotated[str | None, typer.Option("--owner-name", help="The Owner's display name")] = None,
+    password_stdin: Annotated[
+        bool, typer.Option("--password-stdin", help="Read the Owner's password from stdin")
+    ] = False,
+) -> None:
+    """Set up the org and its first Owner (02 §10).
+
+    Without --owner-email, prints a one-time link (valid 24 h) where the first Owner signs up in the browser.
+    """
+    owner: OwnerAccount | None = None
+    if owner_email:
+        if password_stdin:
+            password = sys.stdin.readline().rstrip("\r\n")
+        else:
+            password = typer.prompt("Password for the Owner", hide_input=True, confirmation_prompt=True)
+        owner = OwnerAccount(email=owner_email, display_name=owner_name or "", password=password)
+    try:
+        result = loops.run(lambda: _bootstrap(org_name, owner))
+    except AppError as exc:
+        typer.secho(exc.detail or exc.title, fg=typer.colors.RED, err=True)
+        raise typer.Exit(1) from exc
+    typer.echo(f"org:   {result.org_name}")
+    if result.owner_email:
+        typer.echo(f"owner: {result.owner_email} — sign in at {Settings().public_url()}/login")
+    if result.setup_url:
+        typer.echo("Open this link to create the first Owner (valid for 24 hours, works once):")
+        typer.echo(result.setup_url)
 
 
 @app.command()

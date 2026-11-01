@@ -85,7 +85,7 @@ class TestSettings:
         assert redact_url("redis://cache:6379/0") == "redis://cache:6379/0"
 
     def test_module_settings_namespace(self) -> None:
-        assert module_settings_config("hello").get("env_prefix") == "AGNOSTIC_HELLO__"
+        assert module_settings_config("gateway").get("env_prefix") == "AGNOSTIC_GATEWAY__"
 
 
 class TestIds:

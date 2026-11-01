@@ -1,0 +1,28 @@
+{
+  "name": "@agnostic/module-audit",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Audit log: events, filters and details",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@agnostic/api": "workspace:*",
+    "@agnostic/core": "workspace:*",
+    "@agnostic/ui": "workspace:*",
+    "@tanstack/react-query": "5.105.0",
+    "@tanstack/react-router": "1.170.46",
+    "lucide-react": "1.65.0"
+  },
+  "peerDependencies": {
+    "react": "19.3.1"
+  },
+  "devDependencies": {
+    "@agnostic/testing": "workspace:*",
+    "@testing-library/jest-dom": "7.0.1",
+    "msw": "3.0.3",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  }
+}

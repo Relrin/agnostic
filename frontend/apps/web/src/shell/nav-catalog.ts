@@ -254,7 +254,7 @@ export const NAV_CATALOG: readonly CatalogEntryWithPhase[] = [
     path: "access/audit",
     order: 40,
     scope: "org",
-    phase: "P06",
+    phase: "P01",
   },
 
   {

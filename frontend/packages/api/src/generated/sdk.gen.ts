@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { HelloCreateGreetingData, HelloCreateGreetingErrors, HelloCreateGreetingResponses, HelloGetGreetingData, HelloGetGreetingErrors, HelloGetGreetingResponses, HelloListGreetingsData, HelloListGreetingsErrors, HelloListGreetingsResponses, SystemListModulesData, SystemListModulesErrors, SystemListModulesResponses, SystemLivenessData, SystemLivenessResponses, SystemReadinessData, SystemReadinessErrors, SystemReadinessResponses } from './types.gen';
+import type { AccessCreateBindingData, AccessCreateBindingErrors, AccessCreateBindingResponses, AccessDeleteBindingData, AccessDeleteBindingErrors, AccessDeleteBindingResponses, AccessExplainData, AccessExplainErrors, AccessExplainResponses, AccessListBindingsData, AccessListBindingsErrors, AccessListBindingsResponses, AccessListRolesData, AccessListRolesErrors, AccessListRolesResponses, AccessListScopesData, AccessListScopesErrors, AccessListScopesResponses, AuditGetEventData, AuditGetEventErrors, AuditGetEventResponses, AuditListActionsData, AuditListActionsErrors, AuditListActionsResponses, AuditListEventsData, AuditListEventsErrors, AuditListEventsResponses, AuthConfirmPasswordResetData, AuthConfirmPasswordResetErrors, AuthConfirmPasswordResetResponses, AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthLogoutData, AuthLogoutErrors, AuthLogoutResponses, AuthRequestPasswordResetData, AuthRequestPasswordResetErrors, AuthRequestPasswordResetResponses, AuthSignInOptionsData, AuthSignInOptionsErrors, AuthSignInOptionsResponses, AuthSsoCallbackData, AuthSsoCallbackErrors, AuthSsoStartData, AuthSsoStartErrors, GatewayListPoliciesData, GatewayListPoliciesErrors, GatewayListPoliciesResponses, InstancesConnectInstanceData, InstancesConnectInstanceErrors, InstancesConnectInstanceResponses, InstancesDeleteInstanceData, InstancesDeleteInstanceErrors, InstancesDeleteInstanceResponses, InstancesDiscoverInstanceData, InstancesDiscoverInstanceErrors, InstancesDiscoverInstanceResponses, InstancesGetCapabilitiesData, InstancesGetCapabilitiesErrors, InstancesGetCapabilitiesResponses, InstancesGetConfigData, InstancesGetConfigErrors, InstancesGetConfigResponses, InstancesGetHealthData, InstancesGetHealthErrors, InstancesGetHealthResponses, InstancesGetInstanceData, InstancesGetInstanceErrors, InstancesGetInstanceResponses, InstancesGetKeysData, InstancesGetKeysErrors, InstancesGetKeysResponses, InstancesListInstancesData, InstancesListInstancesErrors, InstancesListInstancesResponses, InstancesProbeEndpointData, InstancesProbeEndpointErrors, InstancesProbeEndpointResponses, InstancesRotateKeysData, InstancesRotateKeysErrors, InstancesRotateKeysResponses, InstancesTestInstanceData, InstancesTestInstanceErrors, InstancesTestInstanceResponses, InstancesUpdateInstanceData, InstancesUpdateInstanceErrors, InstancesUpdateInstanceResponses, InstancesVerifyTokenData, InstancesVerifyTokenErrors, InstancesVerifyTokenResponses, InvitationsAcceptInvitationData, InvitationsAcceptInvitationErrors, InvitationsAcceptInvitationResponses, InvitationsCreateInvitationData, InvitationsCreateInvitationErrors, InvitationsCreateInvitationResponses, InvitationsListInvitationsData, InvitationsListInvitationsErrors, InvitationsListInvitationsResponses, InvitationsPreviewInvitationData, InvitationsPreviewInvitationErrors, InvitationsPreviewInvitationResponses, InvitationsResendInvitationData, InvitationsResendInvitationErrors, InvitationsResendInvitationResponses, InvitationsRevokeInvitationData, InvitationsRevokeInvitationErrors, InvitationsRevokeInvitationResponses, JwksJwksData, JwksJwksErrors, JwksJwksResponses, MeGetMeData, MeGetMeErrors, MeGetMeResponses, MeListMySessionsData, MeListMySessionsErrors, MeListMySessionsResponses, MembersGetMemberData, MembersGetMemberErrors, MembersGetMemberResponses, MembersListMembersData, MembersListMembersErrors, MembersListMembersResponses, MembersRemoveMemberData, MembersRemoveMemberErrors, MembersRemoveMemberResponses, MembersUpdateMemberData, MembersUpdateMemberErrors, MembersUpdateMemberResponses, MeMyAccessData, MeMyAccessErrors, MeMyAccessResponses, MeRevokeMySessionData, MeRevokeMySessionErrors, MeRevokeMySessionResponses, MeUpdateMeData, MeUpdateMeErrors, MeUpdateMeResponses, OnboardingCompleteOnboardingData, OnboardingCompleteOnboardingErrors, OnboardingCompleteOnboardingResponses, OnboardingOnboardingStatusData, OnboardingOnboardingStatusErrors, OnboardingOnboardingStatusResponses, OrgGetOrgData, OrgGetOrgErrors, OrgGetOrgResponses, OrgUpdateOrgData, OrgUpdateOrgErrors, OrgUpdateOrgResponses, SystemListModulesData, SystemListModulesErrors, SystemListModulesResponses, SystemLivenessData, SystemLivenessResponses, SystemReadinessData, SystemReadinessErrors, SystemReadinessResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -19,15 +19,20 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
 };
 
 /**
- * List greetings, newest first
+ * Public keys of an instance (current and next), JWKS
  */
-export const helloListGreetings = <ThrowOnError extends boolean = false>(options?: Options<HelloListGreetingsData, ThrowOnError>): RequestResult<HelloListGreetingsResponses, HelloListGreetingsErrors, ThrowOnError> => (options?.client ?? client).get<HelloListGreetingsResponses, HelloListGreetingsErrors, ThrowOnError>({ url: '/api/v1/hello/greetings', ...options });
+export const jwksJwks = <ThrowOnError extends boolean = false>(options: Options<JwksJwksData, ThrowOnError>): RequestResult<JwksJwksResponses, JwksJwksErrors, ThrowOnError> => (options.client ?? client).get<JwksJwksResponses, JwksJwksErrors, ThrowOnError>({ url: '/.well-known/agnostic/instances/{instance_id}/jwks.json', ...options });
 
 /**
- * Create a greeting and queue its reply
+ * Role bindings, optionally for one person or one instance
  */
-export const helloCreateGreeting = <ThrowOnError extends boolean = false>(options: Options<HelloCreateGreetingData, ThrowOnError>): RequestResult<HelloCreateGreetingResponses, HelloCreateGreetingErrors, ThrowOnError> => (options.client ?? client).post<HelloCreateGreetingResponses, HelloCreateGreetingErrors, ThrowOnError>({
-    url: '/api/v1/hello/greetings',
+export const accessListBindings = <ThrowOnError extends boolean = false>(options?: Options<AccessListBindingsData, ThrowOnError>): RequestResult<AccessListBindingsResponses, AccessListBindingsErrors, ThrowOnError> => (options?.client ?? client).get<AccessListBindingsResponses, AccessListBindingsErrors, ThrowOnError>({ url: '/api/v1/access/bindings', ...options });
+
+/**
+ * Give someone a role (or scopes) on an instance
+ */
+export const accessCreateBinding = <ThrowOnError extends boolean = false>(options: Options<AccessCreateBindingData, ThrowOnError>): RequestResult<AccessCreateBindingResponses, AccessCreateBindingErrors, ThrowOnError> => (options.client ?? client).post<AccessCreateBindingResponses, AccessCreateBindingErrors, ThrowOnError>({
+    url: '/api/v1/access/bindings',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -36,9 +41,349 @@ export const helloCreateGreeting = <ThrowOnError extends boolean = false>(option
 });
 
 /**
- * Get one greeting
+ * Remove a binding
  */
-export const helloGetGreeting = <ThrowOnError extends boolean = false>(options: Options<HelloGetGreetingData, ThrowOnError>): RequestResult<HelloGetGreetingResponses, HelloGetGreetingErrors, ThrowOnError> => (options.client ?? client).get<HelloGetGreetingResponses, HelloGetGreetingErrors, ThrowOnError>({ url: '/api/v1/hello/greetings/{greeting_id}', ...options });
+export const accessDeleteBinding = <ThrowOnError extends boolean = false>(options: Options<AccessDeleteBindingData, ThrowOnError>): RequestResult<AccessDeleteBindingResponses, AccessDeleteBindingErrors, ThrowOnError> => (options.client ?? client).delete<AccessDeleteBindingResponses, AccessDeleteBindingErrors, ThrowOnError>({ url: '/api/v1/access/bindings/{binding_id}', ...options });
+
+/**
+ * Why someone can or can't do something, and what would grant it
+ */
+export const accessExplain = <ThrowOnError extends boolean = false>(options: Options<AccessExplainData, ThrowOnError>): RequestResult<AccessExplainResponses, AccessExplainErrors, ThrowOnError> => (options.client ?? client).post<AccessExplainResponses, AccessExplainErrors, ThrowOnError>({
+    url: '/api/v1/access/explain',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Access roles (built-in in this phase) with their scopes
+ */
+export const accessListRoles = <ThrowOnError extends boolean = false>(options?: Options<AccessListRolesData, ThrowOnError>): RequestResult<AccessListRolesResponses, AccessListRolesErrors, ThrowOnError> => (options?.client ?? client).get<AccessListRolesResponses, AccessListRolesErrors, ThrowOnError>({ url: '/api/v1/access/roles', ...options });
+
+/**
+ * The scope catalog: AgentOS 3.1 and control-plane scopes
+ */
+export const accessListScopes = <ThrowOnError extends boolean = false>(options?: Options<AccessListScopesData, ThrowOnError>): RequestResult<AccessListScopesResponses, AccessListScopesErrors, ThrowOnError> => (options?.client ?? client).get<AccessListScopesResponses, AccessListScopesErrors, ThrowOnError>({ url: '/api/v1/access/scopes', ...options });
+
+/**
+ * The audit vocabulary: every action and its summary template
+ */
+export const auditListActions = <ThrowOnError extends boolean = false>(options?: Options<AuditListActionsData, ThrowOnError>): RequestResult<AuditListActionsResponses, AuditListActionsErrors, ThrowOnError> => (options?.client ?? client).get<AuditListActionsResponses, AuditListActionsErrors, ThrowOnError>({ url: '/api/v1/audit/actions', ...options });
+
+/**
+ * Audit events, newest first
+ */
+export const auditListEvents = <ThrowOnError extends boolean = false>(options?: Options<AuditListEventsData, ThrowOnError>): RequestResult<AuditListEventsResponses, AuditListEventsErrors, ThrowOnError> => (options?.client ?? client).get<AuditListEventsResponses, AuditListEventsErrors, ThrowOnError>({ url: '/api/v1/audit/events', ...options });
+
+/**
+ * One audit event
+ */
+export const auditGetEvent = <ThrowOnError extends boolean = false>(options: Options<AuditGetEventData, ThrowOnError>): RequestResult<AuditGetEventResponses, AuditGetEventErrors, ThrowOnError> => (options.client ?? client).get<AuditGetEventResponses, AuditGetEventErrors, ThrowOnError>({ url: '/api/v1/audit/events/{event_id}', ...options });
+
+/**
+ * Sign in with email and password
+ */
+export const authLogin = <ThrowOnError extends boolean = false>(options: Options<AuthLoginData, ThrowOnError>): RequestResult<AuthLoginResponses, AuthLoginErrors, ThrowOnError> => (options.client ?? client).post<AuthLoginResponses, AuthLoginErrors, ThrowOnError>({
+    url: '/api/v1/auth/login',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Sign out of this browser
+ */
+export const authLogout = <ThrowOnError extends boolean = false>(options?: Options<AuthLogoutData, ThrowOnError>): RequestResult<AuthLogoutResponses, AuthLogoutErrors, ThrowOnError> => (options?.client ?? client).post<AuthLogoutResponses, AuthLogoutErrors, ThrowOnError>({ url: '/api/v1/auth/logout', ...options });
+
+/**
+ * Email a password-reset link (always accepted, so accounts can't be discovered)
+ */
+export const authRequestPasswordReset = <ThrowOnError extends boolean = false>(options: Options<AuthRequestPasswordResetData, ThrowOnError>): RequestResult<AuthRequestPasswordResetResponses, AuthRequestPasswordResetErrors, ThrowOnError> => (options.client ?? client).post<AuthRequestPasswordResetResponses, AuthRequestPasswordResetErrors, ThrowOnError>({
+    url: '/api/v1/auth/password/reset',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Choose a new password with a reset token; signs out every session
+ */
+export const authConfirmPasswordReset = <ThrowOnError extends boolean = false>(options: Options<AuthConfirmPasswordResetData, ThrowOnError>): RequestResult<AuthConfirmPasswordResetResponses, AuthConfirmPasswordResetErrors, ThrowOnError> => (options.client ?? client).post<AuthConfirmPasswordResetResponses, AuthConfirmPasswordResetErrors, ThrowOnError>({
+    url: '/api/v1/auth/password/reset/confirm',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * How people can sign in: password and/or SSO providers
+ */
+export const authSignInOptions = <ThrowOnError extends boolean = false>(options?: Options<AuthSignInOptionsData, ThrowOnError>): RequestResult<AuthSignInOptionsResponses, AuthSignInOptionsErrors, ThrowOnError> => (options?.client ?? client).get<AuthSignInOptionsResponses, AuthSignInOptionsErrors, ThrowOnError>({ url: '/api/v1/auth/providers', ...options });
+
+/**
+ * Where the SSO provider sends people back (redirects into the app)
+ */
+export const authSsoCallback = <ThrowOnError extends boolean = false>(options: Options<AuthSsoCallbackData, ThrowOnError>): RequestResult<unknown, AuthSsoCallbackErrors, ThrowOnError> => (options.client ?? client).get<unknown, AuthSsoCallbackErrors, ThrowOnError>({ url: '/api/v1/auth/sso/{provider}/callback', ...options });
+
+/**
+ * Start signing in with an SSO provider (redirects to it)
+ */
+export const authSsoStart = <ThrowOnError extends boolean = false>(options: Options<AuthSsoStartData, ThrowOnError>): RequestResult<unknown, AuthSsoStartErrors, ThrowOnError> => (options.client ?? client).get<unknown, AuthSsoStartErrors, ThrowOnError>({ url: '/api/v1/auth/sso/{provider}/start', ...options });
+
+/**
+ * The route policy table: which scopes each AgentOS route needs
+ */
+export const gatewayListPolicies = <ThrowOnError extends boolean = false>(options?: Options<GatewayListPoliciesData, ThrowOnError>): RequestResult<GatewayListPoliciesResponses, GatewayListPoliciesErrors, ThrowOnError> => (options?.client ?? client).get<GatewayListPoliciesResponses, GatewayListPoliciesErrors, ThrowOnError>({ url: '/api/v1/gateway/policies', ...options });
+
+/**
+ * Connected AgentOS instances
+ */
+export const instancesListInstances = <ThrowOnError extends boolean = false>(options?: Options<InstancesListInstancesData, ThrowOnError>): RequestResult<InstancesListInstancesResponses, InstancesListInstancesErrors, ThrowOnError> => (options?.client ?? client).get<InstancesListInstancesResponses, InstancesListInstancesErrors, ThrowOnError>({ url: '/api/v1/instances', ...options });
+
+/**
+ * Connect wizard, step 2: register an instance and its key pair
+ */
+export const instancesConnectInstance = <ThrowOnError extends boolean = false>(options: Options<InstancesConnectInstanceData, ThrowOnError>): RequestResult<InstancesConnectInstanceResponses, InstancesConnectInstanceErrors, ThrowOnError> => (options.client ?? client).post<InstancesConnectInstanceResponses, InstancesConnectInstanceErrors, ThrowOnError>({
+    url: '/api/v1/instances',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Connect wizard, step 1: discover what is at an endpoint (nothing is saved)
+ */
+export const instancesProbeEndpoint = <ThrowOnError extends boolean = false>(options: Options<InstancesProbeEndpointData, ThrowOnError>): RequestResult<InstancesProbeEndpointResponses, InstancesProbeEndpointErrors, ThrowOnError> => (options.client ?? client).post<InstancesProbeEndpointResponses, InstancesProbeEndpointErrors, ThrowOnError>({
+    url: '/api/v1/instances/probe',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Delete the instance record (the runtime keeps running; its tokens stop being minted)
+ */
+export const instancesDeleteInstance = <ThrowOnError extends boolean = false>(options: Options<InstancesDeleteInstanceData, ThrowOnError>): RequestResult<InstancesDeleteInstanceResponses, InstancesDeleteInstanceErrors, ThrowOnError> => (options.client ?? client).delete<InstancesDeleteInstanceResponses, InstancesDeleteInstanceErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}', ...options });
+
+/**
+ * One instance (by id or slug)
+ */
+export const instancesGetInstance = <ThrowOnError extends boolean = false>(options: Options<InstancesGetInstanceData, ThrowOnError>): RequestResult<InstancesGetInstanceResponses, InstancesGetInstanceErrors, ThrowOnError> => (options.client ?? client).get<InstancesGetInstanceResponses, InstancesGetInstanceErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}', ...options });
+
+/**
+ * Change an instance's name, environment, endpoint, TLS or security key
+ */
+export const instancesUpdateInstance = <ThrowOnError extends boolean = false>(options: Options<InstancesUpdateInstanceData, ThrowOnError>): RequestResult<InstancesUpdateInstanceResponses, InstancesUpdateInstanceErrors, ThrowOnError> => (options.client ?? client).patch<InstancesUpdateInstanceResponses, InstancesUpdateInstanceErrors, ThrowOnError>({
+    url: '/api/v1/instances/{instance}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * The capability matrix (07 §3)
+ */
+export const instancesGetCapabilities = <ThrowOnError extends boolean = false>(options: Options<InstancesGetCapabilitiesData, ThrowOnError>): RequestResult<InstancesGetCapabilitiesResponses, InstancesGetCapabilitiesErrors, ThrowOnError> => (options.client ?? client).get<InstancesGetCapabilitiesResponses, InstancesGetCapabilitiesErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/capabilities', ...options });
+
+/**
+ * The runtime's /config, as last fetched (needs config:read there)
+ */
+export const instancesGetConfig = <ThrowOnError extends boolean = false>(options: Options<InstancesGetConfigData, ThrowOnError>): RequestResult<InstancesGetConfigResponses, InstancesGetConfigErrors, ThrowOnError> => (options.client ?? client).get<InstancesGetConfigResponses, InstancesGetConfigErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/config', ...options });
+
+/**
+ * Read /info again (version, auth mode, isolation)
+ */
+export const instancesDiscoverInstance = <ThrowOnError extends boolean = false>(options: Options<InstancesDiscoverInstanceData, ThrowOnError>): RequestResult<InstancesDiscoverInstanceResponses, InstancesDiscoverInstanceErrors, ThrowOnError> => (options.client ?? client).post<InstancesDiscoverInstanceResponses, InstancesDiscoverInstanceErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/discover', ...options });
+
+/**
+ * Reachability, latency, version drift and capabilities
+ */
+export const instancesGetHealth = <ThrowOnError extends boolean = false>(options: Options<InstancesGetHealthData, ThrowOnError>): RequestResult<InstancesGetHealthResponses, InstancesGetHealthErrors, ThrowOnError> => (options.client ?? client).get<InstancesGetHealthResponses, InstancesGetHealthErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/health', ...options });
+
+/**
+ * Public keys, the config snippet and the JWKS location
+ */
+export const instancesGetKeys = <ThrowOnError extends boolean = false>(options: Options<InstancesGetKeysData, ThrowOnError>): RequestResult<InstancesGetKeysResponses, InstancesGetKeysErrors, ThrowOnError> => (options.client ?? client).get<InstancesGetKeysResponses, InstancesGetKeysErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/keys/public', ...options });
+
+/**
+ * Rotate the key pair: stage a next key, then activate it
+ */
+export const instancesRotateKeys = <ThrowOnError extends boolean = false>(options: Options<InstancesRotateKeysData, ThrowOnError>): RequestResult<InstancesRotateKeysResponses, InstancesRotateKeysErrors, ThrowOnError> => (options.client ?? client).post<InstancesRotateKeysResponses, InstancesRotateKeysErrors, ThrowOnError>({
+    url: '/api/v1/instances/{instance}/keys/rotate',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Verify a token against this instance's keys
+ */
+export const instancesVerifyToken = <ThrowOnError extends boolean = false>(options: Options<InstancesVerifyTokenData, ThrowOnError>): RequestResult<InstancesVerifyTokenResponses, InstancesVerifyTokenErrors, ThrowOnError> => (options.client ?? client).post<InstancesVerifyTokenResponses, InstancesVerifyTokenErrors, ThrowOnError>({
+    url: '/api/v1/instances/{instance}/keys/verify',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Test connection: DNS, TLS, AgentOS, version, token, enforced scopes
+ */
+export const instancesTestInstance = <ThrowOnError extends boolean = false>(options: Options<InstancesTestInstanceData, ThrowOnError>): RequestResult<InstancesTestInstanceResponses, InstancesTestInstanceErrors, ThrowOnError> => (options.client ?? client).post<InstancesTestInstanceResponses, InstancesTestInstanceErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/test', ...options });
+
+/**
+ * Pending invitations
+ */
+export const invitationsListInvitations = <ThrowOnError extends boolean = false>(options?: Options<InvitationsListInvitationsData, ThrowOnError>): RequestResult<InvitationsListInvitationsResponses, InvitationsListInvitationsErrors, ThrowOnError> => (options?.client ?? client).get<InvitationsListInvitationsResponses, InvitationsListInvitationsErrors, ThrowOnError>({ url: '/api/v1/invitations', ...options });
+
+/**
+ * Invite someone by email
+ */
+export const invitationsCreateInvitation = <ThrowOnError extends boolean = false>(options: Options<InvitationsCreateInvitationData, ThrowOnError>): RequestResult<InvitationsCreateInvitationResponses, InvitationsCreateInvitationErrors, ThrowOnError> => (options.client ?? client).post<InvitationsCreateInvitationResponses, InvitationsCreateInvitationErrors, ThrowOnError>({
+    url: '/api/v1/invitations',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Revoke an invitation
+ */
+export const invitationsRevokeInvitation = <ThrowOnError extends boolean = false>(options: Options<InvitationsRevokeInvitationData, ThrowOnError>): RequestResult<InvitationsRevokeInvitationResponses, InvitationsRevokeInvitationErrors, ThrowOnError> => (options.client ?? client).delete<InvitationsRevokeInvitationResponses, InvitationsRevokeInvitationErrors, ThrowOnError>({ url: '/api/v1/invitations/{invitation_id}', ...options });
+
+/**
+ * Send the invitation again with a fresh link
+ */
+export const invitationsResendInvitation = <ThrowOnError extends boolean = false>(options: Options<InvitationsResendInvitationData, ThrowOnError>): RequestResult<InvitationsResendInvitationResponses, InvitationsResendInvitationErrors, ThrowOnError> => (options.client ?? client).post<InvitationsResendInvitationResponses, InvitationsResendInvitationErrors, ThrowOnError>({ url: '/api/v1/invitations/{invitation_id}/resend', ...options });
+
+/**
+ * Accept an invitation with a password; signs you in
+ */
+export const invitationsAcceptInvitation = <ThrowOnError extends boolean = false>(options: Options<InvitationsAcceptInvitationData, ThrowOnError>): RequestResult<InvitationsAcceptInvitationResponses, InvitationsAcceptInvitationErrors, ThrowOnError> => (options.client ?? client).post<InvitationsAcceptInvitationResponses, InvitationsAcceptInvitationErrors, ThrowOnError>({
+    url: '/api/v1/invitations/{token}/accept',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * What an invitation link is for (no sign-in needed)
+ */
+export const invitationsPreviewInvitation = <ThrowOnError extends boolean = false>(options: Options<InvitationsPreviewInvitationData, ThrowOnError>): RequestResult<InvitationsPreviewInvitationResponses, InvitationsPreviewInvitationErrors, ThrowOnError> => (options.client ?? client).get<InvitationsPreviewInvitationResponses, InvitationsPreviewInvitationErrors, ThrowOnError>({ url: '/api/v1/invitations/{token}/preview', ...options });
+
+/**
+ * The signed-in person: profile, org role, preferences
+ */
+export const meGetMe = <ThrowOnError extends boolean = false>(options?: Options<MeGetMeData, ThrowOnError>): RequestResult<MeGetMeResponses, MeGetMeErrors, ThrowOnError> => (options?.client ?? client).get<MeGetMeResponses, MeGetMeErrors, ThrowOnError>({ url: '/api/v1/me', ...options });
+
+/**
+ * Change your name, locale, time zone or preferences
+ */
+export const meUpdateMe = <ThrowOnError extends boolean = false>(options: Options<MeUpdateMeData, ThrowOnError>): RequestResult<MeUpdateMeResponses, MeUpdateMeErrors, ThrowOnError> => (options.client ?? client).patch<MeUpdateMeResponses, MeUpdateMeErrors, ThrowOnError>({
+    url: '/api/v1/me',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Your effective access, on an instance or org-wide
+ */
+export const meMyAccess = <ThrowOnError extends boolean = false>(options?: Options<MeMyAccessData, ThrowOnError>): RequestResult<MeMyAccessResponses, MeMyAccessErrors, ThrowOnError> => (options?.client ?? client).get<MeMyAccessResponses, MeMyAccessErrors, ThrowOnError>({ url: '/api/v1/me/access', ...options });
+
+/**
+ * Your signed-in browsers
+ */
+export const meListMySessions = <ThrowOnError extends boolean = false>(options?: Options<MeListMySessionsData, ThrowOnError>): RequestResult<MeListMySessionsResponses, MeListMySessionsErrors, ThrowOnError> => (options?.client ?? client).get<MeListMySessionsResponses, MeListMySessionsErrors, ThrowOnError>({ url: '/api/v1/me/sessions', ...options });
+
+/**
+ * Sign out a browser
+ */
+export const meRevokeMySession = <ThrowOnError extends boolean = false>(options: Options<MeRevokeMySessionData, ThrowOnError>): RequestResult<MeRevokeMySessionResponses, MeRevokeMySessionErrors, ThrowOnError> => (options.client ?? client).delete<MeRevokeMySessionResponses, MeRevokeMySessionErrors, ThrowOnError>({ url: '/api/v1/me/sessions/{session_id}', ...options });
+
+/**
+ * Members of the org with their org roles
+ */
+export const membersListMembers = <ThrowOnError extends boolean = false>(options?: Options<MembersListMembersData, ThrowOnError>): RequestResult<MembersListMembersResponses, MembersListMembersErrors, ThrowOnError> => (options?.client ?? client).get<MembersListMembersResponses, MembersListMembersErrors, ThrowOnError>({ url: '/api/v1/members', ...options });
+
+/**
+ * Remove someone from the org (signs them out)
+ */
+export const membersRemoveMember = <ThrowOnError extends boolean = false>(options: Options<MembersRemoveMemberData, ThrowOnError>): RequestResult<MembersRemoveMemberResponses, MembersRemoveMemberErrors, ThrowOnError> => (options.client ?? client).delete<MembersRemoveMemberResponses, MembersRemoveMemberErrors, ThrowOnError>({ url: '/api/v1/members/{user_id}', ...options });
+
+/**
+ * One member
+ */
+export const membersGetMember = <ThrowOnError extends boolean = false>(options: Options<MembersGetMemberData, ThrowOnError>): RequestResult<MembersGetMemberResponses, MembersGetMemberErrors, ThrowOnError> => (options.client ?? client).get<MembersGetMemberResponses, MembersGetMemberErrors, ThrowOnError>({ url: '/api/v1/members/{user_id}', ...options });
+
+/**
+ * Change a member's org role
+ */
+export const membersUpdateMember = <ThrowOnError extends boolean = false>(options: Options<MembersUpdateMemberData, ThrowOnError>): RequestResult<MembersUpdateMemberResponses, MembersUpdateMemberErrors, ThrowOnError> => (options.client ?? client).patch<MembersUpdateMemberResponses, MembersUpdateMemberErrors, ThrowOnError>({
+    url: '/api/v1/members/{user_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Create the first Owner with the setup link from `agnostic bootstrap`
+ */
+export const onboardingCompleteOnboarding = <ThrowOnError extends boolean = false>(options: Options<OnboardingCompleteOnboardingData, ThrowOnError>): RequestResult<OnboardingCompleteOnboardingResponses, OnboardingCompleteOnboardingErrors, ThrowOnError> => (options.client ?? client).post<OnboardingCompleteOnboardingResponses, OnboardingCompleteOnboardingErrors, ThrowOnError>({
+    url: '/api/v1/onboarding/complete',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Whether the installation still needs its first Owner
+ */
+export const onboardingOnboardingStatus = <ThrowOnError extends boolean = false>(options?: Options<OnboardingOnboardingStatusData, ThrowOnError>): RequestResult<OnboardingOnboardingStatusResponses, OnboardingOnboardingStatusErrors, ThrowOnError> => (options?.client ?? client).get<OnboardingOnboardingStatusResponses, OnboardingOnboardingStatusErrors, ThrowOnError>({ url: '/api/v1/onboarding/status', ...options });
+
+/**
+ * The org: profile, seats, settings and your org role
+ */
+export const orgGetOrg = <ThrowOnError extends boolean = false>(options?: Options<OrgGetOrgData, ThrowOnError>): RequestResult<OrgGetOrgResponses, OrgGetOrgErrors, ThrowOnError> => (options?.client ?? client).get<OrgGetOrgResponses, OrgGetOrgErrors, ThrowOnError>({ url: '/api/v1/org', ...options });
+
+/**
+ * Change the org profile or org settings
+ */
+export const orgUpdateOrg = <ThrowOnError extends boolean = false>(options: Options<OrgUpdateOrgData, ThrowOnError>): RequestResult<OrgUpdateOrgResponses, OrgUpdateOrgErrors, ThrowOnError> => (options.client ?? client).patch<OrgUpdateOrgResponses, OrgUpdateOrgErrors, ThrowOnError>({
+    url: '/api/v1/org',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Enabled and disabled modules with what they contribute

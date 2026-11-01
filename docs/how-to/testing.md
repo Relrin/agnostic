@@ -29,8 +29,10 @@ Install the browser once: `cd frontend && yarn workspace @agnostic/web playwrigh
 
 ## Frontend
 
-- Render with `renderWithProviders()` from `@agnostic/testing`; mock the API with MSW (`helloHandlers()` shows the
-  pattern). Unhandled requests fail the test.
+- Render pages with `renderPage(Page, { path, url })` from `@agnostic/testing` (a minimal router, so params and
+  search params work) or components with `renderWithProviders()`; mock the API with MSW (`p01Handlers()` serves
+  the prototype's sample org: Localhost Company, Daniel, Marcus, prod-agentos, staging-agentos). Unhandled requests fail
+  the test.
 - Every story is rendered in Chromium and checked with axe (WCAG 2.2 AA); a violation fails the run.
 - `packages/ui/src/lib/tokens.test.ts` checks text/background contrast ratios and that the token mirror matches
   `tokens.css`.

@@ -24,11 +24,15 @@ ENTRY_POINT_GROUP = "agnostic.modules"
 
 @dataclass(frozen=True, slots=True)
 class RouterSpec:
-    """A router mounted under ``/api/v1{prefix}``."""
+    """A router mounted under ``/api/v1{prefix}``.
+
+    With ``root`` set it is mounted at ``{prefix}`` from the root instead (well-known URLs such as JWKS documents).
+    """
 
     router: APIRouter
     prefix: str = ""
     tags: tuple[str, ...] = ()
+    root: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -64,7 +68,7 @@ class EventHandlerSpec:
 
 @dataclass(frozen=True, slots=True)
 class AuditActionDecl:
-    """An audit action and its deterministic summary template, e.g. ``"{actor} created greeting {id}"``."""
+    """An audit action and its deterministic summary template, e.g. ``"{actor} invited {email} as {role}"``."""
 
     action: str
     summary_template: str

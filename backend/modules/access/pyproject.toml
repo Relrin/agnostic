@@ -1,0 +1,35 @@
+[project]
+name = "agnostic-access"
+version = "0.1.0"
+description = "Scope catalog, access roles, bindings, effective-scope computation, require() and explain"
+requires-python = "==3.15.*"
+license = "BSD-3-Clause"
+dependencies = [
+  "agnostic-audit",
+  "agnostic-identity",
+  "agnostic-instances",
+  "agnostic-kernel",
+  "agnostic-org",
+  "agnostic-settings",
+  "alembic==1.20.1",
+  "dishka==1.10.1",
+  "fastapi==0.162.0",
+  "orjson==3.13.0",
+  "pydantic==2.14.2",
+  "sqlalchemy[asyncio]==2.1.6",
+]
+
+[project.entry-points."agnostic.modules"]
+access = "agnostic_access.module:AccessModule"
+
+[tool.uv.sources]
+agnostic-audit = { workspace = true }
+agnostic-identity = { workspace = true }
+agnostic-instances = { workspace = true }
+agnostic-kernel = { workspace = true }
+agnostic-org = { workspace = true }
+agnostic-settings = { workspace = true }
+
+[build-system]
+requires = ["uv_build==0.13.6"]
+build-backend = "uv_build"

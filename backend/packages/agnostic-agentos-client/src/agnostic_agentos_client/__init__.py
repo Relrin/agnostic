@@ -1,6 +1,6 @@
 """Typed async client for Agno AgentOS 3.1.x."""
 
-from agnostic_agentos_client.auth import Auth, BearerAuth, NoAuth, SecurityKeyAuth
+from agnostic_agentos_client.auth import Auth, BearerAuth, NoAuth, SecurityKeyAuth, StaticBearerAuth
 from agnostic_agentos_client.client import AgentOSClient
 from agnostic_agentos_client.errors import (
     AgentOSError,
@@ -32,5 +32,6 @@ __all__ = [
     "NotFoundError",
     "OsConfig",
     "SecurityKeyAuth",
+    "StaticBearerAuth",
     "UnexpectedResponseError",
 ]

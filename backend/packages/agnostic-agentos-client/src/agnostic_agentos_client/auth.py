@@ -27,6 +27,16 @@ class SecurityKeyAuth:
         return {"Authorization": f"Bearer {self._key}"}
 
 
+class StaticBearerAuth:
+    """A token minted once for a short task (connection tests, capability probes)."""
+
+    def __init__(self, token: str) -> None:
+        self._token = token
+
+    async def headers(self) -> dict[str, str]:
+        return {"Authorization": f"Bearer {self._token}"}
+
+
 class BearerAuth:
     """``auth_mode=jwt``: asks ``token_provider`` for a token per request (the gateway caches minted JWTs)."""
 

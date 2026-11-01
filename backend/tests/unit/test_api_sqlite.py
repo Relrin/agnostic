@@ -1,7 +1,6 @@
 """The whole API on SQLite with the embedded job worker: no Docker, no Redis."""
 
 from collections.abc import AsyncIterator
-from typing import Any
 
 import httpx
 import pytest
@@ -14,6 +13,7 @@ from agnostic_kernel.errors import AppError, ConflictError
 from agnostic_kernel.modules import load_modules
 from agnostic_kernel.testing import make_settings, wait_for
 from agnostic_server.app import create_app
+from tests.support.probe import with_probe
 
 
 async def migrate(database_url: str) -> None:
@@ -25,58 +25,48 @@ async def migrate(database_url: str) -> None:
 @pytest.fixture
 async def client(sqlite_database: str) -> AsyncIterator[httpx.AsyncClient]:
     await migrate(sqlite_database)
-    app = create_app(make_settings(sqlite_database))
+    app = create_app(make_settings(sqlite_database), modules=with_probe())
     async with LifespanManager(app) as manager:
         transport = httpx.ASGITransport(app=manager.app)
         async with httpx.AsyncClient(transport=transport, base_url="http://test") as http:
             yield http
 
 
-async def test_greeting_gets_a_reply_from_the_embedded_worker(client: httpx.AsyncClient) -> None:
-    created = await client.post("/api/v1/hello/greetings", json={"message": "  hello   world "})
-    assert created.status_code == 201
-    body = created.json()
-    assert body["message"] == "hello world"
-    assert body["status"] == "pending"
+async def test_job_runs_in_the_embedded_worker(client: httpx.AsyncClient) -> None:
+    started = await client.post("/api/v1/probe/jobs", json={"value": "hi"})
+    assert started.status_code == 202
+    job_id = started.json()["job_id"]
 
-    async def fetch() -> dict[str, Any]:
-        response = await client.get(f"/api/v1/hello/greetings/{body['id']}")
-        return response.json()
+    async def fetch() -> httpx.Response:
+        return await client.get(f"/api/v1/probe/jobs/{job_id}")
 
-    replied = await wait_for(fetch, lambda g: g["status"] == "replied")
-    assert replied["reply"] == "Hello! You said: “hello world” (2 words)."
+    done = await wait_for(fetch, lambda response: response.status_code == 200)
+    assert done.json() == {"job_id": job_id, "progress": 1.0, "message": "echoed", "result": {"echo": "hi"}}
 
 
 async def test_cursor_pagination(client: httpx.AsyncClient) -> None:
-    for n in range(3):
-        assert (await client.post("/api/v1/hello/greetings", json={"message": f"m{n}"})).status_code == 201
-    first = (await client.get("/api/v1/hello/greetings", params={"limit": 2})).json()
-    assert [g["message"] for g in first["data"]] == ["m2", "m1"]
-    assert first["next_cursor"]
-    second = (await client.get("/api/v1/hello/greetings", params={"limit": 2, "cursor": first["next_cursor"]})).json()
-    assert [g["message"] for g in second["data"]] == ["m0"]
-    assert second["next_cursor"] is None
+    first = (await client.get("/api/v1/probe/items", params={"limit": 2})).json()
+    assert first["data"] == ["item-0", "item-1"]
+    second = (await client.get("/api/v1/probe/items", params={"limit": 2, "cursor": first["next_cursor"]})).json()
+    third = (await client.get("/api/v1/probe/items", params={"limit": 2, "cursor": second["next_cursor"]})).json()
+    assert third == {"data": ["item-4"], "next_cursor": None, "total_estimate": None}
 
 
 async def test_problem_responses(client: httpx.AsyncClient) -> None:
-    missing = await client.get("/api/v1/hello/greetings/hel_01M6A0EEZEQ373S26F20142FZ5")
+    missing = await client.get("/api/v1/probe/jobs/999999")
     assert missing.status_code == 404
     assert missing.headers["content-type"] == "application/problem+json"
     assert missing.json()["code"] == "not_found"
     assert missing.json()["request_id"] == missing.headers["x-request-id"]
 
-    malformed = await client.get("/api/v1/hello/greetings/not-an-id")
-    assert malformed.status_code == 404
+    malformed = await client.get("/api/v1/probe/jobs/not-a-number")
+    assert malformed.status_code == 422
 
-    invalid = await client.post("/api/v1/hello/greetings", json={"message": ""})
+    invalid = await client.post("/api/v1/probe/jobs", json={"value": ""})
     assert invalid.status_code == 422
-    assert invalid.json()["errors"][0]["loc"] == ["body", "message"]
+    assert invalid.json()["errors"][0]["loc"] == ["body", "value"]
 
-    blank = await client.post("/api/v1/hello/greetings", json={"message": "   "})
-    assert blank.status_code == 422
-    assert blank.json()["detail"] == "A greeting needs some text."
-
-    bad_cursor = await client.get("/api/v1/hello/greetings", params={"cursor": "!!"})
+    bad_cursor = await client.get("/api/v1/probe/items", params={"cursor": "!!"})
     assert bad_cursor.json()["code"] == "validation_failed"
 
     unknown = await client.get("/api/v1/nowhere")
@@ -93,6 +83,18 @@ async def test_request_id_is_accepted_or_generated(client: httpx.AsyncClient) ->
 
 async def test_readiness_reports_missing_cache(client: httpx.AsyncClient) -> None:
     response = await client.get("/readyz")
+    assert response.status_code == 200  # SQLite installs keep ephemeral state in process
+    checks = {c["name"]: c["ok"] for c in response.json()["checks"]}
+    assert checks == {"database": True, "cache": True, "migrations": True}
+
+
+async def test_readiness_reports_missing_redis(sqlite_database: str) -> None:
+    await migrate(sqlite_database)
+    app = create_app(make_settings(sqlite_database, cache={"mode": "redis"}))
+    async with LifespanManager(app) as manager:
+        transport = httpx.ASGITransport(app=manager.app)
+        async with httpx.AsyncClient(transport=transport, base_url="http://test") as http:
+            response = await http.get("/readyz")
     assert response.status_code == 503
     checks = {c["name"]: c["ok"] for c in response.json()["checks"]}
     assert checks == {"database": True, "cache": False, "migrations": True}
@@ -100,29 +102,32 @@ async def test_readiness_reports_missing_cache(client: httpx.AsyncClient) -> Non
 
 async def test_system_modules(client: httpx.AsyncClient) -> None:
     body = (await client.get("/api/v1/system/modules")).json()
-    assert body["enabled"][0]["name"] == "hello"
-    assert "hello.compose_reply" in body["enabled"][0]["jobs"]
+    modules = {module["name"]: module for module in body["enabled"]}
+    assert modules["probe"]["jobs"] == ["probe.echo"]
+    assert "audit.maintain_partitions" in modules["audit"]["jobs"]
+    assert set(modules) >= {"audit", "settings", "identity", "org", "instances", "access", "gateway"}
+    assert modules["gateway"]["depends_on"] == ["access", "instances", "settings", "audit"]
 
 
 def test_openapi_has_stable_operation_ids(sqlite_database: str) -> None:
     schema = create_app(make_settings(sqlite_database)).openapi()
     operation_ids = {op["operationId"] for path in schema["paths"].values() for op in path.values()}
-    assert {"hello_list_greetings", "hello_create_greeting", "hello_get_greeting", "system_list_modules"} <= (
-        operation_ids
-    )
+    assert {"auth_login", "me_get_me", "instances_list_instances", "system_list_modules"} <= operation_ids
 
 
-async def test_disabling_hello_removes_routes_and_jobs(sqlite_database: str) -> None:
+async def test_disabling_a_module_removes_its_routes(sqlite_database: str) -> None:
     await migrate(sqlite_database)
-    settings = make_settings(sqlite_database, modules={"disabled": ["hello"]})
+    settings = make_settings(sqlite_database, modules={"disabled": ["gateway"]})
     app = create_app(settings)
     paths = {getattr(route, "path", "") for route in app.routes}
-    assert not any(path.startswith("/api/v1/hello") for path in paths)
+    assert not any(path.startswith("/api/v1/gateway") or path.endswith("/os/{path:path}") for path in paths)
     async with LifespanManager(app) as manager:
         transport = httpx.ASGITransport(app=manager.app)
         async with httpx.AsyncClient(transport=transport, base_url="http://test") as http:
-            assert (await http.get("/api/v1/hello/greetings")).status_code == 404
-            assert (await http.get("/api/v1/system/modules")).json() == {"enabled": [], "disabled": ["hello"]}
+            assert (await http.get("/api/v1/gateway/policies")).status_code == 404
+            body = (await http.get("/api/v1/system/modules")).json()
+            assert "gateway" not in {module["name"] for module in body["enabled"]}
+            assert body["disabled"] == ["gateway"]
 
 
 async def test_unhandled_and_app_errors(sqlite_database: str) -> None:

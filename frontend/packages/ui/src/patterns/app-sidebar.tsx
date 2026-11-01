@@ -27,7 +27,7 @@ export type AppSidebarGroup = {
   items: readonly AppSidebarItem[];
 };
 
-export type SidebarOrg = { name: string; detail: string; logoLetter?: string };
+export type SidebarOrg = { name: string; detail: string; logoLetter?: string; logoUrl?: string | undefined };
 export type SidebarUser = { id: string; name: string; role: string; email: string };
 
 export type AppSidebarProps = {
@@ -52,12 +52,16 @@ export type AppSidebarProps = {
 export function OrgBadge({ org }: { org: SidebarOrg }) {
   return (
     <div className="flex h-11 w-full items-center gap-2.5 rounded-segment px-2">
-      <span
-        aria-hidden
-        className="grid size-7 shrink-0 place-items-center rounded-control bg-accent text-[14px] font-bold text-accent-fg"
-      >
-        {org.logoLetter ?? org.name.slice(0, 1)}
-      </span>
+      {org.logoUrl ? (
+        <img alt="" src={org.logoUrl} className="size-7 shrink-0 rounded-control object-cover" />
+      ) : (
+        <span
+          aria-hidden
+          className="grid size-7 shrink-0 place-items-center rounded-control bg-accent text-[14px] font-bold text-accent-fg"
+        >
+          {org.logoLetter ?? org.name.slice(0, 1)}
+        </span>
+      )}
       <span className="flex min-w-0 flex-1 flex-col gap-px">
         <span className="truncate text-[13.5px] font-semibold">{org.name}</span>
         <span className="text-[11.5px] text-fg-muted">{org.detail}</span>

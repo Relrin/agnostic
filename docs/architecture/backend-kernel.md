@@ -58,7 +58,8 @@ them, HTTP errors, validation errors and unhandled exceptions into `application/
 
 ```json
 {"type": "urn:agnostic:problem:not_found", "title": "Not found", "status": 404, "code": "not_found",
- "detail": "Greeting hel_… doesn't exist.", "instance": "/api/v1/hello/greetings/hel_…", "request_id": "req_…"}
+ "detail": "There is no instance 'prod-agentos'.", "instance": "/api/v1/instances/prod-agentos",
+ "request_id": "req_…"}
 ```
 
 `code` is stable; clients switch on it. See [API conventions](../reference/api-conventions.md).

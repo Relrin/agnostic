@@ -15,9 +15,10 @@ It follows the recommended production recipe:
 | `scheduler` | on, with a shared `internal_service_token` |
 | `queue` | `QueueConfig(durable=True, redis=…)` |
 | `registry` | `app/registry.py`: tools, the mock model, the database |
-| `user_isolation` | on |
-| `authorization` | on when `JWT_VERIFICATION_KEY` (or `JWT_JWKS_FILE`) is set; otherwise `auth_mode=none` for development |
+| `user_isolation` | on for `dev-prod`; elsewhere `RUNTIME_USER_ISOLATION` (default off) |
+| `authorization` | `Authorization(verify_audience=True, audience=<runtime id>, issuer=RUNTIME_JWT_ISSUER)` when `JWT_VERIFICATION_KEY` (or `JWT_JWKS_FILE`) is set; otherwise `auth_mode=none` for development |
 | `telemetry` | off |
+| bridge | `agnostic-bridge` installed (`app = install(agent_os)`): `GET /agnostic/v1/capabilities` |
 
 Sample components (one file each, matching the Sources path mapping):
 
@@ -40,6 +41,22 @@ Sample components (one file each, matching the Sources path mapping):
 - streaming yields the same text word by word.
 
 Run two instances with `just runtimes` ([guide](../how-to/reference-runtimes.md)).
+
+## `agnostic-bridge`
+
+`bridge/` is the optional companion customers add to their own AgentOS (`pip install agnostic-bridge`; Python
+3.10-3.13, agno 3.1.x). `install(agent_os)` returns `agent_os.get_app()` with routes under `/agnostic/v1`:
+
+- placed ahead of the first mount, so AgentOS's MCP catch-all (`mcp=True` mounts its app at `/`) never shadows them;
+- protected by AgentOS's own auth layer: their scopes are added to `app.state.scope_mappings`, the route → scopes
+  table AgentOS's auth middleware reads, so JWTs, service-account tokens and `agent_os:admin` behave as on built-in
+  routes;
+- read-only: the bridge stores nothing and never calls a model.
+
+v0.1 serves `GET /agnostic/v1/capabilities` (`config:read`): bridge, agno and Python versions, `os_id`, a replica
+id (`AGNOSTIC_BRIDGE_REPLICA_ID`, else `<hostname>:<pid>`) and the features the AgentOS object runs. The control
+plane's capability probe marks the bridge available on a `2xx`. `app.dump_openapi` leaves the bridge's paths out of
+the pinned AgentOS OpenAPI snapshot.
 
 ## `agnostic-agentos-client`
 

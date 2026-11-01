@@ -8,8 +8,9 @@ from pydantic import BaseModel
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncEngine
 
-from agnostic_kernel.checks import check_cache, check_database, check_migrations
+from agnostic_kernel.checks import CheckResult, check_cache, check_database, check_migrations
 from agnostic_kernel.modules import LoadedModules
+from agnostic_kernel.settings import Settings
 
 
 class Liveness(BaseModel):
@@ -44,10 +45,16 @@ def health_router() -> APIRouter:
         engine: FromDishka[AsyncEngine],
         redis: FromDishka[Redis],
         modules: FromDishka[LoadedModules],
+        settings: FromDishka[Settings],
     ) -> Readiness:
+        cache = (
+            CheckResult("cache", ok=True, detail="in-process store (single process, development only)")
+            if settings.cache_backend() == "memory"
+            else await check_cache(redis, probe=False)
+        )
         results = [
             await check_database(engine),
-            await check_cache(redis, probe=False),
+            cache,
             await check_migrations(engine, list(modules.installed.values())),
         ]
         ready = all(result.ok for result in results)

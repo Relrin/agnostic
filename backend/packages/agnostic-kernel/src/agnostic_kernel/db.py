@@ -47,6 +47,15 @@ def utcnow() -> datetime:
     return datetime.now(UTC)
 
 
+def aware(value: datetime) -> datetime:
+    """SQLite returns naive datetimes; everything in the control plane is UTC."""
+    return value if value.tzinfo else value.replace(tzinfo=UTC)
+
+
+def aware_or_none(value: datetime | None) -> datetime | None:
+    return aware(value) if value is not None else None
+
+
 class TimestampMixin:
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(

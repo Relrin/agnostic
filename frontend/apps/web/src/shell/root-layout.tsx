@@ -1,15 +1,35 @@
-import { systemReadiness } from "@agnostic/api";
 import {
   activeNavId,
   buildNavigation,
   collectCommands,
+  decide,
+  findInstance,
+  moduleAvailable,
+  ORG_ROLE_LABELS,
   scopedPath,
+  useInstanceHealth,
+  useInstances,
+  useMe,
+  useMyAccess,
+  useOrg,
+  type HealthOut,
+  type InstanceOut,
+  type ModuleManifest,
   type ResolvedNavEntry,
 } from "@agnostic/core";
 import {
   AppShell,
   AppSidebar,
   Breadcrumb,
+  Button,
+  Callout,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  EnvBadge,
   HealthIndicator,
   InstanceSwitcher,
   PageHeader,
@@ -17,38 +37,40 @@ import {
   type AppSidebarItem,
   type Health,
 } from "@agnostic/ui";
-import { useQuery } from "@tanstack/react-query";
-import { Link, Outlet, useRouterState } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
+import { Plus } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 
 import { MODULES } from "../modules";
 import { CommandPalette } from "./command-palette";
 import { GROUP_LABELS, NAV_CATALOG } from "./nav-catalog";
-import { DEFAULT_INSTANCE, PLACEHOLDER_INSTANCES, PLACEHOLDER_ORG, PLACEHOLDER_USER } from "./session";
+import { lastInstance, rememberInstance } from "./session";
 
-/** Control-plane readiness as the header's health line (instance health replaces it in P01). */
-function useControlPlaneHealth(): Health {
-  const { data } = useQuery({
-    queryKey: ["shell", "readiness"],
-    queryFn: async (): Promise<Health> => {
-      const started = performance.now();
-      try {
-        await systemReadiness();
-        return { state: "healthy", latencyMs: Math.round(performance.now() - started) };
-      } catch {
-        return { state: "degraded", latencyMs: Math.round(performance.now() - started) };
-      }
-    },
-    refetchInterval: 30_000,
-    retry: false,
-  });
-  return data ?? { state: "unknown" };
+/** `/i/<instance>/…` → that instance. */
+function instanceFromPath(pathname: string): string | undefined {
+  const match = /^\/i\/([^/]+)/.exec(pathname);
+  return match?.[1] ? decodeURIComponent(match[1]) : undefined;
 }
 
-/** `/i/<instance>/…` → instance; org-wide pages keep the default instance in the header. */
-function instanceFromPath(pathname: string): string {
-  const match = /^\/i\/([^/]+)/.exec(pathname);
-  return match?.[1] ? decodeURIComponent(match[1]) : DEFAULT_INSTANCE;
+/** `● Healthy · 38 ms · agno 3.1.12` from the instance record and its health endpoint. */
+function toHealth(instance: InstanceOut | undefined, health: HealthOut | undefined): Health {
+  if (!instance) return { state: "unknown" };
+  const status = health?.status ?? instance.status;
+  const state =
+    status === "connected"
+      ? "healthy"
+      : status === "unreachable"
+        ? "down"
+        : status === "pending"
+          ? "degraded"
+          : "unknown";
+  const latency = health?.latency_ms ?? instance.latency_ms;
+  const version = health?.agno_version ?? instance.agno_version;
+  return {
+    state,
+    ...(latency !== null ? { latencyMs: latency } : {}),
+    ...(version ? { version } : {}),
+  };
 }
 
 function toSidebarItem(entry: ResolvedNavEntry, instance: string): AppSidebarItem {
@@ -61,33 +83,169 @@ function toSidebarItem(entry: ResolvedNavEntry, instance: string): AppSidebarIte
   };
 }
 
+function InstanceMenu({
+  instances,
+  active,
+}: {
+  instances: readonly InstanceOut[];
+  active: InstanceOut | undefined;
+}) {
+  const navigate = useNavigate();
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  if (!active) {
+    return (
+      <Button asChild size="32" variant="outline">
+        <Link to="/instances/connect">
+          <Plus aria-hidden />
+          Connect an instance
+        </Link>
+      </Button>
+    );
+  }
+  // Switching keeps the current page when it's an instance page (03 §3).
+  const switchTo = (slug: string) => {
+    const rest = pathname.startsWith("/i/") ? pathname.split("/").slice(3).join("/") : "settings";
+    void navigate({ to: `/i/${encodeURIComponent(slug)}/${rest}` });
+  };
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <InstanceSwitcher name={active.display_name} env={active.env_tag} />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="min-w-64">
+        <DropdownMenuLabel>AgentOS instances</DropdownMenuLabel>
+        {instances.map((instance) => (
+          <DropdownMenuItem
+            key={instance.id}
+            onSelect={() => {
+              switchTo(instance.slug);
+            }}
+          >
+            <span className="flex-1">{instance.display_name}</span>
+            <EnvBadge env={instance.env_tag} />
+          </DropdownMenuItem>
+        ))}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onSelect={() => {
+            void navigate({ to: "/instances" });
+          }}
+        >
+          Manage instances
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+function UnreachableBanner({ instance, health }: { instance: InstanceOut | undefined; health: Health }) {
+  if (!instance || (health.state !== "down" && instance.status !== "disabled")) return null;
+  const disabled = instance.status === "disabled";
+  return (
+    <div className="px-6 pt-3">
+      <Callout
+        tone={disabled ? "warning" : "danger"}
+        title={disabled ? `${instance.display_name} is disabled` : `${instance.display_name} is unreachable`}
+        action={
+          <Button asChild size="28" variant="outline">
+            <Link
+              to="/i/$instance/settings/$section"
+              params={{ instance: instance.slug, section: "connection" }}
+            >
+              Open connection settings
+            </Link>
+          </Button>
+        }
+      >
+        {disabled
+          ? "The gateway won't call it until it's enabled again."
+          : `Pages that read from it fail until it's back.${
+              instance.last_seen_at ? ` Last seen ${new Date(instance.last_seen_at).toLocaleString()}.` : ""
+            }`}
+      </Callout>
+    </div>
+  );
+}
+
+/** Modules shown for the active instance: capability-driven (07 §3) and scope-driven (anyScope). */
+function useVisibleModules(capabilities: ReadonlyMap<string, string> | undefined): ModuleManifest[] {
+  const orgAccess = useMyAccess();
+  return useMemo(
+    () =>
+      MODULES.filter((module) => {
+        if (module.scope === "instance" && !moduleAvailable(module, capabilities)) return false;
+        const anyScope = module.requires?.anyScope ?? [];
+        if (anyScope.length === 0 || !orgAccess.data) return true;
+        return anyScope.some((scope) => decide(orgAccess.data, scope).allowed === true);
+      }),
+    [capabilities, orgAccess.data],
+  );
+}
+
 export function RootLayout() {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
-  const instance = instanceFromPath(pathname);
+  const navigate = useNavigate();
   const [paletteOpen, setPaletteOpen] = useState(false);
-  const health = useControlPlaneHealth();
+  const me = useMe();
+  const org = useOrg();
+  const instances = useInstances();
 
-  const navigation = useMemo(() => buildNavigation(NAV_CATALOG, MODULES), []);
+  const fromPath = instanceFromPath(pathname);
+  const active =
+    findInstance(instances.data, fromPath) ??
+    findInstance(instances.data, lastInstance()) ??
+    instances.data?.[0];
+  const instanceSlug = fromPath ?? active?.slug ?? "";
+  useEffect(() => {
+    if (fromPath && findInstance(instances.data, fromPath)) rememberInstance(fromPath);
+  }, [fromPath, instances.data]);
+
+  const healthQuery = useInstanceHealth(active?.id);
+  const health = toHealth(active, healthQuery.data);
+  const capabilities = useMemo(
+    () =>
+      healthQuery.data
+        ? new Map(healthQuery.data.capabilities.map((item) => [item.name, item.status]))
+        : undefined,
+    [healthQuery.data],
+  );
+  const visibleModules = useVisibleModules(capabilities);
+  const navigation = useMemo(() => buildNavigation(NAV_CATALOG, visibleModules), [visibleModules]);
   const commands = useMemo(() => collectCommands(MODULES), []);
-  const activeId = activeNavId(navigation, pathname, instance);
-  const active = [...navigation.groups.flatMap((group) => group.items), ...navigation.footer].find(
+  const activeId = activeNavId(navigation, pathname, instanceSlug);
+  const activeEntry = [...navigation.groups.flatMap((group) => group.items), ...navigation.footer].find(
     (entry) => entry.id === activeId,
   );
-  const instanceInfo = PLACEHOLDER_INSTANCES[instance] ?? { name: instance, env: "development" as const };
 
+  const orgDetail = org.data
+    ? `${String(org.data.member_count)} ${org.data.member_count === 1 ? "member" : "members"}` +
+      (org.data.seat_limit ? ` · ${String(org.data.seat_limit)} seats` : "")
+    : "";
   const sidebar = (
     <AppSidebar
-      org={PLACEHOLDER_ORG}
-      user={PLACEHOLDER_USER}
+      org={{
+        name: org.data?.name ?? "Agnostic",
+        detail: orgDetail,
+        logoUrl: org.data?.logo_url ?? undefined,
+      }}
+      user={{
+        id: me.data?.id ?? "me",
+        name: me.data?.display_name ?? "…",
+        role: me.data?.org_role ? ORG_ROLE_LABELS[me.data.org_role] : "",
+        email: me.data?.email ?? "",
+      }}
       groups={navigation.groups.map((group) => ({
         id: group.id,
         ...(group.label ? { label: group.label } : {}),
-        items: group.items.map((entry) => toSidebarItem(entry, instance)),
+        items: group.items.map((entry) => toSidebarItem(entry, instanceSlug)),
       }))}
-      footer={navigation.footer.map((entry) => toSidebarItem(entry, instance))}
+      footer={navigation.footer.map((entry) => toSidebarItem(entry, instanceSlug))}
       activeId={activeId}
       onSearch={() => {
         setPaletteOpen(true);
+      }}
+      onAccountMenu={() => {
+        void navigate({ to: "/account" });
       }}
       renderLink={({ item, className, active: isActive, children }) => (
         <Link to={item.to} className={className} {...(isActive ? { "aria-current": "page" as const } : {})}>
@@ -97,7 +255,9 @@ export function RootLayout() {
     />
   );
 
-  const groupLabel = active ? GROUP_LABELS[active.group] : undefined;
+  const groupLabel = activeEntry ? GROUP_LABELS[activeEntry.group] : undefined;
+  const unknownInstance =
+    fromPath !== undefined && instances.data !== undefined && !findInstance(instances.data, fromPath);
 
   return (
     <TooltipProvider delayDuration={300}>
@@ -105,19 +265,36 @@ export function RootLayout() {
         <PageHeader
           start={
             <>
-              <InstanceSwitcher name={instanceInfo.name} env={instanceInfo.env} />
+              <InstanceMenu instances={instances.data ?? []} active={active} />
               <Breadcrumb
                 items={[
                   ...(groupLabel ? [{ label: groupLabel }] : []),
-                  { label: active?.label ?? "Not found" },
+                  {
+                    label:
+                      activeEntry?.label ??
+                      (pathname.startsWith("/account")
+                        ? "Account"
+                        : pathname.startsWith("/instances")
+                          ? "Instances"
+                          : ""),
+                  },
                 ]}
               />
             </>
           }
-          end={<HealthIndicator health={health} />}
+          end={active ? <HealthIndicator health={health} /> : undefined}
         />
+        <UnreachableBanner instance={fromPath ? active : undefined} health={health} />
         <div className="min-h-0 flex-1 overflow-auto">
-          <Outlet />
+          {unknownInstance ? (
+            <div className="mx-auto w-full max-w-[1320px] px-8 pt-6">
+              <Callout tone="danger" title={`There is no instance ${fromPath}`}>
+                It may have been renamed or deleted. <Link to="/instances">See all instances</Link>.
+              </Callout>
+            </div>
+          ) : (
+            <Outlet />
+          )}
         </div>
       </AppShell>
       <CommandPalette
@@ -125,7 +302,7 @@ export function RootLayout() {
         onOpenChange={setPaletteOpen}
         navigation={navigation}
         commands={commands}
-        instance={instance}
+        instance={instanceSlug}
       />
     </TooltipProvider>
   );

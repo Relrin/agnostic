@@ -26,12 +26,15 @@ def test_db_upgrade_downgrade_current() -> None:
     assert upgraded.exit_code == 0, upgraded.output
     assert "up to date" in upgraded.output
 
-    downgraded = runner.invoke(app, ["db", "downgrade", "hello@base"])
+    downgraded = runner.invoke(app, ["db", "downgrade", "gateway@base"])
     assert downgraded.exit_code == 0, downgraded.output
-    assert "pending: h0001_greetings" in downgraded.output
+    assert "pending: g0001_gateway" in downgraded.output
 
     current = runner.invoke(app, ["db", "current"])
-    assert "current: k0001_kernel_base" in current.output
+    applied = current.output.splitlines()[0]
+    assert "g0001_gateway" not in applied
+    assert "i0001_identity" not in applied  # applied, but behind o0001_org (depends_on)
+    assert "pending: g0001_gateway" in current.output
 
 
 def test_config_check() -> None:
@@ -54,9 +57,9 @@ def test_config_check_rejects_bad_module_graph(monkeypatch: pytest.MonkeyPatch) 
 
 def test_modules_list(monkeypatch: pytest.MonkeyPatch) -> None:
     result = runner.invoke(app, ["modules", "list"])
-    assert "hello" in result.output
+    assert "gateway" in result.output
     assert "enabled" in result.output
-    monkeypatch.setenv("AGNOSTIC_MODULES__DISABLED", "hello")
+    monkeypatch.setenv("AGNOSTIC_MODULES__DISABLED", "gateway")
     assert "disabled" in runner.invoke(app, ["modules", "list"]).output
     monkeypatch.setenv("AGNOSTIC_MODULES__DISABLED", "ghost")
     assert runner.invoke(app, ["modules", "list"]).exit_code == 1
@@ -67,7 +70,8 @@ def test_openapi_export(tmp_path: Path) -> None:
     result = runner.invoke(app, ["openapi", "--out", str(out)])
     assert result.exit_code == 0, result.output
     document = json.loads(out.read_text(encoding="utf-8"))
-    assert "/api/v1/hello/greetings" in document["paths"]
+    assert "/api/v1/instances" in document["paths"]
+    assert "/.well-known/agnostic/instances/{instance_id}/jwks.json" in document["paths"]
 
 
 def test_worker_refuses_sqlite() -> None:

@@ -68,4 +68,5 @@ supported.
 
 ## Module settings
 
-Each module reads its own namespace, e.g. `AGNOSTIC_HELLO__REPLY_PREFIX=Hi`. See the module's `settings.py`.
+Each module reads its own namespace, e.g. `AGNOSTIC_GATEWAY__READ_SAMPLE_RATE=0.2`. See the module's
+`settings.py` and the [configuration reference](../reference/configuration.md).

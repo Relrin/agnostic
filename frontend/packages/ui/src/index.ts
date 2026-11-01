@@ -33,6 +33,7 @@ export {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./primitives/dropdown-menu";
+export { Field, Switch, Textarea } from "./primitives/form";
 export { Input, type InputProps } from "./primitives/input";
 export {
   SegmentedControl,
@@ -99,4 +100,5 @@ export {
   type Environment,
   type Health,
 } from "./patterns/page-header";
+export { CodeBlock, StepList, type StepState } from "./patterns/code-block";
 export { EmptyState, ErrorState, LoadingRows } from "./patterns/states";

@@ -21,6 +21,7 @@ from agnostic_kernel.modules import load_modules
 from agnostic_kernel.settings import Settings
 from agnostic_kernel.testing import make_settings, wait_for
 from agnostic_server.app import create_app
+from tests.support.probe import with_probe
 
 pytestmark = pytest.mark.integration
 
@@ -53,7 +54,8 @@ async def test_migrations_up_down_up(fresh_postgres: str) -> None:
             extensions = set((await connection.execute(text("SELECT extname FROM pg_extension"))).scalars())
         assert {
             "agnostic.kernel_job_progress",
-            "agnostic.hello_greetings",
+            "agnostic.identity_users",
+            "agnostic.audit_events",
             "procrastinate.procrastinate_jobs",
         } <= tables
         assert {"citext", "pg_trgm"} <= extensions
@@ -117,8 +119,9 @@ async def test_job_progress_is_stored_and_published(settings: Settings) -> None:
 
 
 async def test_api_and_worker_on_postgres(settings: Settings) -> None:
-    app = create_app(settings)
-    worker_container = build_container(settings, load_modules())
+    modules = with_probe()
+    app = create_app(settings, modules=modules)
+    worker_container = build_container(settings, modules)
     jobs_app = await worker_container.get(procrastinate.App)
     worker = asyncio.create_task(
         jobs_app.run_worker_async(
@@ -132,13 +135,13 @@ async def test_api_and_worker_on_postgres(settings: Settings) -> None:
                 ready = await http.get("/readyz")
                 assert ready.status_code == 200, ready.text
 
-                created = (await http.post("/api/v1/hello/greetings", json={"message": "from postgres"})).json()
+                started = (await http.post("/api/v1/probe/jobs", json={"value": "from postgres"})).json()
 
-                async def fetch() -> dict[str, Any]:
-                    return (await http.get(f"/api/v1/hello/greetings/{created['id']}")).json()
+                async def fetch() -> httpx.Response:
+                    return await http.get(f"/api/v1/probe/jobs/{started['job_id']}")
 
-                replied = await wait_for(fetch, lambda g: g["status"] == "replied", timeout=20)
-                assert replied["reply"].startswith("Hello! You said")
+                done = await wait_for(fetch, lambda response: response.status_code == 200, timeout=20)
+                assert done.json()["result"] == {"echo": "from postgres"}
     finally:
         worker.cancel()
         with contextlib.suppress(asyncio.CancelledError):

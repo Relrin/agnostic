@@ -8,6 +8,7 @@ dependencies = [
   "aiosqlite==0.22.1",
   "alembic==1.20.1",
   "asyncpg==0.32.0",
+  "cryptography==50.0.2",
   "dishka==1.10.1",
   "fastapi==0.162.0",
   "httpx==0.28.1",

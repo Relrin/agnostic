@@ -33,6 +33,7 @@ TOML files (`AGNOSTIC_CONFIG_FILE`) use the same names as sections and keys. Sou
 | `AGNOSTIC_REDIS__SENTINEL_MASTER` | — | Sentinel service name |
 | `AGNOSTIC_REDIS__TLS__CA_FILE` / `__CERT_FILE` / `__KEY_FILE` | — | TLS material |
 | `AGNOSTIC_REDIS__SOCKET_TIMEOUT` | `5` | seconds |
+| `AGNOSTIC_CACHE__MODE` | `auto` | where sessions, scope caches and rate limits live: `redis`, `memory` (one process: SQLite installs and tests), `auto` (redis on PostgreSQL, memory on SQLite) |
 
 ## Jobs
 
@@ -49,6 +50,56 @@ TOML files (`AGNOSTIC_CONFIG_FILE`) use the same names as sections and keys. Sou
 | `AGNOSTIC_HTTP__HOST` | `127.0.0.1` | bind address for `agnostic api` |
 | `AGNOSTIC_HTTP__PORT` | `8000` | port |
 | `AGNOSTIC_HTTP__CORS_ORIGINS` | — | allowed origins (not needed same-origin) |
+| `AGNOSTIC_HTTP__PUBLIC_URL` | `http://{host}:{port}` | the URL people open (behind the proxy): email links, SSO callback URLs, the JWT issuer |
+| `AGNOSTIC_HTTP__SECURE_COOKIES` | on unless `PUBLIC_URL` is `http://` | mark the session and CSRF cookies `Secure` |
+
+## Secrets and email
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `AGNOSTIC_SECRETS__MASTER_KEY` | — | base64 of 32 random bytes: the key-encryption key for secrets at rest (instance private keys, security keys). Required in production; development uses a fixed insecure key with a warning |
+| `AGNOSTIC_SECRETS__MASTER_KEY_FILE` | — | read the master key from a file instead |
+| `AGNOSTIC_SMTP__URL` | — | `smtp://user:pass@host:587` (STARTTLS when offered) or `smtps://host:465`; without it, emails (invitations, password resets) are written to the log |
+| `AGNOSTIC_SMTP__SENDER` | `Agnostic <agnostic@localhost>` | `From:` address |
+| `AGNOSTIC_SMTP__TLS__CA_FILE` / `__CERT_FILE` / `__KEY_FILE` | — | TLS material |
+
+## Sign-in (identity module)
+
+See [sign-in providers](../how-to/sign-in-providers.md) for setup per identity provider.
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `AGNOSTIC_IDENTITY__LOCAL_LOGIN` | `true` | email + password accounts; turn off to require SSO |
+| `AGNOSTIC_IDENTITY__PROVIDERS__<ID>__PRESET` | `oidc` | `github`, `gitlab`, `google`, `okta` or `oidc` (any OIDC IdP) |
+| `…__<ID>__CLIENT_ID` / `__CLIENT_SECRET` | — | OAuth client registered at the provider; callback URL `{PUBLIC_URL}/api/v1/auth/sso/<id>/callback` |
+| `…__<ID>__ISSUER` | preset default | OIDC issuer (required for Okta and generic OIDC; self-managed GitLab) |
+| `…__<ID>__BASE_URL` | `https://github.com` | GitHub Enterprise Server URL |
+| `…__<ID>__DISPLAY_NAME` / `__SCOPES` | preset default | button label; requested scopes |
+| `…__<ID>__JIT_PROVISIONING` | `false` | people without an invitation join as Members on first sign-in… |
+| `…__<ID>__ALLOWED_EMAIL_DOMAINS` | — | …when their email domain is listed (Google: also preselects the Workspace domain) |
+| `…__<ID>__TRUST_UNVERIFIED_EMAIL` | `false` | accept emails the provider hasn't verified |
+| `…__<ID>__ENABLED` | `true` | hide a provider without deleting its settings |
+| `AGNOSTIC_IDENTITY__PASSWORD_MIN_LENGTH` | `12` | |
+| `AGNOSTIC_IDENTITY__SESSION_IDLE_HOURS` / `__SESSION_ABSOLUTE_DAYS` | `12` / `7` | sliding and absolute session lifetime |
+| `AGNOSTIC_IDENTITY__LOCKOUT_THRESHOLD` / `__LOCKOUT_MINUTES` | `5` / `15` | failed sign-ins before an account is locked, and for how long |
+| `AGNOSTIC_IDENTITY__LOGIN_ATTEMPTS_PER_IP_PER_MINUTE` | `30` | |
+| `AGNOSTIC_IDENTITY__PASSWORD_RESET_MINUTES` | `60` | reset link lifetime |
+
+## Instances and gateway
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `AGNOSTIC_INSTANCES__ISSUER` | `PUBLIC_URL` | `iss` of the JWTs minted for runtimes |
+| `AGNOSTIC_INSTANCES__TOKEN_TTL_SECONDS` | `300` | lifetime of minted JWTs |
+| `AGNOSTIC_INSTANCES__HEALTH_CRON` / `__SNAPSHOT_CRON` | `* * * * *` / `*/5 * * * *` | health polling and `/config` + capability refresh |
+| `AGNOSTIC_GATEWAY__READ_SAMPLE_RATE` | `0.05` | share of allowed reads written to the audit log (writes and denials always are) |
+| `AGNOSTIC_GATEWAY__RATE_READ_PER_MINUTE` / `__RATE_WRITE_…` / `__RATE_RUN_…` | `1200` / `240` / `120` | per person and instance; `0` turns a bucket off |
+| `AGNOSTIC_GATEWAY__MAX_BODY_MB` | `100` | largest request body streamed to a runtime |
+| `AGNOSTIC_GATEWAY__HEARTBEAT_SECONDS` | `15` | SSE keep-alive comments while a runtime is quiet |
+| `AGNOSTIC_GATEWAY__UPSTREAM_READ_TIMEOUT` | `600` | seconds a runtime may stay silent mid-response |
+| `AGNOSTIC_GATEWAY__CIRCUIT_FAILURES` / `__CIRCUIT_COOLDOWN_SECONDS` | `5` / `30` | consecutive connection failures before failing fast, and for how long |
+| `AGNOSTIC_AUDIT__RETENTION_DAYS` | `400` | older monthly partitions are dropped (ADR-017) |
+| `AGNOSTIC_AUDIT__MAINTENANCE_CRON` | `17 3 * * *` | partition creation and retention |
 
 ## Logging and tracing
 
@@ -66,8 +117,6 @@ TOML files (`AGNOSTIC_CONFIG_FILE`) use the same names as sections and keys. Sou
 | Variable | Default | Meaning |
 |---|---|---|
 | `AGNOSTIC_MODULES__DISABLED` | — | modules to turn off, e.g. `assistant,sources` |
-| `AGNOSTIC_HELLO__REPLY_PREFIX` | `Hello` | sample module: reply greeting |
-| `AGNOSTIC_HELLO__HEARTBEAT_CRON` | `*/5 * * * *` | sample module: periodic job schedule |
 
 ## Tests only
 

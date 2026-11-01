@@ -14,6 +14,7 @@
 | [Module system](architecture/module-system.md) | the `Module` contract, discovery, ordering, disabling, boundaries |
 | [Frontend](architecture/frontend.md) | shell, module SDK, routing, data layer, design tokens and primitives |
 | [AgentOS runtime and client](architecture/agentos-runtime-and-client.md) | `agnostic-runtime`, the mock model, `agnostic-agentos-client`, contract tests |
+| [Identity, access and the gateway](architecture/identity-access-gateway.md) | sign-in, sessions, org roles, bindings, effective scopes, instances and keys, the gateway pipeline, audit |
 
 ## How-to guides
 
@@ -25,7 +26,8 @@
 | [Background jobs](how-to/background-jobs.md) | Procrastinate tasks, periodic jobs, progress |
 | [Configuration and endpoints](how-to/configuration.md) | env vars, TOML, TLS, PostgreSQL vs SQLite |
 | [Regenerate API clients](how-to/api-clients.md) | OpenAPI → TypeScript, AgentOS OpenAPI → Python models |
-| [Run the reference runtimes](how-to/reference-runtimes.md) | two AgentOS instances for development |
+| [Run the reference runtimes](how-to/reference-runtimes.md) | two AgentOS instances for development, JWT trust, `just seed`, the bridge |
+| [Sign-in providers](how-to/sign-in-providers.md) | local accounts, GitHub, GitLab, Google, Okta, any OIDC provider |
 | [Testing](how-to/testing.md) | unit, integration, contract, Storybook a11y, Playwright |
 | [Dependencies](how-to/dependencies.md) | exact pinning, upgrades, Renovate, license policy |
 | [Troubleshooting](how-to/troubleshooting.md) | Windows, ports, Docker, common errors |

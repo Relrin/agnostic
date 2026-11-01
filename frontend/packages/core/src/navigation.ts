@@ -55,7 +55,7 @@ export function collectCommands(
   );
 }
 
-/** Absolute path of a scope-relative path, e.g. ("instance", "hello", "dev-prod") → "/i/dev-prod/hello". */
+/** Absolute path of a scope-relative path, e.g. ("instance", "settings", "dev-prod") → "/i/dev-prod/settings". */
 export function scopedPath(scope: ModuleScope, path: string, instance: string): string {
   const clean = path.replace(/^\/+/, "");
   return scope === "instance" ? `/i/${encodeURIComponent(instance)}/${clean}` : `/${clean}`;

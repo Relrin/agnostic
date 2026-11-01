@@ -1,0 +1,31 @@
+[project]
+name = "agnostic-identity"
+version = "0.1.0"
+description = "Accounts, local and SSO sign-in (OIDC / OAuth 2), web sessions with CSRF, /me and preferences"
+requires-python = "==3.15.*"
+license = "BSD-3-Clause"
+dependencies = [
+  "agnostic-audit",
+  "agnostic-kernel",
+  "alembic==1.20.1",
+  "argon2-cffi==25.1.0",
+  "dishka==1.10.1",
+  "fastapi==0.162.0",
+  "httpx==0.28.1",
+  "orjson==3.13.0",
+  "pydantic==2.14.2",
+  "pydantic-settings==2.16.2",
+  "pyjwt[crypto]==2.15.1",
+  "sqlalchemy[asyncio]==2.1.6",
+]
+
+[project.entry-points."agnostic.modules"]
+identity = "agnostic_identity.module:IdentityModule"
+
+[tool.uv.sources]
+agnostic-audit = { workspace = true }
+agnostic-kernel = { workspace = true }
+
+[build-system]
+requires = ["uv_build==0.13.6"]
+build-backend = "uv_build"

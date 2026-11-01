@@ -36,17 +36,17 @@ const catalog: CatalogEntry[] = [
   },
 ];
 
-const hello = defineModule({
-  id: "hello",
+const notes = defineModule({
+  id: "notes",
   scope: "instance",
   routes: [],
-  nav: [{ id: "hello", group: "build", label: "Hello", icon: Icon, path: "hello", order: 5 }],
-  commands: [{ id: "hello.open", label: "Open Hello", path: "hello" }],
+  nav: [{ id: "notes", group: "build", label: "Notes", icon: Icon, path: "notes", order: 5 }],
+  commands: [{ id: "notes.open", label: "Open Notes", path: "notes" }],
 });
 
 describe("buildNavigation", () => {
   it("groups catalog and module entries in prototype order", () => {
-    const nav = buildNavigation(catalog, [hello]);
+    const nav = buildNavigation(catalog, [notes]);
     expect(nav.groups.map((g) => g.label)).toEqual([
       undefined,
       "Build",
@@ -55,8 +55,8 @@ describe("buildNavigation", () => {
       "Control",
       "Access",
     ]);
-    expect(nav.groups[1]?.items.map((i) => i.id)).toEqual(["hello"]);
-    expect(nav.groups[1]?.items[0]?.moduleId).toBe("hello");
+    expect(nav.groups[1]?.items.map((i) => i.id)).toEqual(["notes"]);
+    expect(nav.groups[1]?.items[0]?.moduleId).toBe("notes");
     expect(nav.groups[4]?.items[0]?.moduleId).toBeUndefined();
     expect(nav.footer.map((i) => i.id)).toEqual(["settings"]);
   });
@@ -77,21 +77,21 @@ describe("buildNavigation", () => {
 
 describe("paths", () => {
   it("scopes paths", () => {
-    expect(scopedPath("instance", "/hello", "dev prod")).toBe("/i/dev%20prod/hello");
+    expect(scopedPath("instance", "/notes", "dev prod")).toBe("/i/dev%20prod/notes");
     expect(scopedPath("org", "access/people", "dev-prod")).toBe("/access/people");
   });
 
   it("finds the active entry by longest prefix", () => {
-    const nav = buildNavigation(catalog, [hello]);
-    expect(activeNavId(nav, "/i/dev-prod/hello", "dev-prod")).toBe("hello");
-    expect(activeNavId(nav, "/i/dev-prod/hello/hel_1", "dev-prod")).toBe("hello");
+    const nav = buildNavigation(catalog, [notes]);
+    expect(activeNavId(nav, "/i/dev-prod/notes", "dev-prod")).toBe("notes");
+    expect(activeNavId(nav, "/i/dev-prod/notes/note_1", "dev-prod")).toBe("notes");
     expect(activeNavId(nav, "/access/people", "dev-prod")).toBe("people");
     expect(activeNavId(nav, "/elsewhere", "dev-prod")).toBeUndefined();
   });
 
   it("collects commands with their module scope", () => {
-    expect(collectCommands([hello])).toEqual([
-      { id: "hello.open", label: "Open Hello", path: "hello", scope: "instance" },
+    expect(collectCommands([notes])).toEqual([
+      { id: "notes.open", label: "Open Notes", path: "notes", scope: "instance" },
     ]);
   });
 });
