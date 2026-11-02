@@ -126,6 +126,11 @@ See [sign-in providers](../how-to/sign-in-providers.md) for setup per identity p
 | `AGNOSTIC_APPROVALS__CONTINUE_RETRY_DELAYS` | `[0.5, 1.0, 2.0]` | backoff (seconds) while AgentOS answers 409 to a continuation |
 | `AGNOSTIC_OBSERVE__MAX_TRACE_PAGES` | `10` | pages of 100 traces scanned per overview (error rate, p95, per-component runs) |
 | `AGNOSTIC_OBSERVE__WARM_CRON` | `* * * * *` | recompute the 7-day overview of connected instances; empty turns it off |
+| `AGNOSTIC_OBSERVE__MAX_SPAN_STAT_TRACES` | `100` | newest traces whose spans feed "Slowest span types" |
+| `AGNOSTIC_OBSERVE__SPAN_STATS_TTL_SECONDS` | `900` | how long span statistics are reused per instance and window |
+| `AGNOSTIC_OBSERVE__MAX_SESSION_PAGES` | `20` | pages of 100 sessions read for per-component usage on the Metrics page; beyond that it says *approximate* |
+| `AGNOSTIC_OBSERVE__COMPARISON_CACHE_DAYS` | `7` | trace comparisons are recomputed after this many days |
+| `AGNOSTIC_EVALS__CONCURRENCY` | `4` | eval runs in flight per batch; batches on one instance run one after another |
 | `AGNOSTIC_SEARCH__REINDEX_CRON` | `*/5 * * * *` | rebuild the ⌘K index; empty turns it off |
 | `AGNOSTIC_NOTIFICATIONS__HEARTBEAT_SECONDS` | `15` | keepalive interval on `/api/v1/events` |
 | `AGNOSTIC_NOTIFICATIONS__MAX_STREAM_SECONDS` | `1800` | streams end after this; browsers reconnect with `Last-Event-ID` |

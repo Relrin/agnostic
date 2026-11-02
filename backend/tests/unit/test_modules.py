@@ -29,8 +29,9 @@ def test_entry_points_discover_the_installed_modules() -> None:
         "access",
         "gateway",
         "notifications",
-        "observe",
         "approvals",
+        "evals",
+        "observe",
     ]
     assert isinstance(loaded.installed["instances"], InstancesModule)
 

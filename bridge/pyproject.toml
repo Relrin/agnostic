@@ -1,5 +1,5 @@
-# agnostic-bridge: an optional companion that customers install inside their AgentOS app. It adds a few read-only
-# routes under /agnostic/v1 that the Agnostic control plane uses for features AgentOS itself doesn't expose.
+# agnostic-bridge: an optional companion that customers install inside their AgentOS app. It adds a few routes
+# under /agnostic/v1 that the Agnostic control plane uses for features AgentOS itself doesn't expose.
 # It runs wherever AgentOS runs, so it supports agno's Pythons rather than the control plane's.
 [project]
 name = "agnostic-bridge"

@@ -43,6 +43,15 @@
     },
     {
       "path": "../../modules/sessions"
+    },
+    {
+      "path": "../../modules/traces"
+    },
+    {
+      "path": "../../modules/metrics"
+    },
+    {
+      "path": "../../modules/evals"
     }
   ]
 }

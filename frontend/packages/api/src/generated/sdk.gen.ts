@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, ServerSentEventsResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AccessCreateBindingData, AccessCreateBindingErrors, AccessCreateBindingResponses, AccessDeleteBindingData, AccessDeleteBindingErrors, AccessDeleteBindingResponses, AccessExplainData, AccessExplainErrors, AccessExplainResponses, AccessListBindingsData, AccessListBindingsErrors, AccessListBindingsResponses, AccessListRolesData, AccessListRolesErrors, AccessListRolesResponses, AccessListScopesData, AccessListScopesErrors, AccessListScopesResponses, ApprovalsCountData, ApprovalsCountErrors, ApprovalsCountResponses, ApprovalsDecideData, ApprovalsDecideErrors, ApprovalsDecideResponses, AuditGetEventData, AuditGetEventErrors, AuditGetEventResponses, AuditListActionsData, AuditListActionsErrors, AuditListActionsResponses, AuditListEventsData, AuditListEventsErrors, AuditListEventsResponses, AuthConfirmPasswordResetData, AuthConfirmPasswordResetErrors, AuthConfirmPasswordResetResponses, AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthLogoutData, AuthLogoutErrors, AuthLogoutResponses, AuthRequestPasswordResetData, AuthRequestPasswordResetErrors, AuthRequestPasswordResetResponses, AuthSignInOptionsData, AuthSignInOptionsErrors, AuthSignInOptionsResponses, AuthSsoCallbackData, AuthSsoCallbackErrors, AuthSsoStartData, AuthSsoStartErrors, GatewayListPoliciesData, GatewayListPoliciesErrors, GatewayListPoliciesResponses, InstancesConnectInstanceData, InstancesConnectInstanceErrors, InstancesConnectInstanceResponses, InstancesDeleteInstanceData, InstancesDeleteInstanceErrors, InstancesDeleteInstanceResponses, InstancesDiscoverInstanceData, InstancesDiscoverInstanceErrors, InstancesDiscoverInstanceResponses, InstancesGetCapabilitiesData, InstancesGetCapabilitiesErrors, InstancesGetCapabilitiesResponses, InstancesGetConfigData, InstancesGetConfigErrors, InstancesGetConfigResponses, InstancesGetHealthData, InstancesGetHealthErrors, InstancesGetHealthResponses, InstancesGetInstanceData, InstancesGetInstanceErrors, InstancesGetInstanceResponses, InstancesGetKeysData, InstancesGetKeysErrors, InstancesGetKeysResponses, InstancesListInstancesData, InstancesListInstancesErrors, InstancesListInstancesResponses, InstancesProbeEndpointData, InstancesProbeEndpointErrors, InstancesProbeEndpointResponses, InstancesRotateKeysData, InstancesRotateKeysErrors, InstancesRotateKeysResponses, InstancesTestInstanceData, InstancesTestInstanceErrors, InstancesTestInstanceResponses, InstancesUpdateInstanceData, InstancesUpdateInstanceErrors, InstancesUpdateInstanceResponses, InstancesVerifyTokenData, InstancesVerifyTokenErrors, InstancesVerifyTokenResponses, InvitationsAcceptInvitationData, InvitationsAcceptInvitationErrors, InvitationsAcceptInvitationResponses, InvitationsCreateInvitationData, InvitationsCreateInvitationErrors, InvitationsCreateInvitationResponses, InvitationsListInvitationsData, InvitationsListInvitationsErrors, InvitationsListInvitationsResponses, InvitationsPreviewInvitationData, InvitationsPreviewInvitationErrors, InvitationsPreviewInvitationResponses, InvitationsResendInvitationData, InvitationsResendInvitationErrors, InvitationsResendInvitationResponses, InvitationsRevokeInvitationData, InvitationsRevokeInvitationErrors, InvitationsRevokeInvitationResponses, JwksJwksData, JwksJwksErrors, JwksJwksResponses, MeGetMeData, MeGetMeErrors, MeGetMeResponses, MeListMySessionsData, MeListMySessionsErrors, MeListMySessionsResponses, MembersGetMemberData, MembersGetMemberErrors, MembersGetMemberResponses, MembersListMembersData, MembersListMembersErrors, MembersListMembersResponses, MembersRemoveMemberData, MembersRemoveMemberErrors, MembersRemoveMemberResponses, MembersUpdateMemberData, MembersUpdateMemberErrors, MembersUpdateMemberResponses, MeMyAccessData, MeMyAccessErrors, MeMyAccessResponses, MeRevokeMySessionData, MeRevokeMySessionErrors, MeRevokeMySessionResponses, MeUpdateMeData, MeUpdateMeErrors, MeUpdateMeResponses, NotificationsEventsData, NotificationsEventsErrors, NotificationsEventsResponses, ObserveOverviewData, ObserveOverviewErrors, ObserveOverviewResponses, OnboardingCompleteOnboardingData, OnboardingCompleteOnboardingErrors, OnboardingCompleteOnboardingResponses, OnboardingOnboardingStatusData, OnboardingOnboardingStatusErrors, OnboardingOnboardingStatusResponses, OrgGetOrgData, OrgGetOrgErrors, OrgGetOrgResponses, OrgUpdateOrgData, OrgUpdateOrgErrors, OrgUpdateOrgResponses, SearchSearchData, SearchSearchErrors, SearchSearchResponses, SystemListModulesData, SystemListModulesErrors, SystemListModulesResponses, SystemLivenessData, SystemLivenessResponses, SystemReadinessData, SystemReadinessErrors, SystemReadinessResponses } from './types.gen';
+import type { AccessCreateBindingData, AccessCreateBindingErrors, AccessCreateBindingResponses, AccessDeleteBindingData, AccessDeleteBindingErrors, AccessDeleteBindingResponses, AccessExplainData, AccessExplainErrors, AccessExplainResponses, AccessListBindingsData, AccessListBindingsErrors, AccessListBindingsResponses, AccessListRolesData, AccessListRolesErrors, AccessListRolesResponses, AccessListScopesData, AccessListScopesErrors, AccessListScopesResponses, ApprovalsCountData, ApprovalsCountErrors, ApprovalsCountResponses, ApprovalsDecideData, ApprovalsDecideErrors, ApprovalsDecideResponses, AuditGetEventData, AuditGetEventErrors, AuditGetEventResponses, AuditListActionsData, AuditListActionsErrors, AuditListActionsResponses, AuditListEventsData, AuditListEventsErrors, AuditListEventsResponses, AuthConfirmPasswordResetData, AuthConfirmPasswordResetErrors, AuthConfirmPasswordResetResponses, AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthLogoutData, AuthLogoutErrors, AuthLogoutResponses, AuthRequestPasswordResetData, AuthRequestPasswordResetErrors, AuthRequestPasswordResetResponses, AuthSignInOptionsData, AuthSignInOptionsErrors, AuthSignInOptionsResponses, AuthSsoCallbackData, AuthSsoCallbackErrors, AuthSsoStartData, AuthSsoStartErrors, EvalsAddCasesData, EvalsAddCasesErrors, EvalsAddCasesResponses, EvalsCancelBatchData, EvalsCancelBatchErrors, EvalsCancelBatchResponses, EvalsCompareBatchesData, EvalsCompareBatchesErrors, EvalsCompareBatchesResponses, EvalsCreateDatasetData, EvalsCreateDatasetErrors, EvalsCreateDatasetResponses, EvalsDeleteCaseData, EvalsDeleteCaseErrors, EvalsDeleteCaseResponses, EvalsDeleteDatasetData, EvalsDeleteDatasetErrors, EvalsDeleteDatasetResponses, EvalsDeleteGateData, EvalsDeleteGateErrors, EvalsDeleteGateResponses, EvalsEvalCapabilitiesData, EvalsEvalCapabilitiesErrors, EvalsEvalCapabilitiesResponses, EvalsEvalResultsData, EvalsEvalResultsErrors, EvalsEvalResultsResponses, EvalsGetBatchData, EvalsGetBatchErrors, EvalsGetBatchResponses, EvalsGetDatasetData, EvalsGetDatasetErrors, EvalsGetDatasetResponses, EvalsImportCasesData, EvalsImportCasesErrors, EvalsImportCasesResponses, EvalsListDatasetsData, EvalsListDatasetsErrors, EvalsListDatasetsResponses, EvalsListEvaluationsData, EvalsListEvaluationsErrors, EvalsListEvaluationsResponses, EvalsListGatesData, EvalsListGatesErrors, EvalsListGatesResponses, EvalsPutGateData, EvalsPutGateErrors, EvalsPutGateResponses, EvalsStartBatchData, EvalsStartBatchErrors, EvalsStartBatchResponses, EvalsUpdateCaseData, EvalsUpdateCaseErrors, EvalsUpdateCaseResponses, EvalsUpdateDatasetData, EvalsUpdateDatasetErrors, EvalsUpdateDatasetResponses, GatewayListPoliciesData, GatewayListPoliciesErrors, GatewayListPoliciesResponses, InstancesConnectInstanceData, InstancesConnectInstanceErrors, InstancesConnectInstanceResponses, InstancesDeleteInstanceData, InstancesDeleteInstanceErrors, InstancesDeleteInstanceResponses, InstancesDiscoverInstanceData, InstancesDiscoverInstanceErrors, InstancesDiscoverInstanceResponses, InstancesGetCapabilitiesData, InstancesGetCapabilitiesErrors, InstancesGetCapabilitiesResponses, InstancesGetConfigData, InstancesGetConfigErrors, InstancesGetConfigResponses, InstancesGetHealthData, InstancesGetHealthErrors, InstancesGetHealthResponses, InstancesGetInstanceData, InstancesGetInstanceErrors, InstancesGetInstanceResponses, InstancesGetKeysData, InstancesGetKeysErrors, InstancesGetKeysResponses, InstancesListInstancesData, InstancesListInstancesErrors, InstancesListInstancesResponses, InstancesProbeEndpointData, InstancesProbeEndpointErrors, InstancesProbeEndpointResponses, InstancesRotateKeysData, InstancesRotateKeysErrors, InstancesRotateKeysResponses, InstancesTestInstanceData, InstancesTestInstanceErrors, InstancesTestInstanceResponses, InstancesUpdateInstanceData, InstancesUpdateInstanceErrors, InstancesUpdateInstanceResponses, InstancesVerifyTokenData, InstancesVerifyTokenErrors, InstancesVerifyTokenResponses, InvitationsAcceptInvitationData, InvitationsAcceptInvitationErrors, InvitationsAcceptInvitationResponses, InvitationsCreateInvitationData, InvitationsCreateInvitationErrors, InvitationsCreateInvitationResponses, InvitationsListInvitationsData, InvitationsListInvitationsErrors, InvitationsListInvitationsResponses, InvitationsPreviewInvitationData, InvitationsPreviewInvitationErrors, InvitationsPreviewInvitationResponses, InvitationsResendInvitationData, InvitationsResendInvitationErrors, InvitationsResendInvitationResponses, InvitationsRevokeInvitationData, InvitationsRevokeInvitationErrors, InvitationsRevokeInvitationResponses, JwksJwksData, JwksJwksErrors, JwksJwksResponses, MeGetMeData, MeGetMeErrors, MeGetMeResponses, MeListMySessionsData, MeListMySessionsErrors, MeListMySessionsResponses, MembersGetMemberData, MembersGetMemberErrors, MembersGetMemberResponses, MembersListMembersData, MembersListMembersErrors, MembersListMembersResponses, MembersRemoveMemberData, MembersRemoveMemberErrors, MembersRemoveMemberResponses, MembersUpdateMemberData, MembersUpdateMemberErrors, MembersUpdateMemberResponses, MeMyAccessData, MeMyAccessErrors, MeMyAccessResponses, MeRevokeMySessionData, MeRevokeMySessionErrors, MeRevokeMySessionResponses, MeUpdateMeData, MeUpdateMeErrors, MeUpdateMeResponses, NotificationsEventsData, NotificationsEventsErrors, NotificationsEventsResponses, ObserveGetOrgPriceTableData, ObserveGetOrgPriceTableErrors, ObserveGetOrgPriceTableResponses, ObserveGetPriceTableData, ObserveGetPriceTableErrors, ObserveGetPriceTableResponses, ObserveMetricsCsvData, ObserveMetricsCsvErrors, ObserveMetricsCsvResponses, ObserveMetricsSummaryData, ObserveMetricsSummaryErrors, ObserveMetricsSummaryResponses, ObserveOverviewData, ObserveOverviewErrors, ObserveOverviewResponses, ObservePutOrgPriceTableData, ObservePutOrgPriceTableErrors, ObservePutOrgPriceTableResponses, ObservePutPriceTableData, ObservePutPriceTableErrors, ObservePutPriceTableResponses, ObserveSpanStatsData, ObserveSpanStatsErrors, ObserveSpanStatsResponses, ObserveTraceComparisonData, ObserveTraceComparisonErrors, ObserveTraceComparisonResponses, OnboardingCompleteOnboardingData, OnboardingCompleteOnboardingErrors, OnboardingCompleteOnboardingResponses, OnboardingOnboardingStatusData, OnboardingOnboardingStatusErrors, OnboardingOnboardingStatusResponses, OrgGetOrgData, OrgGetOrgErrors, OrgGetOrgResponses, OrgUpdateOrgData, OrgUpdateOrgErrors, OrgUpdateOrgResponses, SearchSearchData, SearchSearchErrors, SearchSearchResponses, SystemListModulesData, SystemListModulesErrors, SystemListModulesResponses, SystemLivenessData, SystemLivenessResponses, SystemReadinessData, SystemReadinessErrors, SystemReadinessResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -232,6 +232,150 @@ export const instancesGetConfig = <ThrowOnError extends boolean = false>(options
 export const instancesDiscoverInstance = <ThrowOnError extends boolean = false>(options: Options<InstancesDiscoverInstanceData, ThrowOnError>): RequestResult<InstancesDiscoverInstanceResponses, InstancesDiscoverInstanceErrors, ThrowOnError> => (options.client ?? client).post<InstancesDiscoverInstanceResponses, InstancesDiscoverInstanceErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/discover', ...options });
 
 /**
+ * Evaluate a component version on a dataset: one eval run per case, in the background
+ */
+export const evalsStartBatch = <ThrowOnError extends boolean = false>(options: Options<EvalsStartBatchData, ThrowOnError>): RequestResult<EvalsStartBatchResponses, EvalsStartBatchErrors, ThrowOnError> => (options.client ?? client).post<EvalsStartBatchResponses, EvalsStartBatchErrors, ThrowOnError>({
+    url: '/api/v1/instances/{instance}/eval-batches',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * An evaluation with its cases and progress
+ */
+export const evalsGetBatch = <ThrowOnError extends boolean = false>(options: Options<EvalsGetBatchData, ThrowOnError>): RequestResult<EvalsGetBatchResponses, EvalsGetBatchErrors, ThrowOnError> => (options.client ?? client).get<EvalsGetBatchResponses, EvalsGetBatchErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/eval-batches/{batch_id}', ...options });
+
+/**
+ * Stop an evaluation between cases
+ */
+export const evalsCancelBatch = <ThrowOnError extends boolean = false>(options: Options<EvalsCancelBatchData, ThrowOnError>): RequestResult<EvalsCancelBatchResponses, EvalsCancelBatchErrors, ThrowOnError> => (options.client ?? client).post<EvalsCancelBatchResponses, EvalsCancelBatchErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/eval-batches/{batch_id}/cancel', ...options });
+
+/**
+ * Case-by-case comparison with another evaluation of the same dataset
+ */
+export const evalsCompareBatches = <ThrowOnError extends boolean = false>(options: Options<EvalsCompareBatchesData, ThrowOnError>): RequestResult<EvalsCompareBatchesResponses, EvalsCompareBatchesErrors, ThrowOnError> => (options.client ?? client).get<EvalsCompareBatchesResponses, EvalsCompareBatchesErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/eval-batches/{batch_id}/compare', ...options });
+
+/**
+ * Eval datasets (org-wide; needs evals:read on this instance)
+ */
+export const evalsListDatasets = <ThrowOnError extends boolean = false>(options: Options<EvalsListDatasetsData, ThrowOnError>): RequestResult<EvalsListDatasetsResponses, EvalsListDatasetsErrors, ThrowOnError> => (options.client ?? client).get<EvalsListDatasetsResponses, EvalsListDatasetsErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/eval-datasets', ...options });
+
+/**
+ * Create a dataset, optionally with its cases
+ */
+export const evalsCreateDataset = <ThrowOnError extends boolean = false>(options: Options<EvalsCreateDatasetData, ThrowOnError>): RequestResult<EvalsCreateDatasetResponses, EvalsCreateDatasetErrors, ThrowOnError> => (options.client ?? client).post<EvalsCreateDatasetResponses, EvalsCreateDatasetErrors, ThrowOnError>({
+    url: '/api/v1/instances/{instance}/eval-datasets',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Delete a dataset (past evaluations keep their case snapshots)
+ */
+export const evalsDeleteDataset = <ThrowOnError extends boolean = false>(options: Options<EvalsDeleteDatasetData, ThrowOnError>): RequestResult<EvalsDeleteDatasetResponses, EvalsDeleteDatasetErrors, ThrowOnError> => (options.client ?? client).delete<EvalsDeleteDatasetResponses, EvalsDeleteDatasetErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/eval-datasets/{dataset_id}', ...options });
+
+/**
+ * A dataset with its cases
+ */
+export const evalsGetDataset = <ThrowOnError extends boolean = false>(options: Options<EvalsGetDatasetData, ThrowOnError>): RequestResult<EvalsGetDatasetResponses, EvalsGetDatasetErrors, ThrowOnError> => (options.client ?? client).get<EvalsGetDatasetResponses, EvalsGetDatasetErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/eval-datasets/{dataset_id}', ...options });
+
+/**
+ * Rename or describe a dataset
+ */
+export const evalsUpdateDataset = <ThrowOnError extends boolean = false>(options: Options<EvalsUpdateDatasetData, ThrowOnError>): RequestResult<EvalsUpdateDatasetResponses, EvalsUpdateDatasetErrors, ThrowOnError> => (options.client ?? client).patch<EvalsUpdateDatasetResponses, EvalsUpdateDatasetErrors, ThrowOnError>({
+    url: '/api/v1/instances/{instance}/eval-datasets/{dataset_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Append cases
+ */
+export const evalsAddCases = <ThrowOnError extends boolean = false>(options: Options<EvalsAddCasesData, ThrowOnError>): RequestResult<EvalsAddCasesResponses, EvalsAddCasesErrors, ThrowOnError> => (options.client ?? client).post<EvalsAddCasesResponses, EvalsAddCasesErrors, ThrowOnError>({
+    url: '/api/v1/instances/{instance}/eval-datasets/{dataset_id}/cases',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Delete a case
+ */
+export const evalsDeleteCase = <ThrowOnError extends boolean = false>(options: Options<EvalsDeleteCaseData, ThrowOnError>): RequestResult<EvalsDeleteCaseResponses, EvalsDeleteCaseErrors, ThrowOnError> => (options.client ?? client).delete<EvalsDeleteCaseResponses, EvalsDeleteCaseErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/eval-datasets/{dataset_id}/cases/{case_id}', ...options });
+
+/**
+ * Change a case
+ */
+export const evalsUpdateCase = <ThrowOnError extends boolean = false>(options: Options<EvalsUpdateCaseData, ThrowOnError>): RequestResult<EvalsUpdateCaseResponses, EvalsUpdateCaseErrors, ThrowOnError> => (options.client ?? client).patch<EvalsUpdateCaseResponses, EvalsUpdateCaseErrors, ThrowOnError>({
+    url: '/api/v1/instances/{instance}/eval-datasets/{dataset_id}/cases/{case_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Import cases from CSV or JSONL text
+ */
+export const evalsImportCases = <ThrowOnError extends boolean = false>(options: Options<EvalsImportCasesData, ThrowOnError>): RequestResult<EvalsImportCasesResponses, EvalsImportCasesErrors, ThrowOnError> => (options.client ?? client).post<EvalsImportCasesResponses, EvalsImportCasesErrors, ThrowOnError>({
+    url: '/api/v1/instances/{instance}/eval-datasets/{dataset_id}/import',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Publish gates with what each would do right now
+ */
+export const evalsListGates = <ThrowOnError extends boolean = false>(options: Options<EvalsListGatesData, ThrowOnError>): RequestResult<EvalsListGatesResponses, EvalsListGatesErrors, ThrowOnError> => (options.client ?? client).get<EvalsListGatesResponses, EvalsListGatesErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/eval-gates', ...options });
+
+/**
+ * Create or change the gate for a component and dataset (needs evals:gates:write)
+ */
+export const evalsPutGate = <ThrowOnError extends boolean = false>(options: Options<EvalsPutGateData, ThrowOnError>): RequestResult<EvalsPutGateResponses, EvalsPutGateErrors, ThrowOnError> => (options.client ?? client).put<EvalsPutGateResponses, EvalsPutGateErrors, ThrowOnError>({
+    url: '/api/v1/instances/{instance}/eval-gates',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Remove a publish gate
+ */
+export const evalsDeleteGate = <ThrowOnError extends boolean = false>(options: Options<EvalsDeleteGateData, ThrowOnError>): RequestResult<EvalsDeleteGateResponses, EvalsDeleteGateErrors, ThrowOnError> => (options.client ?? client).delete<EvalsDeleteGateResponses, EvalsDeleteGateErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/eval-gates/{gate_id}', ...options });
+
+/**
+ * The newest finished evaluation per dataset for one component version
+ */
+export const evalsEvalResults = <ThrowOnError extends boolean = false>(options: Options<EvalsEvalResultsData, ThrowOnError>): RequestResult<EvalsEvalResultsResponses, EvalsEvalResultsErrors, ThrowOnError> => (options.client ?? client).get<EvalsEvalResultsResponses, EvalsEvalResultsErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/eval-results', ...options });
+
+/**
+ * Whether drafts and pinned versions can be evaluated here (needs agnostic-bridge)
+ */
+export const evalsEvalCapabilities = <ThrowOnError extends boolean = false>(options: Options<EvalsEvalCapabilitiesData, ThrowOnError>): RequestResult<EvalsEvalCapabilitiesResponses, EvalsEvalCapabilitiesErrors, ThrowOnError> => (options.client ?? client).get<EvalsEvalCapabilitiesResponses, EvalsEvalCapabilitiesErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/evals/capabilities', ...options });
+
+/**
+ * Evaluations table: dataset batches run here plus AgentOS eval runs created elsewhere
+ */
+export const evalsListEvaluations = <ThrowOnError extends boolean = false>(options: Options<EvalsListEvaluationsData, ThrowOnError>): RequestResult<EvalsListEvaluationsResponses, EvalsListEvaluationsErrors, ThrowOnError> => (options.client ?? client).get<EvalsListEvaluationsResponses, EvalsListEvaluationsErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/evaluations', ...options });
+
+/**
  * Reachability, latency, version drift and capabilities
  */
 export const instancesGetHealth = <ThrowOnError extends boolean = false>(options: Options<InstancesGetHealthData, ThrowOnError>): RequestResult<InstancesGetHealthResponses, InstancesGetHealthErrors, ThrowOnError> => (options.client ?? client).get<InstancesGetHealthResponses, InstancesGetHealthErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/health', ...options });
@@ -266,14 +410,51 @@ export const instancesVerifyToken = <ThrowOnError extends boolean = false>(optio
 });
 
 /**
+ * Usage and estimated cost per component as CSV
+ */
+export const observeMetricsCsv = <ThrowOnError extends boolean = false>(options: Options<ObserveMetricsCsvData, ThrowOnError>): RequestResult<ObserveMetricsCsvResponses, ObserveMetricsCsvErrors, ThrowOnError> => (options.client ?? client).get<ObserveMetricsCsvResponses, ObserveMetricsCsvErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/metrics/export.csv', ...options });
+
+/**
+ * Metrics page: daily aggregates, per-component usage, model usage and estimated cost
+ */
+export const observeMetricsSummary = <ThrowOnError extends boolean = false>(options: Options<ObserveMetricsSummaryData, ThrowOnError>): RequestResult<ObserveMetricsSummaryResponses, ObserveMetricsSummaryErrors, ThrowOnError> => (options.client ?? client).get<ObserveMetricsSummaryResponses, ObserveMetricsSummaryErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/metrics/summary', ...options });
+
+/**
  * Home: what needs attention, KPIs, runs per day, model usage, primitives and recent activity
  */
 export const observeOverview = <ThrowOnError extends boolean = false>(options: Options<ObserveOverviewData, ThrowOnError>): RequestResult<ObserveOverviewResponses, ObserveOverviewErrors, ThrowOnError> => (options.client ?? client).get<ObserveOverviewResponses, ObserveOverviewErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/overview', ...options });
 
 /**
+ * The effective price table: org defaults with this instance's overrides
+ */
+export const observeGetPriceTable = <ThrowOnError extends boolean = false>(options: Options<ObserveGetPriceTableData, ThrowOnError>): RequestResult<ObserveGetPriceTableResponses, ObserveGetPriceTableErrors, ThrowOnError> => (options.client ?? client).get<ObserveGetPriceTableResponses, ObserveGetPriceTableErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/price-table', ...options });
+
+/**
+ * Replace this instance's price overrides (needs metrics:write); returns the effective table
+ */
+export const observePutPriceTable = <ThrowOnError extends boolean = false>(options: Options<ObservePutPriceTableData, ThrowOnError>): RequestResult<ObservePutPriceTableResponses, ObservePutPriceTableErrors, ThrowOnError> => (options.client ?? client).put<ObservePutPriceTableResponses, ObservePutPriceTableErrors, ThrowOnError>({
+    url: '/api/v1/instances/{instance}/price-table',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
  * Test connection: DNS, TLS, AgentOS, version, token, enforced scopes
  */
 export const instancesTestInstance = <ThrowOnError extends boolean = false>(options: Options<InstancesTestInstanceData, ThrowOnError>): RequestResult<InstancesTestInstanceResponses, InstancesTestInstanceErrors, ThrowOnError> => (options.client ?? client).post<InstancesTestInstanceResponses, InstancesTestInstanceErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/test', ...options });
+
+/**
+ * Slowest span types: average duration per span name over the newest traces of a window (needs traces:read)
+ */
+export const observeSpanStats = <ThrowOnError extends boolean = false>(options: Options<ObserveSpanStatsData, ThrowOnError>): RequestResult<ObserveSpanStatsResponses, ObserveSpanStatsErrors, ThrowOnError> => (options.client ?? client).get<ObserveSpanStatsResponses, ObserveSpanStatsErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/traces/span-stats', ...options });
+
+/**
+ * Compare a trace with the last successful run of the same component: aligned spans and a diagnosis
+ */
+export const observeTraceComparison = <ThrowOnError extends boolean = false>(options: Options<ObserveTraceComparisonData, ThrowOnError>): RequestResult<ObserveTraceComparisonResponses, ObserveTraceComparisonErrors, ThrowOnError> => (options.client ?? client).get<ObserveTraceComparisonResponses, ObserveTraceComparisonErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/traces/{trace_id}/comparison', ...options });
 
 /**
  * Pending invitations
@@ -405,6 +586,23 @@ export const orgGetOrg = <ThrowOnError extends boolean = false>(options?: Option
  */
 export const orgUpdateOrg = <ThrowOnError extends boolean = false>(options: Options<OrgUpdateOrgData, ThrowOnError>): RequestResult<OrgUpdateOrgResponses, OrgUpdateOrgErrors, ThrowOnError> => (options.client ?? client).patch<OrgUpdateOrgResponses, OrgUpdateOrgErrors, ThrowOnError>({
     url: '/api/v1/org',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * The org's default price table
+ */
+export const observeGetOrgPriceTable = <ThrowOnError extends boolean = false>(options?: Options<ObserveGetOrgPriceTableData, ThrowOnError>): RequestResult<ObserveGetOrgPriceTableResponses, ObserveGetOrgPriceTableErrors, ThrowOnError> => (options?.client ?? client).get<ObserveGetOrgPriceTableResponses, ObserveGetOrgPriceTableErrors, ThrowOnError>({ url: '/api/v1/price-table', ...options });
+
+/**
+ * Replace the org's default price table (needs org:write)
+ */
+export const observePutOrgPriceTable = <ThrowOnError extends boolean = false>(options: Options<ObservePutOrgPriceTableData, ThrowOnError>): RequestResult<ObservePutOrgPriceTableResponses, ObservePutOrgPriceTableErrors, ThrowOnError> => (options.client ?? client).put<ObservePutOrgPriceTableResponses, ObservePutOrgPriceTableErrors, ThrowOnError>({
+    url: '/api/v1/price-table',
     ...options,
     headers: {
         'Content-Type': 'application/json',

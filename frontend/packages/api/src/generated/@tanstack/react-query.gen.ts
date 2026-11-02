@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { accessCreateBinding, accessDeleteBinding, accessExplain, accessListBindings, accessListRoles, accessListScopes, approvalsCount, approvalsDecide, auditGetEvent, auditListActions, auditListEvents, authConfirmPasswordReset, authLogin, authLogout, authRequestPasswordReset, authSignInOptions, authSsoCallback, authSsoStart, gatewayListPolicies, instancesConnectInstance, instancesDeleteInstance, instancesDiscoverInstance, instancesGetCapabilities, instancesGetConfig, instancesGetHealth, instancesGetInstance, instancesGetKeys, instancesListInstances, instancesProbeEndpoint, instancesRotateKeys, instancesTestInstance, instancesUpdateInstance, instancesVerifyToken, invitationsAcceptInvitation, invitationsCreateInvitation, invitationsListInvitations, invitationsPreviewInvitation, invitationsResendInvitation, invitationsRevokeInvitation, jwksJwks, meGetMe, meListMySessions, membersGetMember, membersListMembers, membersRemoveMember, membersUpdateMember, meMyAccess, meRevokeMySession, meUpdateMe, observeOverview, onboardingCompleteOnboarding, onboardingOnboardingStatus, type Options, orgGetOrg, orgUpdateOrg, searchSearch, systemListModules, systemLiveness, systemReadiness } from '../sdk.gen';
-import type { AccessCreateBindingData, AccessCreateBindingError, AccessCreateBindingResponse, AccessDeleteBindingData, AccessDeleteBindingError, AccessDeleteBindingResponse, AccessExplainData, AccessExplainError, AccessExplainResponse, AccessListBindingsData, AccessListBindingsError, AccessListBindingsResponse, AccessListRolesData, AccessListRolesError, AccessListRolesResponse, AccessListScopesData, AccessListScopesError, AccessListScopesResponse, ApprovalsCountData, ApprovalsCountError, ApprovalsCountResponse, ApprovalsDecideData, ApprovalsDecideError, ApprovalsDecideResponse, AuditGetEventData, AuditGetEventError, AuditGetEventResponse, AuditListActionsData, AuditListActionsError, AuditListActionsResponse, AuditListEventsData, AuditListEventsError, AuditListEventsResponse, AuthConfirmPasswordResetData, AuthConfirmPasswordResetError, AuthConfirmPasswordResetResponse, AuthLoginData, AuthLoginError, AuthLoginResponse, AuthLogoutData, AuthLogoutError, AuthLogoutResponse, AuthRequestPasswordResetData, AuthRequestPasswordResetError, AuthSignInOptionsData, AuthSignInOptionsError, AuthSignInOptionsResponse, AuthSsoCallbackData, AuthSsoCallbackError, AuthSsoStartData, AuthSsoStartError, GatewayListPoliciesData, GatewayListPoliciesError, GatewayListPoliciesResponse, InstancesConnectInstanceData, InstancesConnectInstanceError, InstancesConnectInstanceResponse, InstancesDeleteInstanceData, InstancesDeleteInstanceError, InstancesDeleteInstanceResponse, InstancesDiscoverInstanceData, InstancesDiscoverInstanceError, InstancesDiscoverInstanceResponse, InstancesGetCapabilitiesData, InstancesGetCapabilitiesError, InstancesGetCapabilitiesResponse, InstancesGetConfigData, InstancesGetConfigError, InstancesGetConfigResponse, InstancesGetHealthData, InstancesGetHealthError, InstancesGetHealthResponse, InstancesGetInstanceData, InstancesGetInstanceError, InstancesGetInstanceResponse, InstancesGetKeysData, InstancesGetKeysError, InstancesGetKeysResponse, InstancesListInstancesData, InstancesListInstancesError, InstancesListInstancesResponse, InstancesProbeEndpointData, InstancesProbeEndpointError, InstancesProbeEndpointResponse, InstancesRotateKeysData, InstancesRotateKeysError, InstancesRotateKeysResponse, InstancesTestInstanceData, InstancesTestInstanceError, InstancesTestInstanceResponse, InstancesUpdateInstanceData, InstancesUpdateInstanceError, InstancesUpdateInstanceResponse, InstancesVerifyTokenData, InstancesVerifyTokenError, InstancesVerifyTokenResponse, InvitationsAcceptInvitationData, InvitationsAcceptInvitationError, InvitationsAcceptInvitationResponse, InvitationsCreateInvitationData, InvitationsCreateInvitationError, InvitationsCreateInvitationResponse, InvitationsListInvitationsData, InvitationsListInvitationsError, InvitationsListInvitationsResponse, InvitationsPreviewInvitationData, InvitationsPreviewInvitationError, InvitationsPreviewInvitationResponse, InvitationsResendInvitationData, InvitationsResendInvitationError, InvitationsResendInvitationResponse, InvitationsRevokeInvitationData, InvitationsRevokeInvitationError, InvitationsRevokeInvitationResponse, JwksJwksData, JwksJwksError, JwksJwksResponse, MeGetMeData, MeGetMeError, MeGetMeResponse, MeListMySessionsData, MeListMySessionsError, MeListMySessionsResponse, MembersGetMemberData, MembersGetMemberError, MembersGetMemberResponse, MembersListMembersData, MembersListMembersError, MembersListMembersResponse, MembersRemoveMemberData, MembersRemoveMemberError, MembersRemoveMemberResponse, MembersUpdateMemberData, MembersUpdateMemberError, MembersUpdateMemberResponse, MeMyAccessData, MeMyAccessError, MeMyAccessResponse, MeRevokeMySessionData, MeRevokeMySessionError, MeRevokeMySessionResponse, MeUpdateMeData, MeUpdateMeError, MeUpdateMeResponse, ObserveOverviewData, ObserveOverviewError, ObserveOverviewResponse, OnboardingCompleteOnboardingData, OnboardingCompleteOnboardingError, OnboardingCompleteOnboardingResponse, OnboardingOnboardingStatusData, OnboardingOnboardingStatusError, OnboardingOnboardingStatusResponse, OrgGetOrgData, OrgGetOrgError, OrgGetOrgResponse, OrgUpdateOrgData, OrgUpdateOrgError, OrgUpdateOrgResponse, SearchSearchData, SearchSearchError, SearchSearchResponse, SystemListModulesData, SystemListModulesError, SystemListModulesResponse, SystemLivenessData, SystemLivenessResponse, SystemReadinessData, SystemReadinessError, SystemReadinessResponse } from '../types.gen';
+import { accessCreateBinding, accessDeleteBinding, accessExplain, accessListBindings, accessListRoles, accessListScopes, approvalsCount, approvalsDecide, auditGetEvent, auditListActions, auditListEvents, authConfirmPasswordReset, authLogin, authLogout, authRequestPasswordReset, authSignInOptions, authSsoCallback, authSsoStart, evalsAddCases, evalsCancelBatch, evalsCompareBatches, evalsCreateDataset, evalsDeleteCase, evalsDeleteDataset, evalsDeleteGate, evalsEvalCapabilities, evalsEvalResults, evalsGetBatch, evalsGetDataset, evalsImportCases, evalsListDatasets, evalsListEvaluations, evalsListGates, evalsPutGate, evalsStartBatch, evalsUpdateCase, evalsUpdateDataset, gatewayListPolicies, instancesConnectInstance, instancesDeleteInstance, instancesDiscoverInstance, instancesGetCapabilities, instancesGetConfig, instancesGetHealth, instancesGetInstance, instancesGetKeys, instancesListInstances, instancesProbeEndpoint, instancesRotateKeys, instancesTestInstance, instancesUpdateInstance, instancesVerifyToken, invitationsAcceptInvitation, invitationsCreateInvitation, invitationsListInvitations, invitationsPreviewInvitation, invitationsResendInvitation, invitationsRevokeInvitation, jwksJwks, meGetMe, meListMySessions, membersGetMember, membersListMembers, membersRemoveMember, membersUpdateMember, meMyAccess, meRevokeMySession, meUpdateMe, observeGetOrgPriceTable, observeGetPriceTable, observeMetricsCsv, observeMetricsSummary, observeOverview, observePutOrgPriceTable, observePutPriceTable, observeSpanStats, observeTraceComparison, onboardingCompleteOnboarding, onboardingOnboardingStatus, type Options, orgGetOrg, orgUpdateOrg, searchSearch, systemListModules, systemLiveness, systemReadiness } from '../sdk.gen';
+import type { AccessCreateBindingData, AccessCreateBindingError, AccessCreateBindingResponse, AccessDeleteBindingData, AccessDeleteBindingError, AccessDeleteBindingResponse, AccessExplainData, AccessExplainError, AccessExplainResponse, AccessListBindingsData, AccessListBindingsError, AccessListBindingsResponse, AccessListRolesData, AccessListRolesError, AccessListRolesResponse, AccessListScopesData, AccessListScopesError, AccessListScopesResponse, ApprovalsCountData, ApprovalsCountError, ApprovalsCountResponse, ApprovalsDecideData, ApprovalsDecideError, ApprovalsDecideResponse, AuditGetEventData, AuditGetEventError, AuditGetEventResponse, AuditListActionsData, AuditListActionsError, AuditListActionsResponse, AuditListEventsData, AuditListEventsError, AuditListEventsResponse, AuthConfirmPasswordResetData, AuthConfirmPasswordResetError, AuthConfirmPasswordResetResponse, AuthLoginData, AuthLoginError, AuthLoginResponse, AuthLogoutData, AuthLogoutError, AuthLogoutResponse, AuthRequestPasswordResetData, AuthRequestPasswordResetError, AuthSignInOptionsData, AuthSignInOptionsError, AuthSignInOptionsResponse, AuthSsoCallbackData, AuthSsoCallbackError, AuthSsoStartData, AuthSsoStartError, EvalsAddCasesData, EvalsAddCasesError, EvalsAddCasesResponse, EvalsCancelBatchData, EvalsCancelBatchError, EvalsCancelBatchResponse, EvalsCompareBatchesData, EvalsCompareBatchesError, EvalsCompareBatchesResponse, EvalsCreateDatasetData, EvalsCreateDatasetError, EvalsCreateDatasetResponse, EvalsDeleteCaseData, EvalsDeleteCaseError, EvalsDeleteCaseResponse, EvalsDeleteDatasetData, EvalsDeleteDatasetError, EvalsDeleteDatasetResponse, EvalsDeleteGateData, EvalsDeleteGateError, EvalsDeleteGateResponse, EvalsEvalCapabilitiesData, EvalsEvalCapabilitiesError, EvalsEvalCapabilitiesResponse, EvalsEvalResultsData, EvalsEvalResultsError, EvalsEvalResultsResponse, EvalsGetBatchData, EvalsGetBatchError, EvalsGetBatchResponse, EvalsGetDatasetData, EvalsGetDatasetError, EvalsGetDatasetResponse, EvalsImportCasesData, EvalsImportCasesError, EvalsImportCasesResponse, EvalsListDatasetsData, EvalsListDatasetsError, EvalsListDatasetsResponse, EvalsListEvaluationsData, EvalsListEvaluationsError, EvalsListEvaluationsResponse, EvalsListGatesData, EvalsListGatesError, EvalsListGatesResponse, EvalsPutGateData, EvalsPutGateError, EvalsPutGateResponse, EvalsStartBatchData, EvalsStartBatchError, EvalsStartBatchResponse, EvalsUpdateCaseData, EvalsUpdateCaseError, EvalsUpdateCaseResponse, EvalsUpdateDatasetData, EvalsUpdateDatasetError, EvalsUpdateDatasetResponse, GatewayListPoliciesData, GatewayListPoliciesError, GatewayListPoliciesResponse, InstancesConnectInstanceData, InstancesConnectInstanceError, InstancesConnectInstanceResponse, InstancesDeleteInstanceData, InstancesDeleteInstanceError, InstancesDeleteInstanceResponse, InstancesDiscoverInstanceData, InstancesDiscoverInstanceError, InstancesDiscoverInstanceResponse, InstancesGetCapabilitiesData, InstancesGetCapabilitiesError, InstancesGetCapabilitiesResponse, InstancesGetConfigData, InstancesGetConfigError, InstancesGetConfigResponse, InstancesGetHealthData, InstancesGetHealthError, InstancesGetHealthResponse, InstancesGetInstanceData, InstancesGetInstanceError, InstancesGetInstanceResponse, InstancesGetKeysData, InstancesGetKeysError, InstancesGetKeysResponse, InstancesListInstancesData, InstancesListInstancesError, InstancesListInstancesResponse, InstancesProbeEndpointData, InstancesProbeEndpointError, InstancesProbeEndpointResponse, InstancesRotateKeysData, InstancesRotateKeysError, InstancesRotateKeysResponse, InstancesTestInstanceData, InstancesTestInstanceError, InstancesTestInstanceResponse, InstancesUpdateInstanceData, InstancesUpdateInstanceError, InstancesUpdateInstanceResponse, InstancesVerifyTokenData, InstancesVerifyTokenError, InstancesVerifyTokenResponse, InvitationsAcceptInvitationData, InvitationsAcceptInvitationError, InvitationsAcceptInvitationResponse, InvitationsCreateInvitationData, InvitationsCreateInvitationError, InvitationsCreateInvitationResponse, InvitationsListInvitationsData, InvitationsListInvitationsError, InvitationsListInvitationsResponse, InvitationsPreviewInvitationData, InvitationsPreviewInvitationError, InvitationsPreviewInvitationResponse, InvitationsResendInvitationData, InvitationsResendInvitationError, InvitationsResendInvitationResponse, InvitationsRevokeInvitationData, InvitationsRevokeInvitationError, InvitationsRevokeInvitationResponse, JwksJwksData, JwksJwksError, JwksJwksResponse, MeGetMeData, MeGetMeError, MeGetMeResponse, MeListMySessionsData, MeListMySessionsError, MeListMySessionsResponse, MembersGetMemberData, MembersGetMemberError, MembersGetMemberResponse, MembersListMembersData, MembersListMembersError, MembersListMembersResponse, MembersRemoveMemberData, MembersRemoveMemberError, MembersRemoveMemberResponse, MembersUpdateMemberData, MembersUpdateMemberError, MembersUpdateMemberResponse, MeMyAccessData, MeMyAccessError, MeMyAccessResponse, MeRevokeMySessionData, MeRevokeMySessionError, MeRevokeMySessionResponse, MeUpdateMeData, MeUpdateMeError, MeUpdateMeResponse, ObserveGetOrgPriceTableData, ObserveGetOrgPriceTableError, ObserveGetOrgPriceTableResponse, ObserveGetPriceTableData, ObserveGetPriceTableError, ObserveGetPriceTableResponse, ObserveMetricsCsvData, ObserveMetricsCsvError, ObserveMetricsSummaryData, ObserveMetricsSummaryError, ObserveMetricsSummaryResponse, ObserveOverviewData, ObserveOverviewError, ObserveOverviewResponse, ObservePutOrgPriceTableData, ObservePutOrgPriceTableError, ObservePutOrgPriceTableResponse, ObservePutPriceTableData, ObservePutPriceTableError, ObservePutPriceTableResponse, ObserveSpanStatsData, ObserveSpanStatsError, ObserveSpanStatsResponse, ObserveTraceComparisonData, ObserveTraceComparisonError, ObserveTraceComparisonResponse, OnboardingCompleteOnboardingData, OnboardingCompleteOnboardingError, OnboardingCompleteOnboardingResponse, OnboardingOnboardingStatusData, OnboardingOnboardingStatusError, OnboardingOnboardingStatusResponse, OrgGetOrgData, OrgGetOrgError, OrgGetOrgResponse, OrgUpdateOrgData, OrgUpdateOrgError, OrgUpdateOrgResponse, SearchSearchData, SearchSearchError, SearchSearchResponse, SystemListModulesData, SystemListModulesError, SystemListModulesResponse, SystemLivenessData, SystemLivenessResponse, SystemReadinessData, SystemReadinessError, SystemReadinessResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -607,6 +607,337 @@ export const instancesDiscoverInstanceMutation = (options?: Partial<Options<Inst
     return mutationOptions;
 };
 
+/**
+ * Evaluate a component version on a dataset: one eval run per case, in the background
+ */
+export const evalsStartBatchMutation = (options?: Partial<Options<EvalsStartBatchData>>): UseMutationOptions<EvalsStartBatchResponse, EvalsStartBatchError, Options<EvalsStartBatchData>> => {
+    const mutationOptions: UseMutationOptions<EvalsStartBatchResponse, EvalsStartBatchError, Options<EvalsStartBatchData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await evalsStartBatch({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const evalsGetBatchQueryKey = (options: Options<EvalsGetBatchData>) => createQueryKey('evalsGetBatch', options);
+
+/**
+ * An evaluation with its cases and progress
+ */
+export const evalsGetBatchOptions = (options: Options<EvalsGetBatchData>) => queryOptions<EvalsGetBatchResponse, EvalsGetBatchError, EvalsGetBatchResponse, ReturnType<typeof evalsGetBatchQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await evalsGetBatch({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: evalsGetBatchQueryKey(options)
+});
+
+/**
+ * Stop an evaluation between cases
+ */
+export const evalsCancelBatchMutation = (options?: Partial<Options<EvalsCancelBatchData>>): UseMutationOptions<EvalsCancelBatchResponse, EvalsCancelBatchError, Options<EvalsCancelBatchData>> => {
+    const mutationOptions: UseMutationOptions<EvalsCancelBatchResponse, EvalsCancelBatchError, Options<EvalsCancelBatchData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await evalsCancelBatch({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const evalsCompareBatchesQueryKey = (options: Options<EvalsCompareBatchesData>) => createQueryKey('evalsCompareBatches', options);
+
+/**
+ * Case-by-case comparison with another evaluation of the same dataset
+ */
+export const evalsCompareBatchesOptions = (options: Options<EvalsCompareBatchesData>) => queryOptions<EvalsCompareBatchesResponse, EvalsCompareBatchesError, EvalsCompareBatchesResponse, ReturnType<typeof evalsCompareBatchesQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await evalsCompareBatches({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: evalsCompareBatchesQueryKey(options)
+});
+
+export const evalsListDatasetsQueryKey = (options: Options<EvalsListDatasetsData>) => createQueryKey('evalsListDatasets', options);
+
+/**
+ * Eval datasets (org-wide; needs evals:read on this instance)
+ */
+export const evalsListDatasetsOptions = (options: Options<EvalsListDatasetsData>) => queryOptions<EvalsListDatasetsResponse, EvalsListDatasetsError, EvalsListDatasetsResponse, ReturnType<typeof evalsListDatasetsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await evalsListDatasets({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: evalsListDatasetsQueryKey(options)
+});
+
+/**
+ * Create a dataset, optionally with its cases
+ */
+export const evalsCreateDatasetMutation = (options?: Partial<Options<EvalsCreateDatasetData>>): UseMutationOptions<EvalsCreateDatasetResponse, EvalsCreateDatasetError, Options<EvalsCreateDatasetData>> => {
+    const mutationOptions: UseMutationOptions<EvalsCreateDatasetResponse, EvalsCreateDatasetError, Options<EvalsCreateDatasetData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await evalsCreateDataset({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Delete a dataset (past evaluations keep their case snapshots)
+ */
+export const evalsDeleteDatasetMutation = (options?: Partial<Options<EvalsDeleteDatasetData>>): UseMutationOptions<EvalsDeleteDatasetResponse, EvalsDeleteDatasetError, Options<EvalsDeleteDatasetData>> => {
+    const mutationOptions: UseMutationOptions<EvalsDeleteDatasetResponse, EvalsDeleteDatasetError, Options<EvalsDeleteDatasetData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await evalsDeleteDataset({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const evalsGetDatasetQueryKey = (options: Options<EvalsGetDatasetData>) => createQueryKey('evalsGetDataset', options);
+
+/**
+ * A dataset with its cases
+ */
+export const evalsGetDatasetOptions = (options: Options<EvalsGetDatasetData>) => queryOptions<EvalsGetDatasetResponse, EvalsGetDatasetError, EvalsGetDatasetResponse, ReturnType<typeof evalsGetDatasetQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await evalsGetDataset({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: evalsGetDatasetQueryKey(options)
+});
+
+/**
+ * Rename or describe a dataset
+ */
+export const evalsUpdateDatasetMutation = (options?: Partial<Options<EvalsUpdateDatasetData>>): UseMutationOptions<EvalsUpdateDatasetResponse, EvalsUpdateDatasetError, Options<EvalsUpdateDatasetData>> => {
+    const mutationOptions: UseMutationOptions<EvalsUpdateDatasetResponse, EvalsUpdateDatasetError, Options<EvalsUpdateDatasetData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await evalsUpdateDataset({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Append cases
+ */
+export const evalsAddCasesMutation = (options?: Partial<Options<EvalsAddCasesData>>): UseMutationOptions<EvalsAddCasesResponse, EvalsAddCasesError, Options<EvalsAddCasesData>> => {
+    const mutationOptions: UseMutationOptions<EvalsAddCasesResponse, EvalsAddCasesError, Options<EvalsAddCasesData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await evalsAddCases({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Delete a case
+ */
+export const evalsDeleteCaseMutation = (options?: Partial<Options<EvalsDeleteCaseData>>): UseMutationOptions<EvalsDeleteCaseResponse, EvalsDeleteCaseError, Options<EvalsDeleteCaseData>> => {
+    const mutationOptions: UseMutationOptions<EvalsDeleteCaseResponse, EvalsDeleteCaseError, Options<EvalsDeleteCaseData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await evalsDeleteCase({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Change a case
+ */
+export const evalsUpdateCaseMutation = (options?: Partial<Options<EvalsUpdateCaseData>>): UseMutationOptions<EvalsUpdateCaseResponse, EvalsUpdateCaseError, Options<EvalsUpdateCaseData>> => {
+    const mutationOptions: UseMutationOptions<EvalsUpdateCaseResponse, EvalsUpdateCaseError, Options<EvalsUpdateCaseData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await evalsUpdateCase({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Import cases from CSV or JSONL text
+ */
+export const evalsImportCasesMutation = (options?: Partial<Options<EvalsImportCasesData>>): UseMutationOptions<EvalsImportCasesResponse, EvalsImportCasesError, Options<EvalsImportCasesData>> => {
+    const mutationOptions: UseMutationOptions<EvalsImportCasesResponse, EvalsImportCasesError, Options<EvalsImportCasesData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await evalsImportCases({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const evalsListGatesQueryKey = (options: Options<EvalsListGatesData>) => createQueryKey('evalsListGates', options);
+
+/**
+ * Publish gates with what each would do right now
+ */
+export const evalsListGatesOptions = (options: Options<EvalsListGatesData>) => queryOptions<EvalsListGatesResponse, EvalsListGatesError, EvalsListGatesResponse, ReturnType<typeof evalsListGatesQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await evalsListGates({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: evalsListGatesQueryKey(options)
+});
+
+/**
+ * Create or change the gate for a component and dataset (needs evals:gates:write)
+ */
+export const evalsPutGateMutation = (options?: Partial<Options<EvalsPutGateData>>): UseMutationOptions<EvalsPutGateResponse, EvalsPutGateError, Options<EvalsPutGateData>> => {
+    const mutationOptions: UseMutationOptions<EvalsPutGateResponse, EvalsPutGateError, Options<EvalsPutGateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await evalsPutGate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Remove a publish gate
+ */
+export const evalsDeleteGateMutation = (options?: Partial<Options<EvalsDeleteGateData>>): UseMutationOptions<EvalsDeleteGateResponse, EvalsDeleteGateError, Options<EvalsDeleteGateData>> => {
+    const mutationOptions: UseMutationOptions<EvalsDeleteGateResponse, EvalsDeleteGateError, Options<EvalsDeleteGateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await evalsDeleteGate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const evalsEvalResultsQueryKey = (options: Options<EvalsEvalResultsData>) => createQueryKey('evalsEvalResults', options);
+
+/**
+ * The newest finished evaluation per dataset for one component version
+ */
+export const evalsEvalResultsOptions = (options: Options<EvalsEvalResultsData>) => queryOptions<EvalsEvalResultsResponse, EvalsEvalResultsError, EvalsEvalResultsResponse, ReturnType<typeof evalsEvalResultsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await evalsEvalResults({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: evalsEvalResultsQueryKey(options)
+});
+
+export const evalsEvalCapabilitiesQueryKey = (options: Options<EvalsEvalCapabilitiesData>) => createQueryKey('evalsEvalCapabilities', options);
+
+/**
+ * Whether drafts and pinned versions can be evaluated here (needs agnostic-bridge)
+ */
+export const evalsEvalCapabilitiesOptions = (options: Options<EvalsEvalCapabilitiesData>) => queryOptions<EvalsEvalCapabilitiesResponse, EvalsEvalCapabilitiesError, EvalsEvalCapabilitiesResponse, ReturnType<typeof evalsEvalCapabilitiesQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await evalsEvalCapabilities({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: evalsEvalCapabilitiesQueryKey(options)
+});
+
+export const evalsListEvaluationsQueryKey = (options: Options<EvalsListEvaluationsData>) => createQueryKey('evalsListEvaluations', options);
+
+/**
+ * Evaluations table: dataset batches run here plus AgentOS eval runs created elsewhere
+ */
+export const evalsListEvaluationsOptions = (options: Options<EvalsListEvaluationsData>) => queryOptions<EvalsListEvaluationsResponse, EvalsListEvaluationsError, EvalsListEvaluationsResponse, ReturnType<typeof evalsListEvaluationsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await evalsListEvaluations({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: evalsListEvaluationsQueryKey(options)
+});
+
 export const instancesGetHealthQueryKey = (options: Options<InstancesGetHealthData>) => createQueryKey('instancesGetHealth', options);
 
 /**
@@ -677,6 +1008,42 @@ export const instancesVerifyTokenMutation = (options?: Partial<Options<Instances
     return mutationOptions;
 };
 
+export const observeMetricsCsvQueryKey = (options: Options<ObserveMetricsCsvData>) => createQueryKey('observeMetricsCsv', options);
+
+/**
+ * Usage and estimated cost per component as CSV
+ */
+export const observeMetricsCsvOptions = (options: Options<ObserveMetricsCsvData>) => queryOptions<unknown, ObserveMetricsCsvError, unknown, ReturnType<typeof observeMetricsCsvQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await observeMetricsCsv({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: observeMetricsCsvQueryKey(options)
+});
+
+export const observeMetricsSummaryQueryKey = (options: Options<ObserveMetricsSummaryData>) => createQueryKey('observeMetricsSummary', options);
+
+/**
+ * Metrics page: daily aggregates, per-component usage, model usage and estimated cost
+ */
+export const observeMetricsSummaryOptions = (options: Options<ObserveMetricsSummaryData>) => queryOptions<ObserveMetricsSummaryResponse, ObserveMetricsSummaryError, ObserveMetricsSummaryResponse, ReturnType<typeof observeMetricsSummaryQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await observeMetricsSummary({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: observeMetricsSummaryQueryKey(options)
+});
+
 export const observeOverviewQueryKey = (options: Options<ObserveOverviewData>) => createQueryKey('observeOverview', options);
 
 /**
@@ -695,6 +1062,41 @@ export const observeOverviewOptions = (options: Options<ObserveOverviewData>) =>
     queryKey: observeOverviewQueryKey(options)
 });
 
+export const observeGetPriceTableQueryKey = (options: Options<ObserveGetPriceTableData>) => createQueryKey('observeGetPriceTable', options);
+
+/**
+ * The effective price table: org defaults with this instance's overrides
+ */
+export const observeGetPriceTableOptions = (options: Options<ObserveGetPriceTableData>) => queryOptions<ObserveGetPriceTableResponse, ObserveGetPriceTableError, ObserveGetPriceTableResponse, ReturnType<typeof observeGetPriceTableQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await observeGetPriceTable({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: observeGetPriceTableQueryKey(options)
+});
+
+/**
+ * Replace this instance's price overrides (needs metrics:write); returns the effective table
+ */
+export const observePutPriceTableMutation = (options?: Partial<Options<ObservePutPriceTableData>>): UseMutationOptions<ObservePutPriceTableResponse, ObservePutPriceTableError, Options<ObservePutPriceTableData>> => {
+    const mutationOptions: UseMutationOptions<ObservePutPriceTableResponse, ObservePutPriceTableError, Options<ObservePutPriceTableData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await observePutPriceTable({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
 /**
  * Test connection: DNS, TLS, AgentOS, version, token, enforced scopes
  */
@@ -711,6 +1113,42 @@ export const instancesTestInstanceMutation = (options?: Partial<Options<Instance
     };
     return mutationOptions;
 };
+
+export const observeSpanStatsQueryKey = (options: Options<ObserveSpanStatsData>) => createQueryKey('observeSpanStats', options);
+
+/**
+ * Slowest span types: average duration per span name over the newest traces of a window (needs traces:read)
+ */
+export const observeSpanStatsOptions = (options: Options<ObserveSpanStatsData>) => queryOptions<ObserveSpanStatsResponse, ObserveSpanStatsError, ObserveSpanStatsResponse, ReturnType<typeof observeSpanStatsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await observeSpanStats({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: observeSpanStatsQueryKey(options)
+});
+
+export const observeTraceComparisonQueryKey = (options: Options<ObserveTraceComparisonData>) => createQueryKey('observeTraceComparison', options);
+
+/**
+ * Compare a trace with the last successful run of the same component: aligned spans and a diagnosis
+ */
+export const observeTraceComparisonOptions = (options: Options<ObserveTraceComparisonData>) => queryOptions<ObserveTraceComparisonResponse, ObserveTraceComparisonError, ObserveTraceComparisonResponse, ReturnType<typeof observeTraceComparisonQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await observeTraceComparison({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: observeTraceComparisonQueryKey(options)
+});
 
 export const invitationsListInvitationsQueryKey = (options?: Options<InvitationsListInvitationsData>) => createQueryKey('invitationsListInvitations', options);
 
@@ -1034,6 +1472,41 @@ export const orgUpdateOrgMutation = (options?: Partial<Options<OrgUpdateOrgData>
     const mutationOptions: UseMutationOptions<OrgUpdateOrgResponse, OrgUpdateOrgError, Options<OrgUpdateOrgData>> = {
         mutationFn: async (fnOptions) => {
             const { data } = await orgUpdateOrg({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const observeGetOrgPriceTableQueryKey = (options?: Options<ObserveGetOrgPriceTableData>) => createQueryKey('observeGetOrgPriceTable', options);
+
+/**
+ * The org's default price table
+ */
+export const observeGetOrgPriceTableOptions = (options?: Options<ObserveGetOrgPriceTableData>) => queryOptions<ObserveGetOrgPriceTableResponse, ObserveGetOrgPriceTableError, ObserveGetOrgPriceTableResponse, ReturnType<typeof observeGetOrgPriceTableQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await observeGetOrgPriceTable({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: observeGetOrgPriceTableQueryKey(options)
+});
+
+/**
+ * Replace the org's default price table (needs org:write)
+ */
+export const observePutOrgPriceTableMutation = (options?: Partial<Options<ObservePutOrgPriceTableData>>): UseMutationOptions<ObservePutOrgPriceTableResponse, ObservePutOrgPriceTableError, Options<ObservePutOrgPriceTableData>> => {
+    const mutationOptions: UseMutationOptions<ObservePutOrgPriceTableResponse, ObservePutOrgPriceTableError, Options<ObservePutOrgPriceTableData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await observePutOrgPriceTable({
                 ...options,
                 ...fnOptions,
                 throwOnError: true

@@ -456,6 +456,371 @@
         "title": "AuthOptions",
         "type": "object"
       },
+      "BaselineOut": {
+        "properties": {
+          "duration_ms": {
+            "title": "Duration Ms",
+            "type": "number"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "start_time": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Time"
+          },
+          "trace_id": {
+            "title": "Trace Id",
+            "type": "string"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version"
+          }
+        },
+        "required": [
+          "trace_id",
+          "name",
+          "start_time",
+          "duration_ms",
+          "version"
+        ],
+        "title": "BaselineOut",
+        "type": "object"
+      },
+      "BatchComparisonOut": {
+        "properties": {
+          "after": {
+            "$ref": "#/components/schemas/BatchOut"
+          },
+          "before": {
+            "$ref": "#/components/schemas/BatchOut"
+          },
+          "counts": {
+            "$ref": "#/components/schemas/ComparisonCountsOut"
+          },
+          "generated": {
+            "default": false,
+            "description": "Always false: the insight comes from fixed templates",
+            "title": "Generated",
+            "type": "boolean"
+          },
+          "insight": {
+            "title": "Insight",
+            "type": "string"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/CaseChangeOut"
+            },
+            "title": "Rows",
+            "type": "array"
+          }
+        },
+        "required": [
+          "before",
+          "after",
+          "rows",
+          "counts",
+          "insight"
+        ],
+        "title": "BatchComparisonOut",
+        "type": "object"
+      },
+      "BatchDetailOut": {
+        "properties": {
+          "baseline": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BatchOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The default comparison: another version on the same dataset"
+          },
+          "batch": {
+            "$ref": "#/components/schemas/BatchOut"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ItemOut"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "batch",
+          "items",
+          "baseline"
+        ],
+        "title": "BatchDetailOut",
+        "type": "object"
+      },
+      "BatchIn": {
+        "properties": {
+          "component_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Component Id",
+            "type": "string"
+          },
+          "component_kind": {
+            "enum": [
+              "agent",
+              "team"
+            ],
+            "title": "Component Kind",
+            "type": "string"
+          },
+          "dataset_id": {
+            "title": "Dataset Id",
+            "type": "string"
+          },
+          "judge": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/JudgeIn"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 255,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "params": {
+            "additionalProperties": true,
+            "description": "num_iterations, warmup_runs, threshold, allow_additional_tool_calls",
+            "title": "Params",
+            "type": "object"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "A pinned or draft version; empty = current",
+            "title": "Version"
+          }
+        },
+        "required": [
+          "dataset_id",
+          "component_kind",
+          "component_id"
+        ],
+        "title": "BatchIn",
+        "type": "object"
+      },
+      "BatchOut": {
+        "properties": {
+          "case_count": {
+            "title": "Case Count",
+            "type": "integer"
+          },
+          "component_id": {
+            "title": "Component Id",
+            "type": "string"
+          },
+          "component_kind": {
+            "enum": [
+              "agent",
+              "team"
+            ],
+            "title": "Component Kind",
+            "type": "string"
+          },
+          "dataset_id": {
+            "title": "Dataset Id",
+            "type": "string"
+          },
+          "dataset_name": {
+            "title": "Dataset Name",
+            "type": "string"
+          },
+          "draft": {
+            "title": "Draft",
+            "type": "boolean"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "eval_type": {
+            "$ref": "#/components/schemas/EvalTypeIn"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "instance_id": {
+            "title": "Instance Id",
+            "type": "string"
+          },
+          "judge": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/JudgeOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "params": {
+            "additionalProperties": true,
+            "title": "Params",
+            "type": "object"
+          },
+          "progress": {
+            "title": "Progress",
+            "type": "number"
+          },
+          "result": {
+            "description": "The table's result text: 9.10 avg, 8 / 10 pass, Failed 1 of 6, 3.2 s avg",
+            "title": "Result",
+            "type": "string"
+          },
+          "started_at": {
+            "format": "date-time",
+            "title": "Started At",
+            "type": "string"
+          },
+          "started_by": {
+            "title": "Started By",
+            "type": "string"
+          },
+          "started_by_name": {
+            "title": "Started By Name",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "queued",
+              "running",
+              "completed",
+              "failed",
+              "cancelled"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SummaryOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version"
+          },
+          "version_label": {
+            "description": "current, v3 or v4 draft",
+            "title": "Version Label",
+            "type": "string"
+          },
+          "via_bridge": {
+            "title": "Via Bridge",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "instance_id",
+          "name",
+          "dataset_id",
+          "dataset_name",
+          "case_count",
+          "eval_type",
+          "component_kind",
+          "component_id",
+          "version",
+          "draft",
+          "version_label",
+          "judge",
+          "via_bridge",
+          "params",
+          "status",
+          "progress",
+          "started_by",
+          "started_by_name",
+          "started_at",
+          "finished_at",
+          "summary",
+          "result",
+          "error"
+        ],
+        "title": "BatchOut",
+        "type": "object"
+      },
       "BindingCreate": {
         "properties": {
           "expires_at": {
@@ -657,6 +1022,457 @@
           "detail"
         ],
         "title": "CapabilityOut",
+        "type": "object"
+      },
+      "CaseChangeOut": {
+        "properties": {
+          "after": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ItemOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "before": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ItemOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "case_id": {
+            "title": "Case Id",
+            "type": "string"
+          },
+          "change": {
+            "enum": [
+              "regression",
+              "fix",
+              "same",
+              "missing"
+            ],
+            "title": "Change",
+            "type": "string"
+          },
+          "expected": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected"
+          },
+          "input": {
+            "title": "Input",
+            "type": "string"
+          },
+          "position": {
+            "title": "Position",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "case_id",
+          "position",
+          "input",
+          "expected",
+          "before",
+          "after",
+          "change"
+        ],
+        "title": "CaseChangeOut",
+        "type": "object"
+      },
+      "CaseIn": {
+        "properties": {
+          "criteria": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Criteria"
+          },
+          "expected_output": {
+            "anyOf": [
+              {
+                "maxLength": 20000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Output"
+          },
+          "expected_tool_calls": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 50,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Tool Calls"
+          },
+          "input": {
+            "maxLength": 20000,
+            "minLength": 1,
+            "title": "Input",
+            "type": "string"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "title": "Metadata",
+            "type": "object"
+          }
+        },
+        "required": [
+          "input"
+        ],
+        "title": "CaseIn",
+        "type": "object"
+      },
+      "CaseOut": {
+        "properties": {
+          "criteria": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Criteria"
+          },
+          "expected_output": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Output"
+          },
+          "expected_tool_calls": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Tool Calls"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "input": {
+            "title": "Input",
+            "type": "string"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "title": "Metadata",
+            "type": "object"
+          },
+          "position": {
+            "title": "Position",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "position",
+          "input",
+          "expected_output",
+          "criteria",
+          "expected_tool_calls",
+          "metadata"
+        ],
+        "title": "CaseOut",
+        "type": "object"
+      },
+      "CasePatch": {
+        "properties": {
+          "criteria": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Criteria"
+          },
+          "expected_output": {
+            "anyOf": [
+              {
+                "maxLength": 20000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Output"
+          },
+          "expected_tool_calls": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 50,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Tool Calls"
+          },
+          "input": {
+            "anyOf": [
+              {
+                "maxLength": 20000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Input"
+          }
+        },
+        "title": "CasePatch",
+        "type": "object"
+      },
+      "CasesIn": {
+        "properties": {
+          "cases": {
+            "items": {
+              "$ref": "#/components/schemas/CaseIn"
+            },
+            "maxItems": 1000,
+            "minItems": 1,
+            "title": "Cases",
+            "type": "array"
+          }
+        },
+        "required": [
+          "cases"
+        ],
+        "title": "CasesIn",
+        "type": "object"
+      },
+      "ComparisonCountsOut": {
+        "properties": {
+          "below_after": {
+            "title": "Below After",
+            "type": "integer"
+          },
+          "below_before": {
+            "title": "Below Before",
+            "type": "integer"
+          },
+          "fixes": {
+            "title": "Fixes",
+            "type": "integer"
+          },
+          "regressions": {
+            "title": "Regressions",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "regressions",
+          "fixes",
+          "below_before",
+          "below_after"
+        ],
+        "title": "ComparisonCountsOut",
+        "type": "object"
+      },
+      "ComparisonRowOut": {
+        "properties": {
+          "baseline": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SpanGroupOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "current": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SpanGroupOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "delta_ms": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delta Ms"
+          },
+          "depth": {
+            "title": "Depth",
+            "type": "integer"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/SpanKindOut"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "path": {
+            "description": "Span names from the root: the alignment key",
+            "items": {
+              "type": "string"
+            },
+            "title": "Path",
+            "type": "array"
+          },
+          "state": {
+            "enum": [
+              "same",
+              "slower",
+              "faster",
+              "new",
+              "not_run",
+              "error"
+            ],
+            "title": "State",
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "name",
+          "depth",
+          "kind",
+          "state",
+          "baseline",
+          "current",
+          "delta_ms"
+        ],
+        "title": "ComparisonRowOut",
+        "type": "object"
+      },
+      "ComponentOut": {
+        "properties": {
+          "approximate": {
+            "title": "Approximate",
+            "type": "boolean"
+          },
+          "estimated_cost": {
+            "title": "Estimated Cost",
+            "type": "number"
+          },
+          "extra_models": {
+            "title": "Extra Models",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "models": {
+            "description": "Most tokens first; the first is the primary model",
+            "items": {
+              "$ref": "#/components/schemas/ModelTokensOut"
+            },
+            "title": "Models",
+            "type": "array"
+          },
+          "runs": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "From traces; null when traces aren't readable",
+            "title": "Runs"
+          },
+          "sessions": {
+            "title": "Sessions",
+            "type": "integer"
+          },
+          "tokens": {
+            "$ref": "#/components/schemas/TokensOut"
+          },
+          "type": {
+            "enum": [
+              "agent",
+              "team",
+              "workflow"
+            ],
+            "title": "Type",
+            "type": "string"
+          },
+          "unattributed": {
+            "$ref": "#/components/schemas/TokensOut",
+            "description": "Tokens the sessions didn't tie to a model"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "sessions",
+          "runs",
+          "tokens",
+          "models",
+          "unattributed",
+          "extra_models",
+          "estimated_cost",
+          "approximate"
+        ],
+        "title": "ComponentOut",
         "type": "object"
       },
       "ConfigOut": {
@@ -876,6 +1692,44 @@
         "title": "ConnectedOut",
         "type": "object"
       },
+      "CostOut": {
+        "properties": {
+          "approximate": {
+            "title": "Approximate",
+            "type": "boolean"
+          },
+          "currency": {
+            "const": "USD",
+            "default": "USD",
+            "title": "Currency",
+            "type": "string"
+          },
+          "gap": {
+            "description": "Part of the total priced by model run share",
+            "title": "Gap",
+            "type": "number"
+          },
+          "total": {
+            "title": "Total",
+            "type": "number"
+          },
+          "unpriced_models": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Unpriced Models",
+            "type": "array"
+          }
+        },
+        "required": [
+          "total",
+          "approximate",
+          "gap",
+          "unpriced_models"
+        ],
+        "title": "CostOut",
+        "type": "object"
+      },
       "CountOut": {
         "properties": {
           "available": {
@@ -926,6 +1780,261 @@
           }
         },
         "title": "CountsOut",
+        "type": "object"
+      },
+      "DatasetDetailOut": {
+        "properties": {
+          "case_count": {
+            "title": "Case Count",
+            "type": "integer"
+          },
+          "cases": {
+            "items": {
+              "$ref": "#/components/schemas/CaseOut"
+            },
+            "title": "Cases",
+            "type": "array"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "created_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created By"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "eval_type": {
+            "$ref": "#/components/schemas/EvalTypeIn"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tags",
+            "type": "array"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "eval_type",
+          "tags",
+          "version",
+          "case_count",
+          "created_by",
+          "created_at",
+          "updated_at",
+          "cases"
+        ],
+        "title": "DatasetDetailOut",
+        "type": "object"
+      },
+      "DatasetIn": {
+        "properties": {
+          "cases": {
+            "items": {
+              "$ref": "#/components/schemas/CaseIn"
+            },
+            "maxItems": 1000,
+            "title": "Cases",
+            "type": "array"
+          },
+          "description": {
+            "default": "",
+            "maxLength": 2000,
+            "title": "Description",
+            "type": "string"
+          },
+          "eval_type": {
+            "$ref": "#/components/schemas/EvalTypeIn"
+          },
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 20,
+            "title": "Tags",
+            "type": "array"
+          }
+        },
+        "required": [
+          "name",
+          "eval_type"
+        ],
+        "title": "DatasetIn",
+        "type": "object"
+      },
+      "DatasetOut": {
+        "properties": {
+          "case_count": {
+            "title": "Case Count",
+            "type": "integer"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "created_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created By"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "eval_type": {
+            "$ref": "#/components/schemas/EvalTypeIn"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tags",
+            "type": "array"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "eval_type",
+          "tags",
+          "version",
+          "case_count",
+          "created_by",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "DatasetOut",
+        "type": "object"
+      },
+      "DatasetPatch": {
+        "properties": {
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "tags": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 20,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tags"
+          }
+        },
+        "title": "DatasetPatch",
+        "type": "object"
+      },
+      "DayOut": {
+        "properties": {
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "runs": {
+            "$ref": "#/components/schemas/RunsOut"
+          },
+          "tokens": {
+            "$ref": "#/components/schemas/TokensOut"
+          }
+        },
+        "required": [
+          "date",
+          "runs",
+          "tokens"
+        ],
+        "title": "DayOut",
         "type": "object"
       },
       "DayRunsOut": {
@@ -1181,6 +2290,226 @@
         ],
         "type": "string"
       },
+      "EvalCapabilitiesOut": {
+        "properties": {
+          "bridge_installed": {
+            "title": "Bridge Installed",
+            "type": "boolean"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "versions": {
+            "description": "Drafts and pinned versions can be evaluated, and the judge can be chosen",
+            "title": "Versions",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "bridge_installed",
+          "versions",
+          "reason"
+        ],
+        "title": "EvalCapabilitiesOut",
+        "type": "object"
+      },
+      "EvalTypeIn": {
+        "enum": [
+          "accuracy",
+          "agent_as_judge",
+          "reliability",
+          "performance"
+        ],
+        "type": "string"
+      },
+      "EvalTypeQuery": {
+        "enum": [
+          "accuracy",
+          "agent_as_judge",
+          "reliability",
+          "performance"
+        ],
+        "type": "string"
+      },
+      "EvaluationOut": {
+        "properties": {
+          "bad": {
+            "title": "Bad",
+            "type": "boolean"
+          },
+          "case_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Case Count"
+          },
+          "component_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Component Id"
+          },
+          "component_kind": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Component Kind"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "dataset_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dataset Name"
+          },
+          "eval_type": {
+            "$ref": "#/components/schemas/EvalTypeIn"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "judge": {
+            "title": "Judge",
+            "type": "boolean"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "progress": {
+            "title": "Progress",
+            "type": "number"
+          },
+          "result": {
+            "title": "Result",
+            "type": "string"
+          },
+          "source": {
+            "description": "batch: run from a dataset here; agentos: any other run",
+            "enum": [
+              "batch",
+              "agentos"
+            ],
+            "title": "Source",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "version_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version Label"
+          }
+        },
+        "required": [
+          "source",
+          "id",
+          "name",
+          "eval_type",
+          "component_kind",
+          "component_id",
+          "version_label",
+          "model",
+          "judge",
+          "result",
+          "bad",
+          "status",
+          "progress",
+          "created_at",
+          "dataset_name",
+          "case_count"
+        ],
+        "title": "EvaluationOut",
+        "type": "object"
+      },
+      "EvaluationsOut": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/EvaluationOut"
+            },
+            "title": "Data",
+            "type": "array"
+          },
+          "standalone_unavailable": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Why AgentOS eval runs couldn't be listed",
+            "title": "Standalone Unavailable"
+          }
+        },
+        "required": [
+          "data",
+          "standalone_unavailable"
+        ],
+        "title": "EvaluationsOut",
+        "type": "object"
+      },
       "ExplainIn": {
         "properties": {
           "action": {
@@ -1317,6 +2646,204 @@
           "type"
         ],
         "title": "FieldError",
+        "type": "object"
+      },
+      "GateIn": {
+        "properties": {
+          "component_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Component Id",
+            "type": "string"
+          },
+          "component_kind": {
+            "enum": [
+              "agent",
+              "team"
+            ],
+            "title": "Component Kind",
+            "type": "string"
+          },
+          "dataset_id": {
+            "title": "Dataset Id",
+            "type": "string"
+          },
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "min_average": {
+            "maximum": 10.0,
+            "minimum": 0.0,
+            "title": "Min Average",
+            "type": "number"
+          }
+        },
+        "required": [
+          "component_kind",
+          "component_id",
+          "dataset_id",
+          "min_average",
+          "enabled"
+        ],
+        "title": "GateIn",
+        "type": "object"
+      },
+      "GateOut": {
+        "properties": {
+          "component_id": {
+            "title": "Component Id",
+            "type": "string"
+          },
+          "component_kind": {
+            "enum": [
+              "agent",
+              "team"
+            ],
+            "title": "Component Kind",
+            "type": "string"
+          },
+          "consequence": {
+            "title": "Consequence",
+            "type": "string"
+          },
+          "dataset_id": {
+            "title": "Dataset Id",
+            "type": "string"
+          },
+          "dataset_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dataset Name"
+          },
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "eval_type": {
+            "$ref": "#/components/schemas/EvalTypeIn"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "latest": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GateResultOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "min_average": {
+            "title": "Min Average",
+            "type": "number"
+          },
+          "state": {
+            "enum": [
+              "off",
+              "no_result",
+              "would_block",
+              "passes"
+            ],
+            "title": "State",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "updated_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated By"
+          }
+        },
+        "required": [
+          "id",
+          "component_kind",
+          "component_id",
+          "dataset_id",
+          "dataset_name",
+          "eval_type",
+          "min_average",
+          "enabled",
+          "updated_by",
+          "updated_at",
+          "latest",
+          "state",
+          "consequence"
+        ],
+        "title": "GateOut",
+        "type": "object"
+      },
+      "GateResultOut": {
+        "properties": {
+          "batch_id": {
+            "title": "Batch Id",
+            "type": "string"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          },
+          "version_label": {
+            "title": "Version Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "batch_id",
+          "version_label",
+          "value"
+        ],
+        "title": "GateResultOut",
+        "type": "object"
+      },
+      "GhostOut": {
+        "properties": {
+          "duration_ms": {
+            "title": "Duration Ms",
+            "type": "number"
+          },
+          "span_id": {
+            "description": "The span of this trace the ghost bar is drawn under",
+            "title": "Span Id",
+            "type": "string"
+          },
+          "start_ms": {
+            "title": "Start Ms",
+            "type": "number"
+          }
+        },
+        "required": [
+          "span_id",
+          "start_ms",
+          "duration_ms"
+        ],
+        "title": "GhostOut",
         "type": "object"
       },
       "GrantOut": {
@@ -1501,6 +3028,49 @@
           "probed_at"
         ],
         "title": "HealthOut",
+        "type": "object"
+      },
+      "ImportIn": {
+        "properties": {
+          "content": {
+            "maxLength": 5000000,
+            "minLength": 1,
+            "title": "Content",
+            "type": "string"
+          },
+          "format": {
+            "enum": [
+              "csv",
+              "jsonl"
+            ],
+            "title": "Format",
+            "type": "string"
+          },
+          "replace": {
+            "default": false,
+            "description": "Replace every case instead of appending",
+            "title": "Replace",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "format",
+          "content"
+        ],
+        "title": "ImportIn",
+        "type": "object"
+      },
+      "ImportOut": {
+        "properties": {
+          "imported": {
+            "title": "Imported",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "imported"
+        ],
+        "title": "ImportOut",
         "type": "object"
       },
       "InitialBindingIn": {
@@ -2072,6 +3642,154 @@
         "title": "IssuedInvitationOut",
         "type": "object"
       },
+      "ItemOut": {
+        "properties": {
+          "actual": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual"
+          },
+          "case_id": {
+            "title": "Case Id",
+            "type": "string"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "eval_run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Eval Run Id"
+          },
+          "expected": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "input": {
+            "title": "Input",
+            "type": "string"
+          },
+          "latency_ms": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latency Ms"
+          },
+          "passed": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Passed"
+          },
+          "position": {
+            "title": "Position",
+            "type": "integer"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          },
+          "status": {
+            "enum": [
+              "pending",
+              "running",
+              "done",
+              "error",
+              "cancelled"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "trace_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trace Id"
+          }
+        },
+        "required": [
+          "id",
+          "case_id",
+          "position",
+          "input",
+          "expected",
+          "status",
+          "score",
+          "passed",
+          "reason",
+          "actual",
+          "latency_ms",
+          "eval_run_id",
+          "trace_id",
+          "error"
+        ],
+        "title": "ItemOut",
+        "type": "object"
+      },
       "Joined": {
         "properties": {
           "csrf_token": {
@@ -2088,6 +3806,46 @@
           "csrf_token"
         ],
         "title": "Joined",
+        "type": "object"
+      },
+      "JudgeIn": {
+        "properties": {
+          "model_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Model Id",
+            "type": "string"
+          },
+          "provider": {
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Provider",
+            "type": "string"
+          }
+        },
+        "required": [
+          "model_id",
+          "provider"
+        ],
+        "title": "JudgeIn",
+        "type": "object"
+      },
+      "JudgeOut": {
+        "properties": {
+          "model_id": {
+            "title": "Model Id",
+            "type": "string"
+          },
+          "provider": {
+            "title": "Provider",
+            "type": "string"
+          }
+        },
+        "required": [
+          "model_id",
+          "provider"
+        ],
+        "title": "JudgeOut",
         "type": "object"
       },
       "KeyOut": {
@@ -2596,27 +4354,136 @@
         "title": "MemberUpdate",
         "type": "object"
       },
-      "ModelUsageOut": {
+      "MetricsSummaryOut": {
+        "properties": {
+          "components": {
+            "items": {
+              "$ref": "#/components/schemas/ComponentOut"
+            },
+            "title": "Components",
+            "type": "array"
+          },
+          "cost": {
+            "$ref": "#/components/schemas/CostOut"
+          },
+          "days": {
+            "items": {
+              "$ref": "#/components/schemas/DayOut"
+            },
+            "title": "Days",
+            "type": "array"
+          },
+          "end": {
+            "format": "date",
+            "title": "End",
+            "type": "string"
+          },
+          "gap_tokens": {
+            "$ref": "#/components/schemas/TokensOut",
+            "description": "Daily-total tokens that the range's sessions don't explain"
+          },
+          "generated_at": {
+            "format": "date-time",
+            "title": "Generated At",
+            "type": "string"
+          },
+          "instance_id": {
+            "title": "Instance Id",
+            "type": "string"
+          },
+          "last_aggregated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When AgentOS last recomputed its daily aggregates",
+            "title": "Last Aggregated At"
+          },
+          "model_usage": {
+            "items": {
+              "$ref": "#/components/schemas/agnostic_observe__api__metrics_schemas__ModelUsageOut"
+            },
+            "title": "Model Usage",
+            "type": "array"
+          },
+          "prices": {
+            "items": {
+              "$ref": "#/components/schemas/PriceOut"
+            },
+            "title": "Prices",
+            "type": "array"
+          },
+          "sampled": {
+            "title": "Sampled",
+            "type": "boolean"
+          },
+          "start": {
+            "format": "date",
+            "title": "Start",
+            "type": "string"
+          },
+          "totals": {
+            "$ref": "#/components/schemas/TotalsOut"
+          },
+          "unavailable": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Unavailable",
+            "type": "object"
+          }
+        },
+        "required": [
+          "instance_id",
+          "start",
+          "end",
+          "generated_at",
+          "last_aggregated_at",
+          "totals",
+          "days",
+          "model_usage",
+          "components",
+          "gap_tokens",
+          "prices",
+          "cost",
+          "sampled",
+          "unavailable"
+        ],
+        "title": "MetricsSummaryOut",
+        "type": "object"
+      },
+      "ModelTokensOut": {
         "properties": {
           "model_id": {
             "title": "Model Id",
             "type": "string"
           },
-          "runs": {
-            "title": "Runs",
-            "type": "integer"
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider"
           },
-          "share": {
-            "title": "Share",
-            "type": "number"
+          "tokens": {
+            "$ref": "#/components/schemas/TokensOut"
           }
         },
         "required": [
           "model_id",
-          "runs",
-          "share"
+          "provider",
+          "tokens"
         ],
-        "title": "ModelUsageOut",
+        "title": "ModelTokensOut",
         "type": "object"
       },
       "ModuleInfo": {
@@ -3092,7 +4959,7 @@
             "anyOf": [
               {
                 "items": {
-                  "$ref": "#/components/schemas/ModelUsageOut"
+                  "$ref": "#/components/schemas/agnostic_observe__api__schemas__ModelUsageOut"
                 },
                 "type": "array"
               },
@@ -3261,6 +5128,205 @@
           "email"
         ],
         "title": "PasswordResetRequest",
+        "type": "object"
+      },
+      "PriceIn": {
+        "properties": {
+          "cache_read_per_1m": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cache Read Per 1M"
+          },
+          "input_per_1m": {
+            "minimum": 0.0,
+            "title": "Input Per 1M",
+            "type": "number"
+          },
+          "model_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Model Id",
+            "type": "string"
+          },
+          "output_per_1m": {
+            "minimum": 0.0,
+            "title": "Output Per 1M",
+            "type": "number"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider"
+          },
+          "reasoning_per_1m": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reasoning Per 1M"
+          }
+        },
+        "required": [
+          "model_id",
+          "input_per_1m",
+          "output_per_1m"
+        ],
+        "title": "PriceIn",
+        "type": "object"
+      },
+      "PriceOut": {
+        "properties": {
+          "cache_read_per_1m": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cache Read Per 1M"
+          },
+          "currency": {
+            "const": "USD",
+            "default": "USD",
+            "title": "Currency",
+            "type": "string"
+          },
+          "input_per_1m": {
+            "minimum": 0.0,
+            "title": "Input Per 1M",
+            "type": "number"
+          },
+          "model_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Model Id",
+            "type": "string"
+          },
+          "output_per_1m": {
+            "minimum": 0.0,
+            "title": "Output Per 1M",
+            "type": "number"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider"
+          },
+          "reasoning_per_1m": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reasoning Per 1M"
+          },
+          "source": {
+            "enum": [
+              "org",
+              "instance"
+            ],
+            "title": "Source",
+            "type": "string"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "updated_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated By"
+          }
+        },
+        "required": [
+          "model_id",
+          "input_per_1m",
+          "output_per_1m",
+          "source",
+          "updated_at",
+          "updated_by"
+        ],
+        "title": "PriceOut",
+        "type": "object"
+      },
+      "PriceTableIn": {
+        "properties": {
+          "prices": {
+            "items": {
+              "$ref": "#/components/schemas/PriceIn"
+            },
+            "maxItems": 500,
+            "title": "Prices",
+            "type": "array"
+          }
+        },
+        "required": [
+          "prices"
+        ],
+        "title": "PriceTableIn",
+        "type": "object"
+      },
+      "PriceTableOut": {
+        "properties": {
+          "prices": {
+            "items": {
+              "$ref": "#/components/schemas/PriceOut"
+            },
+            "title": "Prices",
+            "type": "array"
+          }
+        },
+        "required": [
+          "prices"
+        ],
+        "title": "PriceTableOut",
         "type": "object"
       },
       "PrimitiveOut": {
@@ -3713,6 +5779,34 @@
         "title": "RoutePolicyOut",
         "type": "object"
       },
+      "RunsOut": {
+        "properties": {
+          "agent": {
+            "title": "Agent",
+            "type": "integer"
+          },
+          "team": {
+            "title": "Team",
+            "type": "integer"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          },
+          "workflow": {
+            "title": "Workflow",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "agent",
+          "team",
+          "workflow",
+          "total"
+        ],
+        "title": "RunsOut",
+        "type": "object"
+      },
       "ScopeOut": {
         "properties": {
           "action": {
@@ -3936,6 +6030,132 @@
         "title": "SignedIn",
         "type": "object"
       },
+      "SpanGroupOut": {
+        "properties": {
+          "count": {
+            "description": "How many times the span ran (×N)",
+            "title": "Count",
+            "type": "integer"
+          },
+          "errors": {
+            "title": "Errors",
+            "type": "integer"
+          },
+          "max_ms": {
+            "title": "Max Ms",
+            "type": "number"
+          },
+          "mean_ms": {
+            "title": "Mean Ms",
+            "type": "number"
+          },
+          "total_ms": {
+            "title": "Total Ms",
+            "type": "number"
+          }
+        },
+        "required": [
+          "count",
+          "total_ms",
+          "mean_ms",
+          "max_ms",
+          "errors"
+        ],
+        "title": "SpanGroupOut",
+        "type": "object"
+      },
+      "SpanKindOut": {
+        "enum": [
+          "workflow",
+          "step",
+          "agent",
+          "team",
+          "model",
+          "tool",
+          "other"
+        ],
+        "type": "string"
+      },
+      "SpanStatsOut": {
+        "properties": {
+          "cached": {
+            "title": "Cached",
+            "type": "boolean"
+          },
+          "generated_at": {
+            "format": "date-time",
+            "title": "Generated At",
+            "type": "string"
+          },
+          "sampled": {
+            "description": "Only the newest traces of the window were scanned",
+            "title": "Sampled",
+            "type": "boolean"
+          },
+          "stats": {
+            "items": {
+              "$ref": "#/components/schemas/SpanTypeStatOut"
+            },
+            "title": "Stats",
+            "type": "array"
+          },
+          "traces_scanned": {
+            "title": "Traces Scanned",
+            "type": "integer"
+          },
+          "window": {
+            "enum": [
+              "24h",
+              "7d",
+              "30d"
+            ],
+            "title": "Window",
+            "type": "string"
+          }
+        },
+        "required": [
+          "window",
+          "generated_at",
+          "traces_scanned",
+          "sampled",
+          "cached",
+          "stats"
+        ],
+        "title": "SpanStatsOut",
+        "type": "object"
+      },
+      "SpanTypeStatOut": {
+        "properties": {
+          "avg_duration_ms": {
+            "title": "Avg Duration Ms",
+            "type": "number"
+          },
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "errors": {
+            "title": "Errors",
+            "type": "integer"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/SpanKindOut"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "kind",
+          "avg_duration_ms",
+          "count",
+          "errors"
+        ],
+        "title": "SpanTypeStatOut",
+        "type": "object"
+      },
       "StepOut": {
         "properties": {
           "detail": {
@@ -3980,6 +6200,140 @@
           "hint"
         ],
         "title": "StepOut",
+        "type": "object"
+      },
+      "SummaryOut": {
+        "properties": {
+          "avg": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg"
+          },
+          "avg_latency_ms": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Latency Ms"
+          },
+          "below_threshold": {
+            "title": "Below Threshold",
+            "type": "integer"
+          },
+          "completed": {
+            "title": "Completed",
+            "type": "integer"
+          },
+          "errors": {
+            "title": "Errors",
+            "type": "integer"
+          },
+          "failed": {
+            "title": "Failed",
+            "type": "integer"
+          },
+          "gate_value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gate Value"
+          },
+          "max": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max"
+          },
+          "mean": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mean"
+          },
+          "min": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min"
+          },
+          "pass_ratio": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pass Ratio"
+          },
+          "passed": {
+            "title": "Passed",
+            "type": "integer"
+          },
+          "runs": {
+            "title": "Runs",
+            "type": "integer"
+          },
+          "std_dev": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Std Dev"
+          }
+        },
+        "required": [
+          "runs",
+          "completed",
+          "errors",
+          "avg",
+          "mean",
+          "min",
+          "max",
+          "std_dev",
+          "passed",
+          "failed",
+          "pass_ratio",
+          "avg_latency_ms",
+          "below_threshold",
+          "gate_value"
+        ],
+        "title": "SummaryOut",
         "type": "object"
       },
       "SystemModules": {
@@ -4101,6 +6455,192 @@
         "title": "TokenCheckOut",
         "type": "object"
       },
+      "TokensOut": {
+        "properties": {
+          "cache_read": {
+            "title": "Cache Read",
+            "type": "integer"
+          },
+          "input": {
+            "description": "Input tokens, cache reads included",
+            "title": "Input",
+            "type": "integer"
+          },
+          "output": {
+            "description": "Output tokens, reasoning included",
+            "title": "Output",
+            "type": "integer"
+          },
+          "reasoning": {
+            "title": "Reasoning",
+            "type": "integer"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "input",
+          "output",
+          "cache_read",
+          "reasoning",
+          "total"
+        ],
+        "title": "TokensOut",
+        "type": "object"
+      },
+      "TotalsOut": {
+        "properties": {
+          "active_users": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active Users"
+          },
+          "runs": {
+            "$ref": "#/components/schemas/RunsOut"
+          },
+          "runs_per_session": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Runs Per Session"
+          },
+          "sessions": {
+            "title": "Sessions",
+            "type": "integer"
+          },
+          "tokens": {
+            "$ref": "#/components/schemas/TokensOut"
+          }
+        },
+        "required": [
+          "runs",
+          "sessions",
+          "runs_per_session",
+          "active_users",
+          "tokens"
+        ],
+        "title": "TotalsOut",
+        "type": "object"
+      },
+      "TraceComparisonOut": {
+        "properties": {
+          "baseline": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BaselineOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cached": {
+            "default": false,
+            "title": "Cached",
+            "type": "boolean"
+          },
+          "current_duration_ms": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Duration Ms"
+          },
+          "diagnosis": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Diagnosis"
+          },
+          "generated": {
+            "default": false,
+            "description": "Always false: the diagnosis comes from fixed templates",
+            "title": "Generated",
+            "type": "boolean"
+          },
+          "ghosts": {
+            "items": {
+              "$ref": "#/components/schemas/GhostOut"
+            },
+            "title": "Ghosts",
+            "type": "array"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Why there is no baseline",
+            "title": "Reason"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/ComparisonRowOut"
+            },
+            "title": "Rows",
+            "type": "array"
+          },
+          "same_input_shape": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Same Input Shape"
+          },
+          "same_version": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Same Version"
+          },
+          "trace_id": {
+            "title": "Trace Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "trace_id",
+          "baseline",
+          "reason"
+        ],
+        "title": "TraceComparisonOut",
+        "type": "object"
+      },
       "ValidationError": {
         "properties": {
           "ctx": {
@@ -4154,6 +6694,64 @@
           "token"
         ],
         "title": "VerifyTokenIn",
+        "type": "object"
+      },
+      "agnostic_observe__api__metrics_schemas__ModelUsageOut": {
+        "properties": {
+          "model_id": {
+            "title": "Model Id",
+            "type": "string"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider"
+          },
+          "runs": {
+            "title": "Runs",
+            "type": "integer"
+          },
+          "share": {
+            "title": "Share",
+            "type": "number"
+          }
+        },
+        "required": [
+          "model_id",
+          "provider",
+          "runs",
+          "share"
+        ],
+        "title": "ModelUsageOut",
+        "type": "object"
+      },
+      "agnostic_observe__api__schemas__ModelUsageOut": {
+        "properties": {
+          "model_id": {
+            "title": "Model Id",
+            "type": "string"
+          },
+          "runs": {
+            "title": "Runs",
+            "type": "integer"
+          },
+          "share": {
+            "title": "Share",
+            "type": "number"
+          }
+        },
+        "required": [
+          "model_id",
+          "runs",
+          "share"
+        ],
+        "title": "ModelUsageOut",
         "type": "object"
       }
     }
@@ -5974,6 +8572,1335 @@
         ]
       }
     },
+    "/api/v1/instances/{instance}/eval-batches": {
+      "post": {
+        "operationId": "evals_start_batch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Evaluate a component version on a dataset: one eval run per case, in the background",
+        "tags": [
+          "evals"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/eval-batches/{batch_id}": {
+      "get": {
+        "operationId": "evals_get_batch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "batch_id",
+            "required": true,
+            "schema": {
+              "title": "Batch Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchDetailOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "An evaluation with its cases and progress",
+        "tags": [
+          "evals"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/eval-batches/{batch_id}/cancel": {
+      "post": {
+        "operationId": "evals_cancel_batch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "batch_id",
+            "required": true,
+            "schema": {
+              "title": "Batch Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Stop an evaluation between cases",
+        "tags": [
+          "evals"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/eval-batches/{batch_id}/compare": {
+      "get": {
+        "operationId": "evals_compare_batches",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "batch_id",
+            "required": true,
+            "schema": {
+              "title": "Batch Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "The other evaluation's id",
+            "in": "query",
+            "name": "with",
+            "required": true,
+            "schema": {
+              "description": "The other evaluation's id",
+              "title": "With",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchComparisonOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Case-by-case comparison with another evaluation of the same dataset",
+        "tags": [
+          "evals"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/eval-datasets": {
+      "get": {
+        "operationId": "evals_list_datasets",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "eval_type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/EvalTypeQuery"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Eval Type"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DatasetOut"
+                  },
+                  "title": "Response Evals List Datasets",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Eval datasets (org-wide; needs evals:read on this instance)",
+        "tags": [
+          "evals"
+        ]
+      },
+      "post": {
+        "operationId": "evals_create_dataset",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DatasetIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DatasetDetailOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Create a dataset, optionally with its cases",
+        "tags": [
+          "evals"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/eval-datasets/{dataset_id}": {
+      "delete": {
+        "operationId": "evals_delete_dataset",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "dataset_id",
+            "required": true,
+            "schema": {
+              "title": "Dataset Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Delete a dataset (past evaluations keep their case snapshots)",
+        "tags": [
+          "evals"
+        ]
+      },
+      "get": {
+        "operationId": "evals_get_dataset",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "dataset_id",
+            "required": true,
+            "schema": {
+              "title": "Dataset Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DatasetDetailOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "A dataset with its cases",
+        "tags": [
+          "evals"
+        ]
+      },
+      "patch": {
+        "operationId": "evals_update_dataset",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "dataset_id",
+            "required": true,
+            "schema": {
+              "title": "Dataset Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DatasetPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DatasetOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Rename or describe a dataset",
+        "tags": [
+          "evals"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/eval-datasets/{dataset_id}/cases": {
+      "post": {
+        "operationId": "evals_add_cases",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "dataset_id",
+            "required": true,
+            "schema": {
+              "title": "Dataset Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CasesIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CaseOut"
+                  },
+                  "title": "Response Evals Add Cases",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Append cases",
+        "tags": [
+          "evals"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/eval-datasets/{dataset_id}/cases/{case_id}": {
+      "delete": {
+        "operationId": "evals_delete_case",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "dataset_id",
+            "required": true,
+            "schema": {
+              "title": "Dataset Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "title": "Case Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Delete a case",
+        "tags": [
+          "evals"
+        ]
+      },
+      "patch": {
+        "operationId": "evals_update_case",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "dataset_id",
+            "required": true,
+            "schema": {
+              "title": "Dataset Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "title": "Case Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CasePatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Change a case",
+        "tags": [
+          "evals"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/eval-datasets/{dataset_id}/import": {
+      "post": {
+        "operationId": "evals_import_cases",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "dataset_id",
+            "required": true,
+            "schema": {
+              "title": "Dataset Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Import cases from CSV or JSONL text",
+        "tags": [
+          "evals"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/eval-gates": {
+      "get": {
+        "operationId": "evals_list_gates",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "component_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Component Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/GateOut"
+                  },
+                  "title": "Response Evals List Gates",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Publish gates with what each would do right now",
+        "tags": [
+          "evals"
+        ]
+      },
+      "put": {
+        "operationId": "evals_put_gate",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GateIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GateOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Create or change the gate for a component and dataset (needs evals:gates:write)",
+        "tags": [
+          "evals"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/eval-gates/{gate_id}": {
+      "delete": {
+        "operationId": "evals_delete_gate",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "gate_id",
+            "required": true,
+            "schema": {
+              "title": "Gate Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Remove a publish gate",
+        "tags": [
+          "evals"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/eval-results": {
+      "get": {
+        "operationId": "evals_eval_results",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "component_id",
+            "required": true,
+            "schema": {
+              "title": "Component Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Empty: evaluations of the current version",
+            "in": "query",
+            "name": "version",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Empty: evaluations of the current version",
+              "title": "Version"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/BatchOut"
+                  },
+                  "title": "Response Evals Eval Results",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "The newest finished evaluation per dataset for one component version",
+        "tags": [
+          "evals"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/evals/capabilities": {
+      "get": {
+        "operationId": "evals_eval_capabilities",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvalCapabilitiesOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Whether drafts and pinned versions can be evaluated here (needs agnostic-bridge)",
+        "tags": [
+          "evals"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/evaluations": {
+      "get": {
+        "operationId": "evals_list_evaluations",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "eval_type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/EvalTypeQuery"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Eval Type"
+            }
+          },
+          {
+            "in": "query",
+            "name": "component_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Component Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "model",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Model"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvaluationsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Evaluations table: dataset batches run here plus AgentOS eval runs created elsewhere",
+        "tags": [
+          "evals"
+        ]
+      }
+    },
     "/api/v1/instances/{instance}/health": {
       "get": {
         "operationId": "instances_get_health",
@@ -6210,6 +10137,186 @@
         ]
       }
     },
+    "/api/v1/instances/{instance}/metrics/export.csv": {
+      "get": {
+        "operationId": "observe_metrics_csv",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "description": "First day (UTC); default: 6 days before `to`",
+            "in": "query",
+            "name": "from",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "First day (UTC); default: 6 days before `to`",
+              "title": "From"
+            }
+          },
+          {
+            "description": "Last day (UTC), inclusive; default: today",
+            "in": "query",
+            "name": "to",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Last day (UTC), inclusive; default: today",
+              "title": "To"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/csv": {}
+            },
+            "description": "One row per component"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Usage and estimated cost per component as CSV",
+        "tags": [
+          "observe"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/metrics/summary": {
+      "get": {
+        "operationId": "observe_metrics_summary",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "description": "First day (UTC); default: 6 days before `to`",
+            "in": "query",
+            "name": "from",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "First day (UTC); default: 6 days before `to`",
+              "title": "From"
+            }
+          },
+          {
+            "description": "Last day (UTC), inclusive; default: today",
+            "in": "query",
+            "name": "to",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Last day (UTC), inclusive; default: today",
+              "title": "To"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetricsSummaryOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Metrics page: daily aggregates, per-component usage, model usage and estimated cost",
+        "tags": [
+          "observe"
+        ]
+      }
+    },
     "/api/v1/instances/{instance}/overview": {
       "get": {
         "operationId": "observe_overview",
@@ -6289,6 +10396,122 @@
         ]
       }
     },
+    "/api/v1/instances/{instance}/price-table": {
+      "get": {
+        "operationId": "observe_get_price_table",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PriceTableOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "The effective price table: org defaults with this instance's overrides",
+        "tags": [
+          "observe"
+        ]
+      },
+      "put": {
+        "operationId": "observe_put_price_table",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PriceTableIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PriceTableOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Replace this instance's price overrides (needs metrics:write); returns the effective table",
+        "tags": [
+          "observe"
+        ]
+      }
+    },
     "/api/v1/instances/{instance}/test": {
       "post": {
         "operationId": "instances_test_instance",
@@ -6340,6 +10563,138 @@
         "summary": "Test connection: DNS, TLS, AgentOS, version, token, enforced scopes",
         "tags": [
           "instances"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/traces/span-stats": {
+      "get": {
+        "operationId": "observe_span_stats",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "window",
+            "required": false,
+            "schema": {
+              "default": "7d",
+              "enum": [
+                "24h",
+                "7d",
+                "30d"
+              ],
+              "title": "Window",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SpanStatsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Slowest span types: average duration per span name over the newest traces of a window (needs traces:read)",
+        "tags": [
+          "observe"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/traces/{trace_id}/comparison": {
+      "get": {
+        "operationId": "observe_trace_comparison",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "trace_id",
+            "required": true,
+            "schema": {
+              "title": "Trace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TraceComparisonOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Compare a trace with the last successful run of the same component: aligned spans and a diagnosis",
+        "tags": [
+          "observe"
         ]
       }
     },
@@ -7306,6 +11661,100 @@
         "summary": "Change the org profile or org settings",
         "tags": [
           "org"
+        ]
+      }
+    },
+    "/api/v1/price-table": {
+      "get": {
+        "operationId": "observe_get_org_price_table",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PriceTableOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "The org's default price table",
+        "tags": [
+          "observe"
+        ]
+      },
+      "put": {
+        "operationId": "observe_put_org_price_table",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PriceTableIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PriceTableOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Replace the org's default price table (needs org:write)",
+        "tags": [
+          "observe"
         ]
       }
     },

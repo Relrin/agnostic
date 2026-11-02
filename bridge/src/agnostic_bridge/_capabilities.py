@@ -37,7 +37,7 @@ class BridgeQueueFeatures(BaseModel):
 
 
 class BridgeFeatures(BaseModel):
-    """Switches set on the AgentOS object. The control plane still probes the routes (07 §3) before relying on them."""
+    """Switches set on the AgentOS object. The control plane still probes the routes before relying on them."""
 
     auth_mode: Literal["none", "security_key", "jwt"] = Field(description="Same value as /info.auth_mode")
     authorization: bool = Field(description="RBAC on verified JWTs (AgentOS(authorization=...))")

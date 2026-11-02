@@ -1,15 +1,17 @@
 """A small in-process AgentOS 3.1 stand-in: verifies control-plane JWTs and enforces scopes the way agno does.
 
 Only the routes the tests need: health/info/config, sessions, an SSE run, approvals (list, get, resolve, count),
-run continuation, metrics, traces and schedules. Approvals answer 503 (disabled) unless ``approvals_enabled``.
-Under ``user_isolation`` non-admins get 404 for other people's approvals and runs, like agno.
+run continuation, metrics, traces (list, detail), schedules, component configs, eval runs, and the bridge's
+capabilities and version-pinned eval routes (when ``bridge`` is on). Approvals answer 503 (disabled) unless
+``approvals_enabled``. Under ``user_isolation`` non-admins get 404 for other people's approvals, runs and traces,
+like agno.
 """
 
 from __future__ import annotations
 
 import asyncio
 from collections.abc import AsyncIterator
-from typing import Any
+from typing import Any, cast
 from urllib.parse import parse_qs
 
 import jwt
@@ -55,6 +57,14 @@ class FakeAgentOS:
         self.traces: list[dict[str, Any]] = []
         self.schedules: list[dict[str, Any]] = []
         self.schedule_runs: dict[str, list[dict[str, Any]]] = {}
+        self.trace_details: dict[str, dict[str, Any]] = {}
+        self.session_items: list[dict[str, Any]] | None = None
+        self.component_stages: dict[tuple[str, int], str] = {}
+        self.eval_runs: list[dict[str, Any]] = []
+        self.eval_requests: list[dict[str, Any]] = []
+        self.eval_responder: Any = None
+        """``(body, path) -> EvalSchema dict`` (or a ``(status, body)`` tuple to fail)."""
+        self.bridge = False
         self.app = self._build()
 
     def _claims(self, request: Request) -> dict[str, Any] | Response:
@@ -145,6 +155,12 @@ class FakeAgentOS:
             guarded = await self._guard(request, "sessions:read")
             if isinstance(guarded, Response):
                 return guarded
+            if self.session_items is not None:
+                items = [i for i in self.session_items if visible(guarded, i.get("user_id"))]
+                items.sort(key=lambda i: str(i.get(request.query_params.get("sort_by", "created_at")) or ""))
+                if request.query_params.get("sort_order", "desc") == "desc":
+                    items.reverse()
+                return page(items, request)
             return {
                 "data": [{"session_id": "ses_1", "user_id": guarded["sub"]}],
                 "meta": {"page": 1, "limit": 20, "total_pages": 1, "total_count": 1},
@@ -275,9 +291,27 @@ class FakeAgentOS:
             guarded = await self._guard(request, "traces:read")
             if isinstance(guarded, Response):
                 return guarded
-            status = request.query_params.get("status")
+            query = request.query_params
+            status = query.get("status")
             items = [t for t in self.traces if status is None or t["status"] == status]
+            for key in ("agent_id", "team_id", "workflow_id", "run_id", "session_id"):
+                if query.get(key):
+                    items = [t for t in items if t.get(key) == query[key]]
+            if query.get("end_time"):
+                items = [t for t in items if str(t.get("start_time") or "") <= query["end_time"]]
+            items = [t for t in items if visible(guarded, t.get("user_id", guarded.get("sub")))]
+            items.sort(key=lambda t: str(t.get("start_time") or ""), reverse=True)
             return JSONResponse(page(items, request))
+
+        @app.get("/traces/{trace_id}")
+        async def trace_detail(trace_id: str, request: Request) -> Response:
+            guarded = await self._guard(request, "traces:read")
+            if isinstance(guarded, Response):
+                return guarded
+            detail = self.trace_details.get(trace_id)
+            if detail is None or not visible(guarded, detail.get("user_id", guarded.get("sub"))):
+                return JSONResponse({"detail": "Trace not found"}, status_code=404)
+            return JSONResponse(detail)
 
         @app.get("/schedules")
         async def schedules(request: Request) -> Response:
@@ -292,6 +326,64 @@ class FakeAgentOS:
             if isinstance(guarded, Response):
                 return guarded
             return JSONResponse(page(self.schedule_runs.get(schedule_id, []), request))
+
+        @app.get("/components/{component_id}/configs/{version}")
+        async def component_config(component_id: str, version: int, request: Request) -> Response:
+            guarded = await self._guard(request, "components:read")
+            if isinstance(guarded, Response):
+                return guarded
+            stage = self.component_stages.get((component_id, version))
+            if stage is None:
+                return JSONResponse({"detail": "Config not found"}, status_code=404)
+            return JSONResponse({"component_id": component_id, "version": version, "stage": stage, "config": {}})
+
+        @app.get("/eval-runs")
+        async def eval_runs(request: Request) -> Response:
+            guarded = await self._guard(request, "evals:read")
+            if isinstance(guarded, Response):
+                return guarded
+            return JSONResponse(page(self.eval_runs, request))
+
+        async def run_eval(request: Request, path: str) -> Response:
+            guarded = await self._guard(request, "evals:write")
+            if isinstance(guarded, Response):
+                return guarded
+            body = orjson.loads(await request.body())
+            self.eval_requests.append({"path": path, "body": body, "claims": guarded})
+            result = self.eval_responder(body, path) if self.eval_responder else None
+            if isinstance(result, tuple):
+                status_code, payload = cast("tuple[int, Any]", result)
+                return JSONResponse(payload, status_code=status_code)
+            created = {
+                "id": f"eval_{len(self.eval_requests)}",
+                "eval_type": body["eval_type"],
+                "agent_id": body.get("agent_id") or body.get("component_id"),
+                "eval_data": {},
+                "created_at": "2026-11-01T09:00:00Z",
+                **(result or {}),
+            }
+            self.eval_runs.append(created)
+            return JSONResponse(created)
+
+        @app.post("/eval-runs")
+        async def create_eval_run(request: Request) -> Response:
+            return await run_eval(request, "/eval-runs")
+
+        @app.get("/agnostic/v1/capabilities")
+        async def bridge_capabilities(request: Request) -> Response:
+            guarded = await self._guard(request, "config:read")
+            if isinstance(guarded, Response):
+                return guarded
+            if not self.bridge:
+                return JSONResponse({"detail": "Not Found"}, status_code=404)
+            endpoints = ["GET /agnostic/v1/capabilities", "POST /agnostic/v1/evals/run"]
+            return JSONResponse({"bridge_version": "0.2.0", "endpoints": endpoints})
+
+        @app.post("/agnostic/v1/evals/run")
+        async def bridge_eval(request: Request) -> Response:
+            if not self.bridge:
+                return JSONResponse({"detail": "Not Found"}, status_code=404)
+            return await run_eval(request, "/agnostic/v1/evals/run")
 
         @app.get("/components")
         async def components(request: Request) -> Any:

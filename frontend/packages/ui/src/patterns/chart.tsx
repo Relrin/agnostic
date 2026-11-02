@@ -1,4 +1,4 @@
-// Charts (04 §3.2, 03 §6): Recharts with the chart tokens, and always a "View as table" alternative.
+// Charts: Recharts with the chart tokens, and always a "View as table" alternative.
 import { useState } from "react";
 import {
   Bar,
@@ -22,6 +22,8 @@ export function StackedBarChart({
   label,
   height = 200,
   formatCategory = (value) => value,
+  formatValue = (value) => String(value),
+  endLabels = false,
 }: {
   data: readonly Record<string, string | number>[];
   series: readonly BarSeries[];
@@ -30,8 +32,12 @@ export function StackedBarChart({
   label: string;
   height?: number;
   formatCategory?: (value: string) => string;
+  formatValue?: (value: number) => string;
+  /** Show each series' value for the last category next to the legend ("Workflow 237"). */
+  endLabels?: boolean;
 }) {
   const [asTable, setAsTable] = useState(false);
+  const last = data.at(-1);
   return (
     <figure className="flex flex-col gap-2" aria-label={label}>
       <div className="flex items-center justify-between gap-2">
@@ -40,6 +46,11 @@ export function StackedBarChart({
             <span key={item.key} className="inline-flex items-center gap-1.5">
               <span aria-hidden className="size-2.5 rounded-type" style={{ background: item.color }} />
               {item.label}
+              {endLabels && last && (
+                <span className="font-medium text-fg tabular-nums">
+                  {formatValue(Number(last[item.key] ?? 0))}
+                </span>
+              )}
             </span>
           ))}
         </div>
@@ -74,7 +85,7 @@ export function StackedBarChart({
                 <td className="py-1">{formatCategory(String(row[categoryKey]))}</td>
                 {series.map((item) => (
                   <td key={item.key} className="py-1 text-right tabular-nums">
-                    {row[item.key] ?? 0}
+                    {formatValue(Number(row[item.key] ?? 0))}
                   </td>
                 ))}
               </tr>
@@ -94,6 +105,7 @@ export function StackedBarChart({
                 tickLine={false}
               />
               <YAxis
+                tickFormatter={(value: number) => formatValue(value)}
                 tick={{ fill: "var(--fg-muted)", fontSize: 11 }}
                 axisLine={false}
                 tickLine={false}
@@ -152,5 +164,17 @@ export function ShareList({
         </li>
       ))}
     </ul>
+  );
+}
+
+/** A thin relative bar (4px) for ranked lists such as "Slowest span types". */
+export function ThinBar({ share, label }: { share: number; label?: string }) {
+  return (
+    <div className="h-1 w-full rounded-bar bg-track" role={label ? "img" : undefined} aria-label={label}>
+      <div
+        className="h-full rounded-bar bg-neutral-mark"
+        style={{ width: `${String(Math.round(Math.min(Math.max(share, 0), 1) * 100))}%` }}
+      />
+    </div>
   );
 }

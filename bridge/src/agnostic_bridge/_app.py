@@ -20,6 +20,7 @@ from fastapi import APIRouter, Request
 from starlette.routing import BaseRoute, Mount
 
 from agnostic_bridge._capabilities import BridgeCapabilities, build_capabilities, default_replica_id
+from agnostic_bridge._evals import RUN_EVAL_PATH, add_eval_routes
 
 if TYPE_CHECKING:
     from agno.os import AgentOS
@@ -31,6 +32,7 @@ CAPABILITIES_PATH = f"{BRIDGE_PREFIX}/capabilities"
 # "METHOD /path" → scopes, in agno's scope_mappings format (agno.os.scopes.get_default_scope_mappings).
 SCOPE_MAPPINGS: dict[str, list[str]] = {
     f"GET {CAPABILITIES_PATH}": ["config:read"],
+    f"POST {BRIDGE_PREFIX}{RUN_EVAL_PATH}": ["evals:write"],
 }
 
 
@@ -51,6 +53,7 @@ def create_router(agent_os: AgentOS, *, replica_id: str | None = None, include_i
     async def get_capabilities(request: Request) -> BridgeCapabilities:
         return build_capabilities(agent_os, request.app, replica, endpoints)
 
+    add_eval_routes(router, agent_os)
     return router
 
 

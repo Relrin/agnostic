@@ -117,8 +117,9 @@ def test_openapi_has_stable_operation_ids(sqlite_database: str) -> None:
 
 async def test_disabling_a_module_removes_its_routes(sqlite_database: str) -> None:
     await migrate(sqlite_database)
-    # approvals decides through the gateway's delegated elevation, so it goes with it.
-    settings = make_settings(sqlite_database, modules={"disabled": ["approvals", "gateway"]})
+    # approvals, observe and evals call AgentOS through the gateway, so they go with it.
+    disabled = ["approvals", "evals", "gateway", "observe"]
+    settings = make_settings(sqlite_database, modules={"disabled": disabled})
     app = create_app(settings)
     paths = {getattr(route, "path", "") for route in app.routes}
     assert not any(path.startswith("/api/v1/gateway") or path.endswith("/os/{path:path}") for path in paths)
@@ -128,7 +129,7 @@ async def test_disabling_a_module_removes_its_routes(sqlite_database: str) -> No
             assert (await http.get("/api/v1/gateway/policies")).status_code == 404
             body = (await http.get("/api/v1/system/modules")).json()
             assert "gateway" not in {module["name"] for module in body["enabled"]}
-            assert set(body["disabled"]) == {"approvals", "gateway"}
+            assert set(body["disabled"]) == set(disabled)
 
 
 async def test_unhandled_and_app_errors(sqlite_database: str) -> None:

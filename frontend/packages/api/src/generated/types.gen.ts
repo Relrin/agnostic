@@ -250,6 +250,206 @@ export type AuthOptions = {
 };
 
 /**
+ * BaselineOut
+ */
+export type BaselineOut = {
+    /**
+     * Duration Ms
+     */
+    duration_ms: number;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Start Time
+     */
+    start_time: string | null;
+    /**
+     * Trace Id
+     */
+    trace_id: string;
+    /**
+     * Version
+     */
+    version: number | null;
+};
+
+/**
+ * BatchComparisonOut
+ */
+export type BatchComparisonOut = {
+    after: BatchOut;
+    before: BatchOut;
+    counts: ComparisonCountsOut;
+    /**
+     * Generated
+     *
+     * Always false: the insight comes from fixed templates
+     */
+    generated?: boolean;
+    /**
+     * Insight
+     */
+    insight: string;
+    /**
+     * Rows
+     */
+    rows: Array<CaseChangeOut>;
+};
+
+/**
+ * BatchDetailOut
+ */
+export type BatchDetailOut = {
+    /**
+     * The default comparison: another version on the same dataset
+     */
+    baseline: BatchOut | null;
+    batch: BatchOut;
+    /**
+     * Items
+     */
+    items: Array<ItemOut>;
+};
+
+/**
+ * BatchIn
+ */
+export type BatchIn = {
+    /**
+     * Component Id
+     */
+    component_id: string;
+    /**
+     * Component Kind
+     */
+    component_kind: 'agent' | 'team';
+    /**
+     * Dataset Id
+     */
+    dataset_id: string;
+    judge?: JudgeIn | null;
+    /**
+     * Name
+     */
+    name?: string | null;
+    /**
+     * Params
+     *
+     * num_iterations, warmup_runs, threshold, allow_additional_tool_calls
+     */
+    params?: {
+        [key: string]: unknown;
+    };
+    /**
+     * Version
+     *
+     * A pinned or draft version; empty = current
+     */
+    version?: number | null;
+};
+
+/**
+ * BatchOut
+ */
+export type BatchOut = {
+    /**
+     * Case Count
+     */
+    case_count: number;
+    /**
+     * Component Id
+     */
+    component_id: string;
+    /**
+     * Component Kind
+     */
+    component_kind: 'agent' | 'team';
+    /**
+     * Dataset Id
+     */
+    dataset_id: string;
+    /**
+     * Dataset Name
+     */
+    dataset_name: string;
+    /**
+     * Draft
+     */
+    draft: boolean;
+    /**
+     * Error
+     */
+    error: string | null;
+    eval_type: EvalTypeIn;
+    /**
+     * Finished At
+     */
+    finished_at: string | null;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Instance Id
+     */
+    instance_id: string;
+    judge: JudgeOut | null;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Params
+     */
+    params: {
+        [key: string]: unknown;
+    };
+    /**
+     * Progress
+     */
+    progress: number;
+    /**
+     * Result
+     *
+     * The table's result text: 9.10 avg, 8 / 10 pass, Failed 1 of 6, 3.2 s avg
+     */
+    result: string;
+    /**
+     * Started At
+     */
+    started_at: string;
+    /**
+     * Started By
+     */
+    started_by: string;
+    /**
+     * Started By Name
+     */
+    started_by_name: string;
+    /**
+     * Status
+     */
+    status: 'queued' | 'running' | 'completed' | 'failed' | 'cancelled';
+    summary: SummaryOut | null;
+    /**
+     * Version
+     */
+    version: number | null;
+    /**
+     * Version Label
+     *
+     * current, v3 or v4 draft
+     */
+    version_label: string;
+    /**
+     * Via Bridge
+     */
+    via_bridge: boolean;
+};
+
+/**
  * BindingCreate
  */
 export type BindingCreate = {
@@ -347,6 +547,230 @@ export type CapabilityOut = {
      * Status
      */
     status: 'available' | 'disabled' | 'unsupported' | 'unknown';
+};
+
+/**
+ * CaseChangeOut
+ */
+export type CaseChangeOut = {
+    after: ItemOut | null;
+    before: ItemOut | null;
+    /**
+     * Case Id
+     */
+    case_id: string;
+    /**
+     * Change
+     */
+    change: 'regression' | 'fix' | 'same' | 'missing';
+    /**
+     * Expected
+     */
+    expected: string | null;
+    /**
+     * Input
+     */
+    input: string;
+    /**
+     * Position
+     */
+    position: number;
+};
+
+/**
+ * CaseIn
+ */
+export type CaseIn = {
+    /**
+     * Criteria
+     */
+    criteria?: string | null;
+    /**
+     * Expected Output
+     */
+    expected_output?: string | null;
+    /**
+     * Expected Tool Calls
+     */
+    expected_tool_calls?: Array<string> | null;
+    /**
+     * Input
+     */
+    input: string;
+    /**
+     * Metadata
+     */
+    metadata?: {
+        [key: string]: unknown;
+    };
+};
+
+/**
+ * CaseOut
+ */
+export type CaseOut = {
+    /**
+     * Criteria
+     */
+    criteria: string | null;
+    /**
+     * Expected Output
+     */
+    expected_output: string | null;
+    /**
+     * Expected Tool Calls
+     */
+    expected_tool_calls: Array<string> | null;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Input
+     */
+    input: string;
+    /**
+     * Metadata
+     */
+    metadata: {
+        [key: string]: unknown;
+    };
+    /**
+     * Position
+     */
+    position: number;
+};
+
+/**
+ * CasePatch
+ */
+export type CasePatch = {
+    /**
+     * Criteria
+     */
+    criteria?: string | null;
+    /**
+     * Expected Output
+     */
+    expected_output?: string | null;
+    /**
+     * Expected Tool Calls
+     */
+    expected_tool_calls?: Array<string> | null;
+    /**
+     * Input
+     */
+    input?: string | null;
+};
+
+/**
+ * CasesIn
+ */
+export type CasesIn = {
+    /**
+     * Cases
+     */
+    cases: Array<CaseIn>;
+};
+
+/**
+ * ComparisonCountsOut
+ */
+export type ComparisonCountsOut = {
+    /**
+     * Below After
+     */
+    below_after: number;
+    /**
+     * Below Before
+     */
+    below_before: number;
+    /**
+     * Fixes
+     */
+    fixes: number;
+    /**
+     * Regressions
+     */
+    regressions: number;
+};
+
+/**
+ * ComparisonRowOut
+ */
+export type ComparisonRowOut = {
+    baseline: SpanGroupOut | null;
+    current: SpanGroupOut | null;
+    /**
+     * Delta Ms
+     */
+    delta_ms: number | null;
+    /**
+     * Depth
+     */
+    depth: number;
+    kind: SpanKindOut;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Path
+     *
+     * Span names from the root: the alignment key
+     */
+    path: Array<string>;
+    /**
+     * State
+     */
+    state: 'same' | 'slower' | 'faster' | 'new' | 'not_run' | 'error';
+};
+
+/**
+ * ComponentOut
+ */
+export type ComponentOut = {
+    /**
+     * Approximate
+     */
+    approximate: boolean;
+    /**
+     * Estimated Cost
+     */
+    estimated_cost: number;
+    /**
+     * Extra Models
+     */
+    extra_models: number;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Models
+     *
+     * Most tokens first; the first is the primary model
+     */
+    models: Array<ModelTokensOut>;
+    /**
+     * Runs
+     *
+     * From traces; null when traces aren't readable
+     */
+    runs: number | null;
+    /**
+     * Sessions
+     */
+    sessions: number;
+    tokens: TokensOut;
+    /**
+     * Type
+     */
+    type: 'agent' | 'team' | 'workflow';
+    /**
+     * Tokens the sessions didn't tie to a model
+     */
+    unattributed: TokensOut;
 };
 
 /**
@@ -462,6 +886,34 @@ export type ConnectedOut = {
 };
 
 /**
+ * CostOut
+ */
+export type CostOut = {
+    /**
+     * Approximate
+     */
+    approximate: boolean;
+    /**
+     * Currency
+     */
+    currency?: 'USD';
+    /**
+     * Gap
+     *
+     * Part of the total priced by model run share
+     */
+    gap: number;
+    /**
+     * Total
+     */
+    total: number;
+    /**
+     * Unpriced Models
+     */
+    unpriced_models: Array<string>;
+};
+
+/**
  * CountOut
  */
 export type CountOut = {
@@ -497,6 +949,149 @@ export type CountsOut = {
      * Workflows
      */
     workflows?: number;
+};
+
+/**
+ * DatasetDetailOut
+ */
+export type DatasetDetailOut = {
+    /**
+     * Case Count
+     */
+    case_count: number;
+    /**
+     * Cases
+     */
+    cases: Array<CaseOut>;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Created By
+     */
+    created_by: string | null;
+    /**
+     * Description
+     */
+    description: string;
+    eval_type: EvalTypeIn;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Tags
+     */
+    tags: Array<string>;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+    /**
+     * Version
+     */
+    version: number;
+};
+
+/**
+ * DatasetIn
+ */
+export type DatasetIn = {
+    /**
+     * Cases
+     */
+    cases?: Array<CaseIn>;
+    /**
+     * Description
+     */
+    description?: string;
+    eval_type: EvalTypeIn;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Tags
+     */
+    tags?: Array<string>;
+};
+
+/**
+ * DatasetOut
+ */
+export type DatasetOut = {
+    /**
+     * Case Count
+     */
+    case_count: number;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Created By
+     */
+    created_by: string | null;
+    /**
+     * Description
+     */
+    description: string;
+    eval_type: EvalTypeIn;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Tags
+     */
+    tags: Array<string>;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+    /**
+     * Version
+     */
+    version: number;
+};
+
+/**
+ * DatasetPatch
+ */
+export type DatasetPatch = {
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Name
+     */
+    name?: string | null;
+    /**
+     * Tags
+     */
+    tags?: Array<string> | null;
+};
+
+/**
+ * DayOut
+ */
+export type DayOut = {
+    /**
+     * Date
+     */
+    date: string;
+    runs: RunsOut;
+    tokens: TokensOut;
 };
 
 /**
@@ -636,6 +1231,115 @@ export type DiscoveryOut = {
 export type EnvTagName = 'production' | 'staging' | 'development';
 
 /**
+ * EvalCapabilitiesOut
+ */
+export type EvalCapabilitiesOut = {
+    /**
+     * Bridge Installed
+     */
+    bridge_installed: boolean;
+    /**
+     * Reason
+     */
+    reason: string | null;
+    /**
+     * Versions
+     *
+     * Drafts and pinned versions can be evaluated, and the judge can be chosen
+     */
+    versions: boolean;
+};
+
+export type EvalTypeIn = 'accuracy' | 'agent_as_judge' | 'reliability' | 'performance';
+
+export type EvalTypeQuery = 'accuracy' | 'agent_as_judge' | 'reliability' | 'performance';
+
+/**
+ * EvaluationOut
+ */
+export type EvaluationOut = {
+    /**
+     * Bad
+     */
+    bad: boolean;
+    /**
+     * Case Count
+     */
+    case_count: number | null;
+    /**
+     * Component Id
+     */
+    component_id: string | null;
+    /**
+     * Component Kind
+     */
+    component_kind: string | null;
+    /**
+     * Created At
+     */
+    created_at: string | null;
+    /**
+     * Dataset Name
+     */
+    dataset_name: string | null;
+    eval_type: EvalTypeIn;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Judge
+     */
+    judge: boolean;
+    /**
+     * Model
+     */
+    model: string | null;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Progress
+     */
+    progress: number;
+    /**
+     * Result
+     */
+    result: string;
+    /**
+     * Source
+     *
+     * batch: run from a dataset here; agentos: any other run
+     */
+    source: 'batch' | 'agentos';
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Version Label
+     */
+    version_label: string | null;
+};
+
+/**
+ * EvaluationsOut
+ */
+export type EvaluationsOut = {
+    /**
+     * Data
+     */
+    data: Array<EvaluationOut>;
+    /**
+     * Standalone Unavailable
+     *
+     * Why AgentOS eval runs couldn't be listed
+     */
+    standalone_unavailable: string | null;
+};
+
+/**
  * ExplainIn
  */
 export type ExplainIn = {
@@ -713,6 +1417,122 @@ export type FieldError = {
      * Type
      */
     type: string;
+};
+
+/**
+ * GateIn
+ */
+export type GateIn = {
+    /**
+     * Component Id
+     */
+    component_id: string;
+    /**
+     * Component Kind
+     */
+    component_kind: 'agent' | 'team';
+    /**
+     * Dataset Id
+     */
+    dataset_id: string;
+    /**
+     * Enabled
+     */
+    enabled: boolean;
+    /**
+     * Min Average
+     */
+    min_average: number;
+};
+
+/**
+ * GateOut
+ */
+export type GateOut = {
+    /**
+     * Component Id
+     */
+    component_id: string;
+    /**
+     * Component Kind
+     */
+    component_kind: 'agent' | 'team';
+    /**
+     * Consequence
+     */
+    consequence: string;
+    /**
+     * Dataset Id
+     */
+    dataset_id: string;
+    /**
+     * Dataset Name
+     */
+    dataset_name: string | null;
+    /**
+     * Enabled
+     */
+    enabled: boolean;
+    eval_type: EvalTypeIn;
+    /**
+     * Id
+     */
+    id: string;
+    latest: GateResultOut | null;
+    /**
+     * Min Average
+     */
+    min_average: number;
+    /**
+     * State
+     */
+    state: 'off' | 'no_result' | 'would_block' | 'passes';
+    /**
+     * Updated At
+     */
+    updated_at: string;
+    /**
+     * Updated By
+     */
+    updated_by: string | null;
+};
+
+/**
+ * GateResultOut
+ */
+export type GateResultOut = {
+    /**
+     * Batch Id
+     */
+    batch_id: string;
+    /**
+     * Value
+     */
+    value: number | null;
+    /**
+     * Version Label
+     */
+    version_label: string;
+};
+
+/**
+ * GhostOut
+ */
+export type GhostOut = {
+    /**
+     * Duration Ms
+     */
+    duration_ms: number;
+    /**
+     * Span Id
+     *
+     * The span of this trace the ghost bar is drawn under
+     */
+    span_id: string;
+    /**
+     * Start Ms
+     */
+    start_ms: number;
 };
 
 /**
@@ -795,6 +1615,36 @@ export type HealthOut = {
      * Version Drift
      */
     version_drift: string | null;
+};
+
+/**
+ * ImportIn
+ */
+export type ImportIn = {
+    /**
+     * Content
+     */
+    content: string;
+    /**
+     * Format
+     */
+    format: 'csv' | 'jsonl';
+    /**
+     * Replace
+     *
+     * Replace every case instead of appending
+     */
+    replace?: boolean;
+};
+
+/**
+ * ImportOut
+ */
+export type ImportOut = {
+    /**
+     * Imported
+     */
+    imported: number;
 };
 
 /**
@@ -1088,6 +1938,68 @@ export type IssuedInvitationOut = {
 };
 
 /**
+ * ItemOut
+ */
+export type ItemOut = {
+    /**
+     * Actual
+     */
+    actual: string | null;
+    /**
+     * Case Id
+     */
+    case_id: string;
+    /**
+     * Error
+     */
+    error: string | null;
+    /**
+     * Eval Run Id
+     */
+    eval_run_id: string | null;
+    /**
+     * Expected
+     */
+    expected: string | null;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Input
+     */
+    input: string;
+    /**
+     * Latency Ms
+     */
+    latency_ms: number | null;
+    /**
+     * Passed
+     */
+    passed: boolean | null;
+    /**
+     * Position
+     */
+    position: number;
+    /**
+     * Reason
+     */
+    reason: string | null;
+    /**
+     * Score
+     */
+    score: number | null;
+    /**
+     * Status
+     */
+    status: 'pending' | 'running' | 'done' | 'error' | 'cancelled';
+    /**
+     * Trace Id
+     */
+    trace_id: string | null;
+};
+
+/**
  * Joined
  */
 export type Joined = {
@@ -1099,6 +2011,34 @@ export type Joined = {
      * User Id
      */
     user_id: string;
+};
+
+/**
+ * JudgeIn
+ */
+export type JudgeIn = {
+    /**
+     * Model Id
+     */
+    model_id: string;
+    /**
+     * Provider
+     */
+    provider: string;
+};
+
+/**
+ * JudgeOut
+ */
+export type JudgeOut = {
+    /**
+     * Model Id
+     */
+    model_id: string;
+    /**
+     * Provider
+     */
+    provider: string;
 };
 
 /**
@@ -1352,21 +2292,78 @@ export type MemberUpdate = {
 };
 
 /**
- * ModelUsageOut
+ * MetricsSummaryOut
  */
-export type ModelUsageOut = {
+export type MetricsSummaryOut = {
+    /**
+     * Components
+     */
+    components: Array<ComponentOut>;
+    cost: CostOut;
+    /**
+     * Days
+     */
+    days: Array<DayOut>;
+    /**
+     * End
+     */
+    end: string;
+    /**
+     * Daily-total tokens that the range's sessions don't explain
+     */
+    gap_tokens: TokensOut;
+    /**
+     * Generated At
+     */
+    generated_at: string;
+    /**
+     * Instance Id
+     */
+    instance_id: string;
+    /**
+     * Last Aggregated At
+     *
+     * When AgentOS last recomputed its daily aggregates
+     */
+    last_aggregated_at: string | null;
+    /**
+     * Model Usage
+     */
+    model_usage: Array<AgnosticObserveApiMetricsSchemasModelUsageOut>;
+    /**
+     * Prices
+     */
+    prices: Array<PriceOut>;
+    /**
+     * Sampled
+     */
+    sampled: boolean;
+    /**
+     * Start
+     */
+    start: string;
+    totals: TotalsOut;
+    /**
+     * Unavailable
+     */
+    unavailable: {
+        [key: string]: string;
+    };
+};
+
+/**
+ * ModelTokensOut
+ */
+export type ModelTokensOut = {
     /**
      * Model Id
      */
     model_id: string;
     /**
-     * Runs
+     * Provider
      */
-    runs: number;
-    /**
-     * Share
-     */
-    share: number;
+    provider: string | null;
+    tokens: TokensOut;
 };
 
 /**
@@ -1615,7 +2612,7 @@ export type OverviewOut = {
     /**
      * Model Usage
      */
-    model_usage: Array<ModelUsageOut> | null;
+    model_usage: Array<AgnosticObserveApiSchemasModelUsageOut> | null;
     /**
      * Pending Approvals
      */
@@ -1692,6 +2689,102 @@ export type PasswordResetRequest = {
      * Email
      */
     email: string;
+};
+
+/**
+ * PriceIn
+ */
+export type PriceIn = {
+    /**
+     * Cache Read Per 1M
+     */
+    cache_read_per_1m?: number | null;
+    /**
+     * Input Per 1M
+     */
+    input_per_1m: number;
+    /**
+     * Model Id
+     */
+    model_id: string;
+    /**
+     * Output Per 1M
+     */
+    output_per_1m: number;
+    /**
+     * Provider
+     */
+    provider?: string | null;
+    /**
+     * Reasoning Per 1M
+     */
+    reasoning_per_1m?: number | null;
+};
+
+/**
+ * PriceOut
+ */
+export type PriceOut = {
+    /**
+     * Cache Read Per 1M
+     */
+    cache_read_per_1m?: number | null;
+    /**
+     * Currency
+     */
+    currency?: 'USD';
+    /**
+     * Input Per 1M
+     */
+    input_per_1m: number;
+    /**
+     * Model Id
+     */
+    model_id: string;
+    /**
+     * Output Per 1M
+     */
+    output_per_1m: number;
+    /**
+     * Provider
+     */
+    provider?: string | null;
+    /**
+     * Reasoning Per 1M
+     */
+    reasoning_per_1m?: number | null;
+    /**
+     * Source
+     */
+    source: 'org' | 'instance';
+    /**
+     * Updated At
+     */
+    updated_at: string | null;
+    /**
+     * Updated By
+     */
+    updated_by: string | null;
+};
+
+/**
+ * PriceTableIn
+ */
+export type PriceTableIn = {
+    /**
+     * Prices
+     */
+    prices: Array<PriceIn>;
+};
+
+/**
+ * PriceTableOut
+ */
+export type PriceTableOut = {
+    /**
+     * Prices
+     */
+    prices: Array<PriceOut>;
 };
 
 /**
@@ -1946,6 +3039,28 @@ export type RoutePolicyOut = {
 };
 
 /**
+ * RunsOut
+ */
+export type RunsOut = {
+    /**
+     * Agent
+     */
+    agent: number;
+    /**
+     * Team
+     */
+    team: number;
+    /**
+     * Total
+     */
+    total: number;
+    /**
+     * Workflow
+     */
+    workflow: number;
+};
+
+/**
  * ScopeOut
  */
 export type ScopeOut = {
@@ -2089,6 +3204,91 @@ export type SignedIn = {
 };
 
 /**
+ * SpanGroupOut
+ */
+export type SpanGroupOut = {
+    /**
+     * Count
+     *
+     * How many times the span ran (×N)
+     */
+    count: number;
+    /**
+     * Errors
+     */
+    errors: number;
+    /**
+     * Max Ms
+     */
+    max_ms: number;
+    /**
+     * Mean Ms
+     */
+    mean_ms: number;
+    /**
+     * Total Ms
+     */
+    total_ms: number;
+};
+
+export type SpanKindOut = 'workflow' | 'step' | 'agent' | 'team' | 'model' | 'tool' | 'other';
+
+/**
+ * SpanStatsOut
+ */
+export type SpanStatsOut = {
+    /**
+     * Cached
+     */
+    cached: boolean;
+    /**
+     * Generated At
+     */
+    generated_at: string;
+    /**
+     * Sampled
+     *
+     * Only the newest traces of the window were scanned
+     */
+    sampled: boolean;
+    /**
+     * Stats
+     */
+    stats: Array<SpanTypeStatOut>;
+    /**
+     * Traces Scanned
+     */
+    traces_scanned: number;
+    /**
+     * Window
+     */
+    window: '24h' | '7d' | '30d';
+};
+
+/**
+ * SpanTypeStatOut
+ */
+export type SpanTypeStatOut = {
+    /**
+     * Avg Duration Ms
+     */
+    avg_duration_ms: number;
+    /**
+     * Count
+     */
+    count: number;
+    /**
+     * Errors
+     */
+    errors: number;
+    kind: SpanKindOut;
+    /**
+     * Name
+     */
+    name: string;
+};
+
+/**
  * StepOut
  */
 export type StepOut = {
@@ -2112,6 +3312,68 @@ export type StepOut = {
      * Status
      */
     status: 'ok' | 'failed' | 'warning' | 'skipped';
+};
+
+/**
+ * SummaryOut
+ */
+export type SummaryOut = {
+    /**
+     * Avg
+     */
+    avg: number | null;
+    /**
+     * Avg Latency Ms
+     */
+    avg_latency_ms: number | null;
+    /**
+     * Below Threshold
+     */
+    below_threshold: number;
+    /**
+     * Completed
+     */
+    completed: number;
+    /**
+     * Errors
+     */
+    errors: number;
+    /**
+     * Failed
+     */
+    failed: number;
+    /**
+     * Gate Value
+     */
+    gate_value: number | null;
+    /**
+     * Max
+     */
+    max: number | null;
+    /**
+     * Mean
+     */
+    mean: number | null;
+    /**
+     * Min
+     */
+    min: number | null;
+    /**
+     * Pass Ratio
+     */
+    pass_ratio: number | null;
+    /**
+     * Passed
+     */
+    passed: number;
+    /**
+     * Runs
+     */
+    runs: number;
+    /**
+     * Std Dev
+     */
+    std_dev: number | null;
 };
 
 /**
@@ -2176,6 +3438,107 @@ export type TokenCheckOut = {
 };
 
 /**
+ * TokensOut
+ */
+export type TokensOut = {
+    /**
+     * Cache Read
+     */
+    cache_read: number;
+    /**
+     * Input
+     *
+     * Input tokens, cache reads included
+     */
+    input: number;
+    /**
+     * Output
+     *
+     * Output tokens, reasoning included
+     */
+    output: number;
+    /**
+     * Reasoning
+     */
+    reasoning: number;
+    /**
+     * Total
+     */
+    total: number;
+};
+
+/**
+ * TotalsOut
+ */
+export type TotalsOut = {
+    /**
+     * Active Users
+     */
+    active_users: number | null;
+    runs: RunsOut;
+    /**
+     * Runs Per Session
+     */
+    runs_per_session: number | null;
+    /**
+     * Sessions
+     */
+    sessions: number;
+    tokens: TokensOut;
+};
+
+/**
+ * TraceComparisonOut
+ */
+export type TraceComparisonOut = {
+    baseline: BaselineOut | null;
+    /**
+     * Cached
+     */
+    cached?: boolean;
+    /**
+     * Current Duration Ms
+     */
+    current_duration_ms?: number | null;
+    /**
+     * Diagnosis
+     */
+    diagnosis?: string | null;
+    /**
+     * Generated
+     *
+     * Always false: the diagnosis comes from fixed templates
+     */
+    generated?: boolean;
+    /**
+     * Ghosts
+     */
+    ghosts?: Array<GhostOut>;
+    /**
+     * Reason
+     *
+     * Why there is no baseline
+     */
+    reason: string | null;
+    /**
+     * Rows
+     */
+    rows?: Array<ComparisonRowOut>;
+    /**
+     * Same Input Shape
+     */
+    same_input_shape?: boolean | null;
+    /**
+     * Same Version
+     */
+    same_version?: boolean | null;
+    /**
+     * Trace Id
+     */
+    trace_id: string;
+};
+
+/**
  * ValidationError
  */
 export type ValidationError = {
@@ -2211,6 +3574,46 @@ export type VerifyTokenIn = {
      * Token
      */
     token: string;
+};
+
+/**
+ * ModelUsageOut
+ */
+export type AgnosticObserveApiMetricsSchemasModelUsageOut = {
+    /**
+     * Model Id
+     */
+    model_id: string;
+    /**
+     * Provider
+     */
+    provider: string | null;
+    /**
+     * Runs
+     */
+    runs: number;
+    /**
+     * Share
+     */
+    share: number;
+};
+
+/**
+ * ModelUsageOut
+ */
+export type AgnosticObserveApiSchemasModelUsageOut = {
+    /**
+     * Model Id
+     */
+    model_id: string;
+    /**
+     * Runs
+     */
+    runs: number;
+    /**
+     * Share
+     */
+    share: number;
 };
 
 export type JwksJwksData = {
@@ -3248,6 +4651,757 @@ export type InstancesDiscoverInstanceResponses = {
 
 export type InstancesDiscoverInstanceResponse = InstancesDiscoverInstanceResponses[keyof InstancesDiscoverInstanceResponses];
 
+export type EvalsStartBatchData = {
+    body: BatchIn;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/eval-batches';
+};
+
+export type EvalsStartBatchErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type EvalsStartBatchError = EvalsStartBatchErrors[keyof EvalsStartBatchErrors];
+
+export type EvalsStartBatchResponses = {
+    /**
+     * Successful Response
+     */
+    202: BatchOut;
+};
+
+export type EvalsStartBatchResponse = EvalsStartBatchResponses[keyof EvalsStartBatchResponses];
+
+export type EvalsGetBatchData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Batch Id
+         */
+        batch_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/eval-batches/{batch_id}';
+};
+
+export type EvalsGetBatchErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type EvalsGetBatchError = EvalsGetBatchErrors[keyof EvalsGetBatchErrors];
+
+export type EvalsGetBatchResponses = {
+    /**
+     * Successful Response
+     */
+    200: BatchDetailOut;
+};
+
+export type EvalsGetBatchResponse = EvalsGetBatchResponses[keyof EvalsGetBatchResponses];
+
+export type EvalsCancelBatchData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Batch Id
+         */
+        batch_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/eval-batches/{batch_id}/cancel';
+};
+
+export type EvalsCancelBatchErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type EvalsCancelBatchError = EvalsCancelBatchErrors[keyof EvalsCancelBatchErrors];
+
+export type EvalsCancelBatchResponses = {
+    /**
+     * Successful Response
+     */
+    200: BatchOut;
+};
+
+export type EvalsCancelBatchResponse = EvalsCancelBatchResponses[keyof EvalsCancelBatchResponses];
+
+export type EvalsCompareBatchesData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Batch Id
+         */
+        batch_id: string;
+    };
+    query: {
+        /**
+         * With
+         *
+         * The other evaluation's id
+         */
+        with: string;
+    };
+    url: '/api/v1/instances/{instance}/eval-batches/{batch_id}/compare';
+};
+
+export type EvalsCompareBatchesErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type EvalsCompareBatchesError = EvalsCompareBatchesErrors[keyof EvalsCompareBatchesErrors];
+
+export type EvalsCompareBatchesResponses = {
+    /**
+     * Successful Response
+     */
+    200: BatchComparisonOut;
+};
+
+export type EvalsCompareBatchesResponse = EvalsCompareBatchesResponses[keyof EvalsCompareBatchesResponses];
+
+export type EvalsListDatasetsData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: {
+        /**
+         * Eval Type
+         */
+        eval_type?: EvalTypeQuery | null;
+    };
+    url: '/api/v1/instances/{instance}/eval-datasets';
+};
+
+export type EvalsListDatasetsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type EvalsListDatasetsError = EvalsListDatasetsErrors[keyof EvalsListDatasetsErrors];
+
+export type EvalsListDatasetsResponses = {
+    /**
+     * Response Evals List Datasets
+     *
+     * Successful Response
+     */
+    200: Array<DatasetOut>;
+};
+
+export type EvalsListDatasetsResponse = EvalsListDatasetsResponses[keyof EvalsListDatasetsResponses];
+
+export type EvalsCreateDatasetData = {
+    body: DatasetIn;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/eval-datasets';
+};
+
+export type EvalsCreateDatasetErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type EvalsCreateDatasetError = EvalsCreateDatasetErrors[keyof EvalsCreateDatasetErrors];
+
+export type EvalsCreateDatasetResponses = {
+    /**
+     * Successful Response
+     */
+    201: DatasetDetailOut;
+};
+
+export type EvalsCreateDatasetResponse = EvalsCreateDatasetResponses[keyof EvalsCreateDatasetResponses];
+
+export type EvalsDeleteDatasetData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Dataset Id
+         */
+        dataset_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/eval-datasets/{dataset_id}';
+};
+
+export type EvalsDeleteDatasetErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type EvalsDeleteDatasetError = EvalsDeleteDatasetErrors[keyof EvalsDeleteDatasetErrors];
+
+export type EvalsDeleteDatasetResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type EvalsDeleteDatasetResponse = EvalsDeleteDatasetResponses[keyof EvalsDeleteDatasetResponses];
+
+export type EvalsGetDatasetData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Dataset Id
+         */
+        dataset_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/eval-datasets/{dataset_id}';
+};
+
+export type EvalsGetDatasetErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type EvalsGetDatasetError = EvalsGetDatasetErrors[keyof EvalsGetDatasetErrors];
+
+export type EvalsGetDatasetResponses = {
+    /**
+     * Successful Response
+     */
+    200: DatasetDetailOut;
+};
+
+export type EvalsGetDatasetResponse = EvalsGetDatasetResponses[keyof EvalsGetDatasetResponses];
+
+export type EvalsUpdateDatasetData = {
+    body: DatasetPatch;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Dataset Id
+         */
+        dataset_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/eval-datasets/{dataset_id}';
+};
+
+export type EvalsUpdateDatasetErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type EvalsUpdateDatasetError = EvalsUpdateDatasetErrors[keyof EvalsUpdateDatasetErrors];
+
+export type EvalsUpdateDatasetResponses = {
+    /**
+     * Successful Response
+     */
+    200: DatasetOut;
+};
+
+export type EvalsUpdateDatasetResponse = EvalsUpdateDatasetResponses[keyof EvalsUpdateDatasetResponses];
+
+export type EvalsAddCasesData = {
+    body: CasesIn;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Dataset Id
+         */
+        dataset_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/eval-datasets/{dataset_id}/cases';
+};
+
+export type EvalsAddCasesErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type EvalsAddCasesError = EvalsAddCasesErrors[keyof EvalsAddCasesErrors];
+
+export type EvalsAddCasesResponses = {
+    /**
+     * Response Evals Add Cases
+     *
+     * Successful Response
+     */
+    201: Array<CaseOut>;
+};
+
+export type EvalsAddCasesResponse = EvalsAddCasesResponses[keyof EvalsAddCasesResponses];
+
+export type EvalsDeleteCaseData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Dataset Id
+         */
+        dataset_id: string;
+        /**
+         * Case Id
+         */
+        case_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/eval-datasets/{dataset_id}/cases/{case_id}';
+};
+
+export type EvalsDeleteCaseErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type EvalsDeleteCaseError = EvalsDeleteCaseErrors[keyof EvalsDeleteCaseErrors];
+
+export type EvalsDeleteCaseResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type EvalsDeleteCaseResponse = EvalsDeleteCaseResponses[keyof EvalsDeleteCaseResponses];
+
+export type EvalsUpdateCaseData = {
+    body: CasePatch;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Dataset Id
+         */
+        dataset_id: string;
+        /**
+         * Case Id
+         */
+        case_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/eval-datasets/{dataset_id}/cases/{case_id}';
+};
+
+export type EvalsUpdateCaseErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type EvalsUpdateCaseError = EvalsUpdateCaseErrors[keyof EvalsUpdateCaseErrors];
+
+export type EvalsUpdateCaseResponses = {
+    /**
+     * Successful Response
+     */
+    200: CaseOut;
+};
+
+export type EvalsUpdateCaseResponse = EvalsUpdateCaseResponses[keyof EvalsUpdateCaseResponses];
+
+export type EvalsImportCasesData = {
+    body: ImportIn;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Dataset Id
+         */
+        dataset_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/eval-datasets/{dataset_id}/import';
+};
+
+export type EvalsImportCasesErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type EvalsImportCasesError = EvalsImportCasesErrors[keyof EvalsImportCasesErrors];
+
+export type EvalsImportCasesResponses = {
+    /**
+     * Successful Response
+     */
+    200: ImportOut;
+};
+
+export type EvalsImportCasesResponse = EvalsImportCasesResponses[keyof EvalsImportCasesResponses];
+
+export type EvalsListGatesData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: {
+        /**
+         * Component Id
+         */
+        component_id?: string | null;
+    };
+    url: '/api/v1/instances/{instance}/eval-gates';
+};
+
+export type EvalsListGatesErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type EvalsListGatesError = EvalsListGatesErrors[keyof EvalsListGatesErrors];
+
+export type EvalsListGatesResponses = {
+    /**
+     * Response Evals List Gates
+     *
+     * Successful Response
+     */
+    200: Array<GateOut>;
+};
+
+export type EvalsListGatesResponse = EvalsListGatesResponses[keyof EvalsListGatesResponses];
+
+export type EvalsPutGateData = {
+    body: GateIn;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/eval-gates';
+};
+
+export type EvalsPutGateErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type EvalsPutGateError = EvalsPutGateErrors[keyof EvalsPutGateErrors];
+
+export type EvalsPutGateResponses = {
+    /**
+     * Successful Response
+     */
+    200: GateOut;
+};
+
+export type EvalsPutGateResponse = EvalsPutGateResponses[keyof EvalsPutGateResponses];
+
+export type EvalsDeleteGateData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Gate Id
+         */
+        gate_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/eval-gates/{gate_id}';
+};
+
+export type EvalsDeleteGateErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type EvalsDeleteGateError = EvalsDeleteGateErrors[keyof EvalsDeleteGateErrors];
+
+export type EvalsDeleteGateResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type EvalsDeleteGateResponse = EvalsDeleteGateResponses[keyof EvalsDeleteGateResponses];
+
+export type EvalsEvalResultsData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query: {
+        /**
+         * Component Id
+         */
+        component_id: string;
+        /**
+         * Version
+         *
+         * Empty: evaluations of the current version
+         */
+        version?: number | null;
+    };
+    url: '/api/v1/instances/{instance}/eval-results';
+};
+
+export type EvalsEvalResultsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type EvalsEvalResultsError = EvalsEvalResultsErrors[keyof EvalsEvalResultsErrors];
+
+export type EvalsEvalResultsResponses = {
+    /**
+     * Response Evals Eval Results
+     *
+     * Successful Response
+     */
+    200: Array<BatchOut>;
+};
+
+export type EvalsEvalResultsResponse = EvalsEvalResultsResponses[keyof EvalsEvalResultsResponses];
+
+export type EvalsEvalCapabilitiesData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/evals/capabilities';
+};
+
+export type EvalsEvalCapabilitiesErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type EvalsEvalCapabilitiesError = EvalsEvalCapabilitiesErrors[keyof EvalsEvalCapabilitiesErrors];
+
+export type EvalsEvalCapabilitiesResponses = {
+    /**
+     * Successful Response
+     */
+    200: EvalCapabilitiesOut;
+};
+
+export type EvalsEvalCapabilitiesResponse = EvalsEvalCapabilitiesResponses[keyof EvalsEvalCapabilitiesResponses];
+
+export type EvalsListEvaluationsData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: {
+        /**
+         * Eval Type
+         */
+        eval_type?: EvalTypeQuery | null;
+        /**
+         * Component Id
+         */
+        component_id?: string | null;
+        /**
+         * Model
+         */
+        model?: string | null;
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/api/v1/instances/{instance}/evaluations';
+};
+
+export type EvalsListEvaluationsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type EvalsListEvaluationsError = EvalsListEvaluationsErrors[keyof EvalsListEvaluationsErrors];
+
+export type EvalsListEvaluationsResponses = {
+    /**
+     * Successful Response
+     */
+    200: EvaluationsOut;
+};
+
+export type EvalsListEvaluationsResponse = EvalsListEvaluationsResponses[keyof EvalsListEvaluationsResponses];
+
 export type InstancesGetHealthData = {
     body?: never;
     path: {
@@ -3384,6 +5538,98 @@ export type InstancesVerifyTokenResponses = {
 
 export type InstancesVerifyTokenResponse = InstancesVerifyTokenResponses[keyof InstancesVerifyTokenResponses];
 
+export type ObserveMetricsCsvData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: {
+        /**
+         * From
+         *
+         * First day (UTC); default: 6 days before `to`
+         */
+        from?: string | null;
+        /**
+         * To
+         *
+         * Last day (UTC), inclusive; default: today
+         */
+        to?: string | null;
+    };
+    url: '/api/v1/instances/{instance}/metrics/export.csv';
+};
+
+export type ObserveMetricsCsvErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ObserveMetricsCsvError = ObserveMetricsCsvErrors[keyof ObserveMetricsCsvErrors];
+
+export type ObserveMetricsCsvResponses = {
+    /**
+     * One row per component
+     */
+    200: unknown;
+};
+
+export type ObserveMetricsSummaryData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: {
+        /**
+         * From
+         *
+         * First day (UTC); default: 6 days before `to`
+         */
+        from?: string | null;
+        /**
+         * To
+         *
+         * Last day (UTC), inclusive; default: today
+         */
+        to?: string | null;
+    };
+    url: '/api/v1/instances/{instance}/metrics/summary';
+};
+
+export type ObserveMetricsSummaryErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ObserveMetricsSummaryError = ObserveMetricsSummaryErrors[keyof ObserveMetricsSummaryErrors];
+
+export type ObserveMetricsSummaryResponses = {
+    /**
+     * Successful Response
+     */
+    200: MetricsSummaryOut;
+};
+
+export type ObserveMetricsSummaryResponse = ObserveMetricsSummaryResponses[keyof ObserveMetricsSummaryResponses];
+
 export type ObserveOverviewData = {
     body?: never;
     path: {
@@ -3427,6 +5673,74 @@ export type ObserveOverviewResponses = {
 
 export type ObserveOverviewResponse = ObserveOverviewResponses[keyof ObserveOverviewResponses];
 
+export type ObserveGetPriceTableData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/price-table';
+};
+
+export type ObserveGetPriceTableErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ObserveGetPriceTableError = ObserveGetPriceTableErrors[keyof ObserveGetPriceTableErrors];
+
+export type ObserveGetPriceTableResponses = {
+    /**
+     * Successful Response
+     */
+    200: PriceTableOut;
+};
+
+export type ObserveGetPriceTableResponse = ObserveGetPriceTableResponses[keyof ObserveGetPriceTableResponses];
+
+export type ObservePutPriceTableData = {
+    body: PriceTableIn;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/price-table';
+};
+
+export type ObservePutPriceTableErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ObservePutPriceTableError = ObservePutPriceTableErrors[keyof ObservePutPriceTableErrors];
+
+export type ObservePutPriceTableResponses = {
+    /**
+     * Successful Response
+     */
+    200: PriceTableOut;
+};
+
+export type ObservePutPriceTableResponse = ObservePutPriceTableResponses[keyof ObservePutPriceTableResponses];
+
 export type InstancesTestInstanceData = {
     body?: never;
     path: {
@@ -3460,6 +5774,83 @@ export type InstancesTestInstanceResponses = {
 };
 
 export type InstancesTestInstanceResponse = InstancesTestInstanceResponses[keyof InstancesTestInstanceResponses];
+
+export type ObserveSpanStatsData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: {
+        /**
+         * Window
+         */
+        window?: '24h' | '7d' | '30d';
+    };
+    url: '/api/v1/instances/{instance}/traces/span-stats';
+};
+
+export type ObserveSpanStatsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ObserveSpanStatsError = ObserveSpanStatsErrors[keyof ObserveSpanStatsErrors];
+
+export type ObserveSpanStatsResponses = {
+    /**
+     * Successful Response
+     */
+    200: SpanStatsOut;
+};
+
+export type ObserveSpanStatsResponse = ObserveSpanStatsResponses[keyof ObserveSpanStatsResponses];
+
+export type ObserveTraceComparisonData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Trace Id
+         */
+        trace_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/traces/{trace_id}/comparison';
+};
+
+export type ObserveTraceComparisonErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ObserveTraceComparisonError = ObserveTraceComparisonErrors[keyof ObserveTraceComparisonErrors];
+
+export type ObserveTraceComparisonResponses = {
+    /**
+     * Successful Response
+     */
+    200: TraceComparisonOut;
+};
+
+export type ObserveTraceComparisonResponse = ObserveTraceComparisonResponses[keyof ObserveTraceComparisonResponses];
 
 export type InvitationsListInvitationsData = {
     body?: never;
@@ -4064,6 +6455,64 @@ export type OrgUpdateOrgResponses = {
 };
 
 export type OrgUpdateOrgResponse = OrgUpdateOrgResponses[keyof OrgUpdateOrgResponses];
+
+export type ObserveGetOrgPriceTableData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/price-table';
+};
+
+export type ObserveGetOrgPriceTableErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ObserveGetOrgPriceTableError = ObserveGetOrgPriceTableErrors[keyof ObserveGetOrgPriceTableErrors];
+
+export type ObserveGetOrgPriceTableResponses = {
+    /**
+     * Successful Response
+     */
+    200: PriceTableOut;
+};
+
+export type ObserveGetOrgPriceTableResponse = ObserveGetOrgPriceTableResponses[keyof ObserveGetOrgPriceTableResponses];
+
+export type ObservePutOrgPriceTableData = {
+    body: PriceTableIn;
+    path?: never;
+    query?: never;
+    url: '/api/v1/price-table';
+};
+
+export type ObservePutOrgPriceTableErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ObservePutOrgPriceTableError = ObservePutOrgPriceTableErrors[keyof ObservePutOrgPriceTableErrors];
+
+export type ObservePutOrgPriceTableResponses = {
+    /**
+     * Successful Response
+     */
+    200: PriceTableOut;
+};
+
+export type ObservePutOrgPriceTableResponse = ObservePutOrgPriceTableResponses[keyof ObservePutOrgPriceTableResponses];
 
 export type SearchSearchData = {
     body?: never;

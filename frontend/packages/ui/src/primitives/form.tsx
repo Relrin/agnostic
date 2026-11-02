@@ -103,3 +103,54 @@ export function Switch({
     </div>
   );
 }
+
+export type RadioCardOption<T extends string> = { value: T; label: ReactNode; description?: ReactNode };
+
+/** A radio group drawn as cards (selected: lime border and tint), e.g. the eval type of a new evaluation. */
+export function RadioCards<T extends string>({
+  legend,
+  value,
+  onValueChange,
+  options,
+  className,
+}: {
+  legend: ReactNode;
+  value: T;
+  onValueChange: (value: T) => void;
+  options: readonly RadioCardOption<T>[];
+  className?: string;
+}) {
+  const name = useId();
+  return (
+    <fieldset className={cn("flex flex-col gap-2", className)}>
+      <legend className="mb-1.5 text-[13px] font-medium text-fg-secondary">{legend}</legend>
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(170px,1fr))] gap-2">
+        {options.map((option) => {
+          const checked = option.value === value;
+          return (
+            <label
+              key={option.value}
+              className={cn(
+                "flex cursor-pointer flex-col gap-0.5 rounded-radio border px-3 py-2.5 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-accent",
+                checked ? "border-accent bg-accent/6" : "border-border hover:bg-surface-hover",
+              )}
+            >
+              <input
+                type="radio"
+                name={name}
+                value={option.value}
+                checked={checked}
+                onChange={() => {
+                  onValueChange(option.value);
+                }}
+                className="sr-only"
+              />
+              <span className="text-[13px] font-medium">{option.label}</span>
+              {option.description && <span className="text-[12px] text-fg-muted">{option.description}</span>}
+            </label>
+          );
+        })}
+      </div>
+    </fieldset>
+  );
+}

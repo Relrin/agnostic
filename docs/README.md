@@ -16,6 +16,7 @@
 | [AgentOS runtime and client](architecture/agentos-runtime-and-client.md) | `agnostic-runtime`, the mock model, `agnostic-agentos-client`, contract tests |
 | [Identity, access and the gateway](architecture/identity-access-gateway.md) | sign-in, sessions, org roles, bindings, effective scopes, instances and keys, the gateway pipeline, audit |
 | [Operate and realtime](architecture/operate-and-realtime.md) | RunStream, approvals and delegated elevation, Home overview, realtime events, ⌘K search |
+| [Observe and evaluations](architecture/observe-and-evals.md) | trace comparison, span statistics, metrics and cost estimates, eval datasets, batches, version comparison, publish gates |
 
 ## How-to guides
 

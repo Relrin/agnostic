@@ -33,7 +33,7 @@ export {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./primitives/dropdown-menu";
-export { Field, Switch, Textarea } from "./primitives/form";
+export { Field, RadioCards, Switch, Textarea, type RadioCardOption } from "./primitives/form";
 export { Input, type InputProps } from "./primitives/input";
 export {
   SegmentedControl,
@@ -116,7 +116,7 @@ export {
   type KpiDelta,
 } from "./patterns/data";
 export { JsonEditor, JsonView, MarkdownView, Toaster, toast } from "./patterns/content";
-export { ShareList, StackedBarChart, type BarSeries } from "./patterns/chart";
+export { ShareList, StackedBarChart, ThinBar, type BarSeries } from "./patterns/chart";
 export {
   ApprovalCard,
   EntitySquare,
@@ -136,3 +136,12 @@ export {
   type ToolChipStatus,
 } from "./domain/run";
 export { Composer, SessionList, type AttachmentRule, type SessionListItem } from "./domain/chat";
+export {
+  SpanAttributes,
+  SpanTree,
+  SpanWaterfall,
+  type GhostBar,
+  type SpanKindName,
+  type SpanRowView,
+} from "./domain/trace";
+export { niceTicks, tickLabel, visibleRange } from "./lib/virtual";

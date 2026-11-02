@@ -22,6 +22,7 @@ from agnostic_kernel.db import utcnow
 from agnostic_kernel.errors import ConflictError, NotFoundError
 from agnostic_kernel.logging import get_logger
 from agnostic_observe.application.cache import OverviewCache
+from agnostic_observe.application.calls import page_items
 from agnostic_observe.application.model import Overview, TraceSample, Unavailable
 from agnostic_observe.domain.attention import (
     ErrorFacts,
@@ -63,22 +64,6 @@ SECTION_SCOPES: Mapping[str, str] = {
     "errors": "traces:read",
     "schedules": "schedules:read",
 }
-
-
-def _page_items(payload: object) -> tuple[list[dict[str, Any]], int | None]:
-    """AgentOS lists come as ``{data, meta}`` or plain arrays."""
-    if isinstance(payload, list):
-        items = cast("list[Any]", payload)
-        return [cast("dict[str, Any]", i) for i in items if isinstance(i, dict)], len(items)
-    if isinstance(payload, dict):
-        body = cast("dict[str, Any]", payload)
-        data = cast("list[Any]", body.get("data") or [])
-        meta = cast("dict[str, Any]", body.get("meta") or {})
-        total = meta.get("total_count")
-        return [cast("dict[str, Any]", i) for i in data if isinstance(i, dict)], int(
-            total
-        ) if total is not None else None
-    return [], None
 
 
 class BuildOverview:
@@ -125,7 +110,7 @@ class BuildOverview:
             overview.unavailable["primitives"] = config.reason
         else:
             body = cast("dict[str, Any]", config) if isinstance(config, dict) else {}
-            component_items = [] if isinstance(components, Unavailable) else _page_items(components)[0]
+            component_items = [] if isinstance(components, Unavailable) else page_items(components)[0]
             overview.counts = component_counts(body)
             overview.primitives = primitives(body, component_items, sample.rows if sample else [])
 
@@ -214,7 +199,7 @@ class BuildOverview:
         }
         if status:
             params["status"] = status
-        return _page_items(await self._get(instance, "/traces", params))
+        return page_items(await self._get(instance, "/traces", params))
 
     async def _traces(self, instance: Instance, window: Window) -> TraceSample:
         rows: list[TraceRow] = []
@@ -240,7 +225,7 @@ class BuildOverview:
         return (total if total is not None else len(items), failed if failed is not None else len(failed_items))
 
     async def _approvals(self, instance: Instance) -> PendingApprovals:
-        items, total = _page_items(await self._get(instance, "/approvals", {"status": "pending", "limit": 100}))
+        items, total = page_items(await self._get(instance, "/approvals", {"status": "pending", "limit": 100}))
         created = [moment for item in items if (moment := parse_time(item.get("created_at"))) is not None]
         tools = Counter(str(item["tool_name"]) for item in items if item.get("tool_name"))
         top_tool = tools.most_common(1)[0][0] if tools else None
@@ -261,13 +246,13 @@ class BuildOverview:
         )
 
     async def _schedules(self, instance: Instance) -> list[ScheduleFacts]:
-        items, _ = _page_items(await self._get(instance, "/schedules", {"limit": 100}))
+        items, _ = page_items(await self._get(instance, "/schedules", {"limit": 100}))
         enabled = [item for item in items if item.get("enabled", True)][:MAX_SCHEDULES]
         facts: list[ScheduleFacts] = []
         for item in enabled:
             schedule_id = str(item.get("id") or "")
             try:
-                runs, _ = _page_items(await self._get(instance, f"/schedules/{schedule_id}/runs", {"limit": 5}))
+                runs, _ = page_items(await self._get(instance, f"/schedules/{schedule_id}/runs", {"limit": 5}))
             except Unavailable:
                 continue
             runs.sort(

@@ -206,6 +206,8 @@ DEFAULT_POLICIES: tuple[RoutePolicy, ...] = (
     _p("GET", "/authz/{rest*}", ADMIN),
     _p("GET", "/users", ADMIN),
     _p("GET", "/agnostic/v1/capabilities", "config:read", ttl=60),
+    # Version-pinned (draft) evals run the component with real model calls: audited in full, rate-limited as runs.
+    _p("POST", "/agnostic/v1/evals/run", "evals:write", audit="full", bucket="run"),
 )
 
 

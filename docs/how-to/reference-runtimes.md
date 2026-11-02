@@ -121,6 +121,15 @@ treats a `2xx` as "bridge available".
 curl http://127.0.0.1:7777/agnostic/v1/capabilities   # without a key; with one, use a config:read token
 ```
 
+It also adds `POST /agnostic/v1/evals/run` (`evals:write`, plus run access to the target as on `POST /eval-runs`):
+AgentOS's eval body with `component_type` (`agent`/`team`), `component_id` and an optional `version` instead of
+`agent_id`/`team_id`. An explicit version evaluates that stored config, drafts included (the owner's or an admin's
+only; anyone else gets the component's 404); no version evaluates the current component. `model_provider` +
+`model_id` pick the judge of accuracy and agent-as-judge evals and never replace the component's own model (unlike
+`POST /eval-runs`), so a draft and the current version are scored by the same judge. The run goes through
+AgentOS's own eval helpers with the OS db, so it is stored and listed by `GET /eval-runs`; the response is the
+`/eval-runs` schema plus `component_version`. It needs an AgentOS db (503 otherwise).
+
 The bridge is a separate package (`bridge/`, its own `uv` project, Python 3.10-3.13 like agno) that customers add
 to their own AgentOS: `pip install agnostic-bridge`, then serve `install(agent_os)` instead of
 `agent_os.get_app()`. It mounts its routes ahead of AgentOS's MCP catch-all and registers their scopes in AgentOS's

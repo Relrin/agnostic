@@ -1,24 +1,56 @@
-"""The only import surface other modules may use: typed, audited calls that act as Instance admin.
+"""The only import surface other modules may use: typed calls to AgentOS, as the person or as Instance admin.
 
-Passthrough calls (``/instances/{instance}/os/...``) never elevate; only typed control-plane actions (approval
-decisions) call :class:`GatewayFacade`.
+:meth:`GatewayFacade.call` runs the passthrough pipeline (route policy, scope pre-check, scoped JWT, audit), so a
+typed control-plane endpoint sees exactly what the person would see in the browser. Only typed control-plane actions
+that the control plane has authorized itself (approval decisions) use :meth:`GatewayFacade.elevated`.
 """
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import AsyncIterator, Mapping
 from typing import Any, Protocol
 
-from agnostic_gateway.application.elevation import ElevatedResponse, Elevation, ElevationDisabledError
+import orjson
+
+from agnostic_gateway.application.elevation import (
+    ElevatedResponse,
+    Elevation,
+    ElevationDisabledError,
+    GatewayResponse,
+    decode_body,
+)
+from agnostic_gateway.application.proxy import Gateway, ProxyRequest
 from agnostic_instances.facade import Instance
 from agnostic_kernel.auth import Principal
 
-__all__ = ["ElevatedResponse", "ElevationDisabledError", "GatewayFacade", "GatewayFacadeImpl"]
+__all__ = [
+    "ElevatedResponse",
+    "ElevationDisabledError",
+    "GatewayFacade",
+    "GatewayFacadeImpl",
+    "GatewayResponse",
+]
 
 
 class GatewayFacade(Protocol):
     async def instance(self, ref: str) -> Instance:
         """By id or slug; raises when it doesn't exist or is disabled."""
+        ...
+
+    async def call(
+        self,
+        principal: Principal,
+        instance: Instance,
+        method: str,
+        path: str,
+        *,
+        params: Mapping[str, str | int] | None = None,
+        json: Any = None,  # noqa: ANN401
+    ) -> GatewayResponse:
+        """One AgentOS call as ``principal`` (their scopes, their isolation), audited like the passthrough.
+
+        Missing scopes raise the gateway's 403 problem; AgentOS statuses are returned as they are.
+        """
         ...
 
     async def elevated(
@@ -37,11 +69,46 @@ class GatewayFacade(Protocol):
 
 
 class GatewayFacadeImpl:
-    def __init__(self, elevation: Elevation) -> None:
+    def __init__(self, elevation: Elevation, gateway: Gateway) -> None:
         self._elevation = elevation
+        self._gateway = gateway
 
     async def instance(self, ref: str) -> Instance:
         return await self._elevation.instance(ref)
+
+    async def call(
+        self,
+        principal: Principal,
+        instance: Instance,
+        method: str,
+        path: str,
+        *,
+        params: Mapping[str, str | int] | None = None,
+        json: Any = None,  # noqa: ANN401
+    ) -> GatewayResponse:
+        headers = [("accept", "application/json")]
+        body: AsyncIterator[bytes] | None = None
+        if json is not None:
+            headers.append(("content-type", "application/json"))
+            body = _once(orjson.dumps(json))
+        response = await self._gateway.handle(
+            principal,
+            instance.id,
+            ProxyRequest(
+                method=method.upper(),
+                path=path,
+                params=[(key, str(value)) for key, value in (params or {}).items()],
+                headers=headers,
+                body=body,
+                scheme="https",
+                host=None,
+            ),
+        )
+        try:
+            raw = b"".join([chunk async for chunk in response.body])
+        finally:
+            await response.close()
+        return GatewayResponse(response.status, decode_body(raw))
 
     async def elevated(
         self,
@@ -67,3 +134,7 @@ class GatewayFacadeImpl:
             json=json,
             form=form,
         )
+
+
+async def _once(content: bytes) -> AsyncIterator[bytes]:
+    yield content

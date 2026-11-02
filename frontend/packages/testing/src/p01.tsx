@@ -231,6 +231,7 @@ export const ownerAccess: MyAccessOut = {
     "os:delete",
     "os:keys:rotate",
     "audit:read",
+    "evals:gates:write",
   ],
   grants: [],
 };

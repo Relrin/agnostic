@@ -48,7 +48,7 @@ class ElevationFailedError(AppError):
 
 
 @dataclass(frozen=True, slots=True)
-class ElevatedResponse:
+class GatewayResponse:
     status: int
     body: Any
     """Decoded JSON, the raw text when the body isn't JSON, or ``None`` when empty."""
@@ -56,6 +56,10 @@ class ElevatedResponse:
     @property
     def ok(self) -> bool:
         return self.status < 400  # noqa: PLR2004
+
+
+ElevatedResponse = GatewayResponse
+"""The response of one elevated request (same shape as a typed call made as the person)."""
 
 
 class Elevation:
@@ -138,7 +142,7 @@ class Elevation:
                 f"{instance.display_name} rejected the elevated token. Run Test connection in Settings › Connection.",
                 extra={"instance_id": instance.id, "upstream_status": 401},
             )
-        return ElevatedResponse(response.status_code, _decode(raw))
+        return ElevatedResponse(response.status_code, decode_body(raw))
 
     async def _credentials(self, principal: Principal, instance: Instance) -> tuple[dict[str, str], str | None]:
         if instance.auth_mode is AuthMode.NONE:
@@ -202,7 +206,7 @@ async def _once(content: bytes) -> AsyncIterator[bytes]:
     yield content
 
 
-def _decode(raw: bytes) -> Any:  # noqa: ANN401
+def decode_body(raw: bytes) -> Any:  # noqa: ANN401
     if not raw:
         return None
     try:

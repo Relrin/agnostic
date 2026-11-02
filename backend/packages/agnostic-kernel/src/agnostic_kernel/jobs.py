@@ -93,8 +93,9 @@ class JobQueue:
     def __init__(self, app: procrastinate.App) -> None:
         self._app = app
 
-    async def defer(self, task_name: str, /, **kwargs: JSONValue) -> int:
-        return await self._app.configure_task(task_name).defer_async(**kwargs)
+    async def defer(self, task_name: str, /, *, lock: str | None = None, **kwargs: JSONValue) -> int:
+        """Queue ``task_name``. Jobs that share a ``lock`` run one after another, never at the same time."""
+        return await self._app.configure_task(task_name, lock=lock).defer_async(**kwargs)
 
 
 class JobProgressReporter:
