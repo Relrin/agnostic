@@ -189,8 +189,8 @@ export function SessionRail({
           <DialogHeader>
             <DialogTitle>Delete this session?</DialogTitle>
             <DialogDescription>
-              Its {String(runs.length)} {runs.length === 1 ? "run" : "runs"} and their media are deleted on
-              the instance. This can't be undone.
+              Its {String(runs.length)} {runs.length === 1 ? "run" : "runs"} are deleted on the instance. This
+              can't be undone.
             </DialogDescription>
           </DialogHeader>
           {actions.remove.isError && (
