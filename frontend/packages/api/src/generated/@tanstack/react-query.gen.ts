@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { accessCreateBinding, accessDeleteBinding, accessExplain, accessListBindings, accessListRoles, accessListScopes, approvalsCount, approvalsDecide, auditGetEvent, auditListActions, auditListEvents, authConfirmPasswordReset, authLogin, authLogout, authRequestPasswordReset, authSignInOptions, authSsoCallback, authSsoStart, evalsAddCases, evalsCancelBatch, evalsCompareBatches, evalsCreateDataset, evalsDeleteCase, evalsDeleteDataset, evalsDeleteGate, evalsEvalCapabilities, evalsEvalResults, evalsGetBatch, evalsGetDataset, evalsImportCases, evalsListDatasets, evalsListEvaluations, evalsListGates, evalsPutGate, evalsStartBatch, evalsUpdateCase, evalsUpdateDataset, gatewayListPolicies, instancesConnectInstance, instancesDeleteInstance, instancesDiscoverInstance, instancesGetCapabilities, instancesGetConfig, instancesGetHealth, instancesGetInstance, instancesGetKeys, instancesListInstances, instancesProbeEndpoint, instancesRotateKeys, instancesTestInstance, instancesUpdateInstance, instancesVerifyToken, invitationsAcceptInvitation, invitationsCreateInvitation, invitationsListInvitations, invitationsPreviewInvitation, invitationsResendInvitation, invitationsRevokeInvitation, jwksJwks, meGetMe, meListMySessions, membersGetMember, membersListMembers, membersRemoveMember, membersUpdateMember, meMyAccess, meRevokeMySession, meUpdateMe, observeGetOrgPriceTable, observeGetPriceTable, observeMetricsCsv, observeMetricsSummary, observeOverview, observePutOrgPriceTable, observePutPriceTable, observeSpanStats, observeTraceComparison, onboardingCompleteOnboarding, onboardingOnboardingStatus, type Options, orgGetOrg, orgUpdateOrg, searchSearch, systemListModules, systemLiveness, systemReadiness } from '../sdk.gen';
-import type { AccessCreateBindingData, AccessCreateBindingError, AccessCreateBindingResponse, AccessDeleteBindingData, AccessDeleteBindingError, AccessDeleteBindingResponse, AccessExplainData, AccessExplainError, AccessExplainResponse, AccessListBindingsData, AccessListBindingsError, AccessListBindingsResponse, AccessListRolesData, AccessListRolesError, AccessListRolesResponse, AccessListScopesData, AccessListScopesError, AccessListScopesResponse, ApprovalsCountData, ApprovalsCountError, ApprovalsCountResponse, ApprovalsDecideData, ApprovalsDecideError, ApprovalsDecideResponse, AuditGetEventData, AuditGetEventError, AuditGetEventResponse, AuditListActionsData, AuditListActionsError, AuditListActionsResponse, AuditListEventsData, AuditListEventsError, AuditListEventsResponse, AuthConfirmPasswordResetData, AuthConfirmPasswordResetError, AuthConfirmPasswordResetResponse, AuthLoginData, AuthLoginError, AuthLoginResponse, AuthLogoutData, AuthLogoutError, AuthLogoutResponse, AuthRequestPasswordResetData, AuthRequestPasswordResetError, AuthSignInOptionsData, AuthSignInOptionsError, AuthSignInOptionsResponse, AuthSsoCallbackData, AuthSsoCallbackError, AuthSsoStartData, AuthSsoStartError, EvalsAddCasesData, EvalsAddCasesError, EvalsAddCasesResponse, EvalsCancelBatchData, EvalsCancelBatchError, EvalsCancelBatchResponse, EvalsCompareBatchesData, EvalsCompareBatchesError, EvalsCompareBatchesResponse, EvalsCreateDatasetData, EvalsCreateDatasetError, EvalsCreateDatasetResponse, EvalsDeleteCaseData, EvalsDeleteCaseError, EvalsDeleteCaseResponse, EvalsDeleteDatasetData, EvalsDeleteDatasetError, EvalsDeleteDatasetResponse, EvalsDeleteGateData, EvalsDeleteGateError, EvalsDeleteGateResponse, EvalsEvalCapabilitiesData, EvalsEvalCapabilitiesError, EvalsEvalCapabilitiesResponse, EvalsEvalResultsData, EvalsEvalResultsError, EvalsEvalResultsResponse, EvalsGetBatchData, EvalsGetBatchError, EvalsGetBatchResponse, EvalsGetDatasetData, EvalsGetDatasetError, EvalsGetDatasetResponse, EvalsImportCasesData, EvalsImportCasesError, EvalsImportCasesResponse, EvalsListDatasetsData, EvalsListDatasetsError, EvalsListDatasetsResponse, EvalsListEvaluationsData, EvalsListEvaluationsError, EvalsListEvaluationsResponse, EvalsListGatesData, EvalsListGatesError, EvalsListGatesResponse, EvalsPutGateData, EvalsPutGateError, EvalsPutGateResponse, EvalsStartBatchData, EvalsStartBatchError, EvalsStartBatchResponse, EvalsUpdateCaseData, EvalsUpdateCaseError, EvalsUpdateCaseResponse, EvalsUpdateDatasetData, EvalsUpdateDatasetError, EvalsUpdateDatasetResponse, GatewayListPoliciesData, GatewayListPoliciesError, GatewayListPoliciesResponse, InstancesConnectInstanceData, InstancesConnectInstanceError, InstancesConnectInstanceResponse, InstancesDeleteInstanceData, InstancesDeleteInstanceError, InstancesDeleteInstanceResponse, InstancesDiscoverInstanceData, InstancesDiscoverInstanceError, InstancesDiscoverInstanceResponse, InstancesGetCapabilitiesData, InstancesGetCapabilitiesError, InstancesGetCapabilitiesResponse, InstancesGetConfigData, InstancesGetConfigError, InstancesGetConfigResponse, InstancesGetHealthData, InstancesGetHealthError, InstancesGetHealthResponse, InstancesGetInstanceData, InstancesGetInstanceError, InstancesGetInstanceResponse, InstancesGetKeysData, InstancesGetKeysError, InstancesGetKeysResponse, InstancesListInstancesData, InstancesListInstancesError, InstancesListInstancesResponse, InstancesProbeEndpointData, InstancesProbeEndpointError, InstancesProbeEndpointResponse, InstancesRotateKeysData, InstancesRotateKeysError, InstancesRotateKeysResponse, InstancesTestInstanceData, InstancesTestInstanceError, InstancesTestInstanceResponse, InstancesUpdateInstanceData, InstancesUpdateInstanceError, InstancesUpdateInstanceResponse, InstancesVerifyTokenData, InstancesVerifyTokenError, InstancesVerifyTokenResponse, InvitationsAcceptInvitationData, InvitationsAcceptInvitationError, InvitationsAcceptInvitationResponse, InvitationsCreateInvitationData, InvitationsCreateInvitationError, InvitationsCreateInvitationResponse, InvitationsListInvitationsData, InvitationsListInvitationsError, InvitationsListInvitationsResponse, InvitationsPreviewInvitationData, InvitationsPreviewInvitationError, InvitationsPreviewInvitationResponse, InvitationsResendInvitationData, InvitationsResendInvitationError, InvitationsResendInvitationResponse, InvitationsRevokeInvitationData, InvitationsRevokeInvitationError, InvitationsRevokeInvitationResponse, JwksJwksData, JwksJwksError, JwksJwksResponse, MeGetMeData, MeGetMeError, MeGetMeResponse, MeListMySessionsData, MeListMySessionsError, MeListMySessionsResponse, MembersGetMemberData, MembersGetMemberError, MembersGetMemberResponse, MembersListMembersData, MembersListMembersError, MembersListMembersResponse, MembersRemoveMemberData, MembersRemoveMemberError, MembersRemoveMemberResponse, MembersUpdateMemberData, MembersUpdateMemberError, MembersUpdateMemberResponse, MeMyAccessData, MeMyAccessError, MeMyAccessResponse, MeRevokeMySessionData, MeRevokeMySessionError, MeRevokeMySessionResponse, MeUpdateMeData, MeUpdateMeError, MeUpdateMeResponse, ObserveGetOrgPriceTableData, ObserveGetOrgPriceTableError, ObserveGetOrgPriceTableResponse, ObserveGetPriceTableData, ObserveGetPriceTableError, ObserveGetPriceTableResponse, ObserveMetricsCsvData, ObserveMetricsCsvError, ObserveMetricsSummaryData, ObserveMetricsSummaryError, ObserveMetricsSummaryResponse, ObserveOverviewData, ObserveOverviewError, ObserveOverviewResponse, ObservePutOrgPriceTableData, ObservePutOrgPriceTableError, ObservePutOrgPriceTableResponse, ObservePutPriceTableData, ObservePutPriceTableError, ObservePutPriceTableResponse, ObserveSpanStatsData, ObserveSpanStatsError, ObserveSpanStatsResponse, ObserveTraceComparisonData, ObserveTraceComparisonError, ObserveTraceComparisonResponse, OnboardingCompleteOnboardingData, OnboardingCompleteOnboardingError, OnboardingCompleteOnboardingResponse, OnboardingOnboardingStatusData, OnboardingOnboardingStatusError, OnboardingOnboardingStatusResponse, OrgGetOrgData, OrgGetOrgError, OrgGetOrgResponse, OrgUpdateOrgData, OrgUpdateOrgError, OrgUpdateOrgResponse, SearchSearchData, SearchSearchError, SearchSearchResponse, SystemListModulesData, SystemListModulesError, SystemListModulesResponse, SystemLivenessData, SystemLivenessResponse, SystemReadinessData, SystemReadinessError, SystemReadinessResponse } from '../types.gen';
+import { accessCreateBinding, accessDeleteBinding, accessExplain, accessListBindings, accessListRoles, accessListScopes, approvalsCount, approvalsDecide, auditGetEvent, auditListActions, auditListEvents, authConfirmPasswordReset, authLogin, authLogout, authRequestPasswordReset, authSignInOptions, authSsoCallback, authSsoStart, contextDataSubjectRequest, contextDeleteUserLearnings, contextFileProvenance, contextKnowledgeBases, contextKnowledgeContent, contextLearningCounts, contextMemoryDuplicates, contextMemorySource, contextOptimizeMemories, evalsAddCases, evalsCancelBatch, evalsCompareBatches, evalsCreateDataset, evalsDeleteCase, evalsDeleteDataset, evalsDeleteGate, evalsEvalCapabilities, evalsEvalResults, evalsGetBatch, evalsGetDataset, evalsImportCases, evalsListDatasets, evalsListEvaluations, evalsListGates, evalsPutGate, evalsStartBatch, evalsUpdateCase, evalsUpdateDataset, gatewayListPolicies, instancesConnectInstance, instancesDeleteInstance, instancesDiscoverInstance, instancesGetCapabilities, instancesGetConfig, instancesGetHealth, instancesGetInstance, instancesGetKeys, instancesListInstances, instancesProbeEndpoint, instancesRotateKeys, instancesTestInstance, instancesUpdateInstance, instancesVerifyToken, invitationsAcceptInvitation, invitationsCreateInvitation, invitationsListInvitations, invitationsPreviewInvitation, invitationsResendInvitation, invitationsRevokeInvitation, jwksJwks, meGetMe, meListMySessions, membersGetMember, membersListMembers, membersRemoveMember, membersUpdateMember, meMyAccess, meRevokeMySession, meUpdateMe, observeGetOrgPriceTable, observeGetPriceTable, observeMetricsCsv, observeMetricsSummary, observeOverview, observePutOrgPriceTable, observePutPriceTable, observeSpanStats, observeTraceComparison, onboardingCompleteOnboarding, onboardingOnboardingStatus, type Options, orgGetOrg, orgUpdateOrg, searchSearch, systemListModules, systemLiveness, systemReadiness } from '../sdk.gen';
+import type { AccessCreateBindingData, AccessCreateBindingError, AccessCreateBindingResponse, AccessDeleteBindingData, AccessDeleteBindingError, AccessDeleteBindingResponse, AccessExplainData, AccessExplainError, AccessExplainResponse, AccessListBindingsData, AccessListBindingsError, AccessListBindingsResponse, AccessListRolesData, AccessListRolesError, AccessListRolesResponse, AccessListScopesData, AccessListScopesError, AccessListScopesResponse, ApprovalsCountData, ApprovalsCountError, ApprovalsCountResponse, ApprovalsDecideData, ApprovalsDecideError, ApprovalsDecideResponse, AuditGetEventData, AuditGetEventError, AuditGetEventResponse, AuditListActionsData, AuditListActionsError, AuditListActionsResponse, AuditListEventsData, AuditListEventsError, AuditListEventsResponse, AuthConfirmPasswordResetData, AuthConfirmPasswordResetError, AuthConfirmPasswordResetResponse, AuthLoginData, AuthLoginError, AuthLoginResponse, AuthLogoutData, AuthLogoutError, AuthLogoutResponse, AuthRequestPasswordResetData, AuthRequestPasswordResetError, AuthSignInOptionsData, AuthSignInOptionsError, AuthSignInOptionsResponse, AuthSsoCallbackData, AuthSsoCallbackError, AuthSsoStartData, AuthSsoStartError, ContextDataSubjectRequestData, ContextDataSubjectRequestError, ContextDataSubjectRequestResponse, ContextDeleteUserLearningsData, ContextDeleteUserLearningsError, ContextDeleteUserLearningsResponse, ContextFileProvenanceData, ContextFileProvenanceError, ContextFileProvenanceResponse, ContextKnowledgeBasesData, ContextKnowledgeBasesError, ContextKnowledgeBasesResponse, ContextKnowledgeContentData, ContextKnowledgeContentError, ContextKnowledgeContentResponse, ContextLearningCountsData, ContextLearningCountsError, ContextLearningCountsResponse, ContextMemoryDuplicatesData, ContextMemoryDuplicatesError, ContextMemoryDuplicatesResponse, ContextMemorySourceData, ContextMemorySourceError, ContextMemorySourceResponse, ContextOptimizeMemoriesData, ContextOptimizeMemoriesError, ContextOptimizeMemoriesResponse, EvalsAddCasesData, EvalsAddCasesError, EvalsAddCasesResponse, EvalsCancelBatchData, EvalsCancelBatchError, EvalsCancelBatchResponse, EvalsCompareBatchesData, EvalsCompareBatchesError, EvalsCompareBatchesResponse, EvalsCreateDatasetData, EvalsCreateDatasetError, EvalsCreateDatasetResponse, EvalsDeleteCaseData, EvalsDeleteCaseError, EvalsDeleteCaseResponse, EvalsDeleteDatasetData, EvalsDeleteDatasetError, EvalsDeleteDatasetResponse, EvalsDeleteGateData, EvalsDeleteGateError, EvalsDeleteGateResponse, EvalsEvalCapabilitiesData, EvalsEvalCapabilitiesError, EvalsEvalCapabilitiesResponse, EvalsEvalResultsData, EvalsEvalResultsError, EvalsEvalResultsResponse, EvalsGetBatchData, EvalsGetBatchError, EvalsGetBatchResponse, EvalsGetDatasetData, EvalsGetDatasetError, EvalsGetDatasetResponse, EvalsImportCasesData, EvalsImportCasesError, EvalsImportCasesResponse, EvalsListDatasetsData, EvalsListDatasetsError, EvalsListDatasetsResponse, EvalsListEvaluationsData, EvalsListEvaluationsError, EvalsListEvaluationsResponse, EvalsListGatesData, EvalsListGatesError, EvalsListGatesResponse, EvalsPutGateData, EvalsPutGateError, EvalsPutGateResponse, EvalsStartBatchData, EvalsStartBatchError, EvalsStartBatchResponse, EvalsUpdateCaseData, EvalsUpdateCaseError, EvalsUpdateCaseResponse, EvalsUpdateDatasetData, EvalsUpdateDatasetError, EvalsUpdateDatasetResponse, GatewayListPoliciesData, GatewayListPoliciesError, GatewayListPoliciesResponse, InstancesConnectInstanceData, InstancesConnectInstanceError, InstancesConnectInstanceResponse, InstancesDeleteInstanceData, InstancesDeleteInstanceError, InstancesDeleteInstanceResponse, InstancesDiscoverInstanceData, InstancesDiscoverInstanceError, InstancesDiscoverInstanceResponse, InstancesGetCapabilitiesData, InstancesGetCapabilitiesError, InstancesGetCapabilitiesResponse, InstancesGetConfigData, InstancesGetConfigError, InstancesGetConfigResponse, InstancesGetHealthData, InstancesGetHealthError, InstancesGetHealthResponse, InstancesGetInstanceData, InstancesGetInstanceError, InstancesGetInstanceResponse, InstancesGetKeysData, InstancesGetKeysError, InstancesGetKeysResponse, InstancesListInstancesData, InstancesListInstancesError, InstancesListInstancesResponse, InstancesProbeEndpointData, InstancesProbeEndpointError, InstancesProbeEndpointResponse, InstancesRotateKeysData, InstancesRotateKeysError, InstancesRotateKeysResponse, InstancesTestInstanceData, InstancesTestInstanceError, InstancesTestInstanceResponse, InstancesUpdateInstanceData, InstancesUpdateInstanceError, InstancesUpdateInstanceResponse, InstancesVerifyTokenData, InstancesVerifyTokenError, InstancesVerifyTokenResponse, InvitationsAcceptInvitationData, InvitationsAcceptInvitationError, InvitationsAcceptInvitationResponse, InvitationsCreateInvitationData, InvitationsCreateInvitationError, InvitationsCreateInvitationResponse, InvitationsListInvitationsData, InvitationsListInvitationsError, InvitationsListInvitationsResponse, InvitationsPreviewInvitationData, InvitationsPreviewInvitationError, InvitationsPreviewInvitationResponse, InvitationsResendInvitationData, InvitationsResendInvitationError, InvitationsResendInvitationResponse, InvitationsRevokeInvitationData, InvitationsRevokeInvitationError, InvitationsRevokeInvitationResponse, JwksJwksData, JwksJwksError, JwksJwksResponse, MeGetMeData, MeGetMeError, MeGetMeResponse, MeListMySessionsData, MeListMySessionsError, MeListMySessionsResponse, MembersGetMemberData, MembersGetMemberError, MembersGetMemberResponse, MembersListMembersData, MembersListMembersError, MembersListMembersResponse, MembersRemoveMemberData, MembersRemoveMemberError, MembersRemoveMemberResponse, MembersUpdateMemberData, MembersUpdateMemberError, MembersUpdateMemberResponse, MeMyAccessData, MeMyAccessError, MeMyAccessResponse, MeRevokeMySessionData, MeRevokeMySessionError, MeRevokeMySessionResponse, MeUpdateMeData, MeUpdateMeError, MeUpdateMeResponse, ObserveGetOrgPriceTableData, ObserveGetOrgPriceTableError, ObserveGetOrgPriceTableResponse, ObserveGetPriceTableData, ObserveGetPriceTableError, ObserveGetPriceTableResponse, ObserveMetricsCsvData, ObserveMetricsCsvError, ObserveMetricsSummaryData, ObserveMetricsSummaryError, ObserveMetricsSummaryResponse, ObserveOverviewData, ObserveOverviewError, ObserveOverviewResponse, ObservePutOrgPriceTableData, ObservePutOrgPriceTableError, ObservePutOrgPriceTableResponse, ObservePutPriceTableData, ObservePutPriceTableError, ObservePutPriceTableResponse, ObserveSpanStatsData, ObserveSpanStatsError, ObserveSpanStatsResponse, ObserveTraceComparisonData, ObserveTraceComparisonError, ObserveTraceComparisonResponse, OnboardingCompleteOnboardingData, OnboardingCompleteOnboardingError, OnboardingCompleteOnboardingResponse, OnboardingOnboardingStatusData, OnboardingOnboardingStatusError, OnboardingOnboardingStatusResponse, OrgGetOrgData, OrgGetOrgError, OrgGetOrgResponse, OrgUpdateOrgData, OrgUpdateOrgError, OrgUpdateOrgResponse, SearchSearchData, SearchSearchError, SearchSearchResponse, SystemListModulesData, SystemListModulesError, SystemListModulesResponse, SystemLivenessData, SystemLivenessResponse, SystemReadinessData, SystemReadinessError, SystemReadinessResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -396,6 +396,23 @@ export const authSsoStartOptions = (options: Options<AuthSsoStartData>) => query
     },
     queryKey: authSsoStartQueryKey(options)
 });
+
+/**
+ * Delete one person's learnings on every instance where you hold learnings:delete
+ */
+export const contextDataSubjectRequestMutation = (options?: Partial<Options<ContextDataSubjectRequestData>>): UseMutationOptions<ContextDataSubjectRequestResponse, ContextDataSubjectRequestError, Options<ContextDataSubjectRequestData>> => {
+    const mutationOptions: UseMutationOptions<ContextDataSubjectRequestResponse, ContextDataSubjectRequestError, Options<ContextDataSubjectRequestData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await contextDataSubjectRequest({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const gatewayListPoliciesQueryKey = (options?: Options<GatewayListPoliciesData>) => createQueryKey('gatewayListPolicies', options);
 
@@ -938,6 +955,24 @@ export const evalsListEvaluationsOptions = (options: Options<EvalsListEvaluation
     queryKey: evalsListEvaluationsQueryKey(options)
 });
 
+export const contextFileProvenanceQueryKey = (options: Options<ContextFileProvenanceData>) => createQueryKey('contextFileProvenance', options);
+
+/**
+ * Which runs wrote and read a workspace file (exact with agnostic-bridge, otherwise best effort)
+ */
+export const contextFileProvenanceOptions = (options: Options<ContextFileProvenanceData>) => queryOptions<ContextFileProvenanceResponse, ContextFileProvenanceError, ContextFileProvenanceResponse, ReturnType<typeof contextFileProvenanceQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await contextFileProvenance({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: contextFileProvenanceQueryKey(options)
+});
+
 export const instancesGetHealthQueryKey = (options: Options<InstancesGetHealthData>) => createQueryKey('instancesGetHealth', options);
 
 /**
@@ -1007,6 +1042,160 @@ export const instancesVerifyTokenMutation = (options?: Partial<Options<Instances
     };
     return mutationOptions;
 };
+
+export const contextKnowledgeBasesQueryKey = (options: Options<ContextKnowledgeBasesData>) => createQueryKey('contextKnowledgeBases', options);
+
+/**
+ * Knowledge bases with entry counts, vector databases and the agents and teams that read them
+ */
+export const contextKnowledgeBasesOptions = (options: Options<ContextKnowledgeBasesData>) => queryOptions<ContextKnowledgeBasesResponse, ContextKnowledgeBasesError, ContextKnowledgeBasesResponse, ReturnType<typeof contextKnowledgeBasesQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await contextKnowledgeBases({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: contextKnowledgeBasesQueryKey(options)
+});
+
+export const contextKnowledgeContentQueryKey = (options: Options<ContextKnowledgeContentData>) => createQueryKey('contextKnowledgeContent', options);
+
+/**
+ * Knowledge content filtered by status, type and text, with status and type counts (needs knowledge:read)
+ */
+export const contextKnowledgeContentOptions = (options: Options<ContextKnowledgeContentData>) => queryOptions<ContextKnowledgeContentResponse, ContextKnowledgeContentError, ContextKnowledgeContentResponse, ReturnType<typeof contextKnowledgeContentQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await contextKnowledgeContent({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: contextKnowledgeContentQueryKey(options)
+});
+
+export const contextKnowledgeContentInfiniteQueryKey = (options: Options<ContextKnowledgeContentData>): QueryKey<Options<ContextKnowledgeContentData>> => createQueryKey('contextKnowledgeContent', options, true);
+
+/**
+ * Knowledge content filtered by status, type and text, with status and type counts (needs knowledge:read)
+ */
+export const contextKnowledgeContentInfiniteOptions = (options: Options<ContextKnowledgeContentData>) => {
+    const opts = infiniteQueryOptions<ContextKnowledgeContentResponse, ContextKnowledgeContentError, InfiniteData<ContextKnowledgeContentResponse>, QueryKey<Options<ContextKnowledgeContentData>>, number | Pick<QueryKey<Options<ContextKnowledgeContentData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ContextKnowledgeContentData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    page: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await contextKnowledgeContent({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: contextKnowledgeContentInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
+
+export const contextLearningCountsQueryKey = (options: Options<ContextLearningCountsData>) => createQueryKey('contextLearningCounts', options);
+
+/**
+ * Learning records per type (needs learnings:read)
+ */
+export const contextLearningCountsOptions = (options: Options<ContextLearningCountsData>) => queryOptions<ContextLearningCountsResponse, ContextLearningCountsError, ContextLearningCountsResponse, ReturnType<typeof contextLearningCountsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await contextLearningCounts({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: contextLearningCountsQueryKey(options)
+});
+
+/**
+ * Delete one user's learnings, or one type of them, after typing the user id (needs learnings:delete)
+ */
+export const contextDeleteUserLearningsMutation = (options?: Partial<Options<ContextDeleteUserLearningsData>>): UseMutationOptions<ContextDeleteUserLearningsResponse, ContextDeleteUserLearningsError, Options<ContextDeleteUserLearningsData>> => {
+    const mutationOptions: UseMutationOptions<ContextDeleteUserLearningsResponse, ContextDeleteUserLearningsError, Options<ContextDeleteUserLearningsData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await contextDeleteUserLearnings({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const contextMemoryDuplicatesQueryKey = (options: Options<ContextMemoryDuplicatesData>) => createQueryKey('contextMemoryDuplicates', options);
+
+/**
+ * Likely duplicate memories of one user (trigram similarity; needs memories:read)
+ */
+export const contextMemoryDuplicatesOptions = (options: Options<ContextMemoryDuplicatesData>) => queryOptions<ContextMemoryDuplicatesResponse, ContextMemoryDuplicatesError, ContextMemoryDuplicatesResponse, ReturnType<typeof contextMemoryDuplicatesQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await contextMemoryDuplicates({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: contextMemoryDuplicatesQueryKey(options)
+});
+
+/**
+ * Preview (apply=false) or apply the summarize optimization of a user's memories (needs memories:write)
+ */
+export const contextOptimizeMemoriesMutation = (options?: Partial<Options<ContextOptimizeMemoriesData>>): UseMutationOptions<ContextOptimizeMemoriesResponse, ContextOptimizeMemoriesError, Options<ContextOptimizeMemoriesData>> => {
+    const mutationOptions: UseMutationOptions<ContextOptimizeMemoriesResponse, ContextOptimizeMemoriesError, Options<ContextOptimizeMemoriesData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await contextOptimizeMemories({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const contextMemorySourceQueryKey = (options: Options<ContextMemorySourceData>) => createQueryKey('contextMemorySource', options);
+
+/**
+ * The run a memory most likely came from: its session and the input the user sent (best effort)
+ */
+export const contextMemorySourceOptions = (options: Options<ContextMemorySourceData>) => queryOptions<ContextMemorySourceResponse, ContextMemorySourceError, ContextMemorySourceResponse, ReturnType<typeof contextMemorySourceQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await contextMemorySource({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: contextMemorySourceQueryKey(options)
+});
 
 export const observeMetricsCsvQueryKey = (options: Options<ObserveMetricsCsvData>) => createQueryKey('observeMetricsCsv', options);
 

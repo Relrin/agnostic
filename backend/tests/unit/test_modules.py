@@ -24,12 +24,13 @@ def test_entry_points_discover_the_installed_modules() -> None:
         "identity",
         "instances",
         "settings",
-        "search",
         "org",
+        "search",
         "access",
         "gateway",
         "notifications",
         "approvals",
+        "context",
         "evals",
         "observe",
     ]
@@ -39,6 +40,14 @@ def test_entry_points_discover_the_installed_modules() -> None:
 def test_dependency_order() -> None:
     loaded = resolve_modules([make("gateway", "access", "instances"), make("instances"), make("access", "instances")])
     assert loaded.names() == ["instances", "access", "gateway"]
+
+
+def test_order_does_not_depend_on_discovery_order() -> None:
+    """Entry points are discovered in a platform-specific order; ties between ready modules go by name."""
+    modules = [make("observe", "gateway"), make("gateway"), make("approvals", "gateway"), make("audit")]
+    expected = ["audit", "gateway", "approvals", "observe"]
+    assert resolve_modules(modules).names() == expected
+    assert resolve_modules(reversed(modules)).names() == expected
 
 
 def test_disable_leaf_module() -> None:

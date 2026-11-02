@@ -63,7 +63,7 @@ export function TabsTrigger({
             countTone === "muted" && "bg-surface-hover text-fg-muted",
           )}
         >
-          {count}
+          {count.toLocaleString("en-US")}
         </span>
       )}
     </TabsPrimitive.Trigger>

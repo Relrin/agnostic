@@ -12,6 +12,7 @@ from starlette.background import BackgroundTask
 from agnostic_gateway.application.ports import RoutePolicyRepository
 from agnostic_gateway.application.proxy import Gateway, GatewaySettingsView, PolicyTableCache, ProxyRequest
 from agnostic_gateway.application.streaming import PayloadTooLargeError, limited
+from agnostic_gateway.domain.policies import is_upload
 from agnostic_kernel.auth import Authorizer, Principal
 from agnostic_kernel.errors import AppError
 
@@ -50,12 +51,13 @@ async def passthrough(
     session: FromDishka[AsyncSession],
 ) -> StreamingResponse:
     has_body = request.method not in {"GET", "HEAD", "OPTIONS", "DELETE"} or "content-length" in request.headers
+    limit = config.max_upload_bytes if is_upload(request.method, path) else config.max_body_bytes
     proxy_request = ProxyRequest(
         method=request.method,
         path=path,
         params=list(request.query_params.multi_items()),
         headers=list(request.headers.items()),
-        body=_body(request, config.max_body_bytes) if has_body else None,
+        body=_body(request, limit) if has_body else None,
         scheme=request.url.scheme,
         host=request.headers.get("host"),
     )

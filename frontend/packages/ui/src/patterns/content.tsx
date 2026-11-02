@@ -160,7 +160,7 @@ export function JsonEditor({
     try {
       const parsed = JSON.parse(draft) as unknown;
       if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
-        setError("session_state must be a JSON object.");
+        setError("This must be a JSON object.");
         return undefined;
       }
       setError(undefined);

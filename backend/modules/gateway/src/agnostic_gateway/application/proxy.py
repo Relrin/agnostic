@@ -83,6 +83,7 @@ class GatewaySettingsView:
     rate_limits: Mapping[str, int]
     heartbeat_seconds: float
     max_body_bytes: int
+    max_upload_bytes: int
 
 
 @dataclass(frozen=True, slots=True)

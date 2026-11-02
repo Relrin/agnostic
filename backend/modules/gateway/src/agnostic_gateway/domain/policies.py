@@ -208,7 +208,16 @@ DEFAULT_POLICIES: tuple[RoutePolicy, ...] = (
     _p("GET", "/agnostic/v1/capabilities", "config:read", ttl=60),
     # Version-pinned (draft) evals run the component with real model calls: audited in full, rate-limited as runs.
     _p("POST", "/agnostic/v1/evals/run", "evals:write", audit="full", bucket="run"),
+    # Which runs wrote and read a file: joined from tool spans, so it needs both families.
+    _p("GET", "/agnostic/v1/files/provenance", "filesystem:read", "traces:read"),
 )
+
+UPLOAD_ROUTES: frozenset[tuple[str, str]] = frozenset({("POST", "/knowledge/content")})
+"""Routes whose bodies are file uploads: they get the gateway's upload size limit instead of the body limit."""
+
+
+def is_upload(method: str, path: str) -> bool:
+    return (method.upper(), "/" + path.strip("/")) in UPLOAD_ROUTES
 
 
 def fallback(method: str, path: str) -> RoutePolicy:

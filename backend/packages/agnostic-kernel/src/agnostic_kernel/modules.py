@@ -226,7 +226,7 @@ def resolve_modules(modules: Iterable[Module], disabled: Iterable[str] = ()) -> 
         raise ModuleGraphError(msg)
 
     sorter: graphlib.TopologicalSorter[str] = graphlib.TopologicalSorter()
-    for name, module in installed.items():
+    for name, module in sorted(installed.items()):
         for dependency in module.depends_on:
             if dependency not in installed:
                 msg = f"module {name!r} depends on {dependency!r}, which is not installed"
@@ -237,11 +237,18 @@ def resolve_modules(modules: Iterable[Module], disabled: Iterable[str] = ()) -> 
         sorter.add(name, *module.depends_on)
 
     try:
-        order = list(sorter.static_order())
+        sorter.prepare()
     except graphlib.CycleError as exc:
         cycle: list[str] = exc.args[1]
         msg = f"module dependency cycle: {' -> '.join(cycle)}"
         raise ModuleGraphError(msg) from exc
+    # Ties are broken by name, not by entry-point discovery order (which differs between platforms), so every
+    # installation starts, migrates and mounts modules in the same order.
+    order: list[str] = []
+    while sorter.is_active():
+        ready = sorted(sorter.get_ready())
+        order.extend(ready)
+        sorter.done(*ready)
 
     enabled = tuple(installed[name] for name in order if name not in disabled_set)
     return LoadedModules(enabled=enabled, disabled=tuple(sorted(disabled_set)), installed=installed)

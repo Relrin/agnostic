@@ -9,6 +9,7 @@ export { API, configureTestApi };
 export * from "./p01";
 export * from "./p02";
 export * from "./observe";
+export * from "./context";
 
 export function renderWithProviders(ui: ReactElement): RenderResult & { queryClient: QueryClient } {
   configureTestApi();

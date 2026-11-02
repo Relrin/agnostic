@@ -6,9 +6,13 @@ import { accountModule } from "@agnostic/module-account";
 import { auditModule } from "@agnostic/module-audit";
 import { chatModule } from "@agnostic/module-chat";
 import { evalsModule } from "@agnostic/module-evals";
+import { filesModule } from "@agnostic/module-files";
 import { homeModule } from "@agnostic/module-home";
 import { identityModule } from "@agnostic/module-identity";
 import { instancesModule } from "@agnostic/module-instances";
+import { knowledgeModule } from "@agnostic/module-knowledge";
+import { learningsModule } from "@agnostic/module-learnings";
+import { memoryModule } from "@agnostic/module-memory";
 import { metricsModule } from "@agnostic/module-metrics";
 import { sessionsModule } from "@agnostic/module-sessions";
 import { settingsModule } from "@agnostic/module-settings";
@@ -27,4 +31,8 @@ export const MODULES: readonly ModuleManifest[] = [
   tracesModule,
   metricsModule,
   evalsModule,
+  memoryModule,
+  knowledgeModule,
+  learningsModule,
+  filesModule,
 ];

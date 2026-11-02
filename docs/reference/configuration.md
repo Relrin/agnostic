@@ -95,6 +95,7 @@ See [sign-in providers](../how-to/sign-in-providers.md) for setup per identity p
 | `AGNOSTIC_GATEWAY__READ_SAMPLE_RATE` | `0.05` | share of allowed reads written to the audit log (writes and denials always are) |
 | `AGNOSTIC_GATEWAY__RATE_READ_PER_MINUTE` / `__RATE_WRITE_…` / `__RATE_RUN_…` | `1200` / `240` / `120` | per person and instance; `0` turns a bucket off |
 | `AGNOSTIC_GATEWAY__MAX_BODY_MB` | `100` | largest request body streamed to a runtime |
+| `AGNOSTIC_GATEWAY__MAX_UPLOAD_MB` | `1024` | largest file upload (`POST /knowledge/content`), streamed without buffering |
 | `AGNOSTIC_GATEWAY__HEARTBEAT_SECONDS` | `15` | SSE keep-alive comments while a runtime is quiet |
 | `AGNOSTIC_GATEWAY__UPSTREAM_READ_TIMEOUT` | `600` | seconds a runtime may stay silent mid-response |
 | `AGNOSTIC_GATEWAY__CIRCUIT_FAILURES` / `__CIRCUIT_COOLDOWN_SECONDS` | `5` / `30` | consecutive connection failures before failing fast, and for how long |
@@ -131,6 +132,11 @@ See [sign-in providers](../how-to/sign-in-providers.md) for setup per identity p
 | `AGNOSTIC_OBSERVE__MAX_SESSION_PAGES` | `20` | pages of 100 sessions read for per-component usage on the Metrics page; beyond that it says *approximate* |
 | `AGNOSTIC_OBSERVE__COMPARISON_CACHE_DAYS` | `7` | trace comparisons are recomputed after this many days |
 | `AGNOSTIC_EVALS__CONCURRENCY` | `4` | eval runs in flight per batch; batches on one instance run one after another |
+| `AGNOSTIC_CONTEXT__DUPLICATE_THRESHOLD` | `0.35` | trigram similarity (0 to 1) above which two memories of one user are flagged "likely duplicate" |
+| `AGNOSTIC_CONTEXT__MAX_DUPLICATE_SCAN` | `500` | newest memories of one user compared for duplicates |
+| `AGNOSTIC_CONTEXT__MAX_CONTENT_PAGES` | `10` | pages of 100 knowledge content rows filtered and counted per request |
+| `AGNOSTIC_CONTEXT__PROVENANCE_SESSIONS` | `10` | sessions searched for the run a memory came from |
+| `AGNOSTIC_CONTEXT__PROVENANCE_TRACES` | `50` | newest traces searched for file writes when the instance has no agnostic-bridge |
 | `AGNOSTIC_SEARCH__REINDEX_CRON` | `*/5 * * * *` | rebuild the ⌘K index; empty turns it off |
 | `AGNOSTIC_NOTIFICATIONS__HEARTBEAT_SECONDS` | `15` | keepalive interval on `/api/v1/events` |
 | `AGNOSTIC_NOTIFICATIONS__MAX_STREAM_SECONDS` | `1800` | streams end after this; browsers reconnect with `Last-Event-ID` |

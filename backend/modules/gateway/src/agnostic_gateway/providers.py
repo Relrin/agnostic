@@ -40,6 +40,7 @@ class GatewayProvider(Provider):
             },
             heartbeat_seconds=settings.heartbeat_seconds,
             max_body_bytes=settings.max_body_mb * 1024 * 1024,
+            max_upload_bytes=settings.max_upload_mb * 1024 * 1024,
         )
 
     @provide(scope=Scope.APP)

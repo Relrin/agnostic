@@ -52,6 +52,18 @@
     },
     {
       "path": "../../modules/evals"
+    },
+    {
+      "path": "../../modules/memory"
+    },
+    {
+      "path": "../../modules/knowledge"
+    },
+    {
+      "path": "../../modules/learnings"
+    },
+    {
+      "path": "../../modules/files"
     }
   ]
 }

@@ -9,12 +9,14 @@ Install it on the AgentOS app and serve the app it returns::
 
 Routes live under ``/agnostic/v1``, are guarded by the same AgentOS auth layer as every built-in route, and need
 the scopes in :data:`SCOPE_MAPPINGS` (``agent_os:admin`` passes too). The bridge keeps no state of its own; its
-eval route runs AgentOS's own eval helpers, which call models and store the result in the AgentOS db.
+eval route runs AgentOS's own eval helpers, which call models and store the result in the AgentOS db; its file
+provenance route reads the traces AgentOS already stores.
 """
 
 from agnostic_bridge._app import BRIDGE_PREFIX, SCOPE_MAPPINGS, create_router, install
 from agnostic_bridge._capabilities import BridgeCapabilities, BridgeFeatures, BridgeQueueFeatures, __version__
 from agnostic_bridge._evals import BridgeEvalRun, BridgeEvalRunInput
+from agnostic_bridge._files import FileEvent, FileProvenanceResponse
 
 __all__ = [
     "BRIDGE_PREFIX",
@@ -24,6 +26,8 @@ __all__ = [
     "BridgeEvalRunInput",
     "BridgeFeatures",
     "BridgeQueueFeatures",
+    "FileEvent",
+    "FileProvenanceResponse",
     "__version__",
     "create_router",
     "install",

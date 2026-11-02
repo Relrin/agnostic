@@ -40,7 +40,7 @@ def test_open_os_reports_versions_and_features() -> None:
     assert body["python_version"] == platform.python_version()
     assert body["os_id"] == OS_ID
     assert body["replica_id"] == "replica-a"
-    assert body["endpoints"] == [f"GET {PATH}", "POST /agnostic/v1/evals/run"]
+    assert body["endpoints"] == [f"GET {PATH}", "GET /agnostic/v1/files/provenance", "POST /agnostic/v1/evals/run"]
     features = body["features"]
     assert features["auth_mode"] == "none"
     assert features["authorization"] is False

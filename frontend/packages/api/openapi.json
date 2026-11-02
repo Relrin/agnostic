@@ -1692,6 +1692,95 @@
         "title": "ConnectedOut",
         "type": "object"
       },
+      "ContentCountsOut": {
+        "properties": {
+          "by_kind": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "By Kind",
+            "type": "object"
+          },
+          "by_status": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "By Status",
+            "type": "object"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total",
+          "by_status",
+          "by_kind"
+        ],
+        "title": "ContentCountsOut",
+        "type": "object"
+      },
+      "ContentPageOut": {
+        "properties": {
+          "counts": {
+            "$ref": "#/components/schemas/ContentCountsOut"
+          },
+          "data": {
+            "description": "AgentOS ContentResponseSchema rows, plus `kind`",
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Data",
+            "type": "array"
+          },
+          "limit": {
+            "title": "Limit",
+            "type": "integer"
+          },
+          "matching": {
+            "title": "Matching",
+            "type": "integer"
+          },
+          "page": {
+            "title": "Page",
+            "type": "integer"
+          },
+          "partial": {
+            "description": "Only the newest `scanned` rows were filtered and counted",
+            "title": "Partial",
+            "type": "boolean"
+          },
+          "scanned": {
+            "title": "Scanned",
+            "type": "integer"
+          },
+          "total": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total"
+          }
+        },
+        "required": [
+          "data",
+          "matching",
+          "scanned",
+          "total",
+          "partial",
+          "counts",
+          "page",
+          "limit"
+        ],
+        "title": "ContentPageOut",
+        "type": "object"
+      },
       "CostOut": {
         "properties": {
           "approximate": {
@@ -1780,6 +1869,47 @@
           }
         },
         "title": "CountsOut",
+        "type": "object"
+      },
+      "DataSubjectIn": {
+        "properties": {
+          "confirm": {
+            "title": "Confirm",
+            "type": "string"
+          },
+          "user_id": {
+            "description": "The person's user_id on the instances",
+            "minLength": 1,
+            "title": "User Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id",
+          "confirm"
+        ],
+        "title": "DataSubjectIn",
+        "type": "object"
+      },
+      "DataSubjectOut": {
+        "properties": {
+          "outcomes": {
+            "items": {
+              "$ref": "#/components/schemas/InstanceOutcomeOut"
+            },
+            "title": "Outcomes",
+            "type": "array"
+          },
+          "user_id": {
+            "title": "User Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id",
+          "outcomes"
+        ],
+        "title": "DataSubjectOut",
         "type": "object"
       },
       "DatasetDetailOut": {
@@ -2197,6 +2327,96 @@
         "title": "DecideOut",
         "type": "object"
       },
+      "DeleteUserLearningsIn": {
+        "properties": {
+          "confirm": {
+            "description": "The user id again, typed by the person",
+            "title": "Confirm",
+            "type": "string"
+          },
+          "db_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Db Id"
+          },
+          "learning_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "One type only; default: every type",
+            "title": "Learning Type"
+          },
+          "user_id": {
+            "minLength": 1,
+            "title": "User Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id",
+          "confirm"
+        ],
+        "title": "DeleteUserLearningsIn",
+        "type": "object"
+      },
+      "DeletionOut": {
+        "properties": {
+          "deleted": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deleted"
+          },
+          "instance": {
+            "title": "Instance",
+            "type": "string"
+          },
+          "instance_id": {
+            "title": "Instance Id",
+            "type": "string"
+          },
+          "learning_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Learning Type"
+          },
+          "user_id": {
+            "title": "User Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "instance_id",
+          "instance",
+          "user_id",
+          "learning_type",
+          "deleted"
+        ],
+        "title": "DeletionOut",
+        "type": "object"
+      },
       "DiscoveryOut": {
         "properties": {
           "agent_count": {
@@ -2280,6 +2500,87 @@
           "mcp_enabled"
         ],
         "title": "DiscoveryOut",
+        "type": "object"
+      },
+      "DuplicateOut": {
+        "properties": {
+          "duplicate_of": {
+            "description": "The memory it repeats (the one to keep)",
+            "title": "Duplicate Of",
+            "type": "string"
+          },
+          "memory_id": {
+            "description": "The memory to flag as a likely duplicate",
+            "title": "Memory Id",
+            "type": "string"
+          },
+          "similarity": {
+            "description": "Trigram similarity, 0–1",
+            "title": "Similarity",
+            "type": "number"
+          }
+        },
+        "required": [
+          "memory_id",
+          "duplicate_of",
+          "similarity"
+        ],
+        "title": "DuplicateOut",
+        "type": "object"
+      },
+      "DuplicatesOut": {
+        "properties": {
+          "duplicates": {
+            "items": {
+              "$ref": "#/components/schemas/DuplicateOut"
+            },
+            "title": "Duplicates",
+            "type": "array"
+          },
+          "method": {
+            "const": "trigram",
+            "title": "Method",
+            "type": "string"
+          },
+          "partial": {
+            "description": "The user has more memories than were compared",
+            "title": "Partial",
+            "type": "boolean"
+          },
+          "scanned": {
+            "title": "Scanned",
+            "type": "integer"
+          },
+          "threshold": {
+            "title": "Threshold",
+            "type": "number"
+          },
+          "total": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total"
+          },
+          "user_id": {
+            "title": "User Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id",
+          "method",
+          "threshold",
+          "scanned",
+          "total",
+          "partial",
+          "duplicates"
+        ],
+        "title": "DuplicatesOut",
         "type": "object"
       },
       "EnvTagName": {
@@ -2646,6 +2947,232 @@
           "type"
         ],
         "title": "FieldError",
+        "type": "object"
+      },
+      "FileEventOut": {
+        "properties": {
+          "action": {
+            "enum": [
+              "write",
+              "read",
+              "delete"
+            ],
+            "title": "Action",
+            "type": "string"
+          },
+          "at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "At"
+          },
+          "component_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Component Id"
+          },
+          "component_kind": {
+            "anyOf": [
+              {
+                "enum": [
+                  "agent",
+                  "team",
+                  "workflow"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Component Kind"
+          },
+          "path": {
+            "title": "Path",
+            "type": "string"
+          },
+          "run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Id"
+          },
+          "run_status": {
+            "title": "Run Status",
+            "type": "string"
+          },
+          "session_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Id"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "step": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Step"
+          },
+          "tool": {
+            "title": "Tool",
+            "type": "string"
+          },
+          "trace_id": {
+            "title": "Trace Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "tool",
+          "path",
+          "trace_id",
+          "run_id",
+          "session_id",
+          "component_kind",
+          "component_id",
+          "step",
+          "status",
+          "run_status",
+          "at"
+        ],
+        "title": "FileEventOut",
+        "type": "object"
+      },
+      "FileProvenanceOut": {
+        "properties": {
+          "available": {
+            "title": "Available",
+            "type": "boolean"
+          },
+          "exact": {
+            "description": "From agnostic-bridge; otherwise a best-effort scan of the newest traces",
+            "title": "Exact",
+            "type": "boolean"
+          },
+          "partial": {
+            "description": "The run that last wrote the file ended in error",
+            "title": "Partial",
+            "type": "boolean"
+          },
+          "path": {
+            "title": "Path",
+            "type": "string"
+          },
+          "read_by": {
+            "items": {
+              "$ref": "#/components/schemas/FileReaderOut"
+            },
+            "title": "Read By",
+            "type": "array"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Why provenance isn't available",
+            "title": "Reason"
+          },
+          "scanned_traces": {
+            "title": "Scanned Traces",
+            "type": "integer"
+          },
+          "writes": {
+            "items": {
+              "$ref": "#/components/schemas/FileEventOut"
+            },
+            "title": "Writes",
+            "type": "array"
+          },
+          "written": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FileEventOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "path",
+          "available",
+          "reason",
+          "exact",
+          "scanned_traces",
+          "written",
+          "partial",
+          "writes",
+          "read_by"
+        ],
+        "title": "FileProvenanceOut",
+        "type": "object"
+      },
+      "FileReaderOut": {
+        "properties": {
+          "component_id": {
+            "title": "Component Id",
+            "type": "string"
+          },
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "step": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Step"
+          }
+        },
+        "required": [
+          "component_id",
+          "step",
+          "count"
+        ],
+        "title": "FileReaderOut",
         "type": "object"
       },
       "GateIn": {
@@ -3310,6 +3837,58 @@
         "title": "InstanceOut",
         "type": "object"
       },
+      "InstanceOutcomeOut": {
+        "properties": {
+          "deleted": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deleted"
+          },
+          "instance": {
+            "title": "Instance",
+            "type": "string"
+          },
+          "instance_id": {
+            "title": "Instance Id",
+            "type": "string"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "status": {
+            "enum": [
+              "deleted",
+              "skipped",
+              "failed"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "instance_id",
+          "instance",
+          "status",
+          "deleted",
+          "reason"
+        ],
+        "title": "InstanceOutcomeOut",
+        "type": "object"
+      },
       "InstanceUpdate": {
         "properties": {
           "ca_bundle_pem": {
@@ -3960,6 +4539,127 @@
         "title": "KeysOut",
         "type": "object"
       },
+      "KnowledgeBaseOut": {
+        "properties": {
+          "db_id": {
+            "title": "Db Id",
+            "type": "string"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "entries": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Content entries; None when the viewer can't read them",
+            "title": "Entries"
+          },
+          "id": {
+            "description": "The knowledge_id every knowledge route takes",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "table": {
+            "title": "Table",
+            "type": "string"
+          },
+          "used_by": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/KnowledgeReaderOut"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "None when the viewer can't list agents and teams",
+            "title": "Used By"
+          },
+          "vector_dbs": {
+            "items": {
+              "$ref": "#/components/schemas/VectorDbOut"
+            },
+            "title": "Vector Dbs",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "db_id",
+          "table",
+          "entries",
+          "vector_dbs",
+          "used_by"
+        ],
+        "title": "KnowledgeBaseOut",
+        "type": "object"
+      },
+      "KnowledgeBasesOut": {
+        "properties": {
+          "bases": {
+            "items": {
+              "$ref": "#/components/schemas/KnowledgeBaseOut"
+            },
+            "title": "Bases",
+            "type": "array"
+          }
+        },
+        "required": [
+          "bases"
+        ],
+        "title": "KnowledgeBasesOut",
+        "type": "object"
+      },
+      "KnowledgeReaderOut": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "agent",
+              "team"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "name"
+        ],
+        "title": "KnowledgeReaderOut",
+        "type": "object"
+      },
       "KpiOut": {
         "properties": {
           "delta": {
@@ -4071,6 +4771,37 @@
           }
         },
         "title": "KpisOut",
+        "type": "object"
+      },
+      "LearningCountsOut": {
+        "properties": {
+          "counts": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "description": "Records per learning type; None where AgentOS didn't answer",
+            "title": "Counts",
+            "type": "object"
+          },
+          "id_schemes": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Id Schemes",
+            "type": "object"
+          }
+        },
+        "required": [
+          "counts"
+        ],
+        "title": "LearningCountsOut",
         "type": "object"
       },
       "Liveness": {
@@ -4352,6 +5083,137 @@
           "org_role"
         ],
         "title": "MemberUpdate",
+        "type": "object"
+      },
+      "MemorySourceOut": {
+        "properties": {
+          "agent_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent Id"
+          },
+          "input": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "What the user sent in the matched run",
+            "title": "Input"
+          },
+          "memory_id": {
+            "title": "Memory Id",
+            "type": "string"
+          },
+          "method": {
+            "const": "session_match",
+            "default": "session_match",
+            "description": "Matched by user, agent and time: AgentOS doesn't return a memory's source run",
+            "title": "Method",
+            "type": "string"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Why no run was matched",
+            "title": "Reason"
+          },
+          "run_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run At"
+          },
+          "run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Id"
+          },
+          "run_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Status"
+          },
+          "session_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Id"
+          },
+          "team_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Id"
+          },
+          "user_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Id"
+          }
+        },
+        "required": [
+          "memory_id",
+          "user_id",
+          "agent_id",
+          "team_id",
+          "session_id",
+          "run_id",
+          "input",
+          "run_at",
+          "run_status",
+          "reason"
+        ],
+        "title": "MemorySourceOut",
         "type": "object"
       },
       "MetricsSummaryOut": {
@@ -4694,6 +5556,131 @@
           "org_name"
         ],
         "title": "OnboardingStatusOut",
+        "type": "object"
+      },
+      "OptimizeIn": {
+        "properties": {
+          "apply": {
+            "default": false,
+            "description": "False previews; True runs the optimization again and saves it",
+            "title": "Apply",
+            "type": "boolean"
+          },
+          "db_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Db Id"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "\"provider:model_id\"; default: the instance's",
+            "title": "Model"
+          },
+          "user_id": {
+            "minLength": 1,
+            "title": "User Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id"
+        ],
+        "title": "OptimizeIn",
+        "type": "object"
+      },
+      "OptimizeOut": {
+        "properties": {
+          "applied": {
+            "title": "Applied",
+            "type": "boolean"
+          },
+          "memories": {
+            "items": {
+              "$ref": "#/components/schemas/OptimizedMemoryOut"
+            },
+            "title": "Memories",
+            "type": "array"
+          },
+          "memories_after": {
+            "title": "Memories After",
+            "type": "integer"
+          },
+          "memories_before": {
+            "title": "Memories Before",
+            "type": "integer"
+          },
+          "reduction_percentage": {
+            "title": "Reduction Percentage",
+            "type": "number"
+          },
+          "tokens_after": {
+            "title": "Tokens After",
+            "type": "integer"
+          },
+          "tokens_before": {
+            "title": "Tokens Before",
+            "type": "integer"
+          },
+          "tokens_saved": {
+            "title": "Tokens Saved",
+            "type": "integer"
+          },
+          "user_id": {
+            "title": "User Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id",
+          "applied",
+          "memories",
+          "memories_before",
+          "memories_after",
+          "tokens_before",
+          "tokens_after",
+          "tokens_saved",
+          "reduction_percentage"
+        ],
+        "title": "OptimizeOut",
+        "type": "object"
+      },
+      "OptimizedMemoryOut": {
+        "properties": {
+          "memory": {
+            "title": "Memory",
+            "type": "string"
+          },
+          "memory_id": {
+            "title": "Memory Id",
+            "type": "string"
+          },
+          "topics": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Topics",
+            "type": "array"
+          }
+        },
+        "required": [
+          "memory_id",
+          "memory",
+          "topics"
+        ],
+        "title": "OptimizedMemoryOut",
         "type": "object"
       },
       "OrgOut": {
@@ -6681,6 +7668,39 @@
         "title": "ValidationError",
         "type": "object"
       },
+      "VectorDbOut": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "search_types": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Search Types",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "search_types"
+        ],
+        "title": "VectorDbOut",
+        "type": "object"
+      },
       "VerifyTokenIn": {
         "properties": {
           "token": {
@@ -7836,6 +8856,59 @@
         "summary": "Start signing in with an SSO provider (redirects to it)",
         "tags": [
           "auth"
+        ]
+      }
+    },
+    "/api/v1/context/data-subject-requests": {
+      "post": {
+        "operationId": "context_data_subject_request",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DataSubjectIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataSubjectOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Delete one person's learnings on every instance where you hold learnings:delete",
+        "tags": [
+          "context"
         ]
       }
     },
@@ -9901,6 +10974,86 @@
         ]
       }
     },
+    "/api/v1/instances/{instance}/files/provenance": {
+      "get": {
+        "operationId": "context_file_provenance",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "path",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Path",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "namespace",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Namespace"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileProvenanceOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Which runs wrote and read a workspace file (exact with agnostic-bridge, otherwise best effort)",
+        "tags": [
+          "context"
+        ]
+      }
+    },
     "/api/v1/instances/{instance}/health": {
       "get": {
         "operationId": "instances_get_health",
@@ -10134,6 +11287,618 @@
         "summary": "Verify a token against this instance's keys",
         "tags": [
           "instances"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/knowledge/bases": {
+      "get": {
+        "operationId": "context_knowledge_bases",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KnowledgeBasesOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Knowledge bases with entry counts, vector databases and the agents and teams that read them",
+        "tags": [
+          "context"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/knowledge/content": {
+      "get": {
+        "operationId": "context_knowledge_content",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "knowledge_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Knowledge Id"
+            }
+          },
+          {
+            "description": "completed, processing, partial or failed",
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "completed, processing, partial or failed",
+              "title": "Status"
+            }
+          },
+          {
+            "description": "\"Markdown\", \"PDF\", \"URL\"… (the `kind` column)",
+            "in": "query",
+            "name": "type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "\"Markdown\", \"PDF\", \"URL\"… (the `kind` column)",
+              "title": "Type"
+            }
+          },
+          {
+            "description": "Text in the name, description or metadata",
+            "in": "query",
+            "name": "search",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Text in the name, description or metadata",
+              "title": "Search"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContentPageOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Knowledge content filtered by status, type and text, with status and type counts (needs knowledge:read)",
+        "tags": [
+          "context"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/learnings/counts": {
+      "get": {
+        "operationId": "context_learning_counts",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "user_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "agent_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Agent Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "namespace",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Namespace"
+            }
+          },
+          {
+            "description": "Database id from /config (several memory or learning databases)",
+            "in": "query",
+            "name": "db_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Database id from /config (several memory or learning databases)",
+              "title": "Db Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LearningCountsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Learning records per type (needs learnings:read)",
+        "tags": [
+          "context"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/learnings/delete-user": {
+      "post": {
+        "operationId": "context_delete_user_learnings",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteUserLearningsIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Delete one user's learnings, or one type of them, after typing the user id (needs learnings:delete)",
+        "tags": [
+          "context"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/memories/duplicates": {
+      "get": {
+        "operationId": "context_memory_duplicates",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "User Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Database id from /config (several memory or learning databases)",
+            "in": "query",
+            "name": "db_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Database id from /config (several memory or learning databases)",
+              "title": "Db Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DuplicatesOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Likely duplicate memories of one user (trigram similarity; needs memories:read)",
+        "tags": [
+          "context"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/memories/optimize": {
+      "post": {
+        "operationId": "context_optimize_memories",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OptimizeIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OptimizeOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Preview (apply=false) or apply the summarize optimization of a user's memories (needs memories:write)",
+        "tags": [
+          "context"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/memories/{memory_id}/source": {
+      "get": {
+        "operationId": "context_memory_source",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "memory_id",
+            "required": true,
+            "schema": {
+              "title": "Memory Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Database id from /config (several memory or learning databases)",
+            "in": "query",
+            "name": "db_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Database id from /config (several memory or learning databases)",
+              "title": "Db Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemorySourceOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "The run a memory most likely came from: its session and the input the user sent (best effort)",
+        "tags": [
+          "context"
         ]
       }
     },

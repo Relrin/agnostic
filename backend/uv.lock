@@ -8,6 +8,7 @@ members = [
     "agnostic-agentos-client",
     "agnostic-approvals",
     "agnostic-audit",
+    "agnostic-context",
     "agnostic-evals",
     "agnostic-gateway",
     "agnostic-identity",
@@ -128,6 +129,37 @@ requires-dist = [
     { name = "pydantic", specifier = "==2.14.2" },
     { name = "pydantic-settings", specifier = "==2.16.2" },
     { name = "sqlalchemy", extras = ["asyncio"], specifier = "==2.1.6" },
+]
+
+[[package]]
+name = "agnostic-context"
+version = "0.1.0"
+source = { editable = "modules/context" }
+dependencies = [
+    { name = "agnostic-agentos-client" },
+    { name = "agnostic-audit" },
+    { name = "agnostic-gateway" },
+    { name = "agnostic-instances" },
+    { name = "agnostic-kernel" },
+    { name = "dishka" },
+    { name = "fastapi" },
+    { name = "orjson" },
+    { name = "pydantic" },
+    { name = "pydantic-settings" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "agnostic-agentos-client", editable = "packages/agnostic-agentos-client" },
+    { name = "agnostic-audit", editable = "modules/audit" },
+    { name = "agnostic-gateway", editable = "modules/gateway" },
+    { name = "agnostic-instances", editable = "modules/instances" },
+    { name = "agnostic-kernel", editable = "packages/agnostic-kernel" },
+    { name = "dishka", specifier = "==1.10.1" },
+    { name = "fastapi", specifier = "==0.162.0" },
+    { name = "orjson", specifier = "==3.13.0" },
+    { name = "pydantic", specifier = "==2.14.2" },
+    { name = "pydantic-settings", specifier = "==2.16.2" },
 ]
 
 [[package]]
@@ -524,6 +556,7 @@ dependencies = [
     { name = "agnostic-agentos-client" },
     { name = "agnostic-approvals" },
     { name = "agnostic-audit" },
+    { name = "agnostic-context" },
     { name = "agnostic-evals" },
     { name = "agnostic-gateway" },
     { name = "agnostic-identity" },
@@ -563,6 +596,7 @@ requires-dist = [
     { name = "agnostic-agentos-client", editable = "packages/agnostic-agentos-client" },
     { name = "agnostic-approvals", editable = "modules/approvals" },
     { name = "agnostic-audit", editable = "modules/audit" },
+    { name = "agnostic-context", editable = "modules/context" },
     { name = "agnostic-evals", editable = "modules/evals" },
     { name = "agnostic-gateway", editable = "modules/gateway" },
     { name = "agnostic-identity", editable = "modules/identity" },

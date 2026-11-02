@@ -21,6 +21,7 @@ from starlette.routing import BaseRoute, Mount
 
 from agnostic_bridge._capabilities import BridgeCapabilities, build_capabilities, default_replica_id
 from agnostic_bridge._evals import RUN_EVAL_PATH, add_eval_routes
+from agnostic_bridge._files import PROVENANCE_PATH, add_file_routes
 
 if TYPE_CHECKING:
     from agno.os import AgentOS
@@ -33,6 +34,7 @@ CAPABILITIES_PATH = f"{BRIDGE_PREFIX}/capabilities"
 SCOPE_MAPPINGS: dict[str, list[str]] = {
     f"GET {CAPABILITIES_PATH}": ["config:read"],
     f"POST {BRIDGE_PREFIX}{RUN_EVAL_PATH}": ["evals:write"],
+    f"GET {BRIDGE_PREFIX}{PROVENANCE_PATH}": ["filesystem:read", "traces:read"],
 }
 
 
@@ -54,6 +56,7 @@ def create_router(agent_os: AgentOS, *, replica_id: str | None = None, include_i
         return build_capabilities(agent_os, request.app, replica, endpoints)
 
     add_eval_routes(router, agent_os)
+    add_file_routes(router, agent_os)
     return router
 
 

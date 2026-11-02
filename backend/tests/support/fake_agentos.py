@@ -2,7 +2,9 @@
 
 Only the routes the tests need: health/info/config, sessions, an SSE run, approvals (list, get, resolve, count),
 run continuation, metrics, traces (list, detail), schedules, component configs, eval runs, and the bridge's
-capabilities and version-pinned eval routes (when ``bridge`` is on). Approvals answer 503 (disabled) unless
+capabilities and version-pinned eval routes (when ``bridge`` is on), and the context routes (memories, optimize,
+session runs, knowledge content and config, learnings, agents and teams, and the bridge's file provenance when
+``bridge_files`` is on). Approvals answer 503 (disabled) unless
 ``approvals_enabled``. Under ``user_isolation`` non-admins get 404 for other people's approvals, runs and traces,
 like agno.
 """
@@ -65,6 +67,15 @@ class FakeAgentOS:
         self.eval_responder: Any = None
         """``(body, path) -> EvalSchema dict`` (or a ``(status, body)`` tuple to fail)."""
         self.bridge = False
+        self.bridge_files = False
+        self.file_events: list[dict[str, Any]] = []
+        self.memories: list[dict[str, Any]] = []
+        self.optimized: list[dict[str, Any]] = []
+        self.session_runs: dict[str, list[dict[str, Any]]] = {}
+        self.knowledge_instances: list[dict[str, Any]] = []
+        self.knowledge_content: dict[str, list[dict[str, Any]]] = {}
+        self.agent_items: list[dict[str, Any]] = []
+        self.learnings: list[dict[str, Any]] = []
         self.app = self._build()
 
     def _claims(self, request: Request) -> dict[str, Any] | Response:
@@ -144,7 +155,7 @@ class FakeAgentOS:
                 "traces": {"enabled": True},
                 "queue": {"durable": True, "queue_per_session": False},
                 "memory": {"dbs": []},
-                "knowledge": {"dbs": []},
+                "knowledge": {"dbs": [], "knowledge_instances": self.knowledge_instances},
                 "agents": [{"id": "support-triage", "name": "Support triage"}, {"id": "billing-agent"}],
                 "teams": [],
                 "workflows": [],
@@ -377,6 +388,8 @@ class FakeAgentOS:
             if not self.bridge:
                 return JSONResponse({"detail": "Not Found"}, status_code=404)
             endpoints = ["GET /agnostic/v1/capabilities", "POST /agnostic/v1/evals/run"]
+            if self.bridge_files:
+                endpoints.append("GET /agnostic/v1/files/provenance")
             return JSONResponse({"bridge_version": "0.2.0", "endpoints": endpoints})
 
         @app.post("/agnostic/v1/evals/run")
@@ -391,5 +404,126 @@ class FakeAgentOS:
             if isinstance(guarded, Response):
                 return guarded
             return {"data": [], "meta": {"page": 1, "limit": 1, "total_pages": 0, "total_count": 0}}
+
+        @app.get("/memories")
+        async def memories(request: Request) -> Response:
+            guarded = await self._guard(request, "memories:read")
+            if isinstance(guarded, Response):
+                return guarded
+            user = request.query_params.get("user_id")
+            items = [
+                m for m in self.memories if (user is None or m["user_id"] == user) and visible(guarded, m["user_id"])
+            ]
+            items.sort(key=lambda m: str(m.get("updated_at") or ""), reverse=True)
+            return JSONResponse(page(items, request))
+
+        @app.get("/memories/{memory_id}")
+        async def memory(memory_id: str, request: Request) -> Response:
+            guarded = await self._guard(request, "memories:read")
+            if isinstance(guarded, Response):
+                return guarded
+            item = next((m for m in self.memories if m["memory_id"] == memory_id), None)
+            if item is None or not visible(guarded, item["user_id"]):
+                return JSONResponse({"detail": "Memory not found"}, status_code=404)
+            return JSONResponse(item)
+
+        @app.post("/optimize-memories")
+        async def optimize(request: Request) -> Response:
+            guarded = await self._guard(request, "memories:write")
+            if isinstance(guarded, Response):
+                return guarded
+            body = orjson.loads(await request.body())
+            before = [m for m in self.memories if m["user_id"] == body["user_id"]]
+            after = [{**m, "user_id": body["user_id"]} for m in self.optimized]
+            if body.get("apply", True):
+                self.memories = [m for m in self.memories if m["user_id"] != body["user_id"]] + after
+            return JSONResponse(
+                {
+                    "memories": after,
+                    "memories_before": len(before),
+                    "memories_after": len(after),
+                    "tokens_before": 120,
+                    "tokens_after": 80,
+                    "tokens_saved": 40,
+                    "reduction_percentage": 33.3,
+                }
+            )
+
+        @app.get("/sessions/{session_id}/runs")
+        async def session_runs(session_id: str, request: Request) -> Response:
+            guarded = await self._guard(request, "sessions:read")
+            if isinstance(guarded, Response):
+                return guarded
+            return JSONResponse(self.session_runs.get(session_id, []))
+
+        @app.get("/agents")
+        async def agents(request: Request) -> Response:
+            guarded = await self._guard(request, "agents:read")
+            if isinstance(guarded, Response):
+                return guarded
+            return JSONResponse(self.agent_items)
+
+        @app.get("/teams")
+        async def teams(request: Request) -> Response:
+            guarded = await self._guard(request, "teams:read")
+            if isinstance(guarded, Response):
+                return guarded
+            return JSONResponse([])
+
+        @app.get("/knowledge/content")
+        async def knowledge_content(request: Request) -> Response:
+            guarded = await self._guard(request, "knowledge:read")
+            if isinstance(guarded, Response):
+                return guarded
+            rows = list(self.knowledge_content.get(request.query_params.get("knowledge_id", ""), []))
+            rows.sort(key=lambda row: str(row.get("updated_at") or ""), reverse=True)
+            return JSONResponse(page(rows, request))
+
+        @app.get("/knowledge/config")
+        async def knowledge_config(request: Request) -> Response:
+            guarded = await self._guard(request, "knowledge:read")
+            if isinstance(guarded, Response):
+                return guarded
+            return JSONResponse(
+                {"vector_dbs": [{"id": "pgvector", "name": "PgVector", "search_types": ["vector", "hybrid"]}]}
+            )
+
+        @app.get("/learnings")
+        async def learnings(request: Request) -> Response:
+            guarded = await self._guard(request, "learnings:read")
+            if isinstance(guarded, Response):
+                return guarded
+            query = request.query_params
+            items = [
+                item
+                for item in self.learnings
+                if all(query.get(key) is None or item.get(key) == query[key] for key in ("learning_type", "user_id"))
+                and visible(guarded, item.get("user_id"))
+            ]
+            return JSONResponse(page(items, request))
+
+        @app.delete("/learnings/users/{user_id}")
+        async def delete_learnings(user_id: str, request: Request) -> Response:
+            guarded = await self._guard(request, "learnings:delete")
+            if isinstance(guarded, Response):
+                return guarded
+            kind = request.query_params.get("learning_type")
+            self.learnings = [
+                item
+                for item in self.learnings
+                if not (item.get("user_id") == user_id and (kind is None or item["learning_type"] == kind))
+            ]
+            return Response(status_code=204)
+
+        @app.get("/agnostic/v1/files/provenance")
+        async def file_provenance(request: Request) -> Response:
+            if not self.bridge_files:
+                return JSONResponse({"detail": "Not Found"}, status_code=404)
+            for scope in ("filesystem:read", "traces:read"):
+                guarded = await self._guard(request, scope)
+                if isinstance(guarded, Response):
+                    return guarded
+            path = request.query_params["path"]
+            return JSONResponse({"path": path, "scanned_traces": 3, "events": self.file_events})
 
         return app

@@ -886,6 +886,69 @@ export type ConnectedOut = {
 };
 
 /**
+ * ContentCountsOut
+ */
+export type ContentCountsOut = {
+    /**
+     * By Kind
+     */
+    by_kind: {
+        [key: string]: number;
+    };
+    /**
+     * By Status
+     */
+    by_status: {
+        [key: string]: number;
+    };
+    /**
+     * Total
+     */
+    total: number;
+};
+
+/**
+ * ContentPageOut
+ */
+export type ContentPageOut = {
+    counts: ContentCountsOut;
+    /**
+     * Data
+     *
+     * AgentOS ContentResponseSchema rows, plus `kind`
+     */
+    data: Array<{
+        [key: string]: unknown;
+    }>;
+    /**
+     * Limit
+     */
+    limit: number;
+    /**
+     * Matching
+     */
+    matching: number;
+    /**
+     * Page
+     */
+    page: number;
+    /**
+     * Partial
+     *
+     * Only the newest `scanned` rows were filtered and counted
+     */
+    partial: boolean;
+    /**
+     * Scanned
+     */
+    scanned: number;
+    /**
+     * Total
+     */
+    total: number | null;
+};
+
+/**
  * CostOut
  */
 export type CostOut = {
@@ -949,6 +1012,36 @@ export type CountsOut = {
      * Workflows
      */
     workflows?: number;
+};
+
+/**
+ * DataSubjectIn
+ */
+export type DataSubjectIn = {
+    /**
+     * Confirm
+     */
+    confirm: string;
+    /**
+     * User Id
+     *
+     * The person's user_id on the instances
+     */
+    user_id: string;
+};
+
+/**
+ * DataSubjectOut
+ */
+export type DataSubjectOut = {
+    /**
+     * Outcomes
+     */
+    outcomes: Array<InstanceOutcomeOut>;
+    /**
+     * User Id
+     */
+    user_id: string;
 };
 
 /**
@@ -1183,6 +1276,58 @@ export type DecideOut = {
 };
 
 /**
+ * DeleteUserLearningsIn
+ */
+export type DeleteUserLearningsIn = {
+    /**
+     * Confirm
+     *
+     * The user id again, typed by the person
+     */
+    confirm: string;
+    /**
+     * Db Id
+     */
+    db_id?: string | null;
+    /**
+     * Learning Type
+     *
+     * One type only; default: every type
+     */
+    learning_type?: string | null;
+    /**
+     * User Id
+     */
+    user_id: string;
+};
+
+/**
+ * DeletionOut
+ */
+export type DeletionOut = {
+    /**
+     * Deleted
+     */
+    deleted: number | null;
+    /**
+     * Instance
+     */
+    instance: string;
+    /**
+     * Instance Id
+     */
+    instance_id: string;
+    /**
+     * Learning Type
+     */
+    learning_type: string | null;
+    /**
+     * User Id
+     */
+    user_id: string;
+};
+
+/**
  * DiscoveryOut
  */
 export type DiscoveryOut = {
@@ -1226,6 +1371,66 @@ export type DiscoveryOut = {
      * Workflow Count
      */
     workflow_count: number;
+};
+
+/**
+ * DuplicateOut
+ */
+export type DuplicateOut = {
+    /**
+     * Duplicate Of
+     *
+     * The memory it repeats (the one to keep)
+     */
+    duplicate_of: string;
+    /**
+     * Memory Id
+     *
+     * The memory to flag as a likely duplicate
+     */
+    memory_id: string;
+    /**
+     * Similarity
+     *
+     * Trigram similarity, 0–1
+     */
+    similarity: number;
+};
+
+/**
+ * DuplicatesOut
+ */
+export type DuplicatesOut = {
+    /**
+     * Duplicates
+     */
+    duplicates: Array<DuplicateOut>;
+    /**
+     * Method
+     */
+    method: 'trigram';
+    /**
+     * Partial
+     *
+     * The user has more memories than were compared
+     */
+    partial: boolean;
+    /**
+     * Scanned
+     */
+    scanned: number;
+    /**
+     * Threshold
+     */
+    threshold: number;
+    /**
+     * Total
+     */
+    total: number | null;
+    /**
+     * User Id
+     */
+    user_id: string;
 };
 
 export type EnvTagName = 'production' | 'staging' | 'development';
@@ -1417,6 +1622,123 @@ export type FieldError = {
      * Type
      */
     type: string;
+};
+
+/**
+ * FileEventOut
+ */
+export type FileEventOut = {
+    /**
+     * Action
+     */
+    action: 'write' | 'read' | 'delete';
+    /**
+     * At
+     */
+    at: string | null;
+    /**
+     * Component Id
+     */
+    component_id: string | null;
+    /**
+     * Component Kind
+     */
+    component_kind: 'agent' | 'team' | 'workflow' | null;
+    /**
+     * Path
+     */
+    path: string;
+    /**
+     * Run Id
+     */
+    run_id: string | null;
+    /**
+     * Run Status
+     */
+    run_status: string;
+    /**
+     * Session Id
+     */
+    session_id: string | null;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Step
+     */
+    step: string | null;
+    /**
+     * Tool
+     */
+    tool: string;
+    /**
+     * Trace Id
+     */
+    trace_id: string;
+};
+
+/**
+ * FileProvenanceOut
+ */
+export type FileProvenanceOut = {
+    /**
+     * Available
+     */
+    available: boolean;
+    /**
+     * Exact
+     *
+     * From agnostic-bridge; otherwise a best-effort scan of the newest traces
+     */
+    exact: boolean;
+    /**
+     * Partial
+     *
+     * The run that last wrote the file ended in error
+     */
+    partial: boolean;
+    /**
+     * Path
+     */
+    path: string;
+    /**
+     * Read By
+     */
+    read_by: Array<FileReaderOut>;
+    /**
+     * Reason
+     *
+     * Why provenance isn't available
+     */
+    reason: string | null;
+    /**
+     * Scanned Traces
+     */
+    scanned_traces: number;
+    /**
+     * Writes
+     */
+    writes: Array<FileEventOut>;
+    written: FileEventOut | null;
+};
+
+/**
+ * FileReaderOut
+ */
+export type FileReaderOut = {
+    /**
+     * Component Id
+     */
+    component_id: string;
+    /**
+     * Count
+     */
+    count: number;
+    /**
+     * Step
+     */
+    step: string | null;
 };
 
 /**
@@ -1773,6 +2095,32 @@ export type InstanceOut = {
 };
 
 /**
+ * InstanceOutcomeOut
+ */
+export type InstanceOutcomeOut = {
+    /**
+     * Deleted
+     */
+    deleted: number | null;
+    /**
+     * Instance
+     */
+    instance: string;
+    /**
+     * Instance Id
+     */
+    instance_id: string;
+    /**
+     * Reason
+     */
+    reason: string | null;
+    /**
+     * Status
+     */
+    status: 'deleted' | 'skipped' | 'failed';
+};
+
+/**
  * InstanceUpdate
  */
 export type InstanceUpdate = {
@@ -2106,6 +2454,78 @@ export type KeysOut = {
 };
 
 /**
+ * KnowledgeBaseOut
+ */
+export type KnowledgeBaseOut = {
+    /**
+     * Db Id
+     */
+    db_id: string;
+    /**
+     * Description
+     */
+    description: string | null;
+    /**
+     * Entries
+     *
+     * Content entries; None when the viewer can't read them
+     */
+    entries: number | null;
+    /**
+     * Id
+     *
+     * The knowledge_id every knowledge route takes
+     */
+    id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Table
+     */
+    table: string;
+    /**
+     * Used By
+     *
+     * None when the viewer can't list agents and teams
+     */
+    used_by: Array<KnowledgeReaderOut> | null;
+    /**
+     * Vector Dbs
+     */
+    vector_dbs: Array<VectorDbOut>;
+};
+
+/**
+ * KnowledgeBasesOut
+ */
+export type KnowledgeBasesOut = {
+    /**
+     * Bases
+     */
+    bases: Array<KnowledgeBaseOut>;
+};
+
+/**
+ * KnowledgeReaderOut
+ */
+export type KnowledgeReaderOut = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Kind
+     */
+    kind: 'agent' | 'team';
+    /**
+     * Name
+     */
+    name: string;
+};
+
+/**
  * KpiOut
  */
 export type KpiOut = {
@@ -2139,6 +2559,26 @@ export type KpisOut = {
     p95_latency_ms?: KpiOut | null;
     runs?: KpiOut | null;
     sessions?: KpiOut | null;
+};
+
+/**
+ * LearningCountsOut
+ */
+export type LearningCountsOut = {
+    /**
+     * Counts
+     *
+     * Records per learning type; None where AgentOS didn't answer
+     */
+    counts: {
+        [key: string]: number | null;
+    };
+    /**
+     * Id Schemes
+     */
+    id_schemes?: {
+        [key: string]: string;
+    };
 };
 
 /**
@@ -2289,6 +2729,62 @@ export type MemberOut = {
  */
 export type MemberUpdate = {
     org_role: OrgRoleName;
+};
+
+/**
+ * MemorySourceOut
+ */
+export type MemorySourceOut = {
+    /**
+     * Agent Id
+     */
+    agent_id: string | null;
+    /**
+     * Input
+     *
+     * What the user sent in the matched run
+     */
+    input: string | null;
+    /**
+     * Memory Id
+     */
+    memory_id: string;
+    /**
+     * Method
+     *
+     * Matched by user, agent and time: AgentOS doesn't return a memory's source run
+     */
+    method?: 'session_match';
+    /**
+     * Reason
+     *
+     * Why no run was matched
+     */
+    reason: string | null;
+    /**
+     * Run At
+     */
+    run_at: string | null;
+    /**
+     * Run Id
+     */
+    run_id: string | null;
+    /**
+     * Run Status
+     */
+    run_status: string | null;
+    /**
+     * Session Id
+     */
+    session_id: string | null;
+    /**
+     * Team Id
+     */
+    team_id: string | null;
+    /**
+     * User Id
+     */
+    user_id: string | null;
 };
 
 /**
@@ -2480,6 +2976,92 @@ export type OnboardingStatusOut = {
      * Owner Exists
      */
     owner_exists: boolean;
+};
+
+/**
+ * OptimizeIn
+ */
+export type OptimizeIn = {
+    /**
+     * Apply
+     *
+     * False previews; True runs the optimization again and saves it
+     */
+    apply?: boolean;
+    /**
+     * Db Id
+     */
+    db_id?: string | null;
+    /**
+     * Model
+     *
+     * "provider:model_id"; default: the instance's
+     */
+    model?: string | null;
+    /**
+     * User Id
+     */
+    user_id: string;
+};
+
+/**
+ * OptimizeOut
+ */
+export type OptimizeOut = {
+    /**
+     * Applied
+     */
+    applied: boolean;
+    /**
+     * Memories
+     */
+    memories: Array<OptimizedMemoryOut>;
+    /**
+     * Memories After
+     */
+    memories_after: number;
+    /**
+     * Memories Before
+     */
+    memories_before: number;
+    /**
+     * Reduction Percentage
+     */
+    reduction_percentage: number;
+    /**
+     * Tokens After
+     */
+    tokens_after: number;
+    /**
+     * Tokens Before
+     */
+    tokens_before: number;
+    /**
+     * Tokens Saved
+     */
+    tokens_saved: number;
+    /**
+     * User Id
+     */
+    user_id: string;
+};
+
+/**
+ * OptimizedMemoryOut
+ */
+export type OptimizedMemoryOut = {
+    /**
+     * Memory
+     */
+    memory: string;
+    /**
+     * Memory Id
+     */
+    memory_id: string;
+    /**
+     * Topics
+     */
+    topics: Array<string>;
 };
 
 /**
@@ -3567,6 +4149,24 @@ export type ValidationError = {
 };
 
 /**
+ * VectorDbOut
+ */
+export type VectorDbOut = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Name
+     */
+    name: string | null;
+    /**
+     * Search Types
+     */
+    search_types: Array<string>;
+};
+
+/**
  * VerifyTokenIn
  */
 export type VerifyTokenIn = {
@@ -4205,6 +4805,35 @@ export type AuthSsoStartErrors = {
 };
 
 export type AuthSsoStartError = AuthSsoStartErrors[keyof AuthSsoStartErrors];
+
+export type ContextDataSubjectRequestData = {
+    body: DataSubjectIn;
+    path?: never;
+    query?: never;
+    url: '/api/v1/context/data-subject-requests';
+};
+
+export type ContextDataSubjectRequestErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ContextDataSubjectRequestError = ContextDataSubjectRequestErrors[keyof ContextDataSubjectRequestErrors];
+
+export type ContextDataSubjectRequestResponses = {
+    /**
+     * Successful Response
+     */
+    200: DataSubjectOut;
+};
+
+export type ContextDataSubjectRequestResponse = ContextDataSubjectRequestResponses[keyof ContextDataSubjectRequestResponses];
 
 export type NotificationsEventsData = {
     body?: never;
@@ -5402,6 +6031,49 @@ export type EvalsListEvaluationsResponses = {
 
 export type EvalsListEvaluationsResponse = EvalsListEvaluationsResponses[keyof EvalsListEvaluationsResponses];
 
+export type ContextFileProvenanceData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query: {
+        /**
+         * Path
+         */
+        path: string;
+        /**
+         * Namespace
+         */
+        namespace?: string | null;
+    };
+    url: '/api/v1/instances/{instance}/files/provenance';
+};
+
+export type ContextFileProvenanceErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ContextFileProvenanceError = ContextFileProvenanceErrors[keyof ContextFileProvenanceErrors];
+
+export type ContextFileProvenanceResponses = {
+    /**
+     * Successful Response
+     */
+    200: FileProvenanceOut;
+};
+
+export type ContextFileProvenanceResponse = ContextFileProvenanceResponses[keyof ContextFileProvenanceResponses];
+
 export type InstancesGetHealthData = {
     body?: never;
     path: {
@@ -5537,6 +6209,316 @@ export type InstancesVerifyTokenResponses = {
 };
 
 export type InstancesVerifyTokenResponse = InstancesVerifyTokenResponses[keyof InstancesVerifyTokenResponses];
+
+export type ContextKnowledgeBasesData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/knowledge/bases';
+};
+
+export type ContextKnowledgeBasesErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ContextKnowledgeBasesError = ContextKnowledgeBasesErrors[keyof ContextKnowledgeBasesErrors];
+
+export type ContextKnowledgeBasesResponses = {
+    /**
+     * Successful Response
+     */
+    200: KnowledgeBasesOut;
+};
+
+export type ContextKnowledgeBasesResponse = ContextKnowledgeBasesResponses[keyof ContextKnowledgeBasesResponses];
+
+export type ContextKnowledgeContentData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: {
+        /**
+         * Knowledge Id
+         */
+        knowledge_id?: string | null;
+        /**
+         * Status
+         *
+         * completed, processing, partial or failed
+         */
+        status?: string | null;
+        /**
+         * Type
+         *
+         * "Markdown", "PDF", "URL"… (the `kind` column)
+         */
+        type?: string | null;
+        /**
+         * Search
+         *
+         * Text in the name, description or metadata
+         */
+        search?: string | null;
+        /**
+         * Page
+         */
+        page?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/api/v1/instances/{instance}/knowledge/content';
+};
+
+export type ContextKnowledgeContentErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ContextKnowledgeContentError = ContextKnowledgeContentErrors[keyof ContextKnowledgeContentErrors];
+
+export type ContextKnowledgeContentResponses = {
+    /**
+     * Successful Response
+     */
+    200: ContentPageOut;
+};
+
+export type ContextKnowledgeContentResponse = ContextKnowledgeContentResponses[keyof ContextKnowledgeContentResponses];
+
+export type ContextLearningCountsData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: {
+        /**
+         * User Id
+         */
+        user_id?: string | null;
+        /**
+         * Agent Id
+         */
+        agent_id?: string | null;
+        /**
+         * Namespace
+         */
+        namespace?: string | null;
+        /**
+         * Db Id
+         *
+         * Database id from /config (several memory or learning databases)
+         */
+        db_id?: string | null;
+    };
+    url: '/api/v1/instances/{instance}/learnings/counts';
+};
+
+export type ContextLearningCountsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ContextLearningCountsError = ContextLearningCountsErrors[keyof ContextLearningCountsErrors];
+
+export type ContextLearningCountsResponses = {
+    /**
+     * Successful Response
+     */
+    200: LearningCountsOut;
+};
+
+export type ContextLearningCountsResponse = ContextLearningCountsResponses[keyof ContextLearningCountsResponses];
+
+export type ContextDeleteUserLearningsData = {
+    body: DeleteUserLearningsIn;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/learnings/delete-user';
+};
+
+export type ContextDeleteUserLearningsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ContextDeleteUserLearningsError = ContextDeleteUserLearningsErrors[keyof ContextDeleteUserLearningsErrors];
+
+export type ContextDeleteUserLearningsResponses = {
+    /**
+     * Successful Response
+     */
+    200: DeletionOut;
+};
+
+export type ContextDeleteUserLearningsResponse = ContextDeleteUserLearningsResponses[keyof ContextDeleteUserLearningsResponses];
+
+export type ContextMemoryDuplicatesData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query: {
+        /**
+         * User Id
+         */
+        user_id: string;
+        /**
+         * Db Id
+         *
+         * Database id from /config (several memory or learning databases)
+         */
+        db_id?: string | null;
+    };
+    url: '/api/v1/instances/{instance}/memories/duplicates';
+};
+
+export type ContextMemoryDuplicatesErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ContextMemoryDuplicatesError = ContextMemoryDuplicatesErrors[keyof ContextMemoryDuplicatesErrors];
+
+export type ContextMemoryDuplicatesResponses = {
+    /**
+     * Successful Response
+     */
+    200: DuplicatesOut;
+};
+
+export type ContextMemoryDuplicatesResponse = ContextMemoryDuplicatesResponses[keyof ContextMemoryDuplicatesResponses];
+
+export type ContextOptimizeMemoriesData = {
+    body: OptimizeIn;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/memories/optimize';
+};
+
+export type ContextOptimizeMemoriesErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ContextOptimizeMemoriesError = ContextOptimizeMemoriesErrors[keyof ContextOptimizeMemoriesErrors];
+
+export type ContextOptimizeMemoriesResponses = {
+    /**
+     * Successful Response
+     */
+    200: OptimizeOut;
+};
+
+export type ContextOptimizeMemoriesResponse = ContextOptimizeMemoriesResponses[keyof ContextOptimizeMemoriesResponses];
+
+export type ContextMemorySourceData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Memory Id
+         */
+        memory_id: string;
+    };
+    query?: {
+        /**
+         * Db Id
+         *
+         * Database id from /config (several memory or learning databases)
+         */
+        db_id?: string | null;
+    };
+    url: '/api/v1/instances/{instance}/memories/{memory_id}/source';
+};
+
+export type ContextMemorySourceErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ContextMemorySourceError = ContextMemorySourceErrors[keyof ContextMemorySourceErrors];
+
+export type ContextMemorySourceResponses = {
+    /**
+     * Successful Response
+     */
+    200: MemorySourceOut;
+};
+
+export type ContextMemorySourceResponse = ContextMemorySourceResponses[keyof ContextMemorySourceResponses];
 
 export type ObserveMetricsCsvData = {
     body?: never;

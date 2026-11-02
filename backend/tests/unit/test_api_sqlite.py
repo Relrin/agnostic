@@ -117,8 +117,8 @@ def test_openapi_has_stable_operation_ids(sqlite_database: str) -> None:
 
 async def test_disabling_a_module_removes_its_routes(sqlite_database: str) -> None:
     await migrate(sqlite_database)
-    # approvals, observe and evals call AgentOS through the gateway, so they go with it.
-    disabled = ["approvals", "evals", "gateway", "observe"]
+    # approvals, context, observe and evals call AgentOS through the gateway, so they go with it.
+    disabled = ["approvals", "context", "evals", "gateway", "observe"]
     settings = make_settings(sqlite_database, modules={"disabled": disabled})
     app = create_app(settings)
     paths = {getattr(route, "path", "") for route in app.routes}
