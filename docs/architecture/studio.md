@@ -17,6 +17,7 @@ memory managers and learning machines are referenced by name.
 | `observe` | `StepStats.for_workflow(…)`: its facade, average duration, runs and failures per step name from a workflow's traces |
 | `evals` | `EvalGates.check(instance, component, version, label)`: its first facade, judging gates by the newest batch of exactly that version |
 | `gateway` | `GatewayFacade.elevated_stream` (a streamed elevated request) and `invalidate` (drop an instance's cached responses) |
+| `sources` module | code sources on top of `StudioFacade` (`agnostic_studio.facade`): component state, code read and written with a repository's registry convention, drafts created from repository files, bindings; it provides Studio's `PublishHold` port and reacts to `studio.published` (see [code sources](sources.md)) |
 
 The control plane never imports agno. agno's own checks run in the instance through the bridge:
 `POST /agnostic/v1/components/validate` (strict `from_dict` against the live registry),
@@ -136,8 +137,12 @@ replacing v3; the API serves it from the next request."). `POST …/configs/{v}/
 - fails with `422` while validation fails (no override for that);
 - fails with `409 gate_blocked` while a gate blocks, unless the request has an `override_reason` **and** the person
   holds `evals:gates:override` (Owners and Administrators). The override is audited as `evals.gate.override`;
+- fails with `409 publish_held` while something outside Studio holds the publish back (`PublishHold`; a code source
+  waiting for its pull request to merge), with the reason in the publish check's `hold`, which also says what
+  publishing writes back (`hold.write_back`: "Opens a pull request studio/support-triage-v4 into main");
 - publishes with `guard.current_version`, records who published and the change summary, and audits `studio.publish`
-  with the field-level diff against the previous current version.
+  with the field-level diff against the previous current version, then announces `studio.published` (component,
+  version, publisher) to the modules that subscribe.
 
 `POST …/configs/{v}/set-current` rolls back to another published version (`components.set_current`, with an optional
 reason). New drafts copy a version's config and its member pins (`components.configs.create`).

@@ -21,6 +21,7 @@ export * from "./service-accounts";
 export * from "./audit-governance";
 export * from "./org-settings";
 export * from "./studio";
+export * from "./sources";
 
 export function renderWithProviders(ui: ReactElement): RenderResult & { queryClient: QueryClient } {
   configureTestApi();

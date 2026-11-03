@@ -26,6 +26,7 @@ members = [
     "agnostic-server",
     "agnostic-service-accounts",
     "agnostic-settings",
+    "agnostic-sources",
     "agnostic-spec",
     "agnostic-studio",
     "agnostic-workspace",
@@ -776,6 +777,53 @@ requires-dist = [
 ]
 
 [[package]]
+name = "agnostic-sources"
+version = "0.1.0"
+source = { editable = "modules/sources" }
+dependencies = [
+    { name = "agnostic-audit" },
+    { name = "agnostic-codegen" },
+    { name = "agnostic-gateway" },
+    { name = "agnostic-instances" },
+    { name = "agnostic-kernel" },
+    { name = "agnostic-spec" },
+    { name = "agnostic-studio" },
+    { name = "alembic" },
+    { name = "dishka" },
+    { name = "fastapi" },
+    { name = "httpx" },
+    { name = "orjson" },
+    { name = "procrastinate" },
+    { name = "pydantic" },
+    { name = "pydantic-settings" },
+    { name = "pyjwt", extra = ["crypto"] },
+    { name = "sqlalchemy", extra = ["asyncio"] },
+    { name = "watchfiles" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "agnostic-audit", editable = "modules/audit" },
+    { name = "agnostic-codegen", editable = "packages/agnostic-codegen" },
+    { name = "agnostic-gateway", editable = "modules/gateway" },
+    { name = "agnostic-instances", editable = "modules/instances" },
+    { name = "agnostic-kernel", editable = "packages/agnostic-kernel" },
+    { name = "agnostic-spec", editable = "packages/agnostic-spec" },
+    { name = "agnostic-studio", editable = "modules/studio" },
+    { name = "alembic", specifier = "==1.20.1" },
+    { name = "dishka", specifier = "==1.10.1" },
+    { name = "fastapi", specifier = "==0.162.0" },
+    { name = "httpx", specifier = "==0.28.1" },
+    { name = "orjson", specifier = "==3.13.0" },
+    { name = "procrastinate", specifier = "==3.10.0" },
+    { name = "pydantic", specifier = "==2.14.2" },
+    { name = "pydantic-settings", specifier = "==2.16.2" },
+    { name = "pyjwt", extras = ["crypto"], specifier = "==2.15.1" },
+    { name = "sqlalchemy", extras = ["asyncio"], specifier = "==2.1.6" },
+    { name = "watchfiles", specifier = "==1.3.0" },
+]
+
+[[package]]
 name = "agnostic-spec"
 version = "0.1.0"
 source = { editable = "packages/agnostic-spec" }
@@ -860,6 +908,7 @@ dependencies = [
     { name = "agnostic-server" },
     { name = "agnostic-service-accounts" },
     { name = "agnostic-settings" },
+    { name = "agnostic-sources" },
     { name = "agnostic-spec" },
     { name = "agnostic-studio" },
 ]
@@ -909,6 +958,7 @@ requires-dist = [
     { name = "agnostic-server", editable = "apps/agnostic-server" },
     { name = "agnostic-service-accounts", editable = "modules/service_accounts" },
     { name = "agnostic-settings", editable = "modules/settings" },
+    { name = "agnostic-sources", editable = "modules/sources" },
     { name = "agnostic-spec", editable = "packages/agnostic-spec" },
     { name = "agnostic-studio", editable = "modules/studio" },
 ]

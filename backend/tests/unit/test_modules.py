@@ -38,6 +38,7 @@ def test_entry_points_discover_the_installed_modules() -> None:
         "queue",
         "scheduler",
         "studio",
+        "sources",
     ]
     assert isinstance(loaded.installed["instances"], InstancesModule)
 

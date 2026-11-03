@@ -91,6 +91,7 @@ dishka:
 | `MembershipDirectory` | identity | org | sign-in asks whether an account belongs to the org; SSO newcomers join through invitations or JIT |
 | `InitialBindingsApplier` | org | access | invitations carry role bindings, granted on acceptance |
 | `Bootstrapper` | kernel | org | `agnostic bootstrap` in the composition root |
+| `PublishHold` | studio | sources | publishing waits until a pull request carrying the version merged, for sources that ask for it |
 
 P01 modules and their order: `audit` → `settings`, `identity`, `instances` → `org` → `access` → `gateway`
 (see [identity, access and the gateway](identity-access-gateway.md)).

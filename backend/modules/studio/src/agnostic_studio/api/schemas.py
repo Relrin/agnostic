@@ -280,6 +280,7 @@ class ComponentDetailOut(BaseModel):
     current: VersionOut | None
     owner_group_id: str | None
     labels: list[str]
+    code_path: str | None = Field(default=None, description="The repository file the component is synced with.")
 
     @classmethod
     def of(cls, detail: ComponentDetail) -> ComponentDetailOut:
@@ -292,6 +293,7 @@ class ComponentDetailOut(BaseModel):
             current=VersionOut.of(current) if current else None,
             owner_group_id=detail.meta.owner_group_id if detail.meta else None,
             labels=list(detail.meta.labels) if detail.meta else [],
+            code_path=detail.meta.code_path if detail.meta and detail.meta.source_binding_id else None,
         )
 
 
@@ -578,6 +580,13 @@ class GateCheckOut(BaseModel):
         )
 
 
+class HoldOut(BaseModel):
+    held: bool = Field(description="Publishing waits until this clears.")
+    reason: str | None
+    write_back: str | None = Field(description="What publishing also does in a bound repository.")
+    link: str | None
+
+
 class PublishCheckOut(BaseModel):
     version: int
     stage: Literal["draft", "published"]
@@ -589,6 +598,7 @@ class PublishCheckOut(BaseModel):
     outcome: str
     summary: str
     changes: list[FieldChangeOut]
+    hold: HoldOut
 
     @classmethod
     def of(cls, check: PublishCheck) -> PublishCheckOut:
@@ -603,6 +613,9 @@ class PublishCheckOut(BaseModel):
             outcome=check.outcome,
             summary=check.summary,
             changes=[FieldChangeOut.of(change) for change in check.changes],
+            hold=HoldOut(
+                held=check.hold.held, reason=check.hold.reason, write_back=check.hold.write_back, link=check.hold.link
+            ),
         )
 
 

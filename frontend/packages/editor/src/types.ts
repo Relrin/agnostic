@@ -3,7 +3,7 @@ import type { Ref } from "react";
 export type CodeLanguage = "python" | "json";
 
 /** How a line differs from the saved version: drawn as a 3px strip next to the line numbers. */
-export type ChangeMark = "added" | "modified";
+export type ChangeMark = "added" | "modified" | "incoming";
 
 /** A diagnostic or hint shown as a block under `line`, with a wavy underline on columns `from..to`. */
 export type CodeNote = {

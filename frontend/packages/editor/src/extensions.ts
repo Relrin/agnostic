@@ -77,6 +77,7 @@ const theme = EditorView.theme(
     ".cm-change-mark": { width: "3px", height: "100%" },
     ".cm-change-added": { backgroundColor: "var(--accent)" },
     ".cm-change-modified": { backgroundColor: "var(--modified)" },
+    ".cm-change-incoming": { backgroundColor: "var(--info)" },
     ".cm-line": { padding: "0 12px" },
     ".cm-line.cm-focus-line, .cm-gutterElement.cm-focus-line": {
       backgroundColor: "color-mix(in srgb, var(--accent) 10%, transparent)",
@@ -149,12 +150,22 @@ class ChangeMarker extends GutterMarker {
   override toDOM(): Node {
     const element = document.createElement("div");
     element.className = `cm-change-mark cm-change-${this.kind}`;
-    element.title = this.kind === "added" ? "Added" : "Modified";
+    element.title = MARK_TITLES[this.kind];
     return element;
   }
 }
 
-const markers = { added: new ChangeMarker("added"), modified: new ChangeMarker("modified") };
+const MARK_TITLES: Record<ChangeMark, string> = {
+  added: "Added",
+  modified: "Modified",
+  incoming: "Came from the repository",
+};
+
+const markers = {
+  added: new ChangeMarker("added"),
+  modified: new ChangeMarker("modified"),
+  incoming: new ChangeMarker("incoming"),
+};
 
 const changeGutter = gutter({
   class: "cm-change-gutter",

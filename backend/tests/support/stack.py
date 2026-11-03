@@ -31,6 +31,7 @@ from agnostic_kernel.settings import Settings
 from agnostic_kernel.testing import make_settings
 from agnostic_notifications.application.ports import OutboundHttp
 from agnostic_server.app import create_app
+from agnostic_sources.infrastructure.http import SourcesHttp
 from tests.support.fake_agentos import FakeAgentOS
 from tests.support.fake_google import FakeGoogle
 from tests.support.fake_slack import FakeSlack
@@ -95,7 +96,7 @@ class Stack:
         return fake
 
     def serve(self, host: str, app: Any) -> None:
-        """Answer HTTP(S) requests to ``host`` from the audit module (archive storage, SIEM sinks) with ``app``."""
+        """Answer HTTP(S) requests to ``host`` (archive storage, SIEM sinks, git hosts) with ``app``."""
         self.routes.services[host] = app
 
     def client(self) -> httpx.AsyncClient:
@@ -159,6 +160,12 @@ async def running_stack(database_url: str, **overrides: Any) -> AsyncGenerator[S
         @provide(scope=Scope.APP)
         async def audit_http(self) -> AsyncIterator[AuditHttp]:
             http = AuditHttp(transport)
+            yield http
+            await http.aclose()
+
+        @provide(scope=Scope.APP)
+        async def sources_http(self) -> AsyncIterator[SourcesHttp]:
+            http = SourcesHttp(transport)
             yield http
             await http.aclose()
 

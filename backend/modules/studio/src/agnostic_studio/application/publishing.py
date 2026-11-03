@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 from typing import Any, cast
 
 from agnostic_audit.facade import AuditEntry, AuditLog, actor_of
@@ -10,6 +10,7 @@ from agnostic_evals.facade import EvalGates, GateCheck
 from agnostic_instances.facade import Instance
 from agnostic_kernel.auth import Principal
 from agnostic_kernel.db import utcnow
+from agnostic_kernel.domain_events import DomainEvents
 from agnostic_kernel.errors import ConflictError, ValidationFailedError, VersionConflictError
 from agnostic_studio.application.access import (
     CONFLICT,
@@ -21,18 +22,24 @@ from agnostic_studio.application.access import (
     raise_for,
 )
 from agnostic_studio.application.components import Reader, VersionView, version_of
-from agnostic_studio.application.ports import StudioStore
+from agnostic_studio.application.ports import PublishHold, StudioStore
 from agnostic_studio.application.validation import ValidationReport, Validator
 from agnostic_studio.domain.diff import FieldChange, diff
-from agnostic_studio.domain.model import Component, ComponentMeta, Version, VersionMeta
+from agnostic_studio.domain.model import Component, ComponentMeta, HoldCheck, Version, VersionMeta
 from agnostic_studio.domain.summaries import audit_lines, change_summary, publish_outcome, rollback_outcome
 
 MAX_REASON = 1000
+PUBLISHED_EVENT = "studio.published"
 
 
 class GateBlockedError(ConflictError):
     code = "gate_blocked"
     title = "An eval gate blocks this publish"
+
+
+class PublishHeldError(ConflictError):
+    code = "publish_held"
+    title = "Publishing waits for something else first"
 
 
 @dataclass(frozen=True, slots=True)
@@ -47,6 +54,7 @@ class PublishCheck:
     outcome: str
     changes: list[FieldChange]
     summary: str
+    hold: HoldCheck = field(default_factory=HoldCheck)
 
     @property
     def blocked_by_gates(self) -> bool:
@@ -69,12 +77,16 @@ class Publisher:
         audit: AuditLog,
         gates: EvalGates,
         validator: Validator,
+        hold: PublishHold,
+        events: DomainEvents,
     ) -> None:
         self._access = access
         self._store = store
         self._audit = audit
         self._gates = gates
         self._validator = validator
+        self._hold = hold
+        self._events = events
         self._reader = Reader(access, store)
 
     async def check(self, principal: Principal, ref: str, component_id: str, number: int) -> PublishCheck:
@@ -88,17 +100,19 @@ class Publisher:
         gates = await self._gates.check(instance.id, component_id, number, f"v{number} draft")
         current = await self._reader.current(principal, instance, component_id)
         changes = diff(current.config or {} if current else {}, version.config or {})
+        hold = await self._hold.check(instance.id, component_id, number)
         return PublishCheck(
             instance=instance,
             component=component,
             version=version,
             validation=validation,
             gates=gates,
-            can_publish=await self._access.allowed(principal, WRITE_SCOPE, instance),
+            can_publish=not hold.held and await self._access.allowed(principal, WRITE_SCOPE, instance),
             can_override=await self._access.allowed(principal, OVERRIDE_SCOPE, instance),
             outcome=publish_outcome(number, instance.display_name, component.current_version),
             changes=changes,
             summary=change_summary(changes) if current else "First published version",
+            hold=hold,
         )
 
     async def publish(
@@ -120,6 +134,8 @@ class Publisher:
                 f"v{number} can't be published: {check.validation.summary}",
                 extra={"diagnostics": [item.as_dict() for item in check.validation.diagnostics]},
             )
+        if check.hold.held:
+            raise PublishHeldError(check.hold.reason, extra={"link": check.hold.link})
         reason = (override_reason or "").strip()[:MAX_REASON]
         overridden = False
         if check.blocked_by_gates:
@@ -209,6 +225,20 @@ class Publisher:
         )
         await self._store.commit()
         await self._access.forget(f"studio:indexed:{instance.id}")
+        await self._events.publish(
+            PUBLISHED_EVENT,
+            {
+                "instance_id": instance.id,
+                "component_id": component_id,
+                "kind": component.kind,
+                "name": component.name,
+                "version": number,
+                "published_by": principal.id,
+                "published_by_name": principal.display_name,
+                "published_by_email": principal.email,
+                "summary": check.summary,
+            },
+        )
         return PublishResult(VersionView(published, meta, current=True), check.outcome, overridden, check.gates)
 
     async def set_current(

@@ -27,6 +27,7 @@ import { CodePane } from "./code-pane";
 import { changedFields, type Config, type EditableKind } from "./config";
 import { ConflictDialog, DiffDialog, PromoteDialog, PublishDialog, VersionsDrawer } from "./dialogs";
 import { useDraftDocument, useRegistry, type DraftDocument } from "./document";
+import { IncomingChip, SourceBar, incomingMarks, useComponentSource } from "./source-bar";
 import { fieldId, type FormContext } from "./form";
 import { TestPane } from "./test-pane";
 
@@ -131,6 +132,7 @@ export function StudioEditor({
     query: { from: base?.version ?? 0, to: draft?.version ?? 0 },
   });
   const diff = useQuery({ ...withQueryFn(diffOptions), enabled: Boolean(base && draft) });
+  const source = useComponentSource(instance, componentId);
 
   useEffect(() => {
     if (!focusedPath) return;
@@ -183,6 +185,7 @@ export function StudioEditor({
         renderLink={(crumb) => <Link to={crumb.href}>{crumb.label}</Link>}
       />
       <DraftChip doc={doc} />
+      <IncomingChip instance={instance} componentId={componentId} />
       <span className="flex-1" />
       <Button
         variant="outline"
@@ -323,6 +326,10 @@ export function StudioEditor({
       uncommitted={unpublished(base?.config, doc.config)}
       pending={doc.state === "dirty"}
       readOnly={canWrite.allowed !== true}
+      sourceBar={
+        <SourceBar instance={instance} componentId={componentId} canWrite={canWrite.allowed === true} />
+      }
+      incomingMarks={incomingMarks(source.data, draft?.version)}
     />
   );
   const test = (

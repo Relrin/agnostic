@@ -218,6 +218,27 @@
         "title": "ActionOut",
         "type": "object"
       },
+      "ActivateIn": {
+        "properties": {
+          "bindings": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/BindingDecisionIn"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Override the scan's proposals; omitted files follow them.",
+            "title": "Bindings"
+          }
+        },
+        "title": "ActivateIn",
+        "type": "object"
+      },
       "ActivityActorOut": {
         "properties": {
           "display": {
@@ -2688,6 +2709,31 @@
         "title": "BindingCreate",
         "type": "object"
       },
+      "BindingDecisionIn": {
+        "properties": {
+          "bind": {
+            "default": true,
+            "title": "Bind",
+            "type": "boolean"
+          },
+          "component_id": {
+            "maxLength": 200,
+            "title": "Component Id",
+            "type": "string"
+          },
+          "path": {
+            "maxLength": 500,
+            "title": "Path",
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "component_id"
+        ],
+        "title": "BindingDecisionIn",
+        "type": "object"
+      },
       "BindingOut": {
         "properties": {
           "created_at": {
@@ -3615,6 +3661,273 @@
         "title": "CertificateOut",
         "type": "object"
       },
+      "ChangeDiffOut": {
+        "properties": {
+          "after": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "After"
+          },
+          "before": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Before"
+          },
+          "path": {
+            "title": "Path",
+            "type": "string"
+          },
+          "unified": {
+            "title": "Unified",
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "before",
+          "after",
+          "unified"
+        ],
+        "title": "ChangeDiffOut",
+        "type": "object"
+      },
+      "ChangeOut": {
+        "properties": {
+          "additions": {
+            "title": "Additions",
+            "type": "integer"
+          },
+          "author_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Author Name"
+          },
+          "commit_sha": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Commit Sha"
+          },
+          "committed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Committed At"
+          },
+          "component_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Component Id"
+          },
+          "component_kind": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Component Kind"
+          },
+          "deletions": {
+            "title": "Deletions",
+            "type": "integer"
+          },
+          "diagnostics": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Diagnostics",
+            "type": "array"
+          },
+          "direction": {
+            "title": "Direction",
+            "type": "string"
+          },
+          "draft_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Draft Version"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "included": {
+            "title": "Included",
+            "type": "boolean"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "outcome": {
+            "additionalProperties": true,
+            "title": "Outcome",
+            "type": "object"
+          },
+          "outcome_sentence": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Incoming: what pulling does, for the reader.",
+            "title": "Outcome Sentence"
+          },
+          "path": {
+            "title": "Path",
+            "type": "string"
+          },
+          "result_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result Version"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Outgoing: what Studio changed (``temperature 0.7 → 0.2``).",
+            "title": "Summary"
+          }
+        },
+        "required": [
+          "id",
+          "direction",
+          "path",
+          "component_kind",
+          "component_id",
+          "commit_sha",
+          "author_name",
+          "committed_at",
+          "message",
+          "additions",
+          "deletions",
+          "outcome",
+          "outcome_sentence",
+          "summary",
+          "draft_version",
+          "diagnostics",
+          "included",
+          "status",
+          "result_version"
+        ],
+        "title": "ChangeOut",
+        "type": "object"
+      },
+      "ChangesOut": {
+        "properties": {
+          "conflicts": {
+            "items": {
+              "$ref": "#/components/schemas/ConflictOut"
+            },
+            "title": "Conflicts",
+            "type": "array"
+          },
+          "incoming": {
+            "items": {
+              "$ref": "#/components/schemas/ChangeOut"
+            },
+            "title": "Incoming",
+            "type": "array"
+          },
+          "outgoing": {
+            "items": {
+              "$ref": "#/components/schemas/ChangeOut"
+            },
+            "title": "Outgoing",
+            "type": "array"
+          },
+          "pull_requests": {
+            "items": {
+              "$ref": "#/components/schemas/PullRequestOut"
+            },
+            "title": "Pull Requests",
+            "type": "array"
+          },
+          "remote": {
+            "$ref": "#/components/schemas/RemoteOut"
+          }
+        },
+        "required": [
+          "remote",
+          "incoming",
+          "outgoing",
+          "conflicts",
+          "pull_requests"
+        ],
+        "title": "ChangesOut",
+        "type": "object"
+      },
       "ChannelIn": {
         "properties": {
           "config": {
@@ -4058,6 +4371,183 @@
         "title": "CodeNoteOut",
         "type": "object"
       },
+      "CodeSourceOut": {
+        "properties": {
+          "auth": {
+            "description": "``GitHub App · read & write``, ``Deploy token · pull only``…",
+            "title": "Auth",
+            "type": "string"
+          },
+          "branch": {
+            "title": "Branch",
+            "type": "string"
+          },
+          "conflicts": {
+            "title": "Conflicts",
+            "type": "integer"
+          },
+          "connection_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Connection Id"
+          },
+          "connection_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Connection Name"
+          },
+          "convention": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Convention"
+          },
+          "head_sha": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Head Sha"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "incoming": {
+            "title": "Incoming",
+            "type": "integer"
+          },
+          "instance_id": {
+            "title": "Instance Id",
+            "type": "string"
+          },
+          "last_fetched_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Fetched At"
+          },
+          "local_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Local Path"
+          },
+          "mappings": {
+            "items": {
+              "$ref": "#/components/schemas/MappingOut"
+            },
+            "title": "Mappings",
+            "type": "array"
+          },
+          "open_pull_requests": {
+            "title": "Open Pull Requests",
+            "type": "integer"
+          },
+          "outgoing": {
+            "title": "Outgoing",
+            "type": "integer"
+          },
+          "policy": {
+            "$ref": "#/components/schemas/SyncPolicyIO"
+          },
+          "provider": {
+            "title": "Provider",
+            "type": "string"
+          },
+          "provider_label": {
+            "title": "Provider Label",
+            "type": "string"
+          },
+          "repo": {
+            "title": "Repo",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "status_detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status Detail"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          },
+          "webhook": {
+            "title": "Webhook",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "instance_id",
+          "provider",
+          "provider_label",
+          "repo",
+          "branch",
+          "local_path",
+          "connection_id",
+          "connection_name",
+          "auth",
+          "status",
+          "status_detail",
+          "head_sha",
+          "last_fetched_at",
+          "mappings",
+          "policy",
+          "convention",
+          "incoming",
+          "outgoing",
+          "conflicts",
+          "open_pull_requests",
+          "webhook",
+          "version"
+        ],
+        "title": "CodeSourceOut",
+        "type": "object"
+      },
       "CodegenIn": {
         "properties": {
           "base_config": {
@@ -4149,6 +4639,81 @@
           "base_code"
         ],
         "title": "CodegenOut",
+        "type": "object"
+      },
+      "CommitIn": {
+        "properties": {
+          "change_ids": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 200,
+            "minItems": 1,
+            "title": "Change Ids",
+            "type": "array"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          }
+        },
+        "required": [
+          "change_ids"
+        ],
+        "title": "CommitIn",
+        "type": "object"
+      },
+      "CommitPreviewOut": {
+        "properties": {
+          "base_branch": {
+            "title": "Base Branch",
+            "type": "string"
+          },
+          "branch": {
+            "title": "Branch",
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "mode": {
+            "title": "Mode",
+            "type": "string"
+          },
+          "review_requirement": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Review Requirement"
+          },
+          "sentence": {
+            "title": "Sentence",
+            "type": "string"
+          }
+        },
+        "required": [
+          "branch",
+          "base_branch",
+          "mode",
+          "message",
+          "review_requirement",
+          "sentence"
+        ],
+        "title": "CommitPreviewOut",
         "type": "object"
       },
       "ComparisonCountsOut": {
@@ -4259,6 +4824,18 @@
       },
       "ComponentDetailOut": {
         "properties": {
+          "code_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The repository file the component is synced with.",
+            "title": "Code Path"
+          },
           "component": {
             "$ref": "#/components/schemas/StudioComponentOut"
           },
@@ -4484,6 +5061,209 @@
         "title": "ComponentRowOut",
         "type": "object"
       },
+      "ComponentSourceOut": {
+        "properties": {
+          "bound": {
+            "title": "Bound",
+            "type": "boolean"
+          },
+          "branch": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Branch"
+          },
+          "conflicts": {
+            "items": {
+              "$ref": "#/components/schemas/ConflictOut"
+            },
+            "title": "Conflicts",
+            "type": "array"
+          },
+          "fetched_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fetched At"
+          },
+          "hold": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PublishHoldOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "incoming": {
+            "items": {
+              "$ref": "#/components/schemas/ChangeOut"
+            },
+            "title": "Incoming",
+            "type": "array"
+          },
+          "incoming_marks": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Lines of ``marks_version``'s code that came from the repository.",
+            "title": "Incoming Marks",
+            "type": "object"
+          },
+          "marks_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Marks Version"
+          },
+          "other_sources": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Other Sources",
+            "type": "array"
+          },
+          "outgoing": {
+            "items": {
+              "$ref": "#/components/schemas/ChangeOut"
+            },
+            "title": "Outgoing",
+            "type": "array"
+          },
+          "path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Path"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider"
+          },
+          "provider_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider Label"
+          },
+          "pull_request": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PullRequestOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "repo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Repo"
+          },
+          "source_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Id"
+          },
+          "synced_sha": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Synced Sha"
+          },
+          "synced_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Synced Version"
+          },
+          "uncommitted": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "``mode changed``: Studio's edits the repo doesn't have.",
+            "title": "Uncommitted"
+          },
+          "uncommitted_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Uncommitted Version"
+          }
+        },
+        "required": [
+          "bound"
+        ],
+        "title": "ComponentSourceOut",
+        "type": "object"
+      },
       "ConfigOut": {
         "description": "``GET /config`` of the runtime, as last fetched; sections are passed through as AgentOS returns them.",
         "properties": {
@@ -4594,6 +5374,98 @@
         "title": "ConfigOut",
         "type": "object"
       },
+      "ConflictCountOut": {
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "instance_id": {
+            "title": "Instance Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "instance_id",
+          "count"
+        ],
+        "title": "ConflictCountOut",
+        "type": "object"
+      },
+      "ConflictOut": {
+        "properties": {
+          "base_value": {
+            "title": "Base Value"
+          },
+          "change_id": {
+            "title": "Change Id",
+            "type": "string"
+          },
+          "component_id": {
+            "title": "Component Id",
+            "type": "string"
+          },
+          "field_path": {
+            "title": "Field Path",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "path": {
+            "title": "Path",
+            "type": "string"
+          },
+          "repo": {
+            "$ref": "#/components/schemas/SideOut"
+          },
+          "resolution": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolution"
+          },
+          "resolved_by_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved By Name"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "studio": {
+            "$ref": "#/components/schemas/SideOut"
+          }
+        },
+        "required": [
+          "id",
+          "change_id",
+          "path",
+          "component_id",
+          "field_path",
+          "base_value",
+          "repo",
+          "studio",
+          "status",
+          "resolution",
+          "resolved_by_name"
+        ],
+        "title": "ConflictOut",
+        "type": "object"
+      },
       "ConnectIn": {
         "properties": {
           "ca_bundle_pem": {
@@ -4699,6 +5571,294 @@
           "steps"
         ],
         "title": "ConnectedOut",
+        "type": "object"
+      },
+      "ConnectionIn": {
+        "properties": {
+          "access": {
+            "default": "read_write",
+            "enum": [
+              "read_write",
+              "read_only"
+            ],
+            "title": "Access",
+            "type": "string"
+          },
+          "api_url": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Url"
+          },
+          "app_id": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "App Id"
+          },
+          "app_slug": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "App Slug"
+          },
+          "auth_kind": {
+            "default": "token",
+            "enum": [
+              "github_app",
+              "token",
+              "deploy_key"
+            ],
+            "title": "Auth Kind",
+            "type": "string"
+          },
+          "installation_id": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Installation Id"
+          },
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "private_key": {
+            "anyOf": [
+              {
+                "maxLength": 20000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "GitHub App key or deploy key.",
+            "title": "Private Key"
+          },
+          "provider": {
+            "enum": [
+              "github",
+              "gitlab",
+              "gitea",
+              "forgejo"
+            ],
+            "title": "Provider",
+            "type": "string"
+          },
+          "token": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Token"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Expected version (optimistic concurrency).",
+            "title": "Version"
+          },
+          "web_url": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The server (Gitea, Forgejo, self-managed).",
+            "title": "Web Url"
+          },
+          "webhook_secret": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Webhook Secret"
+          }
+        },
+        "required": [
+          "name",
+          "provider"
+        ],
+        "title": "ConnectionIn",
+        "type": "object"
+      },
+      "ConnectionOut": {
+        "properties": {
+          "access": {
+            "title": "Access",
+            "type": "string"
+          },
+          "account": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Account"
+          },
+          "api_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Url"
+          },
+          "app_slug": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "App Slug"
+          },
+          "auth_kind": {
+            "title": "Auth Kind",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "installation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Installation Id"
+          },
+          "last_checked_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Checked At"
+          },
+          "last_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Error"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "provider": {
+            "title": "Provider",
+            "type": "string"
+          },
+          "provider_label": {
+            "title": "Provider Label",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          },
+          "web_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Web Url"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "provider",
+          "provider_label",
+          "auth_kind",
+          "access",
+          "api_url",
+          "web_url",
+          "app_slug",
+          "installation_id",
+          "account",
+          "status",
+          "last_error",
+          "last_checked_at",
+          "version"
+        ],
+        "title": "ConnectionOut",
         "type": "object"
       },
       "ContentCountsOut": {
@@ -4820,6 +5980,50 @@
           "agent_message"
         ],
         "title": "ContextOut",
+        "type": "object"
+      },
+      "ConventionIO": {
+        "description": "How the repository reaches registry objects (``from app.registry import tools``).",
+        "properties": {
+          "agents_module": {
+            "default": "app.agents",
+            "maxLength": 200,
+            "title": "Agents Module",
+            "type": "string"
+          },
+          "functions_module": {
+            "default": "app.functions",
+            "maxLength": 200,
+            "title": "Functions Module",
+            "type": "string"
+          },
+          "namespaces": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Namespaces",
+            "type": "object"
+          },
+          "registry_module": {
+            "default": "app.registry",
+            "maxLength": 200,
+            "title": "Registry Module",
+            "type": "string"
+          },
+          "teams_module": {
+            "default": "app.teams",
+            "maxLength": 200,
+            "title": "Teams Module",
+            "type": "string"
+          },
+          "workflows_module": {
+            "default": "app.workflows",
+            "maxLength": 200,
+            "title": "Workflows Module",
+            "type": "string"
+          }
+        },
+        "title": "ConventionIO",
         "type": "object"
       },
       "CostOut": {
@@ -8431,6 +9635,57 @@
         "title": "HealthOut",
         "type": "object"
       },
+      "HoldOut": {
+        "properties": {
+          "held": {
+            "description": "Publishing waits until this clears.",
+            "title": "Held",
+            "type": "boolean"
+          },
+          "link": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Link"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "write_back": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "What publishing also does in a bound repository.",
+            "title": "Write Back"
+          }
+        },
+        "required": [
+          "held",
+          "reason",
+          "write_back",
+          "link"
+        ],
+        "title": "HoldOut",
+        "type": "object"
+      },
       "ImportIn": {
         "properties": {
           "content": {
@@ -8472,6 +9727,19 @@
           "imported"
         ],
         "title": "ImportOut",
+        "type": "object"
+      },
+      "IncludeIn": {
+        "properties": {
+          "included": {
+            "title": "Included",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "included"
+        ],
+        "title": "IncludeIn",
         "type": "object"
       },
       "InitialBindingIn": {
@@ -8522,6 +9790,19 @@
           "instance_id"
         ],
         "title": "InitialBindingOut",
+        "type": "object"
+      },
+      "InstallUrlOut": {
+        "properties": {
+          "url": {
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "title": "InstallUrlOut",
         "type": "object"
       },
       "InstanceOut": {
@@ -9362,6 +10643,27 @@
         "title": "ItemOut",
         "type": "object"
       },
+      "JobOut": {
+        "properties": {
+          "job_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The queued job; null when one was already waiting.",
+            "title": "Job Id"
+          }
+        },
+        "required": [
+          "job_id"
+        ],
+        "title": "JobOut",
+        "type": "object"
+      },
       "Joined": {
         "properties": {
           "csrf_token": {
@@ -9902,6 +11204,22 @@
         "title": "Liveness",
         "type": "object"
       },
+      "LocalRootsOut": {
+        "properties": {
+          "roots": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Roots",
+            "type": "array"
+          }
+        },
+        "required": [
+          "roots"
+        ],
+        "title": "LocalRootsOut",
+        "type": "object"
+      },
       "LoginChallengeRequest": {
         "properties": {
           "challenge": {
@@ -10004,6 +11322,40 @@
           "password"
         ],
         "title": "LoginRequest",
+        "type": "object"
+      },
+      "MappingOut": {
+        "properties": {
+          "count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Count"
+          },
+          "glob": {
+            "title": "Glob",
+            "type": "string"
+          },
+          "target_kind": {
+            "$ref": "#/components/schemas/TargetIn"
+          },
+          "writable": {
+            "title": "Writable",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "glob",
+          "target_kind",
+          "writable",
+          "count"
+        ],
+        "title": "MappingOut",
         "type": "object"
       },
       "MappingRuleCreate": {
@@ -12134,6 +13486,30 @@
         "title": "PasswordResetRequest",
         "type": "object"
       },
+      "PathMappingIO": {
+        "properties": {
+          "glob": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Glob",
+            "type": "string"
+          },
+          "target_kind": {
+            "$ref": "#/components/schemas/TargetIn"
+          },
+          "writable": {
+            "default": true,
+            "title": "Writable",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "glob",
+          "target_kind"
+        ],
+        "title": "PathMappingIO",
+        "type": "object"
+      },
       "PersonalChannelName": {
         "enum": [
           "in_app",
@@ -13226,6 +14602,16 @@
         "title": "ProviderCreate",
         "type": "object"
       },
+      "ProviderIn": {
+        "enum": [
+          "github",
+          "gitlab",
+          "gitea",
+          "forgejo",
+          "local"
+        ],
+        "type": "string"
+      },
       "ProviderOut": {
         "properties": {
           "allowed_email_domains": {
@@ -13632,6 +15018,9 @@
             "title": "Gates",
             "type": "array"
           },
+          "hold": {
+            "$ref": "#/components/schemas/HoldOut"
+          },
           "outcome": {
             "title": "Outcome",
             "type": "string"
@@ -13666,9 +15055,59 @@
           "can_override",
           "outcome",
           "summary",
-          "changes"
+          "changes",
+          "hold"
         ],
         "title": "PublishCheckOut",
+        "type": "object"
+      },
+      "PublishHoldOut": {
+        "properties": {
+          "held": {
+            "title": "Held",
+            "type": "boolean"
+          },
+          "link": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Link"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "write_back": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Write Back"
+          }
+        },
+        "required": [
+          "held",
+          "reason",
+          "write_back",
+          "link"
+        ],
+        "title": "PublishHoldOut",
         "type": "object"
       },
       "PublishIn": {
@@ -13730,6 +15169,187 @@
           "gates"
         ],
         "title": "PublishOut",
+        "type": "object"
+      },
+      "PullIn": {
+        "properties": {
+          "change_ids": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 200,
+            "minItems": 1,
+            "title": "Change Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "change_ids"
+        ],
+        "title": "PullIn",
+        "type": "object"
+      },
+      "PullRequestOut": {
+        "properties": {
+          "base_branch": {
+            "title": "Base Branch",
+            "type": "string"
+          },
+          "branch": {
+            "title": "Branch",
+            "type": "string"
+          },
+          "components": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Components",
+            "type": "array"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "merged_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Merged At"
+          },
+          "number": {
+            "title": "Number",
+            "type": "integer"
+          },
+          "opened_by_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Opened By Name"
+          },
+          "review_requirement": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Review Requirement"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "number",
+          "url",
+          "branch",
+          "base_branch",
+          "status",
+          "title",
+          "review_requirement",
+          "components",
+          "opened_by_name",
+          "created_at",
+          "merged_at"
+        ],
+        "title": "PullRequestOut",
+        "type": "object"
+      },
+      "PullResultOut": {
+        "properties": {
+          "change_id": {
+            "title": "Change Id",
+            "type": "string"
+          },
+          "component_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Component Id"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "path": {
+            "title": "Path",
+            "type": "string"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version"
+          }
+        },
+        "required": [
+          "change_id",
+          "path",
+          "component_id",
+          "version",
+          "error"
+        ],
+        "title": "PullResultOut",
         "type": "object"
       },
       "QueueJobDetailOut": {
@@ -14721,6 +16341,67 @@
         "title": "RegistryOut",
         "type": "object"
       },
+      "RemoteOut": {
+        "properties": {
+          "fetched_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fetched At"
+          },
+          "head_sha": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Head Sha"
+          },
+          "ref": {
+            "title": "Ref",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ref",
+          "head_sha",
+          "fetched_at"
+        ],
+        "title": "RemoteOut",
+        "type": "object"
+      },
+      "RepoOut": {
+        "properties": {
+          "default_branch": {
+            "title": "Default Branch",
+            "type": "string"
+          },
+          "full_name": {
+            "title": "Full Name",
+            "type": "string"
+          },
+          "private": {
+            "title": "Private",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "full_name",
+          "default_branch",
+          "private"
+        ],
+        "title": "RepoOut",
+        "type": "object"
+      },
       "RequeueIn": {
         "properties": {
           "force": {
@@ -14731,6 +16412,28 @@
           }
         },
         "title": "RequeueIn",
+        "type": "object"
+      },
+      "ResolveIn": {
+        "properties": {
+          "resolution": {
+            "enum": [
+              "keep_studio",
+              "keep_repo",
+              "merged"
+            ],
+            "title": "Resolution",
+            "type": "string"
+          },
+          "value": {
+            "description": "The merged value (for ``merged``).",
+            "title": "Value"
+          }
+        },
+        "required": [
+          "resolution"
+        ],
+        "title": "ResolveIn",
         "type": "object"
       },
       "RestoreOut": {
@@ -15884,6 +17587,56 @@
           }
         },
         "title": "SavedViewPatch",
+        "type": "object"
+      },
+      "ScanReportOut": {
+        "properties": {
+          "head_sha": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Head Sha"
+          },
+          "report": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Report"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "status_detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status Detail"
+          }
+        },
+        "required": [
+          "status",
+          "status_detail",
+          "head_sha",
+          "report"
+        ],
+        "title": "ScanReportOut",
         "type": "object"
       },
       "ScheduleIn": {
@@ -17493,6 +19246,47 @@
         "title": "SetCurrentOut",
         "type": "object"
       },
+      "SideOut": {
+        "properties": {
+          "author": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Author"
+          },
+          "present": {
+            "title": "Present",
+            "type": "boolean"
+          },
+          "reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference"
+          },
+          "value": {
+            "title": "Value"
+          }
+        },
+        "required": [
+          "value",
+          "present",
+          "author",
+          "reference"
+        ],
+        "title": "SideOut",
+        "type": "object"
+      },
       "SignInProviderOut": {
         "properties": {
           "display_name": {
@@ -17785,6 +19579,108 @@
         "title": "SinkTestOut",
         "type": "object"
       },
+      "SourceIn": {
+        "properties": {
+          "branch": {
+            "default": "main",
+            "maxLength": 200,
+            "title": "Branch",
+            "type": "string"
+          },
+          "clone_url": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Clone Url"
+          },
+          "connection_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Connection Id"
+          },
+          "convention": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ConventionIO"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "local_path": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "For local folders.",
+            "title": "Local Path"
+          },
+          "mappings": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/PathMappingIO"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Defaults to agents/, teams/, workflows/.",
+            "title": "Mappings"
+          },
+          "policy": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SyncPolicyIO"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "provider": {
+            "$ref": "#/components/schemas/ProviderIn"
+          },
+          "repo": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "owner/name",
+            "title": "Repo"
+          }
+        },
+        "required": [
+          "provider"
+        ],
+        "title": "SourceIn",
+        "type": "object"
+      },
       "SourceOut": {
         "properties": {
           "file": {
@@ -17827,6 +19723,70 @@
           "line"
         ],
         "title": "SourceOut",
+        "type": "object"
+      },
+      "SourcePatchIn": {
+        "properties": {
+          "branch": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Branch"
+          },
+          "convention": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ConventionIO"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "mappings": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/PathMappingIO"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mappings"
+          },
+          "policy": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SyncPolicyIO"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Expected version (optimistic concurrency).",
+            "title": "Version"
+          }
+        },
+        "title": "SourcePatchIn",
         "type": "object"
       },
       "SpanGroupOut": {
@@ -18595,6 +20555,48 @@
         "title": "SummaryOut",
         "type": "object"
       },
+      "SyncPolicyIO": {
+        "properties": {
+          "block_publish_until_merged": {
+            "default": false,
+            "title": "Block Publish Until Merged",
+            "type": "boolean"
+          },
+          "branch_template": {
+            "default": "studio/{component}-v{version}",
+            "maxLength": 200,
+            "title": "Branch Template",
+            "type": "string"
+          },
+          "commit_template": {
+            "default": "{component}: {summary}",
+            "maxLength": 300,
+            "title": "Commit Template",
+            "type": "string"
+          },
+          "publish_mode": {
+            "default": "open_pr",
+            "enum": [
+              "open_pr",
+              "commit_direct",
+              "no_write_back"
+            ],
+            "title": "Publish Mode",
+            "type": "string"
+          },
+          "pull_mode": {
+            "default": "on_demand",
+            "enum": [
+              "on_demand",
+              "on_push_as_drafts"
+            ],
+            "title": "Pull Mode",
+            "type": "string"
+          }
+        },
+        "title": "SyncPolicyIO",
+        "type": "object"
+      },
       "SystemModules": {
         "properties": {
           "disabled": {
@@ -18618,6 +20620,16 @@
         ],
         "title": "SystemModules",
         "type": "object"
+      },
+      "TargetIn": {
+        "enum": [
+          "agents",
+          "teams",
+          "workflows",
+          "registry",
+          "ignored"
+        ],
+        "type": "string"
       },
       "TargetKindName": {
         "enum": [
@@ -19810,6 +21822,60 @@
           "credential"
         ],
         "title": "WebAuthnVerify",
+        "type": "object"
+      },
+      "WebhookDeliveryOut": {
+        "properties": {
+          "delivery_id": {
+            "title": "Delivery Id",
+            "type": "string"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "event": {
+            "title": "Event",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "processed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Processed At"
+          },
+          "received_at": {
+            "format": "date-time",
+            "title": "Received At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "delivery_id",
+          "event",
+          "received_at",
+          "processed_at",
+          "error"
+        ],
+        "title": "WebhookDeliveryOut",
         "type": "object"
       },
       "WorkflowValidateIn": {
@@ -32237,6 +34303,69 @@
         ]
       }
     },
+    "/api/v1/instances/{instance}/studio/components/{component_id}/source": {
+      "get": {
+        "operationId": "sources_component_source",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "component_id",
+            "required": true,
+            "schema": {
+              "title": "Component Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComponentSourceOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Where the component is synced (source bar)",
+        "tags": [
+          "sources"
+        ]
+      }
+    },
     "/api/v1/instances/{instance}/studio/components/{component_id}/step-runs": {
       "get": {
         "operationId": "studio_step_runs",
@@ -32817,6 +34946,1347 @@
         "summary": "One registry entry and where it's used",
         "tags": [
           "studio"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/studio/sources": {
+      "get": {
+        "operationId": "sources_list_sources",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CodeSourceOut"
+                  },
+                  "title": "Response Sources List Sources",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Code sources synced with the instance",
+        "tags": [
+          "sources"
+        ]
+      },
+      "post": {
+        "operationId": "sources_create_source",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SourceIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodeSourceOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Connect a repository or local folder (scans it)",
+        "tags": [
+          "sources"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/studio/sources/conflicts/count": {
+      "get": {
+        "operationId": "sources_conflict_count",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConflictCountOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Open conflicts on the instance (the sidebar dot)",
+        "tags": [
+          "sources"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/studio/sources/local-roots": {
+      "get": {
+        "operationId": "sources_local_roots",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LocalRootsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Folders local sources may point into",
+        "tags": [
+          "sources"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/studio/sources/{source_id}": {
+      "delete": {
+        "operationId": "sources_delete_source",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "source_id",
+            "required": true,
+            "schema": {
+              "title": "Source Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Disconnect (components stay in Studio)",
+        "tags": [
+          "sources"
+        ]
+      },
+      "get": {
+        "operationId": "sources_get_source",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "source_id",
+            "required": true,
+            "schema": {
+              "title": "Source Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodeSourceOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "One source",
+        "tags": [
+          "sources"
+        ]
+      },
+      "patch": {
+        "operationId": "sources_update_source",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "source_id",
+            "required": true,
+            "schema": {
+              "title": "Source Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SourcePatchIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodeSourceOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Change the branch, path mappings, sync policy or registry convention",
+        "tags": [
+          "sources"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/studio/sources/{source_id}/activate": {
+      "post": {
+        "operationId": "sources_activate_source",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "source_id",
+            "required": true,
+            "schema": {
+              "title": "Source Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivateIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodeSourceOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Bind the scanned files and start syncing",
+        "tags": [
+          "sources"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/studio/sources/{source_id}/changes": {
+      "get": {
+        "operationId": "sources_get_changes",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "source_id",
+            "required": true,
+            "schema": {
+              "title": "Source Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChangesOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Incoming and outgoing changes, conflicts and pull requests",
+        "tags": [
+          "sources"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/studio/sources/{source_id}/changes/{change_id}": {
+      "patch": {
+        "operationId": "sources_include_change",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "source_id",
+            "required": true,
+            "schema": {
+              "title": "Source Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "change_id",
+            "required": true,
+            "schema": {
+              "title": "Change Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IncludeIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChangeOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Include or leave out a change",
+        "tags": [
+          "sources"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/studio/sources/{source_id}/changes/{change_id}/diff": {
+      "get": {
+        "operationId": "sources_change_diff",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "source_id",
+            "required": true,
+            "schema": {
+              "title": "Source Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "change_id",
+            "required": true,
+            "schema": {
+              "title": "Change Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChangeDiffOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "The file before and after the change",
+        "tags": [
+          "sources"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/studio/sources/{source_id}/commit": {
+      "post": {
+        "operationId": "sources_commit_changes",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "source_id",
+            "required": true,
+            "schema": {
+              "title": "Source Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommitIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Commit & open a pull request",
+        "tags": [
+          "sources"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/studio/sources/{source_id}/commit-preview": {
+      "get": {
+        "operationId": "sources_commit_preview",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "source_id",
+            "required": true,
+            "schema": {
+              "title": "Source Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "change_ids",
+            "required": true,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1,
+              "title": "Change Ids",
+              "type": "array"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommitPreviewOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "The branch, message and review requirement of a commit",
+        "tags": [
+          "sources"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/studio/sources/{source_id}/conflicts/{conflict_id}/resolve": {
+      "post": {
+        "operationId": "sources_resolve_conflict",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "source_id",
+            "required": true,
+            "schema": {
+              "title": "Source Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "conflict_id",
+            "required": true,
+            "schema": {
+              "title": "Conflict Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResolveIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConflictOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Keep Studio's value, the repository's, or a merge",
+        "tags": [
+          "sources"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/studio/sources/{source_id}/deliveries": {
+      "get": {
+        "operationId": "sources_deliveries",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "source_id",
+            "required": true,
+            "schema": {
+              "title": "Source Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WebhookDeliveryOut"
+                  },
+                  "title": "Response Sources Deliveries",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Recent webhook deliveries",
+        "tags": [
+          "sources"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/studio/sources/{source_id}/fetch": {
+      "post": {
+        "operationId": "sources_fetch_source",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "source_id",
+            "required": true,
+            "schema": {
+              "title": "Source Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Fetch now and work out incoming changes",
+        "tags": [
+          "sources"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/studio/sources/{source_id}/outgoing/refresh": {
+      "post": {
+        "operationId": "sources_refresh_outgoing",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "source_id",
+            "required": true,
+            "schema": {
+              "title": "Source Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ChangeOut"
+                  },
+                  "title": "Response Sources Refresh Outgoing",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Work out what Studio has that the repository doesn't",
+        "tags": [
+          "sources"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/studio/sources/{source_id}/pull": {
+      "post": {
+        "operationId": "sources_pull_changes",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "source_id",
+            "required": true,
+            "schema": {
+              "title": "Source Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PullIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PullResultOut"
+                  },
+                  "title": "Response Sources Pull Changes",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Pull incoming changes as drafts (never published)",
+        "tags": [
+          "sources"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/studio/sources/{source_id}/pull-requests/refresh": {
+      "post": {
+        "operationId": "sources_refresh_pull_requests",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "source_id",
+            "required": true,
+            "schema": {
+              "title": "Source Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PullRequestOut"
+                  },
+                  "title": "Response Sources Refresh Pull Requests",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Check the source's open pull requests now",
+        "tags": [
+          "sources"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/studio/sources/{source_id}/scan": {
+      "get": {
+        "operationId": "sources_scan_report",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "source_id",
+            "required": true,
+            "schema": {
+              "title": "Source Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScanReportOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "The initial scan: files, parse results, matches and proposed bindings",
+        "tags": [
+          "sources"
         ]
       }
     },
@@ -35974,6 +39444,586 @@
         "summary": "Variables, functions and macros per context, for completion",
         "tags": [
           "studio"
+        ]
+      }
+    },
+    "/api/v1/studio/connections": {
+      "get": {
+        "operationId": "sources_list_connections",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ConnectionOut"
+                  },
+                  "title": "Response Sources List Connections",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Connections to git hosts",
+        "tags": [
+          "sources"
+        ]
+      },
+      "post": {
+        "operationId": "sources_create_connection",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConnectionIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Connect a git host",
+        "tags": [
+          "sources"
+        ]
+      }
+    },
+    "/api/v1/studio/connections/github/callback": {
+      "get": {
+        "operationId": "sources_github_callback",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "installation_id",
+            "required": true,
+            "schema": {
+              "title": "Installation Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "state",
+            "required": true,
+            "schema": {
+              "title": "State",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "303": {
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Where GitHub returns after the app was installed",
+        "tags": [
+          "sources"
+        ]
+      }
+    },
+    "/api/v1/studio/connections/{connection_id}": {
+      "delete": {
+        "operationId": "sources_delete_connection",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "connection_id",
+            "required": true,
+            "schema": {
+              "title": "Connection Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Remove",
+        "tags": [
+          "sources"
+        ]
+      },
+      "get": {
+        "operationId": "sources_get_connection",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "connection_id",
+            "required": true,
+            "schema": {
+              "title": "Connection Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "One connection",
+        "tags": [
+          "sources"
+        ]
+      },
+      "patch": {
+        "operationId": "sources_update_connection",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "connection_id",
+            "required": true,
+            "schema": {
+              "title": "Connection Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConnectionIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Change a connection (secrets only when given)",
+        "tags": [
+          "sources"
+        ]
+      }
+    },
+    "/api/v1/studio/connections/{connection_id}/branches": {
+      "get": {
+        "operationId": "sources_connection_branches",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "connection_id",
+            "required": true,
+            "schema": {
+              "title": "Connection Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "repo",
+            "required": true,
+            "schema": {
+              "title": "Repo",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "title": "Response Sources Connection Branches",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Branches of a repository",
+        "tags": [
+          "sources"
+        ]
+      }
+    },
+    "/api/v1/studio/connections/{connection_id}/github/install": {
+      "get": {
+        "operationId": "sources_github_install",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "connection_id",
+            "required": true,
+            "schema": {
+              "title": "Connection Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "return_to",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Return To"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InstallUrlOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Where to install the GitHub App",
+        "tags": [
+          "sources"
+        ]
+      }
+    },
+    "/api/v1/studio/connections/{connection_id}/repos": {
+      "get": {
+        "operationId": "sources_connection_repos",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "connection_id",
+            "required": true,
+            "schema": {
+              "title": "Connection Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RepoOut"
+                  },
+                  "title": "Response Sources Connection Repos",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Repositories the connection can see",
+        "tags": [
+          "sources"
+        ]
+      }
+    },
+    "/api/v1/studio/connections/{connection_id}/verify": {
+      "post": {
+        "operationId": "sources_verify_connection",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "connection_id",
+            "required": true,
+            "schema": {
+              "title": "Connection Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Check the connection's credentials",
+        "tags": [
+          "sources"
         ]
       }
     },

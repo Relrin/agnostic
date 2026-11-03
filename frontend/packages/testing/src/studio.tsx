@@ -297,6 +297,7 @@ export function publishCheck(blocked: boolean): PublishCheckOut {
       },
     ],
     blocked_by_gates: blocked,
+    hold: { held: false, reason: null, write_back: null, link: null },
     can_publish: true,
     can_override: true,
     outcome: "v4 becomes current on staging-agentos, replacing v3; the API serves it from the next request.",
@@ -350,6 +351,7 @@ export function studioHandlers(calls: StudioCalls = { saves: [], publishes: [], 
       ),
     ),
     http.get(`${API}/studio/templates`, () => HttpResponse.json([])),
+    http.get(`${base}/components/:componentId/source`, () => HttpResponse.json({ bound: false })),
     http.get(`${base}/registry`, () => HttpResponse.json(studioRegistryOut())),
     http.get(`${base}/registry/:type/:name`, ({ params }) => {
       const found = studioRegistry.find((item) => item.type === params.type && item.name === params.name);

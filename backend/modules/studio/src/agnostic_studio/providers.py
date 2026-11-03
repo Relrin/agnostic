@@ -14,13 +14,14 @@ from agnostic_studio.application.catalog import RegistryCatalog
 from agnostic_studio.application.codegen import Codegen
 from agnostic_studio.application.components import Components
 from agnostic_studio.application.drafts import Drafts
-from agnostic_studio.application.ports import SourceRunner, StudioStore
+from agnostic_studio.application.ports import NoPublishHold, PublishHold, SourceRunner, StudioStore
 from agnostic_studio.application.promotions import Promotions
 from agnostic_studio.application.publishing import Publisher
 from agnostic_studio.application.source import SourceCode
 from agnostic_studio.application.testing import DraftRuns
 from agnostic_studio.application.validation import Validator
 from agnostic_studio.application.workflows import Workflows
+from agnostic_studio.facade import StudioFacade, StudioFacadeImpl
 from agnostic_studio.infrastructure.isolation import SourceWorkers
 from agnostic_studio.infrastructure.repository import SqlStudioStore
 from agnostic_studio.settings import StudioSettings
@@ -40,6 +41,8 @@ class StudioProvider(Provider):
     promotions = provide(Promotions)
     draft_runs = provide(DraftRuns)
     source = provide(SourceCode)
+    publish_hold = provide(NoPublishHold, provides=PublishHold)
+    facade = provide(StudioFacadeImpl, provides=StudioFacade)
 
     @provide(scope=Scope.APP)
     def workers(self, settings: StudioSettings) -> SourceRunner:

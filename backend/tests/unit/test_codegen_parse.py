@@ -8,7 +8,7 @@ from typing import Any
 
 import pytest
 
-from agnostic_codegen import Lookup, RegistryConvention, parse_source, render
+from agnostic_codegen import Lookup, RegistryConvention, components_in, parse_source, render
 from agnostic_spec.v3_1 import ComponentConfig, Kind, parse
 
 GOLDEN = Path(__file__).parents[1] / "golden" / "agno-3.1"
@@ -217,3 +217,32 @@ def test_custom_convention() -> None:
     parsed = parse_source(code, convention=convention, resolver=lookup)
     model: Any = parsed.config["model"] if parsed.config else None
     assert model == {"id": "mock-precise", "provider": "Agnostic", "name": "MockModel"}
+
+
+def test_components_in_lists_every_component_a_file_defines() -> None:
+    code = (
+        "from agno.agent import Agent\n"
+        "from agno.team import Team\n\n"
+        'first = Agent(id="first", name="First")\n'
+        'second = Agent(name="Second")\n'
+        'crew = Team(id="crew", members=[first, second])\n'
+    )
+    found = components_in(code)
+    assert [(item.variable, item.kind, item.component_id) for item in found] == [
+        ("first", "agent", "first"),
+        ("second", "agent", None),
+        ("crew", "team", "crew"),
+    ]
+    assert components_in("def broken(:\n") == []
+
+
+def test_registry_convention_survives_json() -> None:
+    convention = RegistryConvention(registry_module="platform.registry", namespaces={"tool": "toolbox"})
+    restored = RegistryConvention.from_dict(json.loads(json.dumps(convention.as_dict())))
+    assert restored == RegistryConvention(
+        registry_module="platform.registry", namespaces={**RegistryConvention().namespaces, "tool": "toolbox"}
+    )
+    assert RegistryConvention.from_dict(None) == RegistryConvention()
+    assert RegistryConvention.from_dict({"registry_module": "not a module", "keep_schema_names": "yes"}) == (
+        RegistryConvention()
+    )

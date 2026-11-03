@@ -19,10 +19,12 @@ from agnostic_codegen.marks import Mark, counts, line_marks, unified
 from agnostic_codegen.parse import (
     CODE_ONLY,
     CodeDiagnostic,
+    Found,
     Lookup,
     Parsed,
     Reading,
     Resolver,
+    components_in,
     owned_paths,
     parse_source,
     read_source,
@@ -97,6 +99,7 @@ async def render(
 __all__ = [
     "CODE_ONLY",
     "CodeDiagnostic",
+    "Found",
     "Generated",
     "LintMessage",
     "Lookup",
@@ -110,6 +113,7 @@ __all__ = [
     "RuffResult",
     "Span",
     "Transformed",
+    "components_in",
     "counts",
     "filename_for",
     "format_and_lint",

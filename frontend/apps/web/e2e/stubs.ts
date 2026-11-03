@@ -152,6 +152,13 @@ export async function stubApi(page: Page, { signedIn = true } = {}) {
   await page.route(/\/api\/v1\/instances\/[^/]+\/approvals\/count$/, (route) =>
     route.fulfill({ json: { instance_id: instances[0]?.id, count: null, available: false } }),
   );
+  // No open code-source conflicts (no sidebar dot) and no component synced with a repository, unless a suite says so.
+  await page.route(/\/api\/v1\/instances\/[^/]+\/studio\/sources\/conflicts\/count$/, (route) =>
+    route.fulfill({ json: { instance_id: instances[0]?.id, count: 0 } }),
+  );
+  await page.route(/\/api\/v1\/instances\/[^/]+\/studio\/components\/[^/]+\/source$/, (route) =>
+    route.fulfill({ json: { bound: false } }),
+  );
   // The bell: nothing unread by default (suites that test notifications register their own routes after this).
   await page.route(/\/api\/v1\/notifications\/unread-count$/, (route) =>
     route.fulfill({ json: { unread: 0 } }),

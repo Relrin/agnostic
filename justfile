@@ -26,6 +26,14 @@ setup:
 up:
     {{compose}} up -d --wait
 
+# Start the dev Gitea (code sources against a real git host)
+git-up:
+    {{compose}} --profile git up -d --wait gitea
+
+# Create the Gitea admin, the northwind/agent-platform repository (the reference runtime's app) and a token
+gitea-seed:
+    bash deploy/dev/gitea/seed.sh
+
 # Stop the dev stack (data volume is kept; `just nuke` deletes it)
 down:
     {{compose}} down

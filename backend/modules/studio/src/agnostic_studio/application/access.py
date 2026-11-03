@@ -115,7 +115,25 @@ class StudioAccess:
         params: Mapping[str, str | int] | None = None,
         body: Any = None,  # noqa: ANN401
     ) -> GatewayResponse:
+        if principal.kind == "system":
+            return await self._system_call(instance, method, path, params=params, body=body)
         return await self._gateway.call(principal, instance, method, path, params=params, json=body)
+
+    async def _system_call(
+        self,
+        instance: Instance,
+        method: str,
+        path: str,
+        *,
+        params: Mapping[str, str | int] | None,
+        body: Any,  # noqa: ANN401
+    ) -> GatewayResponse:
+        """Work the control plane does on its own (drafts pulled from a repository on push), not as a person."""
+        try:
+            payload = await self._instances.system_call(instance, method, path, params=params, json=body)
+        except AgentOSError as exc:
+            return GatewayResponse(exc.status or 502, _decoded(exc.body))
+        return GatewayResponse(200, payload)
 
     async def json(
         self,
@@ -199,6 +217,15 @@ class StudioAccess:
 
     async def forget(self, key: str) -> None:
         await self._store.delete(key)
+
+
+def _decoded(body: str | None) -> object:
+    if not body:
+        return None
+    try:
+        return orjson.loads(body)
+    except orjson.JSONDecodeError:
+        return body
 
 
 def raise_for(instance: Instance, response: GatewayResponse) -> None:

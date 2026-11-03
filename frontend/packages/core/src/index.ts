@@ -123,6 +123,7 @@ export {
   RealtimeProvider,
   applyRealtimeEvent,
   useApprovalsCount,
+  useSourceConflicts,
   useUnreadNotifications,
   useRealtimeEvent,
 } from "./realtime/provider";

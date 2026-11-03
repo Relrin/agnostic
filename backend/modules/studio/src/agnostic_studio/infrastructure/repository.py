@@ -45,6 +45,9 @@ class SqlStudioStore:
         row.owner_group_id = meta.owner_group_id
         row.labels = list(meta.labels)
         row.last_known_current_version = meta.last_known_current_version
+        row.source_binding_id = meta.source_binding_id
+        row.code_path = meta.code_path
+        row.convention = meta.convention
         row.updated_at = utcnow()
 
     # ---------------------------------------------------------------- version meta
@@ -195,6 +198,9 @@ def _component(row: ComponentMetaRow) -> ComponentMeta:
         owner_group_id=row.owner_group_id,
         labels=tuple(row.labels or ()),
         last_known_current_version=row.last_known_current_version,
+        source_binding_id=row.source_binding_id,
+        code_path=row.code_path,
+        convention=row.convention,
     )
 
 

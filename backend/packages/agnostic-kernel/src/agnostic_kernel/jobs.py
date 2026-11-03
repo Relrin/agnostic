@@ -15,6 +15,7 @@ import orjson
 import procrastinate
 from dishka import AsyncContainer
 from procrastinate.app import WorkerOptions
+from procrastinate.exceptions import AlreadyEnqueued
 from procrastinate.testing import InMemoryConnector
 from procrastinate.types import JSONValue
 from redis.asyncio import Redis
@@ -96,6 +97,19 @@ class JobQueue:
     async def defer(self, task_name: str, /, *, lock: str | None = None, **kwargs: JSONValue) -> int:
         """Queue ``task_name``. Jobs that share a ``lock`` run one after another, never at the same time."""
         return await self._app.configure_task(task_name, lock=lock).defer_async(**kwargs)
+
+    async def defer_once(
+        self, task_name: str, /, *, queueing_lock: str, lock: str | None = None, **kwargs: JSONValue
+    ) -> int | None:
+        """Queue ``task_name`` unless a job with the same ``queueing_lock`` is already waiting (then ``None``).
+
+        For bursts of the same trigger (webhook redeliveries, repeated pushes): one waiting job covers them all.
+        """
+        deferrer = self._app.configure_task(task_name, lock=lock, queueing_lock=queueing_lock)
+        try:
+            return await deferrer.defer_async(**kwargs)
+        except AlreadyEnqueued:
+            return None
 
 
 class JobProgressReporter:

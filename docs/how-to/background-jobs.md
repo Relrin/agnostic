@@ -41,6 +41,16 @@ job_id = await job_queue.defer("notes.reindex", note_id=note.id)
 Commit your data before deferring: the job runs in another transaction and may start at once. A transactional
 outbox arrives in a later phase.
 
+For triggers that come in bursts (webhook redeliveries, repeated pushes), `defer_once` queues the job unless one with
+the same `queueing_lock` is already waiting, and returns `None` then:
+
+```python
+await job_queue.defer_once("sources.fetch", queueing_lock=f"fetch:{source.id}", lock=f"sources:{source.id}",
+                           source_id=source.id, reason="push")
+```
+
+`lock` makes jobs that share it run one after another; `queueing_lock` keeps more than one from waiting.
+
 ## Report progress
 
 ```python
@@ -55,6 +65,7 @@ still written and a warning is logged.
 ```bash
 uv run agnostic worker                   # all queues
 uv run agnostic worker -q instances -q audit --concurrency 4
+uv run agnostic worker -q git            # code sources: needs git and the mirrors volume
 ```
 
 With SQLite, or with `AGNOSTIC_JOBS__MODE=embedded`, jobs run inside the API process instead and `agnostic worker`

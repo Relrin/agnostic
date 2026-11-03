@@ -554,6 +554,28 @@ export function PublishDialog({
                 setNotes(event.target.value);
               }}
             />
+            {data.hold.held ? (
+              <Callout tone="warning" title="Waiting for the repository">
+                {data.hold.reason}
+                {data.hold.link && (
+                  <>
+                    {" "}
+                    <a
+                      className="text-info hover:text-info-hover"
+                      href={data.hold.link}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Open the pull request
+                    </a>
+                  </>
+                )}
+              </Callout>
+            ) : (
+              data.hold.write_back && (
+                <p className="text-[12.5px] text-fg-secondary">{data.hold.write_back}</p>
+              )
+            )}
             <p className="text-[12.5px] text-fg-secondary">{data.outcome}</p>
           </div>
         ) : null}

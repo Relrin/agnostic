@@ -42,6 +42,13 @@ LOOKUP_TTL = 60.0
 CONVENTION = RegistryConvention()
 
 
+def fingerprint(convention: RegistryConvention) -> str:
+    """Short and stable per convention, so cached lookups of different repositories don't mix."""
+    if convention == CONVENTION:
+        return "default"
+    return hashlib.sha256(orjson.dumps(convention.as_dict(), option=orjson.OPT_SORT_KEYS)).hexdigest()[:16]
+
+
 @dataclass(frozen=True, slots=True)
 class SourceView:
     parsed: Parsed
@@ -79,14 +86,42 @@ class SourceCode:
         self, principal: Principal, ref: str, kind: SpecKind, code: str, component_id: str | None = None
     ) -> SourceView:
         instance = await self._access.instance(principal, ref, READ_SCOPE)
-        parsed = await self.read(principal, instance, kind, code, component_id)
-        return SourceView(parsed, await _lint(code, kind, parsed))
+        convention = await self.convention_for(instance.id, component_id)
+        parsed = await self.read(principal, instance, kind, code, component_id, convention)
+        return SourceView(parsed, await _lint(code, kind, parsed, convention))
+
+    async def convention_for(self, instance_id: str, component_id: str | None) -> RegistryConvention:
+        """The bound repository's convention for ``component_id``; the default one otherwise."""
+        if component_id is None:
+            return CONVENTION
+        meta = await self._store.component_meta(instance_id, component_id)
+        return RegistryConvention.from_dict(meta.convention) if meta is not None and meta.convention else CONVENTION
 
     async def read(
-        self, principal: Principal, instance: Instance, kind: SpecKind, code: str, component_id: str | None
+        self,
+        principal: Principal,
+        instance: Instance,
+        kind: SpecKind | None,
+        code: str,
+        component_id: str | None,
+        convention: RegistryConvention = CONVENTION,
     ) -> Parsed:
-        lookup = await self.lookup(principal, instance, component_id)
-        return await self._runner.run(parse_job, code, kind, component_id, CONVENTION, lookup)
+        lookup = await self.lookup(principal, instance, component_id, convention)
+        return await self._runner.run(parse_job, code, kind, component_id, convention, lookup)
+
+    async def write(
+        self,
+        principal: Principal,
+        instance: Instance,
+        kind: SpecKind,
+        code: str,
+        after: dict[str, Any],
+        component_id: str | None,
+        convention: RegistryConvention = CONVENTION,
+    ) -> Transformed:
+        """``code`` edited to say ``after``, keeping its formatting (no scope check: callers did theirs)."""
+        lookup = await self.lookup(principal, instance, component_id, convention)
+        return await self._runner.run(transform_job, code, after, kind, component_id, convention, lookup)
 
     async def transform(
         self,
@@ -104,10 +139,10 @@ class SourceCode:
                 "The config doesn't have the shape AgentOS stores.",
                 extra={"diagnostics": [problem.as_dict() for problem in problems]},
             )
-        lookup = await self.lookup(principal, instance, component_id)
-        result = await self._runner.run(transform_job, code, after, kind, component_id, CONVENTION, lookup)
+        convention = await self.convention_for(instance.id, component_id)
+        result = await self.write(principal, instance, kind, code, after, component_id, convention)
         parsed = Parsed(kind, None, result.config, result.diagnostics, result.spans, result.code_owned)
-        return TransformView(result, await _lint(result.code, kind, parsed))
+        return TransformView(result, await _lint(result.code, kind, parsed, convention))
 
     # ---------------------------------------------------------------- code-backed drafts
 
@@ -128,10 +163,13 @@ class SourceCode:
         version: int,
         code: str,
         config: dict[str, Any],
+        convention: RegistryConvention | None = None,
     ) -> CodeDocument:
         """Check that ``code`` reads as ``config`` before it is stored as the draft's code (no commit)."""
         await self._access.require(principal, WRITE_SCOPE, instance)
-        parsed = await self.read(principal, instance, kind, code, component_id)
+        if convention is None:
+            convention = await self.convention_for(instance.id, component_id)
+        parsed = await self.read(principal, instance, kind, code, component_id, convention)
         expected = parse(kind, config).dump()
         if parsed.config != expected:
             problems = [item.as_dict() for item in parsed.diagnostics if item.severity == "error"]
@@ -154,15 +192,21 @@ class SourceCode:
 
     # ---------------------------------------------------------------- what references resolve to
 
-    async def lookup(self, principal: Principal, instance: Instance, component_id: str | None) -> Lookup:
-        lookup = Lookup(CONVENTION)
+    async def lookup(
+        self,
+        principal: Principal,
+        instance: Instance,
+        component_id: str | None,
+        convention: RegistryConvention = CONVENTION,
+    ) -> Lookup:
+        lookup = Lookup(convention)
         if component_id is not None:
             for config, kind in await self._known_configs(principal, instance, component_id):
                 try:
                     _ = lookup.learn([parse(kind, config)])
                 except ValueError:
                     continue
-        for ref_type, attribute, value in await self._entries(principal, instance):
+        for ref_type, attribute, value in await self._entries(principal, instance, convention):
             lookup.entries.setdefault((ref_type, attribute), value)
         return lookup
 
@@ -183,9 +227,11 @@ class SourceCode:
                 found.append((version.config, component.kind))
         return found
 
-    async def _entries(self, principal: Principal, instance: Instance) -> list[tuple[str, str, object]]:
+    async def _entries(
+        self, principal: Principal, instance: Instance, convention: RegistryConvention
+    ) -> list[tuple[str, str, object]]:
         """``(ref_type, attribute, stored value)`` for the registry and the stored components, cached briefly."""
-        key = f"studio:lookup:{instance.id}"
+        key = f"studio:lookup:{instance.id}:{fingerprint(convention)}"
         cached = await self._access.cached(key)
         if isinstance(cached, list):
             return [(str(item[0]), str(item[1]), item[2]) for item in cast("list[list[Any]]", cached)]
@@ -197,7 +243,7 @@ class SourceCode:
             )
             value = _stored(entry.type, name, entry)
             if value is not None:
-                entries.append((entry.type, CONVENTION.attribute(cast("RefType", entry.type), entry.name), value))
+                entries.append((entry.type, convention.attribute(cast("RefType", entry.type), entry.name), value))
         for item in await self._access.pages(principal, instance, "/components"):
             kind = str(item.get("component_type") or "")
             component = str(item.get("component_id") or "")
@@ -227,8 +273,8 @@ def _stored(entry_type: str, name: str, entry: Any) -> object | None:  # noqa: A
             return None
 
 
-async def _lint(code: str, kind: SpecKind | None, parsed: Parsed) -> RuffResult:
+async def _lint(code: str, kind: SpecKind | None, parsed: Parsed, convention: RegistryConvention) -> RuffResult:
     folder = FOLDERS.get(kind or "agent", "agents")
     return await lint(
-        code, filename=f"{folder}/{parsed.variable or 'component'}.py", first_party=CONVENTION.first_party
+        code, filename=f"{folder}/{parsed.variable or 'component'}.py", first_party=convention.first_party
     )

@@ -59,6 +59,11 @@ class ComponentMeta:
     owner_group_id: str | None = None
     labels: tuple[str, ...] = ()
     last_known_current_version: int | None = None
+    source_binding_id: str | None = None
+    """The repository file the component is synced with, when a code source binds it."""
+    code_path: str | None = None
+    convention: dict[str, Any] | None = None
+    """How the bound repository reaches registry objects (``RegistryConvention.as_dict``); ``None`` is the default."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -107,6 +112,17 @@ class CodeDocument:
     updated_by: str | None = None
     updated_by_name: str | None = None
     updated_at: datetime | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class HoldCheck:
+    """Whether something outside Studio holds a publish back (a pull request that has to merge first)."""
+
+    held: bool = False
+    reason: str | None = None
+    write_back: str | None = None
+    """What publishing also does elsewhere ("Opens a pull request studio/support-triage-v4 into main")."""
+    link: str | None = None
 
 
 def latest(versions: list[Version]) -> Version | None:

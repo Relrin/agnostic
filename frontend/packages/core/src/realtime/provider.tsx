@@ -4,6 +4,9 @@ import {
   approvalsCountQueryKey,
   notificationsUnreadCountOptions,
   notificationsUnreadCountQueryKey,
+  sourcesConflictCountOptions,
+  sourcesConflictCountQueryKey,
+  type ConflictCountOut,
   type CountOut,
   type UnreadOut,
 } from "@agnostic/api";
@@ -80,6 +83,26 @@ export function applyRealtimeEvent(
     case "instance.health":
       void client.invalidateQueries({ predicate: (query) => hasId(query, ["instancesGetHealth"]) });
       break;
+    case "sources.conflicts":
+      if (instance && typeof message.data.count === "number") {
+        client.setQueryData<ConflictCountOut>(sourcesConflictCountQueryKey({ path: { instance } }), {
+          instance_id: instance,
+          count: message.data.count,
+        });
+      }
+      break;
+    case "sources.changed":
+      void client.invalidateQueries({
+        predicate: (query) =>
+          hasId(query, [
+            "sourcesListSources",
+            "sourcesGetSource",
+            "sourcesGetChanges",
+            "sourcesComponentSource",
+            "sourcesConflictCount",
+          ]),
+      });
+      break;
     default:
       break;
   }
@@ -111,6 +134,17 @@ export function useRealtimeEvent(listener: RealtimeListener): void {
 /** Pending approvals on the instance (by id): fetched once, then kept current by `approvals.count` events. */
 export function useApprovalsCount(instanceId: string | undefined, enabled = true) {
   const options = approvalsCountOptions({ path: { instance: instanceId ?? "" } });
+  return useQuery({
+    ...options,
+    queryFn: instanceId && enabled ? (options.queryFn ?? skipToken) : skipToken,
+    staleTime: STALE_TIME.config,
+    retry: false,
+  });
+}
+
+/** Open code-source conflicts on the instance (the sidebar dot): kept current by `sources.conflicts` events. */
+export function useSourceConflicts(instanceId: string | undefined, enabled = true) {
+  const options = sourcesConflictCountOptions({ path: { instance: instanceId ?? "" } });
   return useQuery({
     ...options,
     queryFn: instanceId && enabled ? (options.queryFn ?? skipToken) : skipToken,

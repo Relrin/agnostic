@@ -14,7 +14,7 @@ import {
 } from "@agnostic/editor";
 import { Button, Tabs, TabsContent, TabsList, TabsTrigger, toast } from "@agnostic/ui";
 import { Code2, Copy, Database, RotateCcw } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 
 import type { Config, EditableKind } from "./config";
 import type { SourceCode } from "./document";
@@ -73,6 +73,8 @@ export function CodePane({
   uncommitted,
   pending,
   readOnly = false,
+  sourceBar,
+  incomingMarks,
 }: {
   code: CodegenOut | undefined;
   source: SourceCode;
@@ -90,6 +92,10 @@ export function CodePane({
   uncommitted: string | undefined;
   pending: boolean;
   readOnly?: boolean;
+  /** The repository the component is synced with (repo, branch, incoming, Pull, Commit & PR…). */
+  sourceBar?: ReactNode;
+  /** Lines of the shown code that came from the repository with the last pull. */
+  incomingMarks?: Record<number, ChangeMark> | undefined;
 }) {
   const [cursor, setCursor] = useState<{ line: number; col: number } | undefined>(undefined);
   const backed = source.codeBacked;
@@ -100,10 +106,10 @@ export function CodePane({
   );
   const marks = useMemo(() => {
     const out: Record<number, ChangeMark> = {};
-    if (backed) return out;
+    if (backed) return { ...incomingMarks };
     for (const [line, mark] of Object.entries(code?.marks ?? {})) out[Number(line)] = mark;
     return out;
-  }, [backed, code?.marks]);
+  }, [backed, code?.marks, incomingMarks]);
   const notes = useMemo<CodeNote[]>(
     () =>
       backed
@@ -160,6 +166,7 @@ export function CodePane({
       aria-label={`${KIND_LABEL[kind]} code`}
       className="flex min-h-0 flex-col overflow-hidden rounded-card border border-border bg-inset"
     >
+      {sourceBar}
       <div className="flex flex-wrap items-center gap-2 border-b border-border-subtle bg-canvas px-3 py-2 text-[12px]">
         {backed ? (
           <span className="inline-flex items-center gap-1.5 text-fg-secondary">

@@ -177,6 +177,28 @@ In the app (stored in the database): sign-in providers and the auth policy (*Org
 tokens, mapping rules, deprovisioning and Google sync (*Directory sync*), audit retention, archive target and hash
 chain (*Audit retention*), SIEM destinations, and the org setting `temporary_access_max_hours` (default `168`).
 
+## Code sources
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `AGNOSTIC_SOURCES__GIT_BINARY` | `git` | the git executable workers run (2.36 or newer) |
+| `AGNOSTIC_SOURCES__MIRRORS_DIR` | `var/sources/mirrors` | bare mirrors of source repositories; give it its own volume |
+| `AGNOSTIC_SOURCES__MIRROR_QUOTA_MB` / `__TOTAL_QUOTA_MB` | `512` / `10240` | per source (the source turns `over_quota`) and for all mirrors (a warning) |
+| `AGNOSTIC_SOURCES__GIT_TIMEOUT_SECONDS` / `__FETCH_TIMEOUT_SECONDS` | `30` / `180` | one git call; a fetch, a push or reading a file the mirror doesn't have yet |
+| `AGNOSTIC_SOURCES__PROVIDER_TIMEOUT_SECONDS` | `15` | one call to a git host's API |
+| `AGNOSTIC_SOURCES__MAX_CHANGED_FILES` / `__MAX_FILE_BYTES` | `500` / `256000` | changed mapped files read per fetch; larger files aren't read |
+| `AGNOSTIC_SOURCES__ALLOW_FILE_REMOTES` | `false` | accept `file://` clone URLs (tests, air-gapped mirrors) |
+| `AGNOSTIC_SOURCES__LOCAL_ROOTS` | `[]` | folders local sources may point into (development instances only); empty turns local sources off |
+| `AGNOSTIC_SOURCES__WATCH_LOCAL` / `__WATCH_DEBOUNCE_MS` | `true` / `800` | watch local folders for changes |
+| `AGNOSTIC_SOURCES__FETCH_CRON` | `*/15 * * * *` | fetch sources without a webhook; empty turns it off |
+| `AGNOSTIC_SOURCES__PULL_REQUEST_CRON` | `*/5 * * * *` | check open pull requests; empty turns it off |
+| `AGNOSTIC_SOURCES__GC_CRON` | `41 3 * * *` | pack mirrors, remove orphaned ones, prune webhook deliveries |
+| `AGNOSTIC_SOURCES__WEBHOOK_BASE_URL` | the public URL | where git hosts post webhooks (`{url}/hooks/{provider}`); no webhook is registered without a public URL |
+| `AGNOSTIC_SOURCES__WEBHOOK_MAX_BYTES` / `__DELIVERY_RETENTION_DAYS` | `5000000` / `30` | largest webhook body; how long deliveries are kept |
+| `AGNOSTIC_SOURCES__COMMITTER_NAME` / `__COMMITTER_EMAIL` | `Agnostic Studio` / `studio@agnostic.invalid` | the committer of Studio's commits (the author is the person) |
+| `AGNOSTIC_SOURCES__GITHUB_API_URL` / `__GITHUB_WEB_URL` | `https://api.github.com` / `https://github.com` | GitHub defaults; a connection's own URLs (Enterprise Server) win |
+| `AGNOSTIC_SOURCES__GITHUB_APP_SLUG` | — | the GitHub App people install for read & write sources |
+
 ## Tests only
 
 | Variable | Meaning |

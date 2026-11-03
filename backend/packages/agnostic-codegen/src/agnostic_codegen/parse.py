@@ -242,6 +242,27 @@ def read_source(
     return reader.read(kind, component_id)
 
 
+@dataclass(frozen=True, slots=True)
+class Found:
+    """A component a file defines: the module-level name, its kind and its ``id=`` (when it is a literal)."""
+
+    variable: str
+    kind: Kind
+    component_id: str | None
+
+
+def components_in(code: str) -> list[Found]:
+    """Every component the file defines, without reading their settings (empty when the file doesn't parse)."""
+    if len(code.encode()) > MAX_SOURCE_BYTES:
+        return []
+    try:
+        module = cst.parse_module(code)
+    except cst.ParserSyntaxError:
+        return []
+    reader = _Reader(MetadataWrapper(module), RegistryConvention(), Lookup())
+    return [Found(name, kind, identifier) for name, _, kind, identifier in reader.candidates(None)]
+
+
 @dataclass
 class _Reader:
     wrapper: MetadataWrapper
@@ -386,7 +407,8 @@ class _Reader:
         parsed.config = self._normalize(component_kind, raw, call)
         return self.reading
 
-    def _find(self, kind: Kind | None, component_id: str | None) -> tuple[str, cst.Call, Kind] | None:
+    def candidates(self, kind: Kind | None) -> list[tuple[str, cst.Call, Kind, str | None]]:
+        """Module-level names bound to an Agent/Team/Workflow call: ``(name, call, kind, literal id)``."""
         candidates: list[tuple[str, cst.Call, Kind, str | None]] = []
         for name, (_, value) in self.assignments.items():
             if not isinstance(value, cst.Call):
@@ -406,6 +428,10 @@ class _Reader:
                 None,
             )
             candidates.append((name, value, component_kind, identifier))
+        return candidates
+
+    def _find(self, kind: Kind | None, component_id: str | None) -> tuple[str, cst.Call, Kind] | None:
+        candidates = self.candidates(kind)
         if component_id is not None:
             matching = [item for item in candidates if item[3] == component_id]
             candidates = matching or candidates

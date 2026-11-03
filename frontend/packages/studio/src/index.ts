@@ -37,5 +37,16 @@ export {
 } from "./document";
 export { DraftChip, FAMILY_LABEL, StudioEditor, unpublished, type Layout } from "./editor";
 export { ConfigForm, FieldControl, RawConfigEditor, fieldId, type FormContext } from "./form";
+export {
+  CommitComposer,
+  IncomingChip,
+  MergeDialog,
+  SourceBar,
+  conflictValue,
+  incomingMarks,
+  sha7,
+  useComponentSource,
+  useRefreshSources,
+} from "./source-bar";
 export { MODE_BLURB, MODE_LABEL, flowSteps, sectionSummary } from "./summaries";
 export { TestPane, checkStructured } from "./test-pane";

@@ -35,6 +35,7 @@
     "@agnostic/module-service-accounts": "workspace:*",
     "@agnostic/module-sessions": "workspace:*",
     "@agnostic/module-settings": "workspace:*",
+    "@agnostic/module-sources": "workspace:*",
     "@agnostic/module-studio-agents": "workspace:*",
     "@agnostic/module-studio-teams": "workspace:*",
     "@agnostic/module-studio-workflows": "workspace:*",

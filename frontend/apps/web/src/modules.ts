@@ -23,6 +23,7 @@ import { schedulerModule } from "@agnostic/module-scheduler";
 import { serviceAccountsModule } from "@agnostic/module-service-accounts";
 import { sessionsModule } from "@agnostic/module-sessions";
 import { settingsModule } from "@agnostic/module-settings";
+import { sourcesModule } from "@agnostic/module-sources";
 import { studioAgentsModule } from "@agnostic/module-studio-agents";
 import { studioTeamsModule } from "@agnostic/module-studio-teams";
 import { studioWorkflowsModule } from "@agnostic/module-studio-workflows";
@@ -44,6 +45,7 @@ export const MODULES: readonly ModuleManifest[] = [
   studioTeamsModule,
   studioWorkflowsModule,
   registryModule,
+  sourcesModule,
   sessionsModule,
   tracesModule,
   metricsModule,

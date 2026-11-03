@@ -8,7 +8,9 @@
 # (http://localhost:8025), and slack-mock stands in for Slack (http://localhost:8030; see slack-mock/slack_mock.py).
 # Keycloak is a local identity provider with OIDC and SAML clients and IdP groups (http://localhost:8080, realm
 # "agnostic", admin/admin; see keycloak/agnostic-realm.json), and SeaweedFS is an S3-compatible store for the audit
-# archive (http://localhost:8333, bucket "agnostic-audit"; see seaweedfs/s3.json).
+# archive (http://localhost:8333, bucket "agnostic-audit"; see seaweedfs/s3.json). Gitea is a git host for code
+# sources (http://localhost:3000; `just git-up`, then `just gitea-seed` for the northwind/agent-platform repository
+# and a token; see gitea/seed.sh). Keycloak, SeaweedFS and Gitea start only with their profiles (sso, archive, git).
 name: agnostic-dev
 
 services:
@@ -91,6 +93,31 @@ services:
       - "${AGNOSTIC_DEV_S3_PORT:-8333}:8333"
     profiles: ["archive"]
 
+  gitea:
+    image: gitea/gitea:28.2.0-rootless@sha256:94807314454f6525994a3b76286ba12bc7e7f8cd14f61d9e67431767f8103306
+    environment:
+      GITEA__security__INSTALL_LOCK: "true"
+      GITEA__database__DB_TYPE: sqlite3
+      GITEA__server__ROOT_URL: "http://localhost:${AGNOSTIC_DEV_GITEA_PORT:-3000}/"
+      GITEA__server__DISABLE_SSH: "true"
+      GITEA__service__DISABLE_REGISTRATION: "true"
+      GITEA__repository__DEFAULT_BRANCH: main
+      # Webhooks go to the API on the host (http://host.docker.internal:8000/hooks/gitea).
+      GITEA__webhook__ALLOWED_HOST_LIST: "*"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "${AGNOSTIC_DEV_GITEA_PORT:-3000}:3000"
+    volumes:
+      - gitea-data:/var/lib/gitea
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:3000/api/healthz || exit 1"]
+      interval: 3s
+      timeout: 3s
+      retries: 40
+    profiles: ["git"]
+
 volumes:
   postgres-data:
   seaweedfs-data:
+  gitea-data:

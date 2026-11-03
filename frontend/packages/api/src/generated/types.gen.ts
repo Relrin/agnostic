@@ -115,6 +115,18 @@ export type ActionOut = {
 };
 
 /**
+ * ActivateIn
+ */
+export type ActivateIn = {
+    /**
+     * Bindings
+     *
+     * Override the scan's proposals; omitted files follow them.
+     */
+    bindings?: Array<BindingDecisionIn> | null;
+};
+
+/**
  * ActivityActorOut
  */
 export type ActivityActorOut = {
@@ -1269,6 +1281,24 @@ export type BindingCreate = {
 };
 
 /**
+ * BindingDecisionIn
+ */
+export type BindingDecisionIn = {
+    /**
+     * Bind
+     */
+    bind?: boolean;
+    /**
+     * Component Id
+     */
+    component_id: string;
+    /**
+     * Path
+     */
+    path: string;
+};
+
+/**
  * BindingOut
  */
 export type BindingOut = {
@@ -1787,6 +1817,141 @@ export type CertificateOut = {
 };
 
 /**
+ * ChangeDiffOut
+ */
+export type ChangeDiffOut = {
+    /**
+     * After
+     */
+    after: string | null;
+    /**
+     * Before
+     */
+    before: string | null;
+    /**
+     * Path
+     */
+    path: string;
+    /**
+     * Unified
+     */
+    unified: string;
+};
+
+/**
+ * ChangeOut
+ */
+export type ChangeOut = {
+    /**
+     * Additions
+     */
+    additions: number;
+    /**
+     * Author Name
+     */
+    author_name: string | null;
+    /**
+     * Commit Sha
+     */
+    commit_sha: string | null;
+    /**
+     * Committed At
+     */
+    committed_at: string | null;
+    /**
+     * Component Id
+     */
+    component_id: string | null;
+    /**
+     * Component Kind
+     */
+    component_kind: string | null;
+    /**
+     * Deletions
+     */
+    deletions: number;
+    /**
+     * Diagnostics
+     */
+    diagnostics: Array<{
+        [key: string]: unknown;
+    }>;
+    /**
+     * Direction
+     */
+    direction: string;
+    /**
+     * Draft Version
+     */
+    draft_version: number | null;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Included
+     */
+    included: boolean;
+    /**
+     * Message
+     */
+    message: string | null;
+    /**
+     * Outcome
+     */
+    outcome: {
+        [key: string]: unknown;
+    };
+    /**
+     * Outcome Sentence
+     *
+     * Incoming: what pulling does, for the reader.
+     */
+    outcome_sentence: string | null;
+    /**
+     * Path
+     */
+    path: string;
+    /**
+     * Result Version
+     */
+    result_version: number | null;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Summary
+     *
+     * Outgoing: what Studio changed (``temperature 0.7 → 0.2``).
+     */
+    summary: string | null;
+};
+
+/**
+ * ChangesOut
+ */
+export type ChangesOut = {
+    /**
+     * Conflicts
+     */
+    conflicts: Array<ConflictOut>;
+    /**
+     * Incoming
+     */
+    incoming: Array<ChangeOut>;
+    /**
+     * Outgoing
+     */
+    outgoing: Array<ChangeOut>;
+    /**
+     * Pull Requests
+     */
+    pull_requests: Array<PullRequestOut>;
+    remote: RemoteOut;
+};
+
+/**
  * ChannelIn
  */
 export type ChannelIn = {
@@ -2043,6 +2208,105 @@ export type CodeNoteOut = {
 };
 
 /**
+ * CodeSourceOut
+ */
+export type CodeSourceOut = {
+    /**
+     * Auth
+     *
+     * ``GitHub App · read & write``, ``Deploy token · pull only``…
+     */
+    auth: string;
+    /**
+     * Branch
+     */
+    branch: string;
+    /**
+     * Conflicts
+     */
+    conflicts: number;
+    /**
+     * Connection Id
+     */
+    connection_id: string | null;
+    /**
+     * Connection Name
+     */
+    connection_name: string | null;
+    /**
+     * Convention
+     */
+    convention: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Head Sha
+     */
+    head_sha: string | null;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Incoming
+     */
+    incoming: number;
+    /**
+     * Instance Id
+     */
+    instance_id: string;
+    /**
+     * Last Fetched At
+     */
+    last_fetched_at: string | null;
+    /**
+     * Local Path
+     */
+    local_path: string | null;
+    /**
+     * Mappings
+     */
+    mappings: Array<MappingOut>;
+    /**
+     * Open Pull Requests
+     */
+    open_pull_requests: number;
+    /**
+     * Outgoing
+     */
+    outgoing: number;
+    policy: SyncPolicyIo;
+    /**
+     * Provider
+     */
+    provider: string;
+    /**
+     * Provider Label
+     */
+    provider_label: string;
+    /**
+     * Repo
+     */
+    repo: string;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Status Detail
+     */
+    status_detail: string | null;
+    /**
+     * Version
+     */
+    version: number;
+    /**
+     * Webhook
+     */
+    webhook: boolean;
+};
+
+/**
  * CodegenIn
  */
 export type CodegenIn = {
@@ -2096,6 +2360,50 @@ export type CodegenOut = {
     spans: {
         [key: string]: SpanOut;
     };
+};
+
+/**
+ * CommitIn
+ */
+export type CommitIn = {
+    /**
+     * Change Ids
+     */
+    change_ids: Array<string>;
+    /**
+     * Message
+     */
+    message?: string | null;
+};
+
+/**
+ * CommitPreviewOut
+ */
+export type CommitPreviewOut = {
+    /**
+     * Base Branch
+     */
+    base_branch: string;
+    /**
+     * Branch
+     */
+    branch: string;
+    /**
+     * Message
+     */
+    message: string;
+    /**
+     * Mode
+     */
+    mode: string;
+    /**
+     * Review Requirement
+     */
+    review_requirement: string | null;
+    /**
+     * Sentence
+     */
+    sentence: string;
 };
 
 /**
@@ -2155,6 +2463,12 @@ export type ComparisonRowOut = {
  * ComponentDetailOut
  */
 export type ComponentDetailOut = {
+    /**
+     * Code Path
+     *
+     * The repository file the component is synced with.
+     */
+    code_path?: string | null;
     component: StudioComponentOut;
     current: VersionOut | null;
     draft: VersionOut | null;
@@ -2261,6 +2575,92 @@ export type ComponentRowOut = {
 };
 
 /**
+ * ComponentSourceOut
+ */
+export type ComponentSourceOut = {
+    /**
+     * Bound
+     */
+    bound: boolean;
+    /**
+     * Branch
+     */
+    branch?: string | null;
+    /**
+     * Conflicts
+     */
+    conflicts?: Array<ConflictOut>;
+    /**
+     * Fetched At
+     */
+    fetched_at?: string | null;
+    hold?: PublishHoldOut | null;
+    /**
+     * Incoming
+     */
+    incoming?: Array<ChangeOut>;
+    /**
+     * Incoming Marks
+     *
+     * Lines of ``marks_version``'s code that came from the repository.
+     */
+    incoming_marks?: {
+        [key: string]: string;
+    };
+    /**
+     * Marks Version
+     */
+    marks_version?: number | null;
+    /**
+     * Other Sources
+     */
+    other_sources?: Array<string>;
+    /**
+     * Outgoing
+     */
+    outgoing?: Array<ChangeOut>;
+    /**
+     * Path
+     */
+    path?: string | null;
+    /**
+     * Provider
+     */
+    provider?: string | null;
+    /**
+     * Provider Label
+     */
+    provider_label?: string | null;
+    pull_request?: PullRequestOut | null;
+    /**
+     * Repo
+     */
+    repo?: string | null;
+    /**
+     * Source Id
+     */
+    source_id?: string | null;
+    /**
+     * Synced Sha
+     */
+    synced_sha?: string | null;
+    /**
+     * Synced Version
+     */
+    synced_version?: number | null;
+    /**
+     * Uncommitted
+     *
+     * ``mode changed``: Studio's edits the repo doesn't have.
+     */
+    uncommitted?: string | null;
+    /**
+     * Uncommitted Version
+     */
+    uncommitted_version?: number | null;
+};
+
+/**
  * ConfigOut
  *
  * ``GET /config`` of the runtime, as last fetched; sections are passed through as AgentOS returns them.
@@ -2325,6 +2725,64 @@ export type ConfigOut = {
 };
 
 /**
+ * ConflictCountOut
+ */
+export type ConflictCountOut = {
+    /**
+     * Count
+     */
+    count: number;
+    /**
+     * Instance Id
+     */
+    instance_id: string;
+};
+
+/**
+ * ConflictOut
+ */
+export type ConflictOut = {
+    /**
+     * Base Value
+     */
+    base_value: unknown;
+    /**
+     * Change Id
+     */
+    change_id: string;
+    /**
+     * Component Id
+     */
+    component_id: string;
+    /**
+     * Field Path
+     */
+    field_path: string;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Path
+     */
+    path: string;
+    repo: SideOut;
+    /**
+     * Resolution
+     */
+    resolution: string | null;
+    /**
+     * Resolved By Name
+     */
+    resolved_by_name: string | null;
+    /**
+     * Status
+     */
+    status: string;
+    studio: SideOut;
+};
+
+/**
  * ConnectIn
  */
 export type ConnectIn = {
@@ -2370,6 +2828,136 @@ export type ConnectedOut = {
      * Steps
      */
     steps: Array<StepOut>;
+};
+
+/**
+ * ConnectionIn
+ */
+export type ConnectionIn = {
+    /**
+     * Access
+     */
+    access?: 'read_write' | 'read_only';
+    /**
+     * Api Url
+     */
+    api_url?: string | null;
+    /**
+     * App Id
+     */
+    app_id?: string | null;
+    /**
+     * App Slug
+     */
+    app_slug?: string | null;
+    /**
+     * Auth Kind
+     */
+    auth_kind?: 'github_app' | 'token' | 'deploy_key';
+    /**
+     * Installation Id
+     */
+    installation_id?: string | null;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Private Key
+     *
+     * GitHub App key or deploy key.
+     */
+    private_key?: string | null;
+    /**
+     * Provider
+     */
+    provider: 'github' | 'gitlab' | 'gitea' | 'forgejo';
+    /**
+     * Token
+     */
+    token?: string | null;
+    /**
+     * Version
+     *
+     * Expected version (optimistic concurrency).
+     */
+    version?: number | null;
+    /**
+     * Web Url
+     *
+     * The server (Gitea, Forgejo, self-managed).
+     */
+    web_url?: string | null;
+    /**
+     * Webhook Secret
+     */
+    webhook_secret?: string | null;
+};
+
+/**
+ * ConnectionOut
+ */
+export type ConnectionOut = {
+    /**
+     * Access
+     */
+    access: string;
+    /**
+     * Account
+     */
+    account: string | null;
+    /**
+     * Api Url
+     */
+    api_url: string | null;
+    /**
+     * App Slug
+     */
+    app_slug: string | null;
+    /**
+     * Auth Kind
+     */
+    auth_kind: string;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Installation Id
+     */
+    installation_id: string | null;
+    /**
+     * Last Checked At
+     */
+    last_checked_at: string | null;
+    /**
+     * Last Error
+     */
+    last_error: string | null;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Provider
+     */
+    provider: string;
+    /**
+     * Provider Label
+     */
+    provider_label: string;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Version
+     */
+    version: number;
+    /**
+     * Web Url
+     */
+    web_url: string | null;
 };
 
 /**
@@ -2447,6 +3035,40 @@ export type ContextOut = {
      * User Message
      */
     user_message: string | null;
+};
+
+/**
+ * ConventionIO
+ *
+ * How the repository reaches registry objects (``from app.registry import tools``).
+ */
+export type ConventionIo = {
+    /**
+     * Agents Module
+     */
+    agents_module?: string;
+    /**
+     * Functions Module
+     */
+    functions_module?: string;
+    /**
+     * Namespaces
+     */
+    namespaces?: {
+        [key: string]: string;
+    };
+    /**
+     * Registry Module
+     */
+    registry_module?: string;
+    /**
+     * Teams Module
+     */
+    teams_module?: string;
+    /**
+     * Workflows Module
+     */
+    workflows_module?: string;
 };
 
 /**
@@ -4429,6 +5051,32 @@ export type HealthOut = {
 };
 
 /**
+ * HoldOut
+ */
+export type HoldOut = {
+    /**
+     * Held
+     *
+     * Publishing waits until this clears.
+     */
+    held: boolean;
+    /**
+     * Link
+     */
+    link: string | null;
+    /**
+     * Reason
+     */
+    reason: string | null;
+    /**
+     * Write Back
+     *
+     * What publishing also does in a bound repository.
+     */
+    write_back: string | null;
+};
+
+/**
  * ImportIn
  */
 export type ImportIn = {
@@ -4459,6 +5107,16 @@ export type ImportOut = {
 };
 
 /**
+ * IncludeIn
+ */
+export type IncludeIn = {
+    /**
+     * Included
+     */
+    included: boolean;
+};
+
+/**
  * InitialBindingIn
  */
 export type InitialBindingIn = {
@@ -4486,6 +5144,16 @@ export type InitialBindingOut = {
      * Role Id
      */
     role_id: string;
+};
+
+/**
+ * InstallUrlOut
+ */
+export type InstallUrlOut = {
+    /**
+     * Url
+     */
+    url: string;
 };
 
 /**
@@ -4911,6 +5579,18 @@ export type ItemOut = {
 };
 
 /**
+ * JobOut
+ */
+export type JobOut = {
+    /**
+     * Job Id
+     *
+     * The queued job; null when one was already waiting.
+     */
+    job_id: number | null;
+};
+
+/**
  * Joined
  */
 export type Joined = {
@@ -5207,6 +5887,16 @@ export type Liveness = {
 };
 
 /**
+ * LocalRootsOut
+ */
+export type LocalRootsOut = {
+    /**
+     * Roots
+     */
+    roots: Array<string>;
+};
+
+/**
  * LoginChallengeRequest
  */
 export type LoginChallengeRequest = {
@@ -5262,6 +5952,25 @@ export type LoginRequest = {
      * Password
      */
     password: string;
+};
+
+/**
+ * MappingOut
+ */
+export type MappingOut = {
+    /**
+     * Count
+     */
+    count: number | null;
+    /**
+     * Glob
+     */
+    glob: string;
+    target_kind: TargetIn;
+    /**
+     * Writable
+     */
+    writable: boolean;
 };
 
 /**
@@ -6387,6 +7096,21 @@ export type PasswordResetRequest = {
     email: string;
 };
 
+/**
+ * PathMappingIO
+ */
+export type PathMappingIo = {
+    /**
+     * Glob
+     */
+    glob: string;
+    target_kind: TargetIn;
+    /**
+     * Writable
+     */
+    writable?: boolean;
+};
+
 export type PersonalChannelName = 'in_app' | 'email' | 'slack';
 
 /**
@@ -6933,6 +7657,8 @@ export type ProviderCreate = {
     trust_unverified_email?: boolean | null;
 };
 
+export type ProviderIn = 'github' | 'gitlab' | 'gitea' | 'forgejo' | 'local';
+
 /**
  * ProviderOut
  */
@@ -7108,6 +7834,7 @@ export type PublishCheckOut = {
      * Gates
      */
     gates: Array<GateCheckOut>;
+    hold: HoldOut;
     /**
      * Outcome
      */
@@ -7125,6 +7852,28 @@ export type PublishCheckOut = {
      * Version
      */
     version: number;
+};
+
+/**
+ * PublishHoldOut
+ */
+export type PublishHoldOut = {
+    /**
+     * Held
+     */
+    held: boolean;
+    /**
+     * Link
+     */
+    link: string | null;
+    /**
+     * Reason
+     */
+    reason: string | null;
+    /**
+     * Write Back
+     */
+    write_back: string | null;
 };
 
 /**
@@ -7160,6 +7909,98 @@ export type PublishOut = {
      */
     overridden: boolean;
     version: VersionOut;
+};
+
+/**
+ * PullIn
+ */
+export type PullIn = {
+    /**
+     * Change Ids
+     */
+    change_ids: Array<string>;
+};
+
+/**
+ * PullRequestOut
+ */
+export type PullRequestOut = {
+    /**
+     * Base Branch
+     */
+    base_branch: string;
+    /**
+     * Branch
+     */
+    branch: string;
+    /**
+     * Components
+     */
+    components: Array<{
+        [key: string]: unknown;
+    }>;
+    /**
+     * Created At
+     */
+    created_at: string | null;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Merged At
+     */
+    merged_at: string | null;
+    /**
+     * Number
+     */
+    number: number;
+    /**
+     * Opened By Name
+     */
+    opened_by_name: string | null;
+    /**
+     * Review Requirement
+     */
+    review_requirement: string | null;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Title
+     */
+    title: string | null;
+    /**
+     * Url
+     */
+    url: string;
+};
+
+/**
+ * PullResultOut
+ */
+export type PullResultOut = {
+    /**
+     * Change Id
+     */
+    change_id: string;
+    /**
+     * Component Id
+     */
+    component_id: string | null;
+    /**
+     * Error
+     */
+    error: string | null;
+    /**
+     * Path
+     */
+    path: string;
+    /**
+     * Version
+     */
+    version: number | null;
 };
 
 /**
@@ -7647,6 +8488,42 @@ export type RegistryOut = {
 };
 
 /**
+ * RemoteOut
+ */
+export type RemoteOut = {
+    /**
+     * Fetched At
+     */
+    fetched_at: string | null;
+    /**
+     * Head Sha
+     */
+    head_sha: string | null;
+    /**
+     * Ref
+     */
+    ref: string;
+};
+
+/**
+ * RepoOut
+ */
+export type RepoOut = {
+    /**
+     * Default Branch
+     */
+    default_branch: string;
+    /**
+     * Full Name
+     */
+    full_name: string;
+    /**
+     * Private
+     */
+    private: boolean;
+};
+
+/**
  * RequeueIn
  */
 export type RequeueIn = {
@@ -7656,6 +8533,22 @@ export type RequeueIn = {
      * Requeue even inside lock_grace_seconds of the failure
      */
     force?: boolean;
+};
+
+/**
+ * ResolveIn
+ */
+export type ResolveIn = {
+    /**
+     * Resolution
+     */
+    resolution: 'keep_studio' | 'keep_repo' | 'merged';
+    /**
+     * Value
+     *
+     * The merged value (for ``merged``).
+     */
+    value?: unknown;
 };
 
 /**
@@ -8292,6 +9185,30 @@ export type SavedViewPatch = {
      * Position
      */
     position?: number | null;
+};
+
+/**
+ * ScanReportOut
+ */
+export type ScanReportOut = {
+    /**
+     * Head Sha
+     */
+    head_sha: string | null;
+    /**
+     * Report
+     */
+    report: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Status Detail
+     */
+    status_detail: string | null;
 };
 
 /**
@@ -9147,6 +10064,28 @@ export type SetCurrentOut = {
 };
 
 /**
+ * SideOut
+ */
+export type SideOut = {
+    /**
+     * Author
+     */
+    author: string | null;
+    /**
+     * Present
+     */
+    present: boolean;
+    /**
+     * Reference
+     */
+    reference: string | null;
+    /**
+     * Value
+     */
+    value: unknown;
+};
+
+/**
  * SignInProviderOut
  */
 export type SignInProviderOut = {
@@ -9299,6 +10238,45 @@ export type SinkTestOut = {
 };
 
 /**
+ * SourceIn
+ */
+export type SourceIn = {
+    /**
+     * Branch
+     */
+    branch?: string;
+    /**
+     * Clone Url
+     */
+    clone_url?: string | null;
+    /**
+     * Connection Id
+     */
+    connection_id?: string | null;
+    convention?: ConventionIo | null;
+    /**
+     * Local Path
+     *
+     * For local folders.
+     */
+    local_path?: string | null;
+    /**
+     * Mappings
+     *
+     * Defaults to agents/, teams/, workflows/.
+     */
+    mappings?: Array<PathMappingIo> | null;
+    policy?: SyncPolicyIo | null;
+    provider: ProviderIn;
+    /**
+     * Repo
+     *
+     * owner/name
+     */
+    repo?: string | null;
+};
+
+/**
  * SourceOut
  */
 export type SourceOut = {
@@ -9314,6 +10292,28 @@ export type SourceOut = {
      * Module
      */
     module: string | null;
+};
+
+/**
+ * SourcePatchIn
+ */
+export type SourcePatchIn = {
+    /**
+     * Branch
+     */
+    branch?: string | null;
+    convention?: ConventionIo | null;
+    /**
+     * Mappings
+     */
+    mappings?: Array<PathMappingIo> | null;
+    policy?: SyncPolicyIo | null;
+    /**
+     * Version
+     *
+     * Expected version (optimistic concurrency).
+     */
+    version?: number | null;
 };
 
 /**
@@ -9726,6 +10726,32 @@ export type SummaryOut = {
 };
 
 /**
+ * SyncPolicyIO
+ */
+export type SyncPolicyIo = {
+    /**
+     * Block Publish Until Merged
+     */
+    block_publish_until_merged?: boolean;
+    /**
+     * Branch Template
+     */
+    branch_template?: string;
+    /**
+     * Commit Template
+     */
+    commit_template?: string;
+    /**
+     * Publish Mode
+     */
+    publish_mode?: 'open_pr' | 'commit_direct' | 'no_write_back';
+    /**
+     * Pull Mode
+     */
+    pull_mode?: 'on_demand' | 'on_push_as_drafts';
+};
+
+/**
  * SystemModules
  */
 export type SystemModules = {
@@ -9738,6 +10764,8 @@ export type SystemModules = {
      */
     enabled: Array<ModuleInfo>;
 };
+
+export type TargetIn = 'agents' | 'teams' | 'workflows' | 'registry' | 'ignored';
 
 export type TargetKindName = 'agent' | 'team' | 'workflow' | 'custom';
 
@@ -10393,6 +11421,36 @@ export type WebAuthnVerify = {
      * Label
      */
     label?: string | null;
+};
+
+/**
+ * WebhookDeliveryOut
+ */
+export type WebhookDeliveryOut = {
+    /**
+     * Delivery Id
+     */
+    delivery_id: string;
+    /**
+     * Error
+     */
+    error: string | null;
+    /**
+     * Event
+     */
+    event: string;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Processed At
+     */
+    processed_at: string | null;
+    /**
+     * Received At
+     */
+    received_at: string;
 };
 
 /**
@@ -17433,6 +18491,44 @@ export type StudioRestoreComponentResponses = {
 
 export type StudioRestoreComponentResponse = StudioRestoreComponentResponses[keyof StudioRestoreComponentResponses];
 
+export type SourcesComponentSourceData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Component Id
+         */
+        component_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/components/{component_id}/source';
+};
+
+export type SourcesComponentSourceErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SourcesComponentSourceError = SourcesComponentSourceErrors[keyof SourcesComponentSourceErrors];
+
+export type SourcesComponentSourceResponses = {
+    /**
+     * Successful Response
+     */
+    200: ComponentSourceOut;
+};
+
+export type SourcesComponentSourceResponse = SourcesComponentSourceResponses[keyof SourcesComponentSourceResponses];
+
 export type StudioStepRunsData = {
     body?: never;
     path: {
@@ -17751,6 +18847,777 @@ export type StudioRegistryEntryResponses = {
 };
 
 export type StudioRegistryEntryResponse = StudioRegistryEntryResponses[keyof StudioRegistryEntryResponses];
+
+export type SourcesListSourcesData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/sources';
+};
+
+export type SourcesListSourcesErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SourcesListSourcesError = SourcesListSourcesErrors[keyof SourcesListSourcesErrors];
+
+export type SourcesListSourcesResponses = {
+    /**
+     * Response Sources List Sources
+     *
+     * Successful Response
+     */
+    200: Array<CodeSourceOut>;
+};
+
+export type SourcesListSourcesResponse = SourcesListSourcesResponses[keyof SourcesListSourcesResponses];
+
+export type SourcesCreateSourceData = {
+    body: SourceIn;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/sources';
+};
+
+export type SourcesCreateSourceErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SourcesCreateSourceError = SourcesCreateSourceErrors[keyof SourcesCreateSourceErrors];
+
+export type SourcesCreateSourceResponses = {
+    /**
+     * Successful Response
+     */
+    201: CodeSourceOut;
+};
+
+export type SourcesCreateSourceResponse = SourcesCreateSourceResponses[keyof SourcesCreateSourceResponses];
+
+export type SourcesConflictCountData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/sources/conflicts/count';
+};
+
+export type SourcesConflictCountErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SourcesConflictCountError = SourcesConflictCountErrors[keyof SourcesConflictCountErrors];
+
+export type SourcesConflictCountResponses = {
+    /**
+     * Successful Response
+     */
+    200: ConflictCountOut;
+};
+
+export type SourcesConflictCountResponse = SourcesConflictCountResponses[keyof SourcesConflictCountResponses];
+
+export type SourcesLocalRootsData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/sources/local-roots';
+};
+
+export type SourcesLocalRootsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SourcesLocalRootsError = SourcesLocalRootsErrors[keyof SourcesLocalRootsErrors];
+
+export type SourcesLocalRootsResponses = {
+    /**
+     * Successful Response
+     */
+    200: LocalRootsOut;
+};
+
+export type SourcesLocalRootsResponse = SourcesLocalRootsResponses[keyof SourcesLocalRootsResponses];
+
+export type SourcesDeleteSourceData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Source Id
+         */
+        source_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/sources/{source_id}';
+};
+
+export type SourcesDeleteSourceErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SourcesDeleteSourceError = SourcesDeleteSourceErrors[keyof SourcesDeleteSourceErrors];
+
+export type SourcesDeleteSourceResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type SourcesDeleteSourceResponse = SourcesDeleteSourceResponses[keyof SourcesDeleteSourceResponses];
+
+export type SourcesGetSourceData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Source Id
+         */
+        source_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/sources/{source_id}';
+};
+
+export type SourcesGetSourceErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SourcesGetSourceError = SourcesGetSourceErrors[keyof SourcesGetSourceErrors];
+
+export type SourcesGetSourceResponses = {
+    /**
+     * Successful Response
+     */
+    200: CodeSourceOut;
+};
+
+export type SourcesGetSourceResponse = SourcesGetSourceResponses[keyof SourcesGetSourceResponses];
+
+export type SourcesUpdateSourceData = {
+    body: SourcePatchIn;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Source Id
+         */
+        source_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/sources/{source_id}';
+};
+
+export type SourcesUpdateSourceErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SourcesUpdateSourceError = SourcesUpdateSourceErrors[keyof SourcesUpdateSourceErrors];
+
+export type SourcesUpdateSourceResponses = {
+    /**
+     * Successful Response
+     */
+    200: CodeSourceOut;
+};
+
+export type SourcesUpdateSourceResponse = SourcesUpdateSourceResponses[keyof SourcesUpdateSourceResponses];
+
+export type SourcesActivateSourceData = {
+    body: ActivateIn;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Source Id
+         */
+        source_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/sources/{source_id}/activate';
+};
+
+export type SourcesActivateSourceErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SourcesActivateSourceError = SourcesActivateSourceErrors[keyof SourcesActivateSourceErrors];
+
+export type SourcesActivateSourceResponses = {
+    /**
+     * Successful Response
+     */
+    200: CodeSourceOut;
+};
+
+export type SourcesActivateSourceResponse = SourcesActivateSourceResponses[keyof SourcesActivateSourceResponses];
+
+export type SourcesGetChangesData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Source Id
+         */
+        source_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/sources/{source_id}/changes';
+};
+
+export type SourcesGetChangesErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SourcesGetChangesError = SourcesGetChangesErrors[keyof SourcesGetChangesErrors];
+
+export type SourcesGetChangesResponses = {
+    /**
+     * Successful Response
+     */
+    200: ChangesOut;
+};
+
+export type SourcesGetChangesResponse = SourcesGetChangesResponses[keyof SourcesGetChangesResponses];
+
+export type SourcesIncludeChangeData = {
+    body: IncludeIn;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Source Id
+         */
+        source_id: string;
+        /**
+         * Change Id
+         */
+        change_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/sources/{source_id}/changes/{change_id}';
+};
+
+export type SourcesIncludeChangeErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SourcesIncludeChangeError = SourcesIncludeChangeErrors[keyof SourcesIncludeChangeErrors];
+
+export type SourcesIncludeChangeResponses = {
+    /**
+     * Successful Response
+     */
+    200: ChangeOut;
+};
+
+export type SourcesIncludeChangeResponse = SourcesIncludeChangeResponses[keyof SourcesIncludeChangeResponses];
+
+export type SourcesChangeDiffData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Source Id
+         */
+        source_id: string;
+        /**
+         * Change Id
+         */
+        change_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/sources/{source_id}/changes/{change_id}/diff';
+};
+
+export type SourcesChangeDiffErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SourcesChangeDiffError = SourcesChangeDiffErrors[keyof SourcesChangeDiffErrors];
+
+export type SourcesChangeDiffResponses = {
+    /**
+     * Successful Response
+     */
+    200: ChangeDiffOut;
+};
+
+export type SourcesChangeDiffResponse = SourcesChangeDiffResponses[keyof SourcesChangeDiffResponses];
+
+export type SourcesCommitChangesData = {
+    body: CommitIn;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Source Id
+         */
+        source_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/sources/{source_id}/commit';
+};
+
+export type SourcesCommitChangesErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SourcesCommitChangesError = SourcesCommitChangesErrors[keyof SourcesCommitChangesErrors];
+
+export type SourcesCommitChangesResponses = {
+    /**
+     * Successful Response
+     */
+    202: JobOut;
+};
+
+export type SourcesCommitChangesResponse = SourcesCommitChangesResponses[keyof SourcesCommitChangesResponses];
+
+export type SourcesCommitPreviewData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Source Id
+         */
+        source_id: string;
+    };
+    query: {
+        /**
+         * Change Ids
+         */
+        change_ids: Array<string>;
+    };
+    url: '/api/v1/instances/{instance}/studio/sources/{source_id}/commit-preview';
+};
+
+export type SourcesCommitPreviewErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SourcesCommitPreviewError = SourcesCommitPreviewErrors[keyof SourcesCommitPreviewErrors];
+
+export type SourcesCommitPreviewResponses = {
+    /**
+     * Successful Response
+     */
+    200: CommitPreviewOut;
+};
+
+export type SourcesCommitPreviewResponse = SourcesCommitPreviewResponses[keyof SourcesCommitPreviewResponses];
+
+export type SourcesResolveConflictData = {
+    body: ResolveIn;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Source Id
+         */
+        source_id: string;
+        /**
+         * Conflict Id
+         */
+        conflict_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/sources/{source_id}/conflicts/{conflict_id}/resolve';
+};
+
+export type SourcesResolveConflictErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SourcesResolveConflictError = SourcesResolveConflictErrors[keyof SourcesResolveConflictErrors];
+
+export type SourcesResolveConflictResponses = {
+    /**
+     * Successful Response
+     */
+    200: ConflictOut;
+};
+
+export type SourcesResolveConflictResponse = SourcesResolveConflictResponses[keyof SourcesResolveConflictResponses];
+
+export type SourcesDeliveriesData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Source Id
+         */
+        source_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/sources/{source_id}/deliveries';
+};
+
+export type SourcesDeliveriesErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SourcesDeliveriesError = SourcesDeliveriesErrors[keyof SourcesDeliveriesErrors];
+
+export type SourcesDeliveriesResponses = {
+    /**
+     * Response Sources Deliveries
+     *
+     * Successful Response
+     */
+    200: Array<WebhookDeliveryOut>;
+};
+
+export type SourcesDeliveriesResponse = SourcesDeliveriesResponses[keyof SourcesDeliveriesResponses];
+
+export type SourcesFetchSourceData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Source Id
+         */
+        source_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/sources/{source_id}/fetch';
+};
+
+export type SourcesFetchSourceErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SourcesFetchSourceError = SourcesFetchSourceErrors[keyof SourcesFetchSourceErrors];
+
+export type SourcesFetchSourceResponses = {
+    /**
+     * Successful Response
+     */
+    202: JobOut;
+};
+
+export type SourcesFetchSourceResponse = SourcesFetchSourceResponses[keyof SourcesFetchSourceResponses];
+
+export type SourcesRefreshOutgoingData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Source Id
+         */
+        source_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/sources/{source_id}/outgoing/refresh';
+};
+
+export type SourcesRefreshOutgoingErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SourcesRefreshOutgoingError = SourcesRefreshOutgoingErrors[keyof SourcesRefreshOutgoingErrors];
+
+export type SourcesRefreshOutgoingResponses = {
+    /**
+     * Response Sources Refresh Outgoing
+     *
+     * Successful Response
+     */
+    200: Array<ChangeOut>;
+};
+
+export type SourcesRefreshOutgoingResponse = SourcesRefreshOutgoingResponses[keyof SourcesRefreshOutgoingResponses];
+
+export type SourcesPullChangesData = {
+    body: PullIn;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Source Id
+         */
+        source_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/sources/{source_id}/pull';
+};
+
+export type SourcesPullChangesErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SourcesPullChangesError = SourcesPullChangesErrors[keyof SourcesPullChangesErrors];
+
+export type SourcesPullChangesResponses = {
+    /**
+     * Response Sources Pull Changes
+     *
+     * Successful Response
+     */
+    200: Array<PullResultOut>;
+};
+
+export type SourcesPullChangesResponse = SourcesPullChangesResponses[keyof SourcesPullChangesResponses];
+
+export type SourcesRefreshPullRequestsData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Source Id
+         */
+        source_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/sources/{source_id}/pull-requests/refresh';
+};
+
+export type SourcesRefreshPullRequestsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SourcesRefreshPullRequestsError = SourcesRefreshPullRequestsErrors[keyof SourcesRefreshPullRequestsErrors];
+
+export type SourcesRefreshPullRequestsResponses = {
+    /**
+     * Response Sources Refresh Pull Requests
+     *
+     * Successful Response
+     */
+    200: Array<PullRequestOut>;
+};
+
+export type SourcesRefreshPullRequestsResponse = SourcesRefreshPullRequestsResponses[keyof SourcesRefreshPullRequestsResponses];
+
+export type SourcesScanReportData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Source Id
+         */
+        source_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/sources/{source_id}/scan';
+};
+
+export type SourcesScanReportErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SourcesScanReportError = SourcesScanReportErrors[keyof SourcesScanReportErrors];
+
+export type SourcesScanReportResponses = {
+    /**
+     * Successful Response
+     */
+    200: ScanReportOut;
+};
+
+export type SourcesScanReportResponse = SourcesScanReportResponses[keyof SourcesScanReportResponses];
 
 export type StudioTransformCodeData = {
     body: TransformIn;
@@ -19676,6 +21543,352 @@ export type StudioCelContextsResponses = {
 };
 
 export type StudioCelContextsResponse = StudioCelContextsResponses[keyof StudioCelContextsResponses];
+
+export type SourcesListConnectionsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/studio/connections';
+};
+
+export type SourcesListConnectionsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SourcesListConnectionsError = SourcesListConnectionsErrors[keyof SourcesListConnectionsErrors];
+
+export type SourcesListConnectionsResponses = {
+    /**
+     * Response Sources List Connections
+     *
+     * Successful Response
+     */
+    200: Array<ConnectionOut>;
+};
+
+export type SourcesListConnectionsResponse = SourcesListConnectionsResponses[keyof SourcesListConnectionsResponses];
+
+export type SourcesCreateConnectionData = {
+    body: ConnectionIn;
+    path?: never;
+    query?: never;
+    url: '/api/v1/studio/connections';
+};
+
+export type SourcesCreateConnectionErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SourcesCreateConnectionError = SourcesCreateConnectionErrors[keyof SourcesCreateConnectionErrors];
+
+export type SourcesCreateConnectionResponses = {
+    /**
+     * Successful Response
+     */
+    201: ConnectionOut;
+};
+
+export type SourcesCreateConnectionResponse = SourcesCreateConnectionResponses[keyof SourcesCreateConnectionResponses];
+
+export type SourcesGithubCallbackData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Installation Id
+         */
+        installation_id: string;
+        /**
+         * State
+         */
+        state: string;
+    };
+    url: '/api/v1/studio/connections/github/callback';
+};
+
+export type SourcesGithubCallbackErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SourcesGithubCallbackError = SourcesGithubCallbackErrors[keyof SourcesGithubCallbackErrors];
+
+export type SourcesDeleteConnectionData = {
+    body?: never;
+    path: {
+        /**
+         * Connection Id
+         */
+        connection_id: string;
+    };
+    query?: never;
+    url: '/api/v1/studio/connections/{connection_id}';
+};
+
+export type SourcesDeleteConnectionErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SourcesDeleteConnectionError = SourcesDeleteConnectionErrors[keyof SourcesDeleteConnectionErrors];
+
+export type SourcesDeleteConnectionResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type SourcesDeleteConnectionResponse = SourcesDeleteConnectionResponses[keyof SourcesDeleteConnectionResponses];
+
+export type SourcesGetConnectionData = {
+    body?: never;
+    path: {
+        /**
+         * Connection Id
+         */
+        connection_id: string;
+    };
+    query?: never;
+    url: '/api/v1/studio/connections/{connection_id}';
+};
+
+export type SourcesGetConnectionErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SourcesGetConnectionError = SourcesGetConnectionErrors[keyof SourcesGetConnectionErrors];
+
+export type SourcesGetConnectionResponses = {
+    /**
+     * Successful Response
+     */
+    200: ConnectionOut;
+};
+
+export type SourcesGetConnectionResponse = SourcesGetConnectionResponses[keyof SourcesGetConnectionResponses];
+
+export type SourcesUpdateConnectionData = {
+    body: ConnectionIn;
+    path: {
+        /**
+         * Connection Id
+         */
+        connection_id: string;
+    };
+    query?: never;
+    url: '/api/v1/studio/connections/{connection_id}';
+};
+
+export type SourcesUpdateConnectionErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SourcesUpdateConnectionError = SourcesUpdateConnectionErrors[keyof SourcesUpdateConnectionErrors];
+
+export type SourcesUpdateConnectionResponses = {
+    /**
+     * Successful Response
+     */
+    200: ConnectionOut;
+};
+
+export type SourcesUpdateConnectionResponse = SourcesUpdateConnectionResponses[keyof SourcesUpdateConnectionResponses];
+
+export type SourcesConnectionBranchesData = {
+    body?: never;
+    path: {
+        /**
+         * Connection Id
+         */
+        connection_id: string;
+    };
+    query: {
+        /**
+         * Repo
+         */
+        repo: string;
+    };
+    url: '/api/v1/studio/connections/{connection_id}/branches';
+};
+
+export type SourcesConnectionBranchesErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SourcesConnectionBranchesError = SourcesConnectionBranchesErrors[keyof SourcesConnectionBranchesErrors];
+
+export type SourcesConnectionBranchesResponses = {
+    /**
+     * Response Sources Connection Branches
+     *
+     * Successful Response
+     */
+    200: Array<string>;
+};
+
+export type SourcesConnectionBranchesResponse = SourcesConnectionBranchesResponses[keyof SourcesConnectionBranchesResponses];
+
+export type SourcesGithubInstallData = {
+    body?: never;
+    path: {
+        /**
+         * Connection Id
+         */
+        connection_id: string;
+    };
+    query?: {
+        /**
+         * Return To
+         */
+        return_to?: string | null;
+    };
+    url: '/api/v1/studio/connections/{connection_id}/github/install';
+};
+
+export type SourcesGithubInstallErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SourcesGithubInstallError = SourcesGithubInstallErrors[keyof SourcesGithubInstallErrors];
+
+export type SourcesGithubInstallResponses = {
+    /**
+     * Successful Response
+     */
+    200: InstallUrlOut;
+};
+
+export type SourcesGithubInstallResponse = SourcesGithubInstallResponses[keyof SourcesGithubInstallResponses];
+
+export type SourcesConnectionReposData = {
+    body?: never;
+    path: {
+        /**
+         * Connection Id
+         */
+        connection_id: string;
+    };
+    query?: {
+        /**
+         * Q
+         */
+        q?: string | null;
+    };
+    url: '/api/v1/studio/connections/{connection_id}/repos';
+};
+
+export type SourcesConnectionReposErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SourcesConnectionReposError = SourcesConnectionReposErrors[keyof SourcesConnectionReposErrors];
+
+export type SourcesConnectionReposResponses = {
+    /**
+     * Response Sources Connection Repos
+     *
+     * Successful Response
+     */
+    200: Array<RepoOut>;
+};
+
+export type SourcesConnectionReposResponse = SourcesConnectionReposResponses[keyof SourcesConnectionReposResponses];
+
+export type SourcesVerifyConnectionData = {
+    body?: never;
+    path: {
+        /**
+         * Connection Id
+         */
+        connection_id: string;
+    };
+    query?: never;
+    url: '/api/v1/studio/connections/{connection_id}/verify';
+};
+
+export type SourcesVerifyConnectionErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SourcesVerifyConnectionError = SourcesVerifyConnectionErrors[keyof SourcesVerifyConnectionErrors];
+
+export type SourcesVerifyConnectionResponses = {
+    /**
+     * Successful Response
+     */
+    200: ConnectionOut;
+};
+
+export type SourcesVerifyConnectionResponse = SourcesVerifyConnectionResponses[keyof SourcesVerifyConnectionResponses];
 
 export type StudioSchemaData = {
     body?: never;

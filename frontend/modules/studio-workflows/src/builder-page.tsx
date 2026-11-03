@@ -15,9 +15,13 @@ import {
   ConflictDialog,
   DraftChip,
   FAMILY_LABEL,
+  IncomingChip,
   PublishDialog,
+  SourceBar,
   VersionsDrawer,
+  incomingMarks,
   unpublished,
+  useComponentSource,
   useConfigSchema,
   useDebouncedValue,
   useDraftDocument,
@@ -146,6 +150,7 @@ function ZoomControls({ onAutoLayout }: { onAutoLayout: () => void }) {
 
 function WorkflowBuilder({ instance, componentId }: { instance: string; componentId: string }) {
   const doc = useDraftDocument(instance, componentId);
+  const source = useComponentSource(instance, componentId);
   const [store] = useState(createBuilderStore);
   const canWrite = useCan("components:write", instance);
   const readOnly = canWrite.allowed !== true || !doc.draft;
@@ -280,6 +285,7 @@ function WorkflowBuilder({ instance, componentId }: { instance: string; componen
             renderLink={(crumb) => <Link to={crumb.href}>{crumb.label}</Link>}
           />
           <DraftChip doc={doc} />
+          <IncomingChip instance={instance} componentId={componentId} />
           <span className="flex-1" />
           <Button
             variant="outline"
@@ -434,6 +440,8 @@ function WorkflowBuilder({ instance, componentId }: { instance: string; componen
                 uncommitted={undefined}
                 pending={doc.state === "dirty"}
                 readOnly={readOnly}
+                sourceBar={<SourceBar instance={instance} componentId={componentId} canWrite={!readOnly} />}
+                incomingMarks={incomingMarks(source.data, doc.draft?.version)}
               />
             </div>
           )}

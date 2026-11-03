@@ -10,6 +10,7 @@ import {
   ReauthProvider,
   scopedPath,
   useApprovalsCount,
+  useSourceConflicts,
   useCan,
   useInstanceHealth,
   useInstances,
@@ -97,15 +98,23 @@ function toSidebarItem(
 /** Live nav badges: the pending-approvals count, kept current by realtime `approvals.count` events. */
 function useNavBadges(instance: InstanceOut | undefined): Record<string, NavBadge> {
   const canRead = useCan("approvals:read", instance?.slug).allowed === true;
+  const canSeeSources = useCan("components:read", instance?.slug).allowed === true;
   const approvals = useApprovalsCount(instance?.id, canRead);
+  const conflicts = useSourceConflicts(instance?.id, canSeeSources);
   const count = approvals.data?.count;
-  return useMemo(
-    () =>
-      count
-        ? { approvals: { kind: "count", value: count, tone: "warning", label: `${String(count)} pending` } }
-        : {},
-    [count],
-  );
+  const open = conflicts.data?.count;
+  return useMemo(() => {
+    const badges: Record<string, NavBadge> = {};
+    if (count)
+      badges.approvals = { kind: "count", value: count, tone: "warning", label: `${String(count)} pending` };
+    if (open)
+      badges.sources = {
+        kind: "dot",
+        tone: "danger",
+        label: open === 1 ? "1 conflict" : `${String(open)} conflicts`,
+      };
+    return badges;
+  }, [count, open]);
 }
 
 function InstanceMenu({

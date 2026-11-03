@@ -24,6 +24,9 @@ class ComponentMetaRow(StudioBase):
     owner_group_id: Mapped[str | None] = mapped_column(String(40))
     labels: Mapped[list[str]] = mapped_column(JsonDocument, default=list)
     last_known_current_version: Mapped[int | None] = mapped_column(Integer)
+    source_binding_id: Mapped[str | None] = mapped_column(String(40))
+    code_path: Mapped[str | None] = mapped_column(String(500))
+    convention: Mapped[dict[str, Any] | None] = mapped_column(JsonDocument)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 

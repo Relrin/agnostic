@@ -18,6 +18,7 @@
 | [Operate and realtime](architecture/operate-and-realtime.md) | RunStream, approvals and delegated elevation, Home overview, realtime events, ⌘K search |
 | [Context](architecture/context.md) | memory duplicates, provenance and optimization, knowledge content and retrieval, learnings and data deletion, file provenance |
 | [Observe and evaluations](architecture/observe-and-evals.md) | trace comparison, span statistics, metrics and cost estimates, eval datasets, batches, version comparison, publish gates |
+| [Code sources](architecture/sources.md) | connections, sources, path mappings, pulling as drafts, field-level merges and conflicts, write-back as pull requests, webhooks, mirrors, local folders |
 | [Studio](architecture/studio.md) | typed configs and code generation, the registry and used-by index, drafts and autosave, validation, gated publish with overrides, draft test runs, teams, promotion, golden fixtures |
 | [Control](architecture/control.md) | approvals inbox, routing and expiry, notifications (inbox, Slack, email, webhooks), scheduler previews, the durable queue and checkpoint recovery |
 | [Access governance](architecture/access-governance.md) | groups and IdP sync (SCIM, claims, Google), editable roles, service accounts, temporary access, SAML and MFA, audit views, export, SIEM, archive |
@@ -38,6 +39,7 @@
 | [SIEM streaming and the audit archive](how-to/audit-siem-and-archive.md) | webhook, syslog and OTLP destinations, retention, the S3 archive, restore, the hash chain |
 | [Testing](how-to/testing.md) | unit, integration, contract, Storybook a11y, Playwright |
 | [Dependencies](how-to/dependencies.md) | exact pinning, upgrades, Renovate, license policy |
+| [Connect a code source](how-to/connect-a-code-source.md) | GitHub Apps, tokens, path mappings and sync policies, git workers, local folders, the dev Gitea |
 | [Troubleshooting](how-to/troubleshooting.md) | Windows, ports, Docker, common errors |
 
 ## Reference

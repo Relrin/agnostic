@@ -32,6 +32,19 @@
 - **`PydanticUserError: … is not fully defined` on a route.** The router module uses
   `from __future__ import annotations`; remove it (see [backend kernel](../architecture/backend-kernel.md)).
 
+## Code sources
+
+- **"The git executable 'git' isn't installed where the worker runs"**: install git (2.36 or newer) in the image
+  that serves the `git` queue, or point `AGNOSTIC_SOURCES__GIT_BINARY` at it.
+- **A source turns `over_quota`**: narrow its path mappings (or use a smaller branch), or raise
+  `AGNOSTIC_SOURCES__MIRROR_QUOTA_MB`.
+- **"refused the connection's credentials"**: the token expired or lost access; update the connection (secrets are
+  replaced only when given) and *Verify* it. A GitHub App says "isn't installed yet" until it is installed.
+- **Webhooks answer 401**: the delivery isn't signed with the source's secret (re-adding the source registers a new
+  one) or the repository name differs. Check *deliveries* on the source; nothing is stored for refused deliveries.
+- **Nothing arrives after a push**: the git host can't reach `/hooks/<provider>` (check the reverse proxy and
+  `AGNOSTIC_SOURCES__WEBHOOK_BASE_URL`); the periodic fetch still picks the push up.
+
 ## Frontend
 
 - **"All versions satisfying … are quarantined".** The version was published less than 24 hours ago; pin the

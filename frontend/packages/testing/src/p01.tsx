@@ -235,6 +235,9 @@ export const ownerAccess: MyAccessOut = {
     "evals:gates:write",
     "evals:gates:override",
     "studio:promote",
+    "studio:sources:read",
+    "studio:sources:write",
+    "studio:sources:delete",
   ],
   grants: [],
 };

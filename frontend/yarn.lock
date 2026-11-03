@@ -502,6 +502,28 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@agnostic/module-sources@workspace:*, @agnostic/module-sources@workspace:modules/sources":
+  version: 0.0.0-use.local
+  resolution: "@agnostic/module-sources@workspace:modules/sources"
+  dependencies:
+    "@agnostic/api": "workspace:*"
+    "@agnostic/core": "workspace:*"
+    "@agnostic/editor": "workspace:*"
+    "@agnostic/studio": "workspace:*"
+    "@agnostic/testing": "workspace:*"
+    "@agnostic/ui": "workspace:*"
+    "@tanstack/react-query": "npm:5.105.0"
+    "@tanstack/react-router": "npm:1.170.46"
+    "@testing-library/jest-dom": "npm:7.0.1"
+    lucide-react: "npm:1.65.0"
+    msw: "npm:3.0.3"
+    react: "npm:19.3.1"
+    react-dom: "npm:19.3.1"
+  peerDependencies:
+    react: 19.3.1
+  languageName: unknown
+  linkType: soft
+
 "@agnostic/module-studio-agents@workspace:*, @agnostic/module-studio-agents@workspace:modules/studio-agents":
   version: 0.0.0-use.local
   resolution: "@agnostic/module-studio-agents@workspace:modules/studio-agents"
@@ -698,6 +720,7 @@ __metadata:
     "@agnostic/module-service-accounts": "workspace:*"
     "@agnostic/module-sessions": "workspace:*"
     "@agnostic/module-settings": "workspace:*"
+    "@agnostic/module-sources": "workspace:*"
     "@agnostic/module-studio-agents": "workspace:*"
     "@agnostic/module-studio-teams": "workspace:*"
     "@agnostic/module-studio-workflows": "workspace:*"

@@ -6,7 +6,7 @@ from collections.abc import Callable
 from typing import Protocol
 
 from agnostic_kernel.errors import AppError
-from agnostic_studio.domain.model import CanvasLayout, CodeDocument, ComponentMeta, VersionMeta
+from agnostic_studio.domain.model import CanvasLayout, CodeDocument, ComponentMeta, HoldCheck, VersionMeta
 from agnostic_studio.domain.promotion import Promotion
 from agnostic_studio.domain.usage import IndexEntry
 
@@ -54,3 +54,14 @@ class SourceRunner(Protocol):
     """Runs CPU-bound source work (parsing, edits, CEL) away from the event loop, with a timeout per job."""
 
     async def run[**P, T](self, job: Callable[P, T], *args: P.args, **kwargs: P.kwargs) -> T: ...
+
+
+class PublishHold(Protocol):
+    """Lets another module hold a publish back; Studio itself never does."""
+
+    async def check(self, instance_id: str, component_id: str, version: int) -> HoldCheck: ...
+
+
+class NoPublishHold:
+    async def check(self, instance_id: str, component_id: str, version: int) -> HoldCheck:  # noqa: ARG002
+        return HoldCheck()
