@@ -1,7 +1,16 @@
-import { p01Handlers, renderPage, studioHandlers, type StudioCalls } from "@agnostic/testing";
+import {
+  API,
+  p01Handlers,
+  renderPage,
+  studioHandlers,
+  triageDetail,
+  type StudioCalls,
+} from "@agnostic/testing";
 import { TooltipProvider } from "@agnostic/ui";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { EditorView } from "@codemirror/view";
+import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
@@ -28,6 +37,14 @@ const handlers = () => [...p01Handlers(), ...studioHandlers(calls)];
 const server = setupServer(...handlers());
 
 beforeAll(() => {
+  Object.defineProperty(Range.prototype, "getClientRects", {
+    configurable: true,
+    value: () => Object.assign([], { item: () => null }),
+  });
+  Object.defineProperty(Range.prototype, "getBoundingClientRect", {
+    configurable: true,
+    value: () => new DOMRect(),
+  });
   server.listen({ onUnhandledFrame: "error" });
 });
 afterEach(() => {
@@ -76,6 +93,47 @@ describe("AgentEditorPage", () => {
       "Search the help center before answering.",
       "Never promise refunds.",
     ]);
+  });
+
+  it("reads edited code back into the form and saves the code with the draft", async () => {
+    const parses: Record<string, unknown>[] = [];
+    const edited = { ...triageDetail().draft?.config, description: "Hand-tuned in code" };
+    server.use(
+      http.post(`${API}/instances/:instance/studio/parse`, async ({ request }) => {
+        parses.push((await request.json()) as Record<string, unknown>);
+        return HttpResponse.json({
+          ok: true,
+          config: edited,
+          variable: "support_triage",
+          diagnostics: [],
+          spans: {},
+          code_owned: ["pre_hooks"],
+          ruff: { available: true, status: "ruff · 0 errors", formatted: false, messages: [] },
+        });
+      }),
+    );
+    renderPage(AgentEditorPage, EDITOR);
+    const content = await screen.findByRole("textbox", { name: /^Generated agents\// }, { timeout: 5_000 });
+    const view = EditorView.findFromDOM(content);
+    if (!view) throw new Error("no editor");
+    view.dispatch({ changes: { from: view.state.doc.length, insert: "# hand-tuned\n" } });
+
+    expect(await screen.findByText("Code-backed · your code is kept as written")).toBeInTheDocument();
+    expect(await screen.findByText("Synced with form · 1 code-owned")).toBeInTheDocument();
+    expect(parses[0]).toMatchObject({ kind: "agent", component_id: "support-triage" });
+    // The previous test's pending autosave may land first: wait for the save that carries the code.
+    await waitFor(
+      () => {
+        expect(calls.saves.some((item) => typeof item.code === "string")).toBe(true);
+      },
+      { timeout: 5_000 },
+    );
+    const saved = calls.saves.find((item) => typeof item.code === "string") as {
+      code: string;
+      config: { description: string };
+    };
+    expect(saved.code.endsWith("# hand-tuned\n")).toBe(true);
+    expect(saved.config.description).toBe("Hand-tuned in code");
   });
 
   it("publishes past a failed gate only with a reason", async () => {

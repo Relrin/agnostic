@@ -5,7 +5,14 @@ import { EditorView } from "@codemirror/view";
 import { cn } from "@agnostic/ui";
 import { useEffect, useRef } from "react";
 
-import { baseExtensions, changeMarks, codeNotes, focusLine, languageExtension } from "./extensions";
+import {
+  baseExtensions,
+  changeMarks,
+  codeNotes,
+  focusLine,
+  languageExtension,
+  lineRange,
+} from "./extensions";
 import type { CodeViewProps } from "./types";
 
 const NO_MARKS = {};
@@ -15,13 +22,17 @@ export default function CodeViewImpl({
   value,
   language,
   marks = NO_MARKS,
-  focusLine: focus,
+  focusLine: line,
+  focusRange,
   notes = NO_NOTES,
   onCursor,
   ariaLabel,
   className,
 }: CodeViewProps) {
   const host = useRef<HTMLDivElement>(null);
+  const focus = lineRange(line, focusRange);
+  const focusFrom = focus?.from;
+  const focusTo = focus?.to;
   const view = useRef<EditorView>(undefined);
   const compartments = useRef({
     language: new Compartment(),
@@ -98,12 +109,14 @@ export default function CodeViewImpl({
   useEffect(() => {
     const current = view.current;
     if (!current) return;
-    const effects = [compartments.current.focus.reconfigure(focusLine.of(focus))];
-    if (focus !== undefined && focus >= 1 && focus <= current.state.doc.lines) {
-      effects.push(EditorView.scrollIntoView(current.state.doc.line(focus).from, { y: "center" }));
+    const range =
+      focusFrom === undefined || focusTo === undefined ? undefined : { from: focusFrom, to: focusTo };
+    const effects = [compartments.current.focus.reconfigure(focusLine.of(range))];
+    if (focusFrom !== undefined && focusFrom >= 1 && focusFrom <= current.state.doc.lines) {
+      effects.push(EditorView.scrollIntoView(current.state.doc.line(focusFrom).from, { y: "center" }));
     }
     current.dispatch({ effects });
-  }, [focus, value]);
+  }, [focusFrom, focusTo, value]);
 
   return <div ref={host} data-slot="code-view" className={cn("h-full min-h-0 overflow-hidden", className)} />;
 }

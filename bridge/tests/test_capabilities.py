@@ -47,6 +47,7 @@ def test_open_os_reports_versions_and_features() -> None:
         "GET /agnostic/v1/introspect/components",
         "GET /agnostic/v1/registry/{type}/{name}/source",
         "GET /agnostic/v1/workers",
+        "POST /agnostic/v1/cel/evaluate",
         "POST /agnostic/v1/components/normalize",
         "POST /agnostic/v1/components/validate",
         "POST /agnostic/v1/evals/run",

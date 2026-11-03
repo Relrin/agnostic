@@ -153,6 +153,18 @@ export {
   type ToolChipStatus,
 } from "./domain/run";
 export { GateResultList, LineLinkBadge, type GateResultRow, type GateState } from "./domain/studio";
+export {
+  BranchLabel,
+  InsertButton,
+  NODE_COLORS,
+  NodeCard,
+  PaletteItem,
+  WorkflowGlyph,
+  type BranchTone,
+  type NodeCardProps,
+  type WorkflowNodeStatus,
+  type WorkflowNodeType,
+} from "./domain/workflow";
 export { Composer, SessionList, type AttachmentRule, type SessionListItem } from "./domain/chat";
 export {
   SpanAttributes,

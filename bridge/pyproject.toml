@@ -23,6 +23,8 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+  # Workflows evaluate CEL only with it (agno[cel]); the tests evaluate with agno's own code.
+  "cel-python==0.5.0",
   "cryptography==50.0.2",
   "fastmcp==4.1.4",
   "httpx==0.28.1",

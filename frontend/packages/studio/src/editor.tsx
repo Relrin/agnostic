@@ -7,7 +7,7 @@ import {
   type RegistryEntryOut,
 } from "@agnostic/api";
 import { findInstance, formatRelative, useCan, useInstances, withQueryFn } from "@agnostic/core";
-import { preloadCodeView } from "@agnostic/editor";
+import { preloadCodeEditor, preloadCodeView } from "@agnostic/editor";
 import {
   Breadcrumb,
   Button,
@@ -32,7 +32,11 @@ import { TestPane } from "./test-pane";
 
 export type Layout = "form" | "split" | "code";
 const LAYOUTS: readonly Layout[] = ["form", "split", "code"];
-const FAMILY_LABEL: Record<EditableKind, string> = { agent: "Agents", team: "Agent teams" };
+export const FAMILY_LABEL: Record<EditableKind, string> = {
+  agent: "Agents",
+  team: "Agent teams",
+  workflow: "Workflows",
+};
 
 function useLayout(): [Layout, (layout: Layout) => void] {
   const raw = useSearch({ strict: false }) as unknown as Record<string, unknown>;
@@ -50,7 +54,7 @@ function useLayout(): [Layout, (layout: Layout) => void] {
   ];
 }
 
-function DraftChip({ doc }: { doc: DraftDocument }) {
+export function DraftChip({ doc }: { doc: DraftDocument }) {
   const draft = doc.draft;
   if (!draft) return null;
   const basedOn = draft.based_on_version ?? doc.detail?.component.current_version;
@@ -152,11 +156,17 @@ export function StudioEditor({
         config: doc.config,
         onChange: doc.setConfig,
         base: base ? { version: base.version, config: base.config } : undefined,
-        spans: doc.code?.spans ?? {},
+        spans: doc.spans,
         focusedPath,
         onFocusPath: setFocusedPath,
         registry,
         readOnly: canWrite.allowed !== true,
+        isCodeOwned: (path: string) =>
+          doc.source.codeOwned.some((owned) => path === owned || path.startsWith(`${owned}.`)),
+        onEditInCode: (path: string) => {
+          setFocusedPath(path);
+          if (layout === "form") setLayout("split");
+        },
       }
     : undefined;
   const component = detail.component;
@@ -244,10 +254,13 @@ export function StudioEditor({
       />
       <span
         className="inline-flex items-center gap-1.5 text-[12.5px] text-fg-secondary"
-        onMouseEnter={preloadCodeView}
+        onMouseEnter={() => {
+          preloadCodeView();
+          preloadCodeEditor();
+        }}
       >
         <ArrowLeftRight aria-hidden className="size-3.5 text-accent" />
-        The code is generated from the form; editing it arrives with the code editor.
+        Form and code are one source: edits in either show in the other.
       </span>
       <span className="flex-1" />
       {toolbarExtra?.(doc)}
@@ -299,6 +312,9 @@ export function StudioEditor({
   const code = (
     <CodePane
       code={doc.code}
+      source={doc.source}
+      onCode={doc.setCode}
+      onGenerate={doc.generateFromForm}
       config={doc.config}
       kind={kind}
       focusedPath={focusedPath}
@@ -306,6 +322,7 @@ export function StudioEditor({
       registryHref={(entry) => `${scoped}/studio/registry/tool/${encodeURIComponent(entry)}`}
       uncommitted={unpublished(base?.config, doc.config)}
       pending={doc.state === "dirty"}
+      readOnly={canWrite.allowed !== true}
     />
   );
   const test = (

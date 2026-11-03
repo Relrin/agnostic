@@ -1351,6 +1351,44 @@ export type BulkOutcomeOut = {
 };
 
 /**
+ * CanvasLayoutIn
+ */
+export type CanvasLayoutIn = {
+    /**
+     * Layout
+     *
+     * positions (node path → offset), collapsed paths, viewport
+     */
+    layout: {
+        [key: string]: unknown;
+    };
+    /**
+     * Version
+     */
+    version: number;
+};
+
+/**
+ * CanvasLayoutOut
+ */
+export type CanvasLayoutOut = {
+    /**
+     * Layout
+     */
+    layout: {
+        [key: string]: unknown;
+    };
+    /**
+     * Updated At
+     */
+    updated_at: string | null;
+    /**
+     * Version
+     */
+    version: number;
+};
+
+/**
  * CapabilityOut
  */
 export type CapabilityOut = {
@@ -1494,6 +1532,240 @@ export type CasesIn = {
      * Cases
      */
     cases: Array<CaseIn>;
+};
+
+/**
+ * CelCheckIn
+ */
+export type CelCheckIn = {
+    /**
+     * Choices
+     *
+     * A Router's choice names, to check every result.
+     */
+    choices?: Array<string> | null;
+    context: CelContextIn;
+    /**
+     * Expression
+     */
+    expression: string;
+};
+
+/**
+ * CelCheckOut
+ */
+export type CelCheckOut = {
+    /**
+     * Exhaustive
+     */
+    exhaustive: boolean | null;
+    /**
+     * Findings
+     */
+    findings: Array<CelFindingOut>;
+    /**
+     * Ok
+     */
+    ok: boolean;
+    /**
+     * Results
+     *
+     * Router: every literal it can return (null when not all are).
+     */
+    results: Array<string> | null;
+    /**
+     * Summary
+     *
+     * e.g. "Returns string · every result matches a choice"
+     */
+    summary: string;
+    /**
+     * Type
+     */
+    type: string | null;
+};
+
+export type CelContextIn = 'condition' | 'router' | 'loop';
+
+/**
+ * CelContextOut
+ */
+export type CelContextOut = {
+    /**
+     * Label
+     */
+    label: string;
+    /**
+     * Result
+     */
+    result: string;
+    /**
+     * Variables
+     */
+    variables: Array<CelVariableOut>;
+};
+
+/**
+ * CelContextsOut
+ */
+export type CelContextsOut = {
+    /**
+     * Contexts
+     */
+    contexts: {
+        [key: string]: CelContextOut;
+    };
+    /**
+     * Functions
+     */
+    functions: Array<CelFunctionOut>;
+    /**
+     * Macros
+     */
+    macros: Array<CelMacroOut>;
+};
+
+/**
+ * CelEvaluateIn
+ */
+export type CelEvaluateIn = {
+    /**
+     * Choices
+     */
+    choices?: Array<string> | null;
+    context: CelContextIn;
+    /**
+     * Expression
+     */
+    expression: string;
+    /**
+     * Sample
+     *
+     * Values of the context's variables (input, previous_step_content, …; for a loop last_step_content, step_outputs, …). Missing ones are empty, as agno passes them.
+     */
+    sample?: {
+        [key: string]: unknown;
+    };
+};
+
+/**
+ * CelEvaluateOut
+ */
+export type CelEvaluateOut = {
+    /**
+     * Error
+     */
+    error: string | null;
+    /**
+     * Evaluator
+     *
+     * agno: the instance evaluated it, as a run would; agnostic: the control plane's evaluator.
+     */
+    evaluator: 'agno' | 'agnostic';
+    /**
+     * Note
+     */
+    note: string | null;
+    /**
+     * Result
+     */
+    result: unknown;
+    span: CelSpanOut | null;
+    /**
+     * Type
+     */
+    type: string | null;
+};
+
+/**
+ * CelFindingOut
+ */
+export type CelFindingOut = {
+    /**
+     * Code
+     */
+    code: string;
+    /**
+     * Message
+     */
+    message: string;
+    /**
+     * Severity
+     */
+    severity: 'error' | 'warning' | 'info';
+    span: CelSpanOut;
+};
+
+/**
+ * CelFunctionOut
+ */
+export type CelFunctionOut = {
+    /**
+     * Doc
+     */
+    doc: string;
+    /**
+     * Method
+     */
+    method: boolean;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Signature
+     */
+    signature: string;
+};
+
+/**
+ * CelMacroOut
+ */
+export type CelMacroOut = {
+    /**
+     * Doc
+     */
+    doc: string;
+    /**
+     * Name
+     */
+    name: string;
+};
+
+/**
+ * CelSpanOut
+ */
+export type CelSpanOut = {
+    /**
+     * End
+     */
+    end: number;
+    /**
+     * Start
+     */
+    start: number;
+};
+
+/**
+ * CelVariableOut
+ */
+export type CelVariableOut = {
+    /**
+     * Doc
+     */
+    doc: string;
+    /**
+     * Example
+     */
+    example: unknown;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Type
+     */
+    type: string;
 };
 
 /**
@@ -1668,6 +1940,72 @@ export type CheckpointOut = {
      * Title
      */
     title: string;
+};
+
+/**
+ * CodeDiagnosticOut
+ */
+export type CodeDiagnosticOut = {
+    /**
+     * Code
+     */
+    code: string;
+    /**
+     * Column
+     */
+    column: number;
+    /**
+     * End Column
+     */
+    end_column: number;
+    /**
+     * End Line
+     */
+    end_line: number;
+    /**
+     * Line
+     */
+    line: number;
+    /**
+     * Message
+     */
+    message: string;
+    /**
+     * Path
+     */
+    path: string | null;
+    /**
+     * Severity
+     */
+    severity: 'error' | 'warning' | 'info';
+};
+
+/**
+ * CodeDocumentOut
+ */
+export type CodeDocumentOut = {
+    /**
+     * Code
+     */
+    code: string | null;
+    /**
+     * Code Backed
+     */
+    code_backed: boolean;
+    /**
+     * Stale
+     *
+     * The draft was saved without its code since, so they may disagree.
+     */
+    stale: boolean;
+    /**
+     * Updated At
+     */
+    updated_at: string | null;
+    /**
+     * Updated By Name
+     */
+    updated_by_name: string | null;
 };
 
 /**
@@ -4678,7 +5016,7 @@ export type KeysOut = {
     rotation_note: string;
 };
 
-export type KindIn = 'agent' | 'team';
+export type KindIn = 'agent' | 'team' | 'workflow';
 
 export type KindQuery = 'agent' | 'team' | 'workflow';
 
@@ -5967,6 +6305,62 @@ export type PageNotificationOut = {
      * Total Estimate
      */
     total_estimate?: number | null;
+};
+
+/**
+ * ParseIn
+ */
+export type ParseIn = {
+    /**
+     * Code
+     */
+    code: string;
+    /**
+     * Component Id
+     *
+     * Pick this component when the file defines several.
+     */
+    component_id?: string | null;
+    kind: KindIn;
+};
+
+/**
+ * ParseOut
+ */
+export type ParseOut = {
+    /**
+     * Code Owned
+     *
+     * Config paths set in code in a way the form can't edit.
+     */
+    code_owned: Array<string>;
+    /**
+     * Config
+     *
+     * The config the code reads as; null when it can't be read.
+     */
+    config: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Diagnostics
+     */
+    diagnostics: Array<CodeDiagnosticOut>;
+    /**
+     * Ok
+     */
+    ok: boolean;
+    ruff: RuffOut;
+    /**
+     * Spans
+     */
+    spans: {
+        [key: string]: SpanOut;
+    };
+    /**
+     * Variable
+     */
+    variable: string | null;
 };
 
 /**
@@ -7779,6 +8173,12 @@ export type SamlSettingsOut = {
  */
 export type SaveDraftIn = {
     /**
+     * Code
+     *
+     * For a code-backed draft: the code the config was read from (checked to read as it); an empty string stops keeping code for the draft.
+     */
+    code?: string | null;
+    /**
      * Config
      */
     config: {
@@ -9052,6 +9452,84 @@ export type StepOut = {
 };
 
 /**
+ * StepRunOut
+ */
+export type StepRunOut = {
+    /**
+     * Content
+     */
+    content: string | null;
+    /**
+     * Created At
+     */
+    created_at: number | null;
+    /**
+     * Error
+     */
+    error: string | null;
+    /**
+     * Run Id
+     */
+    run_id: string;
+    /**
+     * Session Id
+     */
+    session_id: string;
+    /**
+     * Status
+     */
+    status: string | null;
+    /**
+     * Success
+     */
+    success: boolean | null;
+};
+
+/**
+ * StepStatOut
+ */
+export type StepStatOut = {
+    /**
+     * Avg Ms
+     */
+    avg_ms: number;
+    /**
+     * Count
+     */
+    count: number;
+    /**
+     * Errors
+     */
+    errors: number;
+    /**
+     * Name
+     */
+    name: string;
+};
+
+/**
+ * StepStatsOut
+ */
+export type StepStatsOut = {
+    /**
+     * Sampled
+     */
+    sampled: boolean;
+    /**
+     * Steps
+     */
+    steps: Array<StepStatOut>;
+    /**
+     * Traces Scanned
+     */
+    traces_scanned: number;
+    /**
+     * Window
+     */
+    window: '24h' | '7d' | '30d';
+};
+
+/**
  * StepUpOut
  */
 export type StepUpOut = {
@@ -9571,6 +10049,70 @@ export type TraceComparisonOut = {
 };
 
 /**
+ * TransformIn
+ */
+export type TransformIn = {
+    /**
+     * Code
+     */
+    code: string;
+    /**
+     * Component Id
+     */
+    component_id?: string | null;
+    /**
+     * Config
+     *
+     * The edited config the code should say
+     */
+    config: {
+        [key: string]: unknown;
+    };
+    kind: KindIn;
+};
+
+/**
+ * TransformOut
+ */
+export type TransformOut = {
+    /**
+     * Changed
+     */
+    changed: Array<string>;
+    /**
+     * Code
+     */
+    code: string;
+    /**
+     * Code Owned
+     */
+    code_owned: Array<string>;
+    /**
+     * Config
+     */
+    config: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Diagnostics
+     */
+    diagnostics: Array<CodeDiagnosticOut>;
+    /**
+     * Equivalent
+     *
+     * The new code reads back as exactly the edited config.
+     */
+    equivalent: boolean;
+    ruff: RuffOut;
+    /**
+     * Spans
+     */
+    spans: {
+        [key: string]: SpanOut;
+    };
+};
+
+/**
  * UnreadOut
  */
 export type UnreadOut = {
@@ -9851,6 +10393,37 @@ export type WebAuthnVerify = {
      * Label
      */
     label?: string | null;
+};
+
+/**
+ * WorkflowValidateIn
+ */
+export type WorkflowValidateIn = {
+    /**
+     * Config
+     */
+    config: {
+        [key: string]: unknown;
+    };
+};
+
+/**
+ * WorkflowValidationOut
+ */
+export type WorkflowValidationOut = {
+    /**
+     * Sentence
+     *
+     * For the toolbar, e.g. "11 steps · valid".
+     */
+    sentence: string;
+    /**
+     * Step Count
+     *
+     * Every Step and every container (Steps, Parallel, Condition, Loop, Router).
+     */
+    step_count: number;
+    validation: ValidationOut;
 };
 
 /**
@@ -16026,6 +16599,40 @@ export type SchedulerTriggerScheduleResponses = {
 
 export type SchedulerTriggerScheduleResponse = SchedulerTriggerScheduleResponses[keyof SchedulerTriggerScheduleResponses];
 
+export type StudioEvaluateCelData = {
+    body: CelEvaluateIn;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/cel/evaluate';
+};
+
+export type StudioEvaluateCelErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type StudioEvaluateCelError = StudioEvaluateCelErrors[keyof StudioEvaluateCelErrors];
+
+export type StudioEvaluateCelResponses = {
+    /**
+     * Successful Response
+     */
+    200: CelEvaluateOut;
+};
+
+export type StudioEvaluateCelResponse = StudioEvaluateCelResponses[keyof StudioEvaluateCelResponses];
+
 export type StudioCodegenData = {
     body: CodegenIn;
     path: {
@@ -16249,6 +16856,87 @@ export type StudioPatchComponentResponses = {
 
 export type StudioPatchComponentResponse = StudioPatchComponentResponses[keyof StudioPatchComponentResponses];
 
+export type StudioGetCanvasLayoutData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Component Id
+         */
+        component_id: string;
+    };
+    query: {
+        /**
+         * Version
+         */
+        version: number;
+    };
+    url: '/api/v1/instances/{instance}/studio/components/{component_id}/canvas-layout';
+};
+
+export type StudioGetCanvasLayoutErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type StudioGetCanvasLayoutError = StudioGetCanvasLayoutErrors[keyof StudioGetCanvasLayoutErrors];
+
+export type StudioGetCanvasLayoutResponses = {
+    /**
+     * Successful Response
+     */
+    200: CanvasLayoutOut;
+};
+
+export type StudioGetCanvasLayoutResponse = StudioGetCanvasLayoutResponses[keyof StudioGetCanvasLayoutResponses];
+
+export type StudioPutCanvasLayoutData = {
+    body: CanvasLayoutIn;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Component Id
+         */
+        component_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/components/{component_id}/canvas-layout';
+};
+
+export type StudioPutCanvasLayoutErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type StudioPutCanvasLayoutError = StudioPutCanvasLayoutErrors[keyof StudioPutCanvasLayoutErrors];
+
+export type StudioPutCanvasLayoutResponses = {
+    /**
+     * Successful Response
+     */
+    200: CanvasLayoutOut;
+};
+
+export type StudioPutCanvasLayoutResponse = StudioPutCanvasLayoutResponses[keyof StudioPutCanvasLayoutResponses];
+
 export type StudioNewDraftData = {
     body: NewDraftIn;
     path: {
@@ -16412,6 +17100,48 @@ export type StudioSaveDraftResponses = {
 };
 
 export type StudioSaveDraftResponse = StudioSaveDraftResponses[keyof StudioSaveDraftResponses];
+
+export type StudioGetCodeDocumentData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Component Id
+         */
+        component_id: string;
+        /**
+         * Version
+         */
+        version: number;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/components/{component_id}/configs/{version}/code';
+};
+
+export type StudioGetCodeDocumentErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type StudioGetCodeDocumentError = StudioGetCodeDocumentErrors[keyof StudioGetCodeDocumentErrors];
+
+export type StudioGetCodeDocumentResponses = {
+    /**
+     * Successful Response
+     */
+    200: CodeDocumentOut;
+};
+
+export type StudioGetCodeDocumentResponse = StudioGetCodeDocumentResponses[keyof StudioGetCodeDocumentResponses];
 
 export type StudioPublishData = {
     body: PublishIn;
@@ -16703,6 +17433,98 @@ export type StudioRestoreComponentResponses = {
 
 export type StudioRestoreComponentResponse = StudioRestoreComponentResponses[keyof StudioRestoreComponentResponses];
 
+export type StudioStepRunsData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Component Id
+         */
+        component_id: string;
+    };
+    query: {
+        /**
+         * Step
+         */
+        step: string;
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/api/v1/instances/{instance}/studio/components/{component_id}/step-runs';
+};
+
+export type StudioStepRunsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type StudioStepRunsError = StudioStepRunsErrors[keyof StudioStepRunsErrors];
+
+export type StudioStepRunsResponses = {
+    /**
+     * Response Studio Step Runs
+     *
+     * Successful Response
+     */
+    200: Array<StepRunOut>;
+};
+
+export type StudioStepRunsResponse = StudioStepRunsResponses[keyof StudioStepRunsResponses];
+
+export type StudioStepStatsData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Component Id
+         */
+        component_id: string;
+    };
+    query?: {
+        /**
+         * Window
+         */
+        window?: '24h' | '7d' | '30d';
+    };
+    url: '/api/v1/instances/{instance}/studio/components/{component_id}/step-stats';
+};
+
+export type StudioStepStatsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type StudioStepStatsError = StudioStepStatsErrors[keyof StudioStepStatsErrors];
+
+export type StudioStepStatsResponses = {
+    /**
+     * Successful Response
+     */
+    200: StepStatsOut;
+};
+
+export type StudioStepStatsResponse = StudioStepStatsResponses[keyof StudioStepStatsResponses];
+
 export type StudioTestRunData = {
     body: TestRunIn;
     path: {
@@ -16738,6 +17560,40 @@ export type StudioTestRunResponses = {
      */
     200: unknown;
 };
+
+export type StudioParseCodeData = {
+    body: ParseIn;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/parse';
+};
+
+export type StudioParseCodeErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type StudioParseCodeError = StudioParseCodeErrors[keyof StudioParseCodeErrors];
+
+export type StudioParseCodeResponses = {
+    /**
+     * Successful Response
+     */
+    200: ParseOut;
+};
+
+export type StudioParseCodeResponse = StudioParseCodeResponses[keyof StudioParseCodeResponses];
 
 export type StudioApplyPromotionData = {
     body: PromotionApplyIn;
@@ -16896,6 +17752,40 @@ export type StudioRegistryEntryResponses = {
 
 export type StudioRegistryEntryResponse = StudioRegistryEntryResponses[keyof StudioRegistryEntryResponses];
 
+export type StudioTransformCodeData = {
+    body: TransformIn;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/transform';
+};
+
+export type StudioTransformCodeErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type StudioTransformCodeError = StudioTransformCodeErrors[keyof StudioTransformCodeErrors];
+
+export type StudioTransformCodeResponses = {
+    /**
+     * Successful Response
+     */
+    200: TransformOut;
+};
+
+export type StudioTransformCodeResponse = StudioTransformCodeResponses[keyof StudioTransformCodeResponses];
+
 export type StudioValidateData = {
     body: ValidateIn;
     path: {
@@ -16929,6 +17819,40 @@ export type StudioValidateResponses = {
 };
 
 export type StudioValidateResponse = StudioValidateResponses[keyof StudioValidateResponses];
+
+export type StudioValidateWorkflowData = {
+    body: WorkflowValidateIn;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/workflows/validate';
+};
+
+export type StudioValidateWorkflowErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type StudioValidateWorkflowError = StudioValidateWorkflowErrors[keyof StudioValidateWorkflowErrors];
+
+export type StudioValidateWorkflowResponses = {
+    /**
+     * Successful Response
+     */
+    200: WorkflowValidationOut;
+};
+
+export type StudioValidateWorkflowResponse = StudioValidateWorkflowResponses[keyof StudioValidateWorkflowResponses];
 
 export type InstancesTestInstanceData = {
     body?: never;
@@ -18695,13 +19619,71 @@ export type ServiceAccountsRevokeTokenResponses = {
 
 export type ServiceAccountsRevokeTokenResponse = ServiceAccountsRevokeTokenResponses[keyof ServiceAccountsRevokeTokenResponses];
 
+export type StudioCheckCelData = {
+    body: CelCheckIn;
+    path?: never;
+    query?: never;
+    url: '/api/v1/studio/cel/check';
+};
+
+export type StudioCheckCelErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type StudioCheckCelError = StudioCheckCelErrors[keyof StudioCheckCelErrors];
+
+export type StudioCheckCelResponses = {
+    /**
+     * Successful Response
+     */
+    200: CelCheckOut;
+};
+
+export type StudioCheckCelResponse = StudioCheckCelResponses[keyof StudioCheckCelResponses];
+
+export type StudioCelContextsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/studio/cel/contexts';
+};
+
+export type StudioCelContextsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type StudioCelContextsError = StudioCelContextsErrors[keyof StudioCelContextsErrors];
+
+export type StudioCelContextsResponses = {
+    /**
+     * Successful Response
+     */
+    200: CelContextsOut;
+};
+
+export type StudioCelContextsResponse = StudioCelContextsResponses[keyof StudioCelContextsResponses];
+
 export type StudioSchemaData = {
     body?: never;
     path: {
         /**
          * Kind
          */
-        kind: 'agent' | 'team';
+        kind: 'agent' | 'team' | 'workflow';
     };
     query?: never;
     url: '/api/v1/studio/schema/{kind}';

@@ -20,6 +20,7 @@ from fastapi import APIRouter, Request
 from starlette.routing import BaseRoute, Mount
 
 from agnostic_bridge._capabilities import BridgeCapabilities, build_capabilities, default_replica_id
+from agnostic_bridge._cel import EVALUATE_CEL_PATH, add_cel_routes
 from agnostic_bridge._components import NORMALIZE_PATH, VALIDATE_PATH, add_component_routes
 from agnostic_bridge._evals import RUN_EVAL_PATH, add_eval_routes
 from agnostic_bridge._events import EVENTS_PATH, add_event_routes
@@ -46,6 +47,7 @@ SCOPE_MAPPINGS: dict[str, list[str]] = {
     f"POST {BRIDGE_PREFIX}{NORMALIZE_PATH}": ["components:read"],
     f"GET {BRIDGE_PREFIX}{INTROSPECT_COMPONENTS_PATH}": ["components:read"],
     f"GET {BRIDGE_PREFIX}{REGISTRY_SOURCE_PATH}": ["registry:read"],
+    f"POST {BRIDGE_PREFIX}{EVALUATE_CEL_PATH}": ["components:read"],
 }
 
 
@@ -72,6 +74,7 @@ def create_router(agent_os: AgentOS, *, replica_id: str | None = None, include_i
     add_event_routes(router, agent_os)
     add_component_routes(router, agent_os)
     add_introspect_routes(router, agent_os)
+    add_cel_routes(router, agent_os)
     return router
 
 

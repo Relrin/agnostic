@@ -23,6 +23,10 @@ Widget = Literal[
     "members",
     "mode",
     "json",
+    "cel",
+    "executor",
+    "human_review",
+    "steps",
 ]
 
 META_KEY = "x-agnostic"

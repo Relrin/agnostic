@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING, Any, Literal
 from agno import __version__ as agno_version
 from agno.db.base import BaseDb
 from agno.os.auth import get_effective_auth_mode
+from agno.workflow import cel as agno_cel
 from pydantic import BaseModel, Field
 
 if TYPE_CHECKING:
@@ -51,6 +52,7 @@ class BridgeFeatures(BaseModel):
     mcp: bool = Field(description="The OS is served over MCP")
     telemetry: bool
     interfaces: list[str] = Field(description="Interface types mounted on the OS (a2a, slack, ...)")
+    cel: bool = Field(description="cel-python is installed, so workflows evaluate CEL (agno[cel])")
 
 
 class BridgeCapabilities(BaseModel):
@@ -122,6 +124,7 @@ def build_capabilities(
             mcp=bool(agent_os.mcp),
             telemetry=bool(agent_os.telemetry),
             interfaces=_interface_types(agent_os),
+            cel=agno_cel.CEL_AVAILABLE,
         ),
         endpoints=endpoints,
     )

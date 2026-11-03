@@ -1,0 +1,219 @@
+{
+  "contexts": {
+    "condition": {
+      "label": "Condition evaluator",
+      "result": "bool",
+      "variables": [
+        {
+          "name": "input",
+          "type": "string",
+          "doc": "The workflow's input as text.",
+          "example": "I was charged twice, need a refund"
+        },
+        {
+          "name": "previous_step_content",
+          "type": "string",
+          "doc": "What the previous step returned, as text (JSON for structured output).",
+          "example": "Category: BILLING"
+        },
+        {
+          "name": "previous_step_outputs",
+          "type": "map<string, string>",
+          "doc": "Every earlier step's output by step name.",
+          "example": {
+            "Classify ticket": "Category: BILLING"
+          }
+        },
+        {
+          "name": "additional_data",
+          "type": "map<string, dyn>",
+          "doc": "Extra data passed with the run.",
+          "example": {}
+        },
+        {
+          "name": "session_state",
+          "type": "map<string, dyn>",
+          "doc": "The session's state.",
+          "example": {}
+        }
+      ]
+    },
+    "router": {
+      "label": "Router selector",
+      "result": "string",
+      "variables": [
+        {
+          "name": "input",
+          "type": "string",
+          "doc": "The workflow's input as text.",
+          "example": "I was charged twice, need a refund"
+        },
+        {
+          "name": "previous_step_content",
+          "type": "string",
+          "doc": "What the previous step returned, as text (JSON for structured output).",
+          "example": "Category: BILLING"
+        },
+        {
+          "name": "previous_step_outputs",
+          "type": "map<string, string>",
+          "doc": "Every earlier step's output by step name.",
+          "example": {
+            "Classify ticket": "Category: BILLING"
+          }
+        },
+        {
+          "name": "additional_data",
+          "type": "map<string, dyn>",
+          "doc": "Extra data passed with the run.",
+          "example": {}
+        },
+        {
+          "name": "session_state",
+          "type": "map<string, dyn>",
+          "doc": "The session's state.",
+          "example": {}
+        },
+        {
+          "name": "step_choices",
+          "type": "list<string>",
+          "doc": "The names of the router's choices.",
+          "example": []
+        }
+      ]
+    },
+    "loop": {
+      "label": "Loop end condition",
+      "result": "bool",
+      "variables": [
+        {
+          "name": "current_iteration",
+          "type": "int",
+          "doc": "The iteration that just finished, from 1.",
+          "example": 1
+        },
+        {
+          "name": "max_iterations",
+          "type": "int",
+          "doc": "The loop's iteration limit.",
+          "example": 3
+        },
+        {
+          "name": "all_success",
+          "type": "bool",
+          "doc": "Whether every step of this iteration succeeded.",
+          "example": true
+        },
+        {
+          "name": "last_step_content",
+          "type": "string",
+          "doc": "What the iteration's last step returned, as text.",
+          "example": "APPROVED"
+        },
+        {
+          "name": "step_outputs",
+          "type": "map<string, string>",
+          "doc": "This iteration's outputs by step name.",
+          "example": {
+            "Draft reply": "Hi! ...",
+            "Review tone": "APPROVED"
+          }
+        }
+      ]
+    }
+  },
+  "functions": [
+    {
+      "name": "contains",
+      "signature": "string.contains(substring) -> bool",
+      "doc": "Whether the string contains `substring` (case-sensitive).",
+      "method": true
+    },
+    {
+      "name": "startsWith",
+      "signature": "string.startsWith(prefix) -> bool",
+      "doc": "Whether the string starts with `prefix`.",
+      "method": true
+    },
+    {
+      "name": "endsWith",
+      "signature": "string.endsWith(suffix) -> bool",
+      "doc": "Whether the string ends with `suffix`.",
+      "method": true
+    },
+    {
+      "name": "matches",
+      "signature": "string.matches(regex) -> bool",
+      "doc": "Whether the regular expression matches anywhere in the string (RE2 syntax).",
+      "method": true
+    },
+    {
+      "name": "size",
+      "signature": "size(value) -> int",
+      "doc": "Characters in a string, bytes in bytes, items in a list or entries in a map.",
+      "method": true
+    },
+    {
+      "name": "int",
+      "signature": "int(value) -> int",
+      "doc": "Converts a number or a string to int.",
+      "method": false
+    },
+    {
+      "name": "uint",
+      "signature": "uint(value) -> uint",
+      "doc": "Converts a number or a string to uint.",
+      "method": false
+    },
+    {
+      "name": "double",
+      "signature": "double(value) -> double",
+      "doc": "Converts a number or a string to double.",
+      "method": false
+    },
+    {
+      "name": "string",
+      "signature": "string(value) -> string",
+      "doc": "Converts a number, bool or bytes to its text.",
+      "method": false
+    },
+    {
+      "name": "bool",
+      "signature": "bool(value) -> bool",
+      "doc": "Converts \"true\" or \"false\" to bool.",
+      "method": false
+    },
+    {
+      "name": "dyn",
+      "signature": "dyn(value) -> dyn",
+      "doc": "Turns off type checks for the value.",
+      "method": false
+    }
+  ],
+  "macros": [
+    {
+      "name": "has",
+      "doc": "has(map.key) -> bool \u00b7 Whether the map has the key."
+    },
+    {
+      "name": "all",
+      "doc": "list.all(x, predicate) -> bool \u00b7 Whether the predicate holds for every item (a map's keys)."
+    },
+    {
+      "name": "exists",
+      "doc": "list.exists(x, predicate) -> bool \u00b7 Whether the predicate holds for at least one item."
+    },
+    {
+      "name": "exists_one",
+      "doc": "list.exists_one(x, predicate) -> bool \u00b7 Whether the predicate holds for exactly one item."
+    },
+    {
+      "name": "map",
+      "doc": "list.map(x, expression) -> list \u00b7 The expression for every item; map(x, filter, expression) filters first."
+    },
+    {
+      "name": "filter",
+      "doc": "list.filter(x, predicate) -> list \u00b7 The items the predicate holds for."
+    }
+  ]
+}

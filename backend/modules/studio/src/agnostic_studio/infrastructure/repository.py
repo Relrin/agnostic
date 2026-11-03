@@ -9,10 +9,17 @@ from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from agnostic_kernel.db import aware, aware_or_none, utcnow
-from agnostic_studio.domain.model import ComponentMeta, Kind, VersionMeta
+from agnostic_studio.domain.model import CanvasLayout, CodeDocument, ComponentMeta, Kind, VersionMeta
 from agnostic_studio.domain.promotion import Promotion, PromotionStatus
 from agnostic_studio.domain.usage import IndexEntry, UsedBy
-from agnostic_studio.infrastructure.tables import ComponentMetaRow, PromotionRow, RegistryIndexRow, VersionMetaRow
+from agnostic_studio.infrastructure.tables import (
+    CanvasLayoutRow,
+    CodeDocumentRow,
+    ComponentMetaRow,
+    PromotionRow,
+    RegistryIndexRow,
+    VersionMetaRow,
+)
 
 
 class SqlStudioStore:
@@ -116,6 +123,65 @@ class SqlStudioStore:
             .limit(limit)
         )
         return [_promotion(row) for row in rows]
+
+    # ---------------------------------------------------------------- canvas layouts & code documents
+
+    async def canvas_layout(self, instance_id: str, component_id: str, version: int) -> CanvasLayout | None:
+        row = await self._session.get(CanvasLayoutRow, (instance_id, component_id, version))
+        if row is None:
+            return None
+        return CanvasLayout(
+            row.instance_id, row.component_id, row.version, dict(row.layout), row.updated_by, aware(row.updated_at)
+        )
+
+    async def save_canvas_layout(self, layout: CanvasLayout) -> None:
+        row = await self._session.get(CanvasLayoutRow, (layout.instance_id, layout.component_id, layout.version))
+        if row is None:
+            row = CanvasLayoutRow(
+                instance_id=layout.instance_id, component_id=layout.component_id, version=layout.version
+            )
+            self._session.add(row)
+        row.layout = dict(layout.layout)
+        row.updated_by = layout.updated_by
+        row.updated_at = layout.updated_at or utcnow()
+
+    async def code_document(self, instance_id: str, component_id: str, version: int) -> CodeDocument | None:
+        row = await self._session.get(CodeDocumentRow, (instance_id, component_id, version))
+        if row is None:
+            return None
+        return CodeDocument(
+            row.instance_id,
+            row.component_id,
+            row.version,
+            row.code,
+            row.config_hash,
+            row.updated_by,
+            row.updated_by_name,
+            aware(row.updated_at),
+        )
+
+    async def save_code_document(self, document: CodeDocument) -> None:
+        key = (document.instance_id, document.component_id, document.version)
+        row = await self._session.get(CodeDocumentRow, key)
+        if row is None:
+            row = CodeDocumentRow(
+                instance_id=document.instance_id, component_id=document.component_id, version=document.version
+            )
+            self._session.add(row)
+        row.code = document.code
+        row.config_hash = document.config_hash
+        row.updated_by = document.updated_by
+        row.updated_by_name = document.updated_by_name
+        row.updated_at = document.updated_at or utcnow()
+
+    async def drop_code_document(self, instance_id: str, component_id: str, version: int) -> None:
+        _ = await self._session.execute(
+            delete(CodeDocumentRow).where(
+                CodeDocumentRow.instance_id == instance_id,
+                CodeDocumentRow.component_id == component_id,
+                CodeDocumentRow.version == version,
+            )
+        )
 
     async def commit(self) -> None:
         await self._session.commit()

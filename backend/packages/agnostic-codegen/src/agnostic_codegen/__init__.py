@@ -1,6 +1,10 @@
-"""Python source for Agno component configs: generation, ruff formatting, span maps and line marks.
+"""Python source for Agno component configs, and configs from Python.
 
-Code is a projection of the config document; generating it never imports or runs anything.
+Generation, ruff formatting, span maps, line marks, parsing human-written code into configs, and edits that keep the
+human's formatting.
+
+Code is a projection of the config document, or (for code-backed components) the artifact itself; nothing here
+imports or runs it.
 """
 
 from __future__ import annotations
@@ -8,11 +12,27 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from agnostic_codegen.convention import RegistryConvention, snake
-from agnostic_codegen.formatting import LintMessage, RuffResult, format_and_lint
-from agnostic_codegen.generate import Generated, Note, generate
+from agnostic_codegen.formatting import LintMessage, RuffResult, format_and_lint, lint
+from agnostic_codegen.generate import Generated, Note
+from agnostic_codegen.generate import generate as generate_component
 from agnostic_codegen.marks import Mark, counts, line_marks, unified
+from agnostic_codegen.parse import (
+    CODE_ONLY,
+    CodeDiagnostic,
+    Lookup,
+    Parsed,
+    Reading,
+    Resolver,
+    owned_paths,
+    parse_source,
+    read_source,
+)
 from agnostic_codegen.spans import Span, span_map
-from agnostic_spec.v3_1 import ComponentConfig
+from agnostic_codegen.transform import Transformed, transform
+from agnostic_codegen.workflow import generate_workflow
+from agnostic_spec.v3_1 import ComponentConfig, WorkflowConfig
+
+FOLDERS = {"agent": "agents", "team": "teams", "workflow": "workflows"}
 
 
 @dataclass(frozen=True, slots=True)
@@ -27,8 +47,22 @@ class Rendered:
 
 
 def filename_for(config: ComponentConfig, variable: str) -> str:
-    folder = "teams" if config.kind == "team" else "agents"
-    return f"{folder}/{variable}.py"
+    return f"{FOLDERS[config.kind]}/{variable}.py"
+
+
+def generate(config: ComponentConfig, convention: RegistryConvention | None = None) -> Generated:
+    if isinstance(config, WorkflowConfig):
+        return generate_workflow(config, convention)
+    return generate_component(config, convention)
+
+
+def spans_of(
+    code: str, config: ComponentConfig, generated: Generated, convention: RegistryConvention
+) -> dict[str, Span]:
+    """Field paths → spans of the final code. Workflows are read back, so hoisted steps point at their definition."""
+    if isinstance(config, WorkflowConfig):
+        return parse_source(code, kind="workflow", convention=convention).spans
+    return span_map(code, generated.variable, generated.element_paths)
 
 
 async def render(
@@ -52,7 +86,7 @@ async def render(
     return Rendered(
         code=ruff.code,
         filename=filename,
-        spans=span_map(ruff.code, generated.variable, generated.element_paths),
+        spans=spans_of(ruff.code, config, generated, convention),
         notes=generated.notes,
         ruff=ruff,
         marks=marks,
@@ -61,21 +95,34 @@ async def render(
 
 
 __all__ = [
+    "CODE_ONLY",
+    "CodeDiagnostic",
     "Generated",
     "LintMessage",
+    "Lookup",
     "Mark",
     "Note",
+    "Parsed",
+    "Reading",
     "RegistryConvention",
     "Rendered",
+    "Resolver",
     "RuffResult",
     "Span",
+    "Transformed",
     "counts",
     "filename_for",
     "format_and_lint",
     "generate",
     "line_marks",
+    "lint",
+    "owned_paths",
+    "parse_source",
+    "read_source",
     "render",
     "snake",
     "span_map",
+    "spans_of",
+    "transform",
     "unified",
 ]

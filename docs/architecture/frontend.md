@@ -10,7 +10,7 @@ Query, Yarn 4 workspaces. The shell composes feature modules that register throu
 | `apps/web` (`@agnostic/web`) | shell: router assembly, sidebar, header, command palette, providers | everything |
 | `packages/ui` (`@agnostic/ui`) | design system: tokens, primitives, patterns, Storybook | nothing internal |
 | `packages/core` (`@agnostic/core`) | module SDK, navigation, query defaults, run streaming and `RunView` | packages |
-| `packages/editor` (`@agnostic/editor`) | read-only code views on CodeMirror 6 (`CodeView`, loaded on demand) | `@agnostic/ui` |
+| `packages/editor` (`@agnostic/editor`) | code views and editors on CodeMirror 6, loaded on demand: `CodeView` (read-only), `CodeEditor` (editable, diagnostics, code-owned lines), `CelEditor` (one expression, completion and hover) | `@agnostic/ui` |
 | `packages/studio` (`@agnostic/studio`) | Studio editor building blocks: draft document, form, code and test panes, versions, publish and promote dialogs ([Studio](studio.md)) | packages |
 | `packages/api` (`@agnostic/api`) | generated client + TanStack Query options | packages |
 | `packages/testing` (`@agnostic/testing`) | render helpers, MSW handlers with sample data | packages |
@@ -76,7 +76,15 @@ keyboard sorting), `Accordion`/`AccordionSection`, `Checkbox`, `Combobox` (Popov
 with a 3px change-mark strip (added/modified) beside the line numbers, a focused line (accent background, scrolled
 into view), inline notes under a line with a wavy underline on their columns, and an `onCursor` callback for linking
 lines back to form fields. CodeMirror loads in its own chunk on first render (`CodeViewSkeleton` meanwhile;
-`preloadCodeView()` fetches it early).
+`preloadCodeView()` fetches it early). `CodeEditor` is the editable variant the Studio code pane uses (history and
+keys, `onChange` for the person's edits only, diagnostics in the lint gutter, code-owned lines tinted, a focused line
+range); `CelEditor` edits one CEL expression with completion and hover docs for its context and an `insert()` handle
+for variable chips.
+
+The workflow builder (`modules/studio-workflows`) draws the step tree with `@xyflow/react`, laid out by ELK in a worker
+(`elk-api` talking to `elk-worker`, main thread as the fallback); edits are tree operations recorded as immer patches
+in a zustand store, so each one undoes. Its node cards, branch labels, insert buttons and palette items are
+`@agnostic/ui` widgets (`NodeCard`, `BranchLabel`, `InsertButton`, `PaletteItem`) coloured from the node tokens.
 
 Fonts (Geist, Geist Mono) are self-hosted through `@fontsource-variable`; there are no runtime CDN calls.
 

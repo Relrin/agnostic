@@ -1,23 +1,33 @@
-"""Module declaration: Studio on AgentOS components, the registry catalog, gated publish and promotion."""
+"""Module declaration: Studio on AgentOS components.
+
+The registry catalog, the workflow builder, code that round-trips into configs, gated publish and promotion.
+"""
 
 from __future__ import annotations
 
 from collections.abc import Iterable
 from pathlib import Path
 
-from dishka import Provider
+from dishka import AsyncContainer, Provider
+from pydantic_settings import BaseSettings
 from sqlalchemy import MetaData
 
 from agnostic_kernel.modules import AuditActionDecl, BaseModule, RouterSpec, ScopeDecl
 from agnostic_studio.api.router import org_router, router
+from agnostic_studio.application.ports import SourceRunner
+from agnostic_studio.infrastructure.isolation import SourceWorkers
 from agnostic_studio.infrastructure.tables import StudioBase
 from agnostic_studio.providers import StudioProvider
+from agnostic_studio.settings import StudioSettings
 
 
 class StudioModule(BaseModule):
     name = "studio"
     version = "0.1.0"
-    depends_on = ("access", "audit", "instances", "gateway", "evals")
+    depends_on = ("access", "audit", "instances", "gateway", "evals", "observe")
+
+    def settings_model(self) -> type[BaseSettings] | None:
+        return StudioSettings
 
     def provide(self) -> Iterable[Provider]:
         return (StudioProvider(),)
@@ -33,6 +43,11 @@ class StudioModule(BaseModule):
 
     def migrations(self) -> Path | None:
         return Path(__file__).with_name("migrations") / "versions"
+
+    async def on_shutdown(self, container: AsyncContainer) -> None:
+        workers = await container.get(SourceRunner)
+        if isinstance(workers, SourceWorkers):
+            workers.close()
 
     def scopes(self) -> Iterable[ScopeDecl]:
         return (

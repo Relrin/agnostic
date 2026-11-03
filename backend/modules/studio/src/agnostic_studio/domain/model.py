@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import Any, Literal
 
 type Kind = Literal["agent", "team", "workflow"]
-type EditableKind = Literal["agent", "team"]
+type EditableKind = Literal["agent", "team", "workflow"]
 type Stage = Literal["draft", "published"]
 type Source = Literal["studio", "code"]
 
@@ -79,6 +79,34 @@ class VersionMeta:
     published_by_name: str | None = None
     published_at: datetime | None = None
     promoted_from: dict[str, Any] | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class CanvasLayout:
+    """What a person changed on a workflow canvas: auto-layout places everything else."""
+
+    instance_id: str
+    component_id: str
+    version: int
+    layout: dict[str, Any]
+    """``positions`` (node path → offset from its auto-laid-out place), ``collapsed`` paths, ``viewport``."""
+    updated_by: str | None = None
+    updated_at: datetime | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class CodeDocument:
+    """The code of a code-backed draft: once someone edits the code, it is the artifact and the config follows it."""
+
+    instance_id: str
+    component_id: str
+    version: int
+    code: str
+    config_hash: str
+    """Hash of the config the code reads as; a draft saved elsewhere since then makes the code stale."""
+    updated_by: str | None = None
+    updated_by_name: str | None = None
+    updated_at: datetime | None = None
 
 
 def latest(versions: list[Version]) -> Version | None:

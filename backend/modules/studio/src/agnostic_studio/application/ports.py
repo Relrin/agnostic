@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import Protocol
 
-from agnostic_studio.domain.model import ComponentMeta, VersionMeta
+from agnostic_kernel.errors import AppError
+from agnostic_studio.domain.model import CanvasLayout, CodeDocument, ComponentMeta, VersionMeta
 from agnostic_studio.domain.promotion import Promotion
 from agnostic_studio.domain.usage import IndexEntry
 
@@ -29,4 +31,26 @@ class StudioStore(Protocol):
     async def promotion(self, promotion_id: str) -> Promotion | None: ...
     async def promotions(self, instance_id: str, component_id: str, limit: int = 20) -> list[Promotion]: ...
 
+    async def canvas_layout(self, instance_id: str, component_id: str, version: int) -> CanvasLayout | None: ...
+    async def save_canvas_layout(self, layout: CanvasLayout) -> None: ...
+
+    async def code_document(self, instance_id: str, component_id: str, version: int) -> CodeDocument | None: ...
+    async def save_code_document(self, document: CodeDocument) -> None: ...
+    async def drop_code_document(self, instance_id: str, component_id: str, version: int) -> None: ...
+
     async def commit(self) -> None: ...
+
+
+class SourceTimeoutError(AppError):
+    status = 422
+    code = "source_timeout"
+    title = "The code took too long to process"
+
+    def __init__(self, seconds: float) -> None:
+        super().__init__(f"Reading or editing this code took longer than {seconds:g} s and was stopped.")
+
+
+class SourceRunner(Protocol):
+    """Runs CPU-bound source work (parsing, edits, CEL) away from the event loop, with a timeout per job."""
+
+    async def run[**P, T](self, job: Callable[P, T], *args: P.args, **kwargs: P.kwargs) -> T: ...

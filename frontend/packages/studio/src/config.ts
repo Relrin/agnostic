@@ -1,7 +1,7 @@
 // The config document (Agno `to_dict()` shape) as plain JSON, with typed readers for the fields Studio shows.
 
 export type Config = Record<string, unknown>;
-export type EditableKind = "agent" | "team";
+export type EditableKind = "agent" | "team" | "workflow";
 export type TeamMode = "coordinate" | "route" | "broadcast" | "tasks";
 export const TEAM_MODES: readonly TeamMode[] = ["coordinate", "route", "broadcast", "tasks"];
 
@@ -118,10 +118,13 @@ export function display(value: unknown): string {
 }
 
 /** Pinned member versions from a version's links (`child_component_id` → `child_version`). */
+/** Links that pin a child at a version: a team's members, a workflow's step executors. */
+const PINNED_LINKS = new Set(["member", "step_agent", "step_team", "step_workflow"]);
+
 export function pinsFrom(links: readonly Record<string, unknown>[] | undefined): Record<string, number> {
   const pins: Record<string, number> = {};
   for (const link of links ?? []) {
-    if (link.link_kind !== "member") continue;
+    if (typeof link.link_kind !== "string" || !PINNED_LINKS.has(link.link_kind)) continue;
     const child = link.child_component_id;
     const version = link.child_version;
     if (typeof child === "string" && typeof version === "number") pins[child] = version;

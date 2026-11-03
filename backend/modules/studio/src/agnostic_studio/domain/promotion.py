@@ -17,6 +17,8 @@ TYPE_NOUNS = {
     "schema": "schema",
     "memory_manager": "memory manager",
     "learning": "learning machine",
+    "function": "function",
+    "workflow": "workflow",
 }
 
 

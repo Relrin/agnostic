@@ -21,6 +21,7 @@
   },
   "devDependencies": {
     "@agnostic/testing": "workspace:*",
+    "@codemirror/view": "6.43.15",
     "@testing-library/jest-dom": "7.0.1",
     "msw": "3.0.3",
     "react": "19.3.1",

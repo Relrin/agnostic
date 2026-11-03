@@ -42,6 +42,12 @@ import { isRecord, type EditableKind } from "./config";
 import { useRegistry } from "./document";
 
 type Kind = "agent" | "team" | "workflow";
+
+const PLACEHOLDERS: Record<Kind, string> = {
+  agent: "support-triage",
+  team: "research-team",
+  workflow: "ticket-router",
+};
 type Mode = "blank" | "template" | "duplicate" | "import";
 type SourceFilter = "all" | "studio" | "code";
 
@@ -60,7 +66,8 @@ const TITLES: Record<Kind, { title: string; noun: string; blurb: string }> = {
   workflow: {
     title: "Workflows",
     noun: "workflow",
-    blurb: "Workflows on this instance, with their live version and open drafts.",
+    blurb:
+      "Workflows stored in Studio are built on the canvas and versioned on the instance; workflows defined in code are listed read-only.",
   },
 };
 
@@ -148,7 +155,7 @@ function NewComponentDialog({
             <Input
               id="new-component-name"
               value={name}
-              placeholder={kind === "team" ? "research-team" : "support-triage"}
+              placeholder={PLACEHOLDERS[kind]}
               onChange={(event) => {
                 setName(event.target.value);
               }}
@@ -159,13 +166,18 @@ function NewComponentDialog({
             value={mode}
             onValueChange={setMode}
             options={[
-              { value: "blank", label: "Blank", description: "A model and nothing else." },
+              {
+                value: "blank",
+                label: "Blank",
+                description:
+                  kind === "workflow" ? "No steps yet: add them on the canvas." : "A model and nothing else.",
+              },
               { value: "template", label: "Template", description: "A starting point to adapt." },
               { value: "duplicate", label: "Duplicate", description: `Copy another ${TITLES[kind].noun}.` },
               { value: "import", label: "Import JSON", description: "A config in agno's to_dict shape." },
             ]}
           />
-          {(mode === "blank" || mode === "template") && (
+          {(mode === "blank" || mode === "template") && kind !== "workflow" && (
             <Select value={chosenModel?.name ?? ""} onValueChange={setModel}>
               <SelectTrigger aria-label="Model · from Registry" className="h-8 font-mono">
                 <SelectValue placeholder="No model registered" />
@@ -259,7 +271,6 @@ export function ComponentIndex({ instance, kind }: { instance: string; kind: Kin
         row.component.id.toLowerCase().includes(needle) ||
         row.component.name.toLowerCase().includes(needle)),
   );
-  const editable = kind !== "workflow";
   return (
     <div className="flex flex-1 flex-col gap-4 px-6 py-5">
       <div className="flex flex-wrap items-start gap-3">
@@ -269,7 +280,7 @@ export function ComponentIndex({ instance, kind }: { instance: string; kind: Kin
             {`${TITLES[kind].blurb} On ${found?.display_name ?? instance}.`}
           </p>
         </div>
-        {editable && canWrite.allowed && (
+        {canWrite.allowed && (
           <Button
             variant="primary"
             size="32"
@@ -336,7 +347,7 @@ export function ComponentIndex({ instance, kind }: { instance: string; kind: Kin
           <tbody>
             {rows.map((row) => {
               const href = `${scoped}/studio/${kind}s/${encodeURIComponent(row.component.id)}`;
-              const linked = editable && row.editable && row.component.source === "studio";
+              const linked = row.editable && row.component.source === "studio";
               return (
                 <tr
                   key={row.component.id}
@@ -410,15 +421,13 @@ export function ComponentIndex({ instance, kind }: { instance: string; kind: Kin
           </div>
         )}
       </div>
-      {editable && (
-        <NewComponentDialog
-          instance={instance}
-          kind={kind}
-          rows={list.data ?? []}
-          open={creating}
-          onOpenChange={setCreating}
-        />
-      )}
+      <NewComponentDialog
+        instance={instance}
+        kind={kind}
+        rows={list.data ?? []}
+        open={creating}
+        onOpenChange={setCreating}
+      />
     </div>
   );
 }

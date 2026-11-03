@@ -9,7 +9,7 @@ from pydantic import BaseModel, ConfigDict
 from agnostic_spec.fields import meta_field, omitted_defaults
 from agnostic_spec.v3_1.refs import KnowledgeRef, MemoryManagerRef, ModelRef, ToolRef
 
-Kind = Literal["agent", "team"]
+Kind = Literal["agent", "team", "workflow"]
 
 
 class ComponentConfig(BaseModel):

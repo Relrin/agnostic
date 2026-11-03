@@ -23,6 +23,10 @@ POSTGRES_IMAGE = (
 )
 REDIS_IMAGE = "redis:8.10.3-alpine@sha256:21090af93f8324db2f0f0f4f38a7c60369d47d917e000c3423d89d2ae2883537"
 
+# Studio parses code on a thread rather than in worker processes: spawning them per test stack costs seconds.
+# tests/unit/test_studio_isolation.py covers the worker processes themselves.
+os.environ.setdefault("AGNOSTIC_STUDIO__SOURCE_ISOLATION", "inline")
+
 
 def pytest_asyncio_loop_factories(
     config: pytest.Config, item: pytest.Item

@@ -13,11 +13,11 @@ from agnostic_instances.facade import Instance
 from agnostic_kernel.auth import Principal
 from agnostic_kernel.db import utcnow
 from agnostic_kernel.errors import ConflictError, ValidationFailedError, VersionConflictError
-from agnostic_spec.v3_1 import Kind as SpecKind
-from agnostic_spec.v3_1 import TeamConfig, parse, shape_errors
+from agnostic_spec.v3_1 import parse, shape_errors
 from agnostic_studio.application.access import CONFLICT, READ_SCOPE, WRITE_SCOPE, StudioAccess, detail, raise_for
-from agnostic_studio.application.components import Reader, VersionView, version_of
+from agnostic_studio.application.components import PINNED_LINKS, Reader, VersionView, version_of
 from agnostic_studio.application.ports import StudioStore
+from agnostic_studio.application.source import SourceCode
 from agnostic_studio.domain.diff import DiffCounts, FieldChange, counts, diff
 from agnostic_studio.domain.model import Component, Version, VersionMeta, latest
 from agnostic_studio.domain.summaries import change_summary
@@ -42,6 +42,8 @@ class SaveDraft:
     pins: Mapping[str, int] | None = None
     notes: str | None = None
     label: str | None = None
+    code: str | None = None
+    """For a code-backed draft, the code the config was read from; ``""`` stops keeping code for the draft."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -60,10 +62,11 @@ class Diff:
 
 
 class Drafts:
-    def __init__(self, access: StudioAccess, store: StudioStore, audit: AuditLog) -> None:
+    def __init__(self, access: StudioAccess, store: StudioStore, audit: AuditLog, source: SourceCode) -> None:
         self._access = access
         self._store = store
         self._audit = audit
+        self._source = source
         self._reader = Reader(access, store)
 
     async def version(
@@ -86,7 +89,7 @@ class Drafts:
         meta = await self._store.version_meta(instance.id, component_id, number)
         if request.revision is not None and request.revision != revision(stored, meta):
             raise _conflict(stored, meta)
-        kind = cast("SpecKind", component.kind)
+        kind = component.kind
         problems = shape_errors(kind, request.config)
         if problems:
             raise ValidationFailedError(
@@ -94,6 +97,10 @@ class Drafts:
                 extra={"diagnostics": [problem.as_dict() for problem in problems]},
             )
         parsed = parse(kind, request.config)
+        if request.code:
+            _ = await self._source.keep(principal, instance, component_id, kind, number, request.code, request.config)
+        elif request.code == "":
+            await self._store.drop_code_document(instance.id, component_id, number)
         versions = await self._reader.versions(principal, instance, component_id)
         newest = latest(versions)
         body: dict[str, Any] = {
@@ -104,8 +111,9 @@ class Drafts:
             body["notes"] = request.notes
         if request.label is not None:
             body["label"] = request.label
-        if isinstance(parsed, TeamConfig):
-            body["links"] = await self._reader.member_links(principal, instance, parsed, request.pins or _pins(stored))
+        links = await self._reader.links_for(principal, instance, parsed, request.pins or _pins(stored))
+        if links is not None:
+            body["links"] = links
         response = await self._access.call(
             principal, instance, "PATCH", f"/components/{component_id}/configs/{number}", body=body
         )
@@ -206,7 +214,7 @@ class Drafts:
 
 async def describe(component: Component, before: Version, after: Version) -> Diff:
     changes = diff(before.config or {}, after.config or {})
-    kind = cast("SpecKind", component.kind)
+    kind = component.kind
     rendered_before = await render(parse(kind, before.config or {}))
     rendered_after = await render(parse(kind, after.config or {}))
     added, removed = line_counts(rendered_before.code, rendered_after.code)
@@ -234,7 +242,7 @@ def _pins(version: Version) -> dict[str, int]:
     return {
         str(link["child_component_id"]): int(link["child_version"])
         for link in version.links
-        if link.get("link_kind") == "member"
+        if link.get("link_kind") in PINNED_LINKS
         and link.get("child_component_id")
         and link.get("child_version") is not None
     }

@@ -3,18 +3,23 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Studio workflows: the workflow index with live versions and drafts",
+  "description": "Studio workflows: the workflow index and the visual builder (canvas, palette, inspector, CEL, code, test runs)",
   "exports": {
     ".": "./src/index.ts"
   },
   "dependencies": {
     "@agnostic/api": "workspace:*",
     "@agnostic/core": "workspace:*",
+    "@agnostic/editor": "workspace:*",
     "@agnostic/studio": "workspace:*",
     "@agnostic/ui": "workspace:*",
     "@tanstack/react-query": "5.105.0",
     "@tanstack/react-router": "1.170.46",
-    "lucide-react": "1.65.0"
+    "@xyflow/react": "12.12.0",
+    "elkjs": "0.12.0",
+    "immer": "11.2.9",
+    "lucide-react": "1.65.0",
+    "zustand": "5.0.15"
   },
   "peerDependencies": {
     "react": "19.3.1"

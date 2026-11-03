@@ -6,9 +6,9 @@ set-current, links), the registry, eval runs, and the bridge's
 capabilities and version-pinned eval routes (when ``bridge`` is on), and the context routes (memories, optimize,
 session runs, knowledge content and config, learnings, agents and teams, and the bridge's file provenance when
 ``bridge_files`` is on), schedule CRUD with enable/disable/trigger, the durable queue (``queue_enabled``; admin
-only, like agno), run checkpoints and cancel, and the bridge's workers and events feed. Approvals answer 503 unless
-``approvals_enabled``. Under ``user_isolation`` non-admins get 404 for other people's approvals, runs and traces,
-like agno.
+only, like agno), run checkpoints and cancel, the bridge's workers and events feed, workflows (listing and
+streamed draft runs) and the bridge's CEL route (``bridge_cel``). Approvals answer 503 unless ``approvals_enabled``.
+Under ``user_isolation`` non-admins get 404 for other people's approvals, runs and traces, like agno.
 """
 
 from __future__ import annotations
@@ -28,11 +28,55 @@ import orjson
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import JSONResponse, StreamingResponse
 
+from agnostic_cel import CelError
+from agnostic_cel import activation as cel_activation
+from agnostic_cel import evaluate as evaluate_cel
+
 ADMIN = "agent_os:admin"
 PAT_PREFIX = "agno_pat_"
 RESERVED_SUBJECT_PREFIX = "sa:"
 _BASE62 = string.ascii_letters + string.digits
 _SA_NAME = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$")
+
+
+# Container events, as agno names them: (started, completed).
+_CONTAINER_EVENTS = {
+    "Steps": ("StepsExecutionStarted", "StepsExecutionCompleted"),
+    "Parallel": ("ParallelExecutionStarted", "ParallelExecutionCompleted"),
+    "Condition": ("ConditionExecutionStarted", "ConditionExecutionCompleted"),
+    "Loop": ("LoopExecutionStarted", "LoopExecutionCompleted"),
+    "Router": ("RouterExecutionStarted", "RouterExecutionCompleted"),
+}
+
+
+def workflow_events(workflow_id: str, steps: list[dict[str, Any]]) -> list[tuple[str, dict[str, Any]]]:
+    """The events of a run that takes every step once: a Router its first choice, a Condition its ``steps``."""
+    found: list[tuple[str, dict[str, Any]]] = [("WorkflowStarted", {"workflow_name": workflow_id})]
+
+    def walk(nodes: list[dict[str, Any]]) -> None:
+        for index, node in enumerate(nodes):
+            node_type = str(node.get("type") or "Step")
+            name = str(node.get("name") or f"step_{index + 1}")
+            if node_type == "Step":
+                found.append(("StepStarted", {"step_name": name, "step_index": index}))
+                found.append(("StepCompleted", {"step_name": name, "step_index": index, "content": f"done: {name}"}))
+                continue
+            started, completed = _CONTAINER_EVENTS[node_type]
+            found.append((started, {"step_name": name, "step_index": index}))
+            if node_type == "Router":
+                choices = cast("list[dict[str, Any]]", node.get("choices") or [])
+                walk(choices[:1])
+            elif node_type == "Loop":
+                found.append(("LoopIterationStarted", {"step_name": name, "iteration": 1}))
+                walk(cast("list[dict[str, Any]]", node.get("steps") or []))
+                found.append(("LoopIterationCompleted", {"step_name": name, "iteration": 1}))
+            else:
+                walk(cast("list[dict[str, Any]]", node.get("steps") or []))
+            found.append((completed, {"step_name": name, "step_index": index}))
+
+    walk(steps)
+    found.append(("WorkflowCompleted", {"content": "done"}))
+    return found
 
 
 def _privileged(scope: str) -> bool:
@@ -93,6 +137,13 @@ class FakeAgentOS:
         self.bridge_studio = False
         """The bridge also serves Studio's validate, normalize, introspect and source routes."""
         self.bridge_validations: list[dict[str, Any]] = []
+        self.bridge_cel = False
+        """The bridge serves ``POST /agnostic/v1/cel/evaluate`` (answered with agnostic-cel, standing in for agno)."""
+        self.bridge_cel_installed = True
+        """``False``: the CEL route answers 503, as without cel-python."""
+        self.cel_requests: list[dict[str, Any]] = []
+        self.workflow_items: list[dict[str, Any]] = []
+        """``GET /workflows``: code-defined workflows."""
         self._clock = 0
         self.eval_runs: list[dict[str, Any]] = []
         self.eval_requests: list[dict[str, Any]] = []
@@ -460,6 +511,8 @@ class FakeAgentOS:
                         "GET /agnostic/v1/registry/{resource_type}/{name}/source",
                     ]
                 )
+            if self.bridge_cel:
+                endpoints.append("POST /agnostic/v1/cel/evaluate")
             return JSONResponse({"bridge_version": "0.2.0", "endpoints": endpoints})
 
         @app.post("/agnostic/v1/evals/run")
@@ -518,6 +571,68 @@ class FakeAgentOS:
             if isinstance(guarded, Response):
                 return guarded
             return JSONResponse(self.session_runs.get(session_id, []))
+
+        @app.get("/workflows")
+        async def workflows(request: Request) -> Response:
+            guarded = await self._guard(request, "workflows:read")
+            if isinstance(guarded, Response):
+                return guarded
+            return JSONResponse(self.workflow_items)
+
+        @app.post("/workflows/{workflow_id}/runs")
+        async def run_workflow(workflow_id: str, request: Request) -> Response:
+            guarded = await self._guard(request, "workflows:run", workflow_id)
+            if isinstance(guarded, Response):
+                return guarded
+            form = parse_qs((await request.body()).decode())
+            version = form.get("version", [None])[0]
+            pinned = self.configs.get(workflow_id, {}).get(int(version)) if version else None
+            owner = self.components.get(workflow_id, {}).get("user_id")
+            if (
+                pinned is not None
+                and pinned["stage"] == "draft"
+                and ADMIN not in guarded.get("scopes", [])
+                and guarded.get("sub") != owner
+            ):
+                return JSONResponse({"detail": f"Workflow {workflow_id} not found"}, status_code=404)
+            self.run_requests.append(
+                {
+                    "workflow_id": workflow_id,
+                    "user_id": self._run_user(guarded, form.get("user_id", [None])[0]),
+                    "form": {key: values[0] for key, values in form.items()},
+                    "query": dict(request.query_params),
+                    "sub": guarded.get("sub"),
+                }
+            )
+            steps = cast("list[dict[str, Any]]", (pinned or {}).get("config", {}).get("steps") or [])
+
+            async def events() -> AsyncIterator[bytes]:
+                for index, (name, payload) in enumerate(workflow_events(workflow_id, steps)):
+                    body = {"event": name, "event_index": index, "workflow_id": workflow_id, **payload}
+                    yield b"event: " + name.encode() + b"\ndata: " + orjson.dumps(body) + b"\n\n"
+                    await asyncio.sleep(0.01)
+
+            return StreamingResponse(events(), media_type="text/event-stream")
+
+        @app.post("/agnostic/v1/cel/evaluate")
+        async def bridge_cel(request: Request) -> Response:
+            guarded = await self._guard(request, "components:read")
+            if isinstance(guarded, Response):
+                return guarded
+            if not self.bridge_cel:
+                return JSONResponse({"detail": "Not Found"}, status_code=404)
+            if not self.bridge_cel_installed:
+                return JSONResponse({"detail": "cel-python isn't installed; install agno[cel]"}, status_code=503)
+            body = cast("dict[str, Any]", orjson.loads(await request.body()))
+            self.cel_requests.append(body)
+            context = body["context"]
+            choices = body.get("step_choices") if context == "router" else None
+            try:
+                value = evaluate_cel(body["expression"], cel_activation(context, body, choices=choices))
+            except CelError as exc:
+                return JSONResponse({"error": f"Failed to evaluate CEL expression: {exc.message}"}, status_code=422)
+            result = bool(value) if context != "router" else str(value)
+            return JSONResponse({"result": result, "type": "string" if context == "router" else "bool"})
 
         @app.get("/agents")
         async def agents(request: Request) -> Response:

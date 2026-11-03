@@ -1,17 +1,19 @@
 [project]
 name = "agnostic-studio"
 version = "0.1.0"
-description = "Studio: component lifecycle over AgentOS /components, registry catalog and used-by index, gated publish, promotion"
+description = "Studio: component lifecycle over AgentOS /components, registry catalog, workflow builder, code round-trip, gated publish, promotion"
 requires-python = "==3.15.*"
 license = "BSD-3-Clause"
 dependencies = [
   "agnostic-agentos-client",
   "agnostic-audit",
+  "agnostic-cel",
   "agnostic-codegen",
   "agnostic-evals",
   "agnostic-gateway",
   "agnostic-instances",
   "agnostic-kernel",
+  "agnostic-observe",
   "agnostic-spec",
   "alembic==1.20.1",
   "dishka==1.10.1",
@@ -29,11 +31,13 @@ studio = "agnostic_studio.module:StudioModule"
 [tool.uv.sources]
 agnostic-agentos-client = { workspace = true }
 agnostic-audit = { workspace = true }
+agnostic-cel = { workspace = true }
 agnostic-codegen = { workspace = true }
 agnostic-evals = { workspace = true }
 agnostic-gateway = { workspace = true }
 agnostic-instances = { workspace = true }
 agnostic-kernel = { workspace = true }
+agnostic-observe = { workspace = true }
 agnostic-spec = { workspace = true }
 
 [build-system]

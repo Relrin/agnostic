@@ -1,4 +1,4 @@
-"""Trace comparison with the last successful run, and the slowest span types of an instance."""
+"""Trace comparison with the last successful run, the slowest span types of an instance, and a workflow's steps."""
 
 from __future__ import annotations
 
@@ -29,6 +29,8 @@ BASELINE_CANDIDATES = 20
 VERSION_PROBES = 5
 """Candidate baselines whose details are fetched while looking for one with the same component version."""
 DETAIL_CONCURRENCY = 8
+STEP_LIMIT = 1_000
+"""Steps reported per workflow: all of them, in practice."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -211,24 +213,27 @@ class GetSpanStats:
         self._max_traces = max_traces
         self._ttl = ttl
 
-    async def __call__(self, principal: Principal, instance_ref: str, window_name: RangeName) -> SpanStats:
+    async def __call__(
+        self, principal: Principal, instance_ref: str, window_name: RangeName, *, workflow_id: str | None = None
+    ) -> SpanStats:
+        """With ``workflow_id``: only that workflow's traces, and every one of its steps rather than the slowest ten."""
         instance = await self._calls.instance(instance_ref)
         _ = await self._authorizer.require(principal, "traces:read", instance_id=instance.id)
-        key = f"obs:spanstats:{instance.id}:{window_name}"
+        key = f"obs:spanstats:{instance.id}:{window_name}" + (f":workflow:{workflow_id}" if workflow_id else "")
         raw = await self._store.get(key)
         if raw is not None:
             try:
                 return _decode_stats(cast("_Encoded", orjson.loads(raw)))
             except KeyError, TypeError, ValueError, orjson.JSONDecodeError:
                 pass
-        stats = await self._compute(instance, window_name)
+        stats = await self._compute(instance, window_name, workflow_id)
         await self._store.set(key, orjson.dumps(_encode_stats(stats)), ttl=self._ttl)
         return stats
 
     async def _system(self, instance: Instance, path: str, params: Mapping[str, str | int] | None = None) -> Any:  # noqa: ANN401
         return await self._instances.system_call(instance, "GET", path, params=params)
 
-    async def _compute(self, instance: Instance, window_name: RangeName) -> SpanStats:
+    async def _compute(self, instance: Instance, window_name: RangeName, workflow_id: str | None) -> SpanStats:
         now = utcnow()
         window = Window(now - RANGES[window_name], now)
         ids: list[str] = []
@@ -242,6 +247,8 @@ class GetSpanStats:
                 "page": page,
                 "limit": limit,
             }
+            if workflow_id:
+                params["workflow_id"] = workflow_id
             items, count = page_items(await self._system(instance, "/traces", params))
             total = count if count is not None else total
             ids.extend(str(item["trace_id"]) for item in items if item.get("trace_id"))
@@ -259,12 +266,17 @@ class GetSpanStats:
                     return None
 
         views = [view for view in await asyncio.gather(*(detail(i) for i in ids)) if view is not None]
+        if workflow_id:
+            steps = ([span for span in view.spans if span.kind == "step"] for view in views)
+            stats = span_type_stats(steps, limit=STEP_LIMIT)
+        else:
+            stats = span_type_stats(view.spans for view in views)
         return SpanStats(
             window=window_name,
             generated_at=now,
             traces_scanned=len(views),
             sampled=(total or len(ids)) > len(ids),
-            stats=span_type_stats(view.spans for view in views),
+            stats=stats,
         )
 
 

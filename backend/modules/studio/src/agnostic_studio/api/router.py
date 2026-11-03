@@ -6,9 +6,19 @@ from dishka.integrations.fastapi import DishkaRoute, FromDishka
 from fastapi import APIRouter, Query, Response, status
 from fastapi.responses import StreamingResponse
 
+from agnostic_cel import describe
 from agnostic_kernel.auth import Principal
+from agnostic_observe.facade import RangeName
 from agnostic_spec.v3_1 import json_schema
 from agnostic_studio.api.schemas import (
+    CanvasLayoutIn,
+    CanvasLayoutOut,
+    CelCheckIn,
+    CelCheckOut,
+    CelContextsOut,
+    CelEvaluateIn,
+    CelEvaluateOut,
+    CodeDocumentOut,
     CodegenIn,
     CodegenOut,
     ComponentDetailOut,
@@ -19,6 +29,8 @@ from agnostic_studio.api.schemas import (
     KindQuery,
     MetaPatchIn,
     NewDraftIn,
+    ParseIn,
+    ParseOut,
     PromoteIn,
     PromotionApplyIn,
     PromotionOut,
@@ -31,12 +43,18 @@ from agnostic_studio.api.schemas import (
     SaveDraftIn,
     SetCurrentIn,
     SetCurrentOut,
+    StepRunOut,
+    StepStatsOut,
     TemplateOut,
     TestRunIn,
+    TransformIn,
+    TransformOut,
     UsedByOut,
     ValidateIn,
     ValidationOut,
     VersionOut,
+    WorkflowValidateIn,
+    WorkflowValidationOut,
 )
 from agnostic_studio.application.catalog import Catalog, RegistryCatalog
 from agnostic_studio.application.codegen import Codegen
@@ -44,8 +62,10 @@ from agnostic_studio.application.components import Components, CreateRequest, Me
 from agnostic_studio.application.drafts import Drafts, SaveDraft
 from agnostic_studio.application.promotions import PromoteRequest, Promotions
 from agnostic_studio.application.publishing import Publisher
+from agnostic_studio.application.source import SourceCode
 from agnostic_studio.application.testing import DraftRuns, TestRun
 from agnostic_studio.application.validation import Validator
+from agnostic_studio.application.workflows import Workflows
 from agnostic_studio.domain.templates import TEMPLATES
 
 router = APIRouter(route_class=DishkaRoute)
@@ -210,7 +230,14 @@ async def save_draft(
     principal: FromDishka[Principal],
     drafts: FromDishka[Drafts],
 ) -> VersionOut:
-    request = SaveDraft(config=body.config, revision=body.revision, pins=body.pins, notes=body.notes, label=body.label)
+    request = SaveDraft(
+        config=body.config,
+        revision=body.revision,
+        pins=body.pins,
+        notes=body.notes,
+        label=body.label,
+        code=body.code,
+    )
     return VersionOut.of(await drafts.save(principal, instance, component_id, version, request))
 
 
@@ -293,6 +320,102 @@ async def codegen(
     return CodegenOut.of(await generator.render(principal, instance, body.kind, body.config, body.base_config))
 
 
+@router.post("/{instance}/studio/parse", summary="Code read back into a config, with what can't be stored located")
+async def parse_code(
+    instance: str, body: ParseIn, principal: FromDishka[Principal], source: FromDishka[SourceCode]
+) -> ParseOut:
+    return ParseOut.of(await source.parse(principal, instance, body.kind, body.code, body.component_id))
+
+
+@router.post(
+    "/{instance}/studio/transform",
+    summary="A form edit applied to existing code, keeping its comments and layout; checked to read back as the edit",
+)
+async def transform_code(
+    instance: str, body: TransformIn, principal: FromDishka[Principal], source: FromDishka[SourceCode]
+) -> TransformOut:
+    view = await source.transform(principal, instance, body.kind, body.code, body.config, body.component_id)
+    return TransformOut.of(view)
+
+
+@router.get(f"{COMPONENT}/configs/{{version}}/code", summary="The code of a code-backed draft, if it keeps one")
+async def get_code_document(
+    instance: str, component_id: str, version: int, principal: FromDishka[Principal], source: FromDishka[SourceCode]
+) -> CodeDocumentOut:
+    return CodeDocumentOut.of(await source.document(principal, instance, component_id, version))
+
+
+# ---------------------------------------------------------------- workflows & CEL
+
+
+@router.post(
+    "/{instance}/studio/workflows/validate",
+    summary="Workflow validation (structure, executors, CEL, agno's strict load) with the step count",
+)
+async def validate_workflow(
+    instance: str, body: WorkflowValidateIn, principal: FromDishka[Principal], workflows: FromDishka[Workflows]
+) -> WorkflowValidationOut:
+    return WorkflowValidationOut.of(await workflows.validate(principal, instance, body.config))
+
+
+@router.post(
+    "/{instance}/studio/cel/evaluate",
+    summary="Try a CEL expression on a sample: agno evaluates it through the bridge, else Agnostic does",
+)
+async def evaluate_cel(
+    instance: str, body: CelEvaluateIn, principal: FromDishka[Principal], workflows: FromDishka[Workflows]
+) -> CelEvaluateOut:
+    result = await workflows.evaluate(principal, instance, body.expression, body.context, body.sample, body.choices)
+    return CelEvaluateOut.of(result)
+
+
+@router.get(f"{COMPONENT}/step-stats", summary="Average duration, runs and failures per step, from the traces")
+async def step_stats(
+    instance: str,
+    component_id: str,
+    principal: FromDishka[Principal],
+    workflows: FromDishka[Workflows],
+    window: RangeName = "7d",
+) -> StepStatsOut:
+    return StepStatsOut.of(await workflows.step_stats(principal, instance, component_id, window))
+
+
+@router.get(f"{COMPONENT}/step-runs", summary="A step's latest results from the workflow's recent runs")
+async def step_runs(
+    instance: str,
+    component_id: str,
+    principal: FromDishka[Principal],
+    workflows: FromDishka[Workflows],
+    step: Annotated[str, Query(min_length=1, max_length=200)],
+    limit: Annotated[int, Query(ge=1, le=50)] = 10,
+) -> list[StepRunOut]:
+    runs = await workflows.step_runs(principal, instance, component_id, step, limit)
+    return [StepRunOut.of(run) for run in runs]
+
+
+@router.get(f"{COMPONENT}/canvas-layout", summary="What was moved, collapsed or zoomed on the workflow canvas")
+async def get_canvas_layout(
+    instance: str,
+    component_id: str,
+    principal: FromDishka[Principal],
+    workflows: FromDishka[Workflows],
+    version: Annotated[int, Query(ge=1)],
+) -> CanvasLayoutOut:
+    return CanvasLayoutOut.of(await workflows.layout(principal, instance, component_id, version), version)
+
+
+@router.put(f"{COMPONENT}/canvas-layout", summary="Keep the canvas layout of a version")
+async def put_canvas_layout(
+    instance: str,
+    component_id: str,
+    body: CanvasLayoutIn,
+    principal: FromDishka[Principal],
+    workflows: FromDishka[Workflows],
+) -> CanvasLayoutOut:
+    saved = await workflows.save_layout(principal, instance, component_id, body.version, body.layout)
+    return CanvasLayoutOut.of(saved, body.version)
+
+
 # ---------------------------------------------------------------- promotion
 
 
@@ -365,6 +488,20 @@ async def schema(kind: KindIn, principal: FromDishka[Principal]) -> dict[str, An
     return json_schema(kind)
 
 
-@org_router.get("/studio/templates", summary="Starting points for new agents and teams")
+@org_router.post("/studio/cel/check", summary="Type and exhaustiveness check of a CEL expression in its context")
+async def check_cel(
+    body: CelCheckIn,
+    principal: FromDishka[Principal],  # noqa: ARG001
+    workflows: FromDishka[Workflows],
+) -> CelCheckOut:
+    return CelCheckOut.of(await workflows.check(body.expression, body.context, body.choices))
+
+
+@org_router.get("/studio/cel/contexts", summary="Variables, functions and macros per context, for completion")
+async def cel_contexts(principal: FromDishka[Principal]) -> CelContextsOut:  # noqa: ARG001
+    return CelContextsOut.model_validate(describe())
+
+
+@org_router.get("/studio/templates", summary="Starting points for new agents, teams and workflows")
 async def templates(principal: FromDishka[Principal], kind: KindIn | None = None) -> list[TemplateOut]:  # noqa: ARG001
     return [TemplateOut.of(item) for item in TEMPLATES if kind is None or item.kind == kind]

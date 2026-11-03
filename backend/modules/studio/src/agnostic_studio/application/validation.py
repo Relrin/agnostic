@@ -1,20 +1,33 @@
-"""Validation in layers: shape, registry references, Studio's rules, then agno's own strict load (with the bridge)."""
+"""Validation in layers.
+
+Shape, registry references, Studio's rules, a workflow's CEL expressions, then agno's own strict load (with the
+bridge).
+"""
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import Any, Literal, cast
 
+from agnostic_cel import check as check_cel
 from agnostic_instances.facade import Instance
 from agnostic_kernel.auth import Principal
 from agnostic_spec import Diagnostic
 from agnostic_spec.v3_1 import Kind as SpecKind
-from agnostic_spec.v3_1 import check, iter_refs, parse, shape_errors
+from agnostic_spec.v3_1 import WorkflowConfig, check, iter_nodes, iter_refs, parse, shape_errors
 from agnostic_studio.application.access import BRIDGE_VALIDATE, READ_SCOPE, StudioAccess, page_items
 from agnostic_studio.application.catalog import Catalog, RegistryCatalog
 from agnostic_studio.domain.promotion import TYPE_NOUNS
 
 type LayerStatus = Literal["ok", "failed", "warning", "skipped"]
+
+# Where a node keeps its CEL expression, and the context it is evaluated in.
+CEL_FIELDS: dict[str, tuple[str, Literal["condition", "router", "loop"]]] = {
+    "Condition": ("evaluator", "condition"),
+    "Loop": ("end_condition", "loop"),
+    "Router": ("selector", "router"),
+}
+COMPONENT_REFS = frozenset({"agent", "team", "workflow"})
 
 
 @dataclass(frozen=True, slots=True)
@@ -65,14 +78,14 @@ class Validator:
     ) -> ValidationReport:
         shape = shape_errors(kind, config)
         if shape:
-            return ValidationReport(
-                [
-                    Layer("shape", "Shape", "failed", shape),
-                    Layer("registry", "Registry references", "skipped", hint="Fix the shape first."),
-                    Layer("rules", "Studio rules", "skipped", hint="Fix the shape first."),
-                    Layer("bridge", "agno strict load", "skipped", hint="Fix the shape first."),
-                ]
-            )
+            skipped = [
+                Layer("registry", "Registry references", "skipped", hint="Fix the shape first."),
+                Layer("rules", "Studio rules", "skipped", hint="Fix the shape first."),
+            ]
+            if kind == "workflow":
+                skipped.append(Layer("cel", "CEL expressions", "skipped", hint="Fix the shape first."))
+            skipped.append(Layer("bridge", "agno strict load", "skipped", hint="Fix the shape first."))
+            return ValidationReport([Layer("shape", "Shape", "failed", shape), *skipped])
         parsed = parse(kind, config)
         _, catalog = await self._catalog.catalog(principal, instance.id)
         components = {
@@ -80,15 +93,16 @@ class Validator:
         }
         registry = _registry(parsed, catalog, components, instance)
         rules = check(parsed)
-        bridge = await self._bridge(principal, instance, kind, parsed.dump())
-        return ValidationReport(
-            [
-                Layer("shape", "Shape", "ok"),
-                Layer("registry", "Registry references", _status(registry), registry),
-                Layer("rules", "Studio rules", _status(rules), rules),
-                bridge,
-            ]
-        )
+        layers = [
+            Layer("shape", "Shape", "ok"),
+            Layer("registry", "Registry references", _status(registry), registry),
+            Layer("rules", "Studio rules", _status(rules), rules),
+        ]
+        if isinstance(parsed, WorkflowConfig):
+            expressions = cel_diagnostics(parsed)
+            layers.append(Layer("cel", "CEL expressions", _status(expressions), expressions))
+        layers.append(await self._bridge(principal, instance, kind, parsed.dump()))
+        return ValidationReport(layers)
 
     async def _bridge(self, principal: Principal, instance: Instance, kind: SpecKind, config: dict[str, Any]) -> Layer:
         if BRIDGE_VALIDATE not in await self._access.bridge(instance):
@@ -125,7 +139,7 @@ def _registry(parsed: Any, catalog: Catalog, components: set[str], instance: Ins
     found: list[Diagnostic] = []
     names = catalog.names()
     for ref in iter_refs(parsed):
-        if ref.type in {"agent", "team"}:
+        if ref.type in COMPONENT_REFS:
             if ref.name not in components and (ref.type, ref.name) not in names:
                 found.append(
                     Diagnostic(
@@ -165,6 +179,27 @@ def _registry(parsed: Any, catalog: Catalog, components: set[str], instance: Ins
     return found
 
 
+def cel_diagnostics(config: WorkflowConfig) -> list[Diagnostic]:
+    """Every CEL expression checked in its node's context; a Router's against its choices' names."""
+    found: list[Diagnostic] = []
+    for info in iter_nodes(config):
+        node = info.node
+        place = CEL_FIELDS.get(node.node_type)
+        if place is None:
+            continue
+        field_name, context = place
+        expression = node.value(field_name)
+        if node.value(f"{field_name}_type") != "cel" or not isinstance(expression, str):
+            continue
+        choices = [child.name or "" for child in node.children("choices")] if context == "router" else None
+        result = check_cel(expression, context, choices=choices)
+        found.extend(
+            Diagnostic(f"{info.path}.{field_name}", finding.severity, f"cel.{finding.code}", finding.message)
+            for finding in result.findings
+        )
+    return found
+
+
 def _status(diagnostics: list[Diagnostic]) -> LayerStatus:
     if any(item.severity == "error" for item in diagnostics):
         return "failed"
@@ -173,4 +208,4 @@ def _status(diagnostics: list[Diagnostic]) -> LayerStatus:
     return "ok"
 
 
-__all__ = ["Layer", "ValidationReport", "Validator"]
+__all__ = ["CEL_FIELDS", "Layer", "ValidationReport", "Validator", "cel_diagnostics"]

@@ -1,4 +1,6 @@
-"""Test a draft from the editor: AgentOS runs draft versions only for their owner or an admin, so Studio elevates.
+"""Test a draft from the editor or the workflow builder.
+
+AgentOS runs draft versions only for their owner or an admin, so Studio elevates.
 
 The person must hold ``components:write`` (the justification) and may run the component; the run itself is one
 streamed request with a single-use admin token whose ``sub`` is still the person, audited as ``gateway.elevated``.
@@ -34,8 +36,6 @@ class DraftRuns:
     async def open(self, principal: Principal, ref: str, component_id: str, run: TestRun) -> ElevatedStream:
         instance = await self._access.instance(principal, ref, READ_SCOPE)
         component = await self._reader.component(principal, instance, component_id)
-        if component.kind == "workflow":
-            raise ValidationFailedError("Workflows are tested from the workflow builder.")
         if not run.message.strip() or len(run.message) > MAX_MESSAGE:
             raise ValidationFailedError("Write a message to send (up to 20,000 characters).")
         family = FAMILY[component.kind]

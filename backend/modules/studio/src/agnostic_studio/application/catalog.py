@@ -29,7 +29,9 @@ from agnostic_studio.domain.usage import IndexEntry, Use, UsedBy, index
 
 SOURCE_TTL = 300.0
 INDEX_TTL = 600.0
-EDITABLE: tuple[Kind, ...] = ("agent", "team")
+EDITABLE: tuple[Kind, ...] = ("agent", "team", "workflow")
+# AgentOS describes code-defined agents and teams with their model, tools and members; a workflow only by its steps.
+DESCRIBED: tuple[Kind, ...] = ("agent", "team")
 
 
 @dataclass(frozen=True, slots=True)
@@ -233,7 +235,7 @@ class UsedByIndex:
     async def _code_from_details(self, instance: Instance) -> list[Use]:
         """Without the bridge: the model, tools and members AgentOS lists for components defined in code."""
         uses: list[Use] = []
-        for kind in EDITABLE:
+        for kind in DESCRIBED:
             try:
                 items = page_items(await self._access.system_json(instance, f"/{FAMILY[kind]}"))
             except AgentOSError:

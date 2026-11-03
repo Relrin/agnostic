@@ -12,6 +12,7 @@ from agnostic_codegen import RegistryConvention, generate, line_marks, render, s
 from agnostic_spec import field_meta
 from agnostic_spec.v3_1 import (
     AgentConfig,
+    Kind,
     TeamConfig,
     check,
     iter_refs,
@@ -22,6 +23,7 @@ from agnostic_spec.v3_1 import (
 )
 
 GOLDEN = Path(__file__).parents[1] / "golden" / "agno-3.1"
+KINDS: dict[str, Kind] = {"agents": "agent", "teams": "team", "workflows": "workflow", "prototype": "workflow"}
 REFUND = {"name": "refund_customer", "parameters": {"type": "object"}, "requires_confirmation": True}
 TRIAGE: dict[str, Any] = {
     "id": "support-triage",
@@ -45,8 +47,7 @@ def golden_configs() -> list[Path]:
 @pytest.mark.parametrize("path", golden_configs(), ids=lambda path: f"{path.parent.name}/{path.stem}")
 def test_golden_configs_round_trip_losslessly(path: Path) -> None:
     raw = json.loads(path.read_text(encoding="utf-8"))
-    kind = "team" if path.parent.name == "teams" else "agent"
-    assert parse(kind, raw).dump() == raw
+    assert parse(KINDS[path.parent.name], raw).dump() == raw
 
 
 @pytest.mark.parametrize("path", golden_configs(), ids=lambda path: f"{path.parent.name}/{path.stem}")
@@ -54,7 +55,7 @@ def test_generated_code_matches_the_golden_files(path: Path) -> None:
     expected = path.with_suffix(".py")
     if not expected.exists():
         pytest.skip("no golden code for this config")
-    kind = "team" if path.parent.name == "teams" else "agent"
+    kind = KINDS[path.parent.name]
     rendered = asyncio.run(render(parse(kind, json.loads(path.read_text(encoding="utf-8")))))
     assert rendered.code == expected.read_text(encoding="utf-8")
 

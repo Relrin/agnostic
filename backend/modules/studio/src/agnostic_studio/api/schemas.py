@@ -7,20 +7,27 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
+from agnostic_cel import CheckResult
+from agnostic_codegen import CodeDiagnostic, Parsed, RuffResult, Span
 from agnostic_evals.facade import GateCheck
+from agnostic_observe.facade import WorkflowStepStats
 from agnostic_spec import Diagnostic
 from agnostic_studio.application.codegen import CodeView, marks_dict, spans_dict
 from agnostic_studio.application.components import ComponentDetail, IndexRow, VersionView
 from agnostic_studio.application.drafts import Diff, revision
 from agnostic_studio.application.publishing import PublishCheck, PublishResult
+from agnostic_studio.application.source import DocumentView, SourceView, TransformView
 from agnostic_studio.application.validation import ValidationReport
+from agnostic_studio.application.workflows import CelEvaluation, StepRun, WorkflowValidation
 from agnostic_studio.domain.diff import FieldChange
+from agnostic_studio.domain.model import CanvasLayout
 from agnostic_studio.domain.promotion import Promotion
 from agnostic_studio.domain.registry import RegistryEntry, tool_entry
 from agnostic_studio.domain.templates import Template
 from agnostic_studio.domain.usage import UsedBy
 
-type KindIn = Literal["agent", "team"]
+type KindIn = Literal["agent", "team", "workflow"]
+type CelContextIn = Literal["condition", "router", "loop"]
 type KindQuery = Literal["agent", "team", "workflow"]
 
 
@@ -316,6 +323,12 @@ class SaveDraftIn(BaseModel):
     pins: dict[str, int] | None = Field(default=None, description="Team members pinned at a version, by component id.")
     notes: str | None = Field(default=None, max_length=2000)
     label: str | None = Field(default=None, max_length=100)
+    code: str | None = Field(
+        default=None,
+        max_length=256_000,
+        description="For a code-backed draft: the code the config was read from (checked to read as it); "
+        "an empty string stops keeping code for the draft.",
+    )
 
 
 class NewDraftIn(BaseModel):
@@ -403,6 +416,10 @@ class SpanOut(BaseModel):
     col_end: int
     end_line: int
 
+    @classmethod
+    def of(cls, span: Span) -> SpanOut:
+        return cls(**span.as_dict())
+
 
 class CodeNoteOut(BaseModel):
     path: str
@@ -426,6 +443,18 @@ class RuffOut(BaseModel):
     status: str
     formatted: bool
     messages: list[LintMessageOut]
+
+    @classmethod
+    def of(cls, result: RuffResult) -> RuffOut:
+        return cls(
+            available=result.available,
+            status=result.status,
+            formatted=result.formatted,
+            messages=[
+                LintMessageOut(code=item.code, message=item.message, line=item.line, column=item.column)
+                for item in result.messages
+            ],
+        )
 
 
 class CodegenOut(BaseModel):
@@ -660,3 +689,292 @@ class TestRunIn(BaseModel):
     message: str = Field(min_length=1, max_length=20_000)
     version: int = Field(ge=1)
     session_id: str | None = None
+
+
+# ---------------------------------------------------------------- code pane: parsing and edits
+
+
+class ParseIn(BaseModel):
+    kind: KindIn
+    code: str = Field(max_length=256_000)
+    component_id: str | None = Field(default=None, description="Pick this component when the file defines several.")
+
+
+class CodeDiagnosticOut(BaseModel):
+    severity: Literal["error", "warning", "info"]
+    code: str
+    message: str
+    line: int
+    column: int
+    end_line: int
+    end_column: int
+    path: str | None
+
+    @classmethod
+    def of(cls, item: CodeDiagnostic) -> CodeDiagnosticOut:
+        return cls(**item.as_dict())
+
+
+class ParseOut(BaseModel):
+    ok: bool
+    config: dict[str, Any] | None = Field(description="The config the code reads as; null when it can't be read.")
+    variable: str | None
+    diagnostics: list[CodeDiagnosticOut]
+    spans: dict[str, SpanOut]
+    code_owned: list[str] = Field(description="Config paths set in code in a way the form can't edit.")
+    ruff: RuffOut
+
+    @classmethod
+    def from_parsed(cls, parsed: Parsed, ruff: RuffResult) -> ParseOut:
+        return cls(
+            ok=parsed.ok,
+            config=parsed.config,
+            variable=parsed.variable,
+            diagnostics=[CodeDiagnosticOut.of(item) for item in parsed.diagnostics],
+            spans={path: SpanOut.of(span) for path, span in parsed.spans.items()},
+            code_owned=parsed.code_owned,
+            ruff=RuffOut.of(ruff),
+        )
+
+    @classmethod
+    def of(cls, view: SourceView) -> ParseOut:
+        return cls.from_parsed(view.parsed, view.ruff)
+
+
+class TransformIn(BaseModel):
+    kind: KindIn
+    code: str = Field(max_length=256_000)
+    config: dict[str, Any] = Field(description="The edited config the code should say")
+    component_id: str | None = None
+
+
+class TransformOut(BaseModel):
+    code: str
+    config: dict[str, Any] | None
+    equivalent: bool = Field(description="The new code reads back as exactly the edited config.")
+    changed: list[str]
+    diagnostics: list[CodeDiagnosticOut]
+    spans: dict[str, SpanOut]
+    code_owned: list[str]
+    ruff: RuffOut
+
+    @classmethod
+    def of(cls, view: TransformView) -> TransformOut:
+        result = view.transformed
+        return cls(
+            code=result.code,
+            config=result.config,
+            equivalent=result.equivalent,
+            changed=result.changed,
+            diagnostics=[CodeDiagnosticOut.of(item) for item in result.diagnostics],
+            spans={path: SpanOut.of(span) for path, span in result.spans.items()},
+            code_owned=result.code_owned,
+            ruff=RuffOut.of(view.ruff),
+        )
+
+
+class CodeDocumentOut(BaseModel):
+    code_backed: bool
+    code: str | None
+    stale: bool = Field(description="The draft was saved without its code since, so they may disagree.")
+    updated_by_name: str | None
+    updated_at: datetime | None
+
+    @classmethod
+    def of(cls, view: DocumentView) -> CodeDocumentOut:
+        document = view.document
+        return cls(
+            code_backed=document is not None,
+            code=document.code if document else None,
+            stale=view.stale,
+            updated_by_name=document.updated_by_name if document else None,
+            updated_at=document.updated_at if document else None,
+        )
+
+
+# ---------------------------------------------------------------- workflows & CEL
+
+
+class WorkflowValidateIn(BaseModel):
+    config: dict[str, Any]
+
+
+class WorkflowValidationOut(BaseModel):
+    validation: ValidationOut
+    step_count: int = Field(description="Every Step and every container (Steps, Parallel, Condition, Loop, Router).")
+    sentence: str = Field(description='For the toolbar, e.g. "11 steps · valid".')
+
+    @classmethod
+    def of(cls, result: WorkflowValidation) -> WorkflowValidationOut:
+        return cls(validation=ValidationOut.of(result.report), step_count=result.step_count, sentence=result.sentence)
+
+
+class CelCheckIn(BaseModel):
+    expression: str = Field(max_length=4_000)
+    context: CelContextIn
+    choices: list[str] | None = Field(default=None, description="A Router's choice names, to check every result.")
+
+
+class CelSpanOut(BaseModel):
+    start: int
+    end: int
+
+
+class CelFindingOut(BaseModel):
+    severity: Literal["error", "warning", "info"]
+    code: str
+    message: str
+    span: CelSpanOut
+
+
+class CelCheckOut(BaseModel):
+    ok: bool
+    type: str | None
+    summary: str = Field(description='e.g. "Returns string · every result matches a choice"')
+    findings: list[CelFindingOut]
+    results: list[str] | None = Field(description="Router: every literal it can return (null when not all are).")
+    exhaustive: bool | None
+
+    @classmethod
+    def of(cls, result: CheckResult) -> CelCheckOut:
+        return cls(
+            ok=result.ok,
+            type=result.type,
+            summary=result.summary,
+            findings=[
+                CelFindingOut(
+                    severity=item.severity,
+                    code=item.code,
+                    message=item.message,
+                    span=CelSpanOut(start=item.span.start, end=item.span.end),
+                )
+                for item in result.findings
+            ],
+            results=list(result.results) if result.results is not None else None,
+            exhaustive=result.exhaustive,
+        )
+
+
+class CelEvaluateIn(BaseModel):
+    expression: str = Field(max_length=4_000)
+    context: CelContextIn
+    sample: dict[str, Any] = Field(
+        default_factory=dict,
+        description="Values of the context's variables (input, previous_step_content, …; for a loop "
+        "last_step_content, step_outputs, …). Missing ones are empty, as agno passes them.",
+    )
+    choices: list[str] | None = None
+
+
+class CelEvaluateOut(BaseModel):
+    result: Any
+    type: str | None
+    evaluator: Literal["agno", "agnostic"] = Field(
+        description="agno: the instance evaluated it, as a run would; agnostic: the control plane's evaluator."
+    )
+    error: str | None
+    span: CelSpanOut | None
+    note: str | None
+
+    @classmethod
+    def of(cls, item: CelEvaluation) -> CelEvaluateOut:
+        result = item.result.decode("utf-8", "replace") if isinstance(item.result, bytes) else item.result
+        span = CelSpanOut(start=item.start, end=item.end) if item.start is not None and item.end is not None else None
+        evaluator: Literal["agno", "agnostic"] = "agno" if item.evaluator == "agno" else "agnostic"
+        return cls(result=result, type=item.type, evaluator=evaluator, error=item.error, span=span, note=item.note)
+
+
+class CelVariableOut(BaseModel):
+    name: str
+    type: str
+    doc: str
+    example: Any
+
+
+class CelContextOut(BaseModel):
+    label: str
+    result: str
+    variables: list[CelVariableOut]
+
+
+class CelFunctionOut(BaseModel):
+    name: str
+    signature: str
+    doc: str
+    method: bool
+
+
+class CelMacroOut(BaseModel):
+    name: str
+    doc: str
+
+
+class CelContextsOut(BaseModel):
+    contexts: dict[str, CelContextOut]
+    functions: list[CelFunctionOut]
+    macros: list[CelMacroOut]
+
+
+class StepStatOut(BaseModel):
+    name: str
+    avg_ms: float
+    count: int
+    errors: int
+
+
+class StepStatsOut(BaseModel):
+    window: Literal["24h", "7d", "30d"]
+    traces_scanned: int
+    sampled: bool
+    steps: list[StepStatOut]
+
+    @classmethod
+    def of(cls, stats: WorkflowStepStats) -> StepStatsOut:
+        return cls(
+            window=stats.window,
+            traces_scanned=stats.traces_scanned,
+            sampled=stats.sampled,
+            steps=[
+                StepStatOut(name=item.name, avg_ms=item.avg_ms, count=item.count, errors=item.errors)
+                for item in stats.steps
+            ],
+        )
+
+
+class StepRunOut(BaseModel):
+    run_id: str
+    session_id: str
+    created_at: int | None
+    status: str | None
+    content: str | None
+    success: bool | None
+    error: str | None
+
+    @classmethod
+    def of(cls, run: StepRun) -> StepRunOut:
+        return cls(
+            run_id=run.run_id,
+            session_id=run.session_id,
+            created_at=run.created_at,
+            status=run.status,
+            content=run.content,
+            success=run.success,
+            error=run.error,
+        )
+
+
+class CanvasLayoutIn(BaseModel):
+    version: int = Field(ge=1)
+    layout: dict[str, Any] = Field(description="positions (node path → offset), collapsed paths, viewport")
+
+
+class CanvasLayoutOut(BaseModel):
+    version: int
+    layout: dict[str, Any]
+    updated_at: datetime | None
+
+    @classmethod
+    def of(cls, layout: CanvasLayout | None, version: int) -> CanvasLayoutOut:
+        if layout is None:
+            return cls(version=version, layout={}, updated_at=None)
+        return cls(version=layout.version, layout=layout.layout, updated_at=layout.updated_at)

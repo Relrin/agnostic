@@ -1,0 +1,11 @@
+[project]
+name = "agnostic-cel"
+version = "0.1.0"
+description = "CEL as Agno workflows use it: parsing, type and exhaustiveness checks, and a sandboxed evaluator"
+requires-python = "==3.15.*"
+license = "BSD-3-Clause"
+dependencies = []
+
+[build-system]
+requires = ["uv_build==0.13.6"]
+build-backend = "uv_build"

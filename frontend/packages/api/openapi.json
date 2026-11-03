@@ -2837,6 +2837,59 @@
         "title": "BulkOutcomeOut",
         "type": "object"
       },
+      "CanvasLayoutIn": {
+        "properties": {
+          "layout": {
+            "additionalProperties": true,
+            "description": "positions (node path → offset), collapsed paths, viewport",
+            "title": "Layout",
+            "type": "object"
+          },
+          "version": {
+            "minimum": 1.0,
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "version",
+          "layout"
+        ],
+        "title": "CanvasLayoutIn",
+        "type": "object"
+      },
+      "CanvasLayoutOut": {
+        "properties": {
+          "layout": {
+            "additionalProperties": true,
+            "title": "Layout",
+            "type": "object"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "version",
+          "layout",
+          "updated_at"
+        ],
+        "title": "CanvasLayoutOut",
+        "type": "object"
+      },
       "CapabilityOut": {
         "properties": {
           "detail": {
@@ -3142,6 +3195,402 @@
         "title": "CasesIn",
         "type": "object"
       },
+      "CelCheckIn": {
+        "properties": {
+          "choices": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "A Router's choice names, to check every result.",
+            "title": "Choices"
+          },
+          "context": {
+            "$ref": "#/components/schemas/CelContextIn"
+          },
+          "expression": {
+            "maxLength": 4000,
+            "title": "Expression",
+            "type": "string"
+          }
+        },
+        "required": [
+          "expression",
+          "context"
+        ],
+        "title": "CelCheckIn",
+        "type": "object"
+      },
+      "CelCheckOut": {
+        "properties": {
+          "exhaustive": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exhaustive"
+          },
+          "findings": {
+            "items": {
+              "$ref": "#/components/schemas/CelFindingOut"
+            },
+            "title": "Findings",
+            "type": "array"
+          },
+          "ok": {
+            "title": "Ok",
+            "type": "boolean"
+          },
+          "results": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Router: every literal it can return (null when not all are).",
+            "title": "Results"
+          },
+          "summary": {
+            "description": "e.g. \"Returns string · every result matches a choice\"",
+            "title": "Summary",
+            "type": "string"
+          },
+          "type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Type"
+          }
+        },
+        "required": [
+          "ok",
+          "type",
+          "summary",
+          "findings",
+          "results",
+          "exhaustive"
+        ],
+        "title": "CelCheckOut",
+        "type": "object"
+      },
+      "CelContextIn": {
+        "enum": [
+          "condition",
+          "router",
+          "loop"
+        ],
+        "type": "string"
+      },
+      "CelContextOut": {
+        "properties": {
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "result": {
+            "title": "Result",
+            "type": "string"
+          },
+          "variables": {
+            "items": {
+              "$ref": "#/components/schemas/CelVariableOut"
+            },
+            "title": "Variables",
+            "type": "array"
+          }
+        },
+        "required": [
+          "label",
+          "result",
+          "variables"
+        ],
+        "title": "CelContextOut",
+        "type": "object"
+      },
+      "CelContextsOut": {
+        "properties": {
+          "contexts": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/CelContextOut"
+            },
+            "title": "Contexts",
+            "type": "object"
+          },
+          "functions": {
+            "items": {
+              "$ref": "#/components/schemas/CelFunctionOut"
+            },
+            "title": "Functions",
+            "type": "array"
+          },
+          "macros": {
+            "items": {
+              "$ref": "#/components/schemas/CelMacroOut"
+            },
+            "title": "Macros",
+            "type": "array"
+          }
+        },
+        "required": [
+          "contexts",
+          "functions",
+          "macros"
+        ],
+        "title": "CelContextsOut",
+        "type": "object"
+      },
+      "CelEvaluateIn": {
+        "properties": {
+          "choices": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Choices"
+          },
+          "context": {
+            "$ref": "#/components/schemas/CelContextIn"
+          },
+          "expression": {
+            "maxLength": 4000,
+            "title": "Expression",
+            "type": "string"
+          },
+          "sample": {
+            "additionalProperties": true,
+            "description": "Values of the context's variables (input, previous_step_content, …; for a loop last_step_content, step_outputs, …). Missing ones are empty, as agno passes them.",
+            "title": "Sample",
+            "type": "object"
+          }
+        },
+        "required": [
+          "expression",
+          "context"
+        ],
+        "title": "CelEvaluateIn",
+        "type": "object"
+      },
+      "CelEvaluateOut": {
+        "properties": {
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "evaluator": {
+            "description": "agno: the instance evaluated it, as a run would; agnostic: the control plane's evaluator.",
+            "enum": [
+              "agno",
+              "agnostic"
+            ],
+            "title": "Evaluator",
+            "type": "string"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "result": {
+            "title": "Result"
+          },
+          "span": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CelSpanOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Type"
+          }
+        },
+        "required": [
+          "result",
+          "type",
+          "evaluator",
+          "error",
+          "span",
+          "note"
+        ],
+        "title": "CelEvaluateOut",
+        "type": "object"
+      },
+      "CelFindingOut": {
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "severity": {
+            "enum": [
+              "error",
+              "warning",
+              "info"
+            ],
+            "title": "Severity",
+            "type": "string"
+          },
+          "span": {
+            "$ref": "#/components/schemas/CelSpanOut"
+          }
+        },
+        "required": [
+          "severity",
+          "code",
+          "message",
+          "span"
+        ],
+        "title": "CelFindingOut",
+        "type": "object"
+      },
+      "CelFunctionOut": {
+        "properties": {
+          "doc": {
+            "title": "Doc",
+            "type": "string"
+          },
+          "method": {
+            "title": "Method",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "signature": {
+            "title": "Signature",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "signature",
+          "doc",
+          "method"
+        ],
+        "title": "CelFunctionOut",
+        "type": "object"
+      },
+      "CelMacroOut": {
+        "properties": {
+          "doc": {
+            "title": "Doc",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "doc"
+        ],
+        "title": "CelMacroOut",
+        "type": "object"
+      },
+      "CelSpanOut": {
+        "properties": {
+          "end": {
+            "title": "End",
+            "type": "integer"
+          },
+          "start": {
+            "title": "Start",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "start",
+          "end"
+        ],
+        "title": "CelSpanOut",
+        "type": "object"
+      },
+      "CelVariableOut": {
+        "properties": {
+          "doc": {
+            "title": "Doc",
+            "type": "string"
+          },
+          "example": {
+            "title": "Example"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "type": {
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "type",
+          "doc",
+          "example"
+        ],
+        "title": "CelVariableOut",
+        "type": "object"
+      },
       "CertificateOut": {
         "properties": {
           "fingerprint_sha256": {
@@ -3441,6 +3890,122 @@
           "is_latest"
         ],
         "title": "CheckpointOut",
+        "type": "object"
+      },
+      "CodeDiagnosticOut": {
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "column": {
+            "title": "Column",
+            "type": "integer"
+          },
+          "end_column": {
+            "title": "End Column",
+            "type": "integer"
+          },
+          "end_line": {
+            "title": "End Line",
+            "type": "integer"
+          },
+          "line": {
+            "title": "Line",
+            "type": "integer"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Path"
+          },
+          "severity": {
+            "enum": [
+              "error",
+              "warning",
+              "info"
+            ],
+            "title": "Severity",
+            "type": "string"
+          }
+        },
+        "required": [
+          "severity",
+          "code",
+          "message",
+          "line",
+          "column",
+          "end_line",
+          "end_column",
+          "path"
+        ],
+        "title": "CodeDiagnosticOut",
+        "type": "object"
+      },
+      "CodeDocumentOut": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code"
+          },
+          "code_backed": {
+            "title": "Code Backed",
+            "type": "boolean"
+          },
+          "stale": {
+            "description": "The draft was saved without its code since, so they may disagree.",
+            "title": "Stale",
+            "type": "boolean"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "updated_by_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated By Name"
+          }
+        },
+        "required": [
+          "code_backed",
+          "code",
+          "stale",
+          "updated_by_name",
+          "updated_at"
+        ],
+        "title": "CodeDocumentOut",
         "type": "object"
       },
       "CodeNoteOut": {
@@ -8970,7 +9535,8 @@
       "KindIn": {
         "enum": [
           "agent",
-          "team"
+          "team",
+          "workflow"
         ],
         "type": "string"
       },
@@ -11433,6 +11999,104 @@
           "data"
         ],
         "title": "Page[NotificationOut]",
+        "type": "object"
+      },
+      "ParseIn": {
+        "properties": {
+          "code": {
+            "maxLength": 256000,
+            "title": "Code",
+            "type": "string"
+          },
+          "component_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Pick this component when the file defines several.",
+            "title": "Component Id"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/KindIn"
+          }
+        },
+        "required": [
+          "kind",
+          "code"
+        ],
+        "title": "ParseIn",
+        "type": "object"
+      },
+      "ParseOut": {
+        "properties": {
+          "code_owned": {
+            "description": "Config paths set in code in a way the form can't edit.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Code Owned",
+            "type": "array"
+          },
+          "config": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The config the code reads as; null when it can't be read.",
+            "title": "Config"
+          },
+          "diagnostics": {
+            "items": {
+              "$ref": "#/components/schemas/CodeDiagnosticOut"
+            },
+            "title": "Diagnostics",
+            "type": "array"
+          },
+          "ok": {
+            "title": "Ok",
+            "type": "boolean"
+          },
+          "ruff": {
+            "$ref": "#/components/schemas/RuffOut"
+          },
+          "spans": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/SpanOut"
+            },
+            "title": "Spans",
+            "type": "object"
+          },
+          "variable": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Variable"
+          }
+        },
+        "required": [
+          "ok",
+          "config",
+          "variable",
+          "diagnostics",
+          "spans",
+          "code_owned",
+          "ruff"
+        ],
+        "title": "ParseOut",
         "type": "object"
       },
       "PasswordResetConfirm": {
@@ -14997,6 +15661,19 @@
       },
       "SaveDraftIn": {
         "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "maxLength": 256000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "For a code-backed draft: the code the config was read from (checked to read as it); an empty string stops keeping code for the draft.",
+            "title": "Code"
+          },
           "config": {
             "additionalProperties": true,
             "title": "Config",
@@ -17362,6 +18039,148 @@
         "title": "StepOut",
         "type": "object"
       },
+      "StepRunOut": {
+        "properties": {
+          "content": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "run_id": {
+            "title": "Run Id",
+            "type": "string"
+          },
+          "session_id": {
+            "title": "Session Id",
+            "type": "string"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          },
+          "success": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Success"
+          }
+        },
+        "required": [
+          "run_id",
+          "session_id",
+          "created_at",
+          "status",
+          "content",
+          "success",
+          "error"
+        ],
+        "title": "StepRunOut",
+        "type": "object"
+      },
+      "StepStatOut": {
+        "properties": {
+          "avg_ms": {
+            "title": "Avg Ms",
+            "type": "number"
+          },
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "errors": {
+            "title": "Errors",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "avg_ms",
+          "count",
+          "errors"
+        ],
+        "title": "StepStatOut",
+        "type": "object"
+      },
+      "StepStatsOut": {
+        "properties": {
+          "sampled": {
+            "title": "Sampled",
+            "type": "boolean"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/StepStatOut"
+            },
+            "title": "Steps",
+            "type": "array"
+          },
+          "traces_scanned": {
+            "title": "Traces Scanned",
+            "type": "integer"
+          },
+          "window": {
+            "enum": [
+              "24h",
+              "7d",
+              "30d"
+            ],
+            "title": "Window",
+            "type": "string"
+          }
+        },
+        "required": [
+          "window",
+          "traces_scanned",
+          "sampled",
+          "steps"
+        ],
+        "title": "StepStatsOut",
+        "type": "object"
+      },
       "StepUpOut": {
         "properties": {
           "authenticated_at": {
@@ -18384,6 +19203,110 @@
         "title": "TraceComparisonOut",
         "type": "object"
       },
+      "TransformIn": {
+        "properties": {
+          "code": {
+            "maxLength": 256000,
+            "title": "Code",
+            "type": "string"
+          },
+          "component_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Component Id"
+          },
+          "config": {
+            "additionalProperties": true,
+            "description": "The edited config the code should say",
+            "title": "Config",
+            "type": "object"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/KindIn"
+          }
+        },
+        "required": [
+          "kind",
+          "code",
+          "config"
+        ],
+        "title": "TransformIn",
+        "type": "object"
+      },
+      "TransformOut": {
+        "properties": {
+          "changed": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Changed",
+            "type": "array"
+          },
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "code_owned": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Code Owned",
+            "type": "array"
+          },
+          "config": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Config"
+          },
+          "diagnostics": {
+            "items": {
+              "$ref": "#/components/schemas/CodeDiagnosticOut"
+            },
+            "title": "Diagnostics",
+            "type": "array"
+          },
+          "equivalent": {
+            "description": "The new code reads back as exactly the edited config.",
+            "title": "Equivalent",
+            "type": "boolean"
+          },
+          "ruff": {
+            "$ref": "#/components/schemas/RuffOut"
+          },
+          "spans": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/SpanOut"
+            },
+            "title": "Spans",
+            "type": "object"
+          }
+        },
+        "required": [
+          "code",
+          "config",
+          "equivalent",
+          "changed",
+          "diagnostics",
+          "spans",
+          "code_owned",
+          "ruff"
+        ],
+        "title": "TransformOut",
+        "type": "object"
+      },
       "UnreadOut": {
         "properties": {
           "unread": {
@@ -18887,6 +19810,44 @@
           "credential"
         ],
         "title": "WebAuthnVerify",
+        "type": "object"
+      },
+      "WorkflowValidateIn": {
+        "properties": {
+          "config": {
+            "additionalProperties": true,
+            "title": "Config",
+            "type": "object"
+          }
+        },
+        "required": [
+          "config"
+        ],
+        "title": "WorkflowValidateIn",
+        "type": "object"
+      },
+      "WorkflowValidationOut": {
+        "properties": {
+          "sentence": {
+            "description": "For the toolbar, e.g. \"11 steps · valid\".",
+            "title": "Sentence",
+            "type": "string"
+          },
+          "step_count": {
+            "description": "Every Step and every container (Steps, Parallel, Condition, Loop, Router).",
+            "title": "Step Count",
+            "type": "integer"
+          },
+          "validation": {
+            "$ref": "#/components/schemas/ValidationOut"
+          }
+        },
+        "required": [
+          "validation",
+          "step_count",
+          "sentence"
+        ],
+        "title": "WorkflowValidationOut",
         "type": "object"
       },
       "WriteCheckOut": {
@@ -29800,6 +30761,70 @@
         ]
       }
     },
+    "/api/v1/instances/{instance}/studio/cel/evaluate": {
+      "post": {
+        "operationId": "studio_evaluate_cel",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CelEvaluateIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CelEvaluateOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Try a CEL expression on a sample: agno evaluates it through the bridge, else Agnostic does",
+        "tags": [
+          "studio"
+        ]
+      }
+    },
     "/api/v1/instances/{instance}/studio/codegen": {
       "post": {
         "operationId": "studio_codegen",
@@ -30187,6 +31212,150 @@
         ]
       }
     },
+    "/api/v1/instances/{instance}/studio/components/{component_id}/canvas-layout": {
+      "get": {
+        "operationId": "studio_get_canvas_layout",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "component_id",
+            "required": true,
+            "schema": {
+              "title": "Component Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "version",
+            "required": true,
+            "schema": {
+              "minimum": 1,
+              "title": "Version",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CanvasLayoutOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "What was moved, collapsed or zoomed on the workflow canvas",
+        "tags": [
+          "studio"
+        ]
+      },
+      "put": {
+        "operationId": "studio_put_canvas_layout",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "component_id",
+            "required": true,
+            "schema": {
+              "title": "Component Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CanvasLayoutIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CanvasLayoutOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Keep the canvas layout of a version",
+        "tags": [
+          "studio"
+        ]
+      }
+    },
     "/api/v1/instances/{instance}/studio/components/{component_id}/configs": {
       "post": {
         "operationId": "studio_new_draft",
@@ -30470,6 +31639,78 @@
           }
         },
         "summary": "Save a draft (409 when someone else saved it first)",
+        "tags": [
+          "studio"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/studio/components/{component_id}/configs/{version}/code": {
+      "get": {
+        "operationId": "studio_get_code_document",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "component_id",
+            "required": true,
+            "schema": {
+              "title": "Component Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "version",
+            "required": true,
+            "schema": {
+              "title": "Version",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodeDocumentOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "The code of a code-backed draft, if it keeps one",
         "tags": [
           "studio"
         ]
@@ -30996,6 +32237,174 @@
         ]
       }
     },
+    "/api/v1/instances/{instance}/studio/components/{component_id}/step-runs": {
+      "get": {
+        "operationId": "studio_step_runs",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "component_id",
+            "required": true,
+            "schema": {
+              "title": "Component Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "step",
+            "required": true,
+            "schema": {
+              "maxLength": 200,
+              "minLength": 1,
+              "title": "Step",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "maximum": 50,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/StepRunOut"
+                  },
+                  "title": "Response Studio Step Runs",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "A step's latest results from the workflow's recent runs",
+        "tags": [
+          "studio"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/studio/components/{component_id}/step-stats": {
+      "get": {
+        "operationId": "studio_step_stats",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "component_id",
+            "required": true,
+            "schema": {
+              "title": "Component Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "window",
+            "required": false,
+            "schema": {
+              "default": "7d",
+              "enum": [
+                "24h",
+                "7d",
+                "30d"
+              ],
+              "title": "Window",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StepStatsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Average duration, runs and failures per step, from the traces",
+        "tags": [
+          "studio"
+        ]
+      }
+    },
     "/api/v1/instances/{instance}/studio/components/{component_id}/test-runs": {
       "post": {
         "operationId": "studio_test_run",
@@ -31057,6 +32466,70 @@
           }
         },
         "summary": "Run a draft version and stream its events (delegated elevation; needs components:write and run)",
+        "tags": [
+          "studio"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/studio/parse": {
+      "post": {
+        "operationId": "studio_parse_code",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ParseIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParseOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Code read back into a config, with what can't be stored located",
         "tags": [
           "studio"
         ]
@@ -31347,6 +32820,70 @@
         ]
       }
     },
+    "/api/v1/instances/{instance}/studio/transform": {
+      "post": {
+        "operationId": "studio_transform_code",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransformIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransformOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "A form edit applied to existing code, keeping its comments and layout; checked to read back as the edit",
+        "tags": [
+          "studio"
+        ]
+      }
+    },
     "/api/v1/instances/{instance}/studio/validate": {
       "post": {
         "operationId": "studio_validate",
@@ -31406,6 +32943,70 @@
           }
         },
         "summary": "Shape, registry references, rules and agno's strict load",
+        "tags": [
+          "studio"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/studio/workflows/validate": {
+      "post": {
+        "operationId": "studio_validate_workflow",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkflowValidateIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkflowValidationOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Workflow validation (structure, executors, CEL, agno's strict load) with the step count",
         "tags": [
           "studio"
         ]
@@ -34280,6 +35881,102 @@
         ]
       }
     },
+    "/api/v1/studio/cel/check": {
+      "post": {
+        "operationId": "studio_check_cel",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CelCheckIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CelCheckOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Type and exhaustiveness check of a CEL expression in its context",
+        "tags": [
+          "studio"
+        ]
+      }
+    },
+    "/api/v1/studio/cel/contexts": {
+      "get": {
+        "operationId": "studio_cel_contexts",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CelContextsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Variables, functions and macros per context, for completion",
+        "tags": [
+          "studio"
+        ]
+      }
+    },
     "/api/v1/studio/schema/{kind}": {
       "get": {
         "operationId": "studio_schema",
@@ -34291,7 +35988,8 @@
             "schema": {
               "enum": [
                 "agent",
-                "team"
+                "team",
+                "workflow"
               ],
               "title": "Kind",
               "type": "string"
@@ -34399,7 +36097,7 @@
             "description": "Server error"
           }
         },
-        "summary": "Starting points for new agents and teams",
+        "summary": "Starting points for new agents, teams and workflows",
         "tags": [
           "studio"
         ]

@@ -19,6 +19,7 @@ import {
   createRouter,
   Outlet,
   RouterProvider,
+  type AnyRouter,
 } from "@tanstack/react-router";
 import { render, type RenderResult } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
@@ -30,7 +31,7 @@ import { API, configureTestApi } from "./base";
 export function renderPage(
   Page: () => ReactNode,
   { path = "/", url = path }: { path?: string; url?: string } = {},
-): RenderResult & { queryClient: QueryClient } {
+): RenderResult & { queryClient: QueryClient; router: AnyRouter } {
   configureTestApi();
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
@@ -51,7 +52,7 @@ export function renderPage(
       <RouterProvider router={router} />
     </QueryClientProvider>,
   );
-  return { ...result, queryClient };
+  return { ...result, queryClient, router };
 }
 
 const T = "2026-11-01T09:00:00Z";

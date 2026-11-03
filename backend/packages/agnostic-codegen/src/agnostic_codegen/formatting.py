@@ -54,24 +54,36 @@ async def format_and_lint(
         formatted = await _run(
             ["format", "--isolated", f"--line-length={LINE_LENGTH}", f"--stdin-filename={filename}", "-"], code
         )
-        report = await _run(
-            [
-                "check",
-                "--isolated",
-                f"--line-length={LINE_LENGTH}",
-                f"--select={LINT_RULES}",
-                "--ignore=E501",  # formatting already wraps what it can; long strings stay on one line
-                "--output-format=json",
-                f"--config=lint.isort.known-first-party = {json.dumps(list(first_party))}",
-                "--exit-zero",
-                f"--stdin-filename={filename}",
-                "-",
-            ],
-            formatted,
-        )
+        report = await _run(_check_arguments(filename, first_party), formatted)
     except (OSError, TimeoutError, RuntimeError) as exc:
         return RuffResult(code=code, available=False, error=str(exc) or type(exc).__name__)
     return RuffResult(code=formatted, available=True, formatted=formatted != code, messages=_messages(report))
+
+
+async def lint(code: str, *, filename: str = "component.py", first_party: tuple[str, ...] = ("app",)) -> RuffResult:
+    """Lint without formatting: for code a person wrote, whose layout is theirs."""
+    if len(code.encode()) > MAX_SOURCE_BYTES:
+        return RuffResult(code=code, available=False, error="The source is too large to lint.")
+    try:
+        report = await _run(_check_arguments(filename, first_party), code)
+    except (OSError, TimeoutError, RuntimeError) as exc:
+        return RuffResult(code=code, available=False, error=str(exc) or type(exc).__name__)
+    return RuffResult(code=code, available=True, messages=_messages(report))
+
+
+def _check_arguments(filename: str, first_party: tuple[str, ...]) -> list[str]:
+    return [
+        "check",
+        "--isolated",
+        f"--line-length={LINE_LENGTH}",
+        f"--select={LINT_RULES}",
+        "--ignore=E501",  # formatting already wraps what it can; long strings stay on one line
+        "--output-format=json",
+        f"--config=lint.isort.known-first-party = {json.dumps(list(first_party))}",
+        "--exit-zero",
+        f"--stdin-filename={filename}",
+        "-",
+    ]
 
 
 async def _run(arguments: list[str], source: str) -> str:

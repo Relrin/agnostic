@@ -25,7 +25,7 @@ import {
 import { SendHorizontal } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-import { isRecord } from "./config";
+import { isRecord, type EditableKind } from "./config";
 
 type Choice = "draft" | "current";
 
@@ -99,6 +99,12 @@ function LiveRun({
   );
 }
 
+const FAMILIES: Record<EditableKind, RunTarget["family"]> = {
+  agent: "agents",
+  team: "teams",
+  workflow: "workflows",
+};
+
 export function TestPane({
   instance,
   instanceName,
@@ -115,7 +121,7 @@ export function TestPane({
   instanceName: string;
   componentId: string;
   componentName: string;
-  kind: "agent" | "team";
+  kind: EditableKind;
   draft: VersionOut | undefined;
   currentVersion: number | null | undefined;
   outputSchema: RegistryEntryOut | undefined;
@@ -131,7 +137,7 @@ export function TestPane({
     undefined,
   );
   const keys = useRef<string[]>([]);
-  const target: RunTarget = { instance, family: kind === "team" ? "teams" : "agents", componentId };
+  const target: RunTarget = { instance, family: FAMILIES[kind], componentId };
   const canDraft = draft !== undefined && canTestDraft.allowed === true;
   const hasCurrent = currentVersion !== null && currentVersion !== undefined;
   const runningDraft = choice === "draft" && draft !== undefined;

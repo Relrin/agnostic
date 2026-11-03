@@ -1,8 +1,11 @@
-// CodeMirror extensions for the read-only code view: design-token theme and highlighting, the change-mark strip,
-// the focused line, and inline notes. Marks, focus and notes are facets so prop changes only reconfigure them.
+// CodeMirror extensions for the code views and editors: design-token theme and highlighting, the change-mark strip,
+// the focused lines, inline notes, and what an editable view adds (history, keys, diagnostics, code-owned ranges).
+// Marks, focus, notes and owned ranges are facets so prop changes only reconfigure them.
 import { json } from "@codemirror/lang-json";
 import { python } from "@codemirror/lang-python";
 import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
+import { defaultKeymap, history, historyKeymap, indentWithTab } from "@codemirror/commands";
+import { lintGutter } from "@codemirror/lint";
 import { EditorState, Facet, RangeSetBuilder, type Extension } from "@codemirror/state";
 import {
   Decoration,
@@ -11,12 +14,13 @@ import {
   WidgetType,
   gutter,
   gutterLineClass,
+  keymap,
   lineNumbers,
   type DecorationSet,
 } from "@codemirror/view";
 import { tags } from "@lezer/highlight";
 
-import type { ChangeMark, CodeLanguage, CodeNote } from "./types";
+import type { ChangeMark, CodeLanguage, CodeNote, LineRange } from "./types";
 
 export function languageExtension(language: CodeLanguage): Extension {
   return language === "python" ? python() : json();
@@ -104,6 +108,26 @@ const theme = EditorView.theme(
       left: "0",
     },
     ".cm-note a": { color: "var(--info)", marginLeft: "auto", whiteSpace: "nowrap" },
+    ".cm-line.cm-owned-line": {
+      backgroundImage: "linear-gradient(90deg, var(--warning-pill-bg), transparent 40%)",
+    },
+    ".cm-lint-marker": { width: "0.9em", height: "0.9em" },
+    ".cm-diagnostic": { fontFamily: "var(--font-sans)", fontSize: "12px", padding: "4px 8px" },
+    ".cm-diagnostic-error": { borderLeftColor: "var(--danger)" },
+    ".cm-diagnostic-warning": { borderLeftColor: "var(--warning)" },
+    ".cm-diagnostic-info": { borderLeftColor: "var(--info)" },
+    ".cm-tooltip": {
+      backgroundColor: "var(--surface-raised)",
+      color: "var(--fg-prose)",
+      border: "1px solid var(--border)",
+      borderRadius: "var(--radius-control)",
+    },
+    ".cm-tooltip-autocomplete > ul > li[aria-selected]": {
+      backgroundColor: "var(--info-tint-strong)",
+      color: "var(--fg-prose)",
+    },
+    ".cm-cel-hover": { padding: "6px 10px", maxWidth: "360px", fontSize: "12px", lineHeight: "18px" },
+    ".cm-cel-hover code": { fontFamily: "var(--font-mono)", color: "var(--syntax-call)" },
     ".cm-note a:hover": { color: "var(--info-hover)", textDecoration: "underline" },
   },
   { dark: true },
@@ -141,9 +165,10 @@ const changeGutter = gutter({
   lineMarkerChange: (update) => update.startState.facet(changeMarks) !== update.state.facet(changeMarks),
 });
 
-// ---------------------------------------------------------------- focused line
+// ---------------------------------------------------------------- focused lines
 
-export const focusLine = Facet.define<number | undefined, number | undefined>({
+/** The highlighted lines (1-based, inclusive): a field's line, or the lines of a selected workflow step. */
+export const focusLine = Facet.define<LineRange | undefined, LineRange | undefined>({
   combine: (values) => values.at(-1),
 });
 
@@ -151,25 +176,51 @@ const focusGutterMarker = new (class extends GutterMarker {
   override elementClass = "cm-focus-line";
 })();
 
-function focusedLine(state: EditorState): number | undefined {
-  const line = state.facet(focusLine);
-  return line !== undefined && line >= 1 && line <= state.doc.lines ? line : undefined;
+function linesOf(state: EditorState, range: LineRange | undefined): number[] {
+  if (range === undefined) return [];
+  const from = Math.max(range.from, 1);
+  const to = Math.min(range.to, state.doc.lines);
+  return from > to ? [] : Array.from({ length: to - from + 1 }, (_, index) => from + index);
+}
+
+/** One line, or a range of lines, as the focus facet holds it. */
+export function lineRange(line: number | undefined, range?: LineRange): LineRange | undefined {
+  if (range !== undefined) return range;
+  return line === undefined ? undefined : { from: line, to: line };
 }
 
 const focusDecorations = EditorView.decorations.compute([focusLine, "doc"], (state): DecorationSet => {
-  const line = focusedLine(state);
-  if (line === undefined) return Decoration.none;
-  return Decoration.set([Decoration.line({ class: "cm-focus-line" }).range(state.doc.line(line).from)]);
+  const lines = linesOf(state, state.facet(focusLine));
+  if (lines.length === 0) return Decoration.none;
+  return Decoration.set(
+    lines.map((line) => Decoration.line({ class: "cm-focus-line" }).range(state.doc.line(line).from)),
+  );
 });
 
 const focusGutter = gutterLineClass.compute([focusLine, "doc"], (state) => {
-  const line = focusedLine(state);
   const builder = new RangeSetBuilder<GutterMarker>();
-  if (line !== undefined) {
+  for (const line of linesOf(state, state.facet(focusLine))) {
     const from = state.doc.line(line).from;
     builder.add(from, from, focusGutterMarker);
   }
   return builder.finish();
+});
+
+// ---------------------------------------------------------------- code-owned lines
+
+/** Lines set in code in a way the form can't edit. */
+export const ownedLines = Facet.define<readonly LineRange[], readonly LineRange[]>({
+  combine: (values) => values.at(-1) ?? [],
+});
+
+const ownedDecorations = EditorView.decorations.compute([ownedLines, "doc"], (state): DecorationSet => {
+  const seen = new Set<number>();
+  for (const range of state.facet(ownedLines)) for (const line of linesOf(state, range)) seen.add(line);
+  return Decoration.set(
+    [...seen]
+      .sort((a, b) => a - b)
+      .map((line) => Decoration.line({ class: "cm-owned-line" }).range(state.doc.line(line).from)),
+  );
 });
 
 // ---------------------------------------------------------------- notes
@@ -223,17 +274,37 @@ const noteDecorations = EditorView.decorations.compute([codeNotes, "doc"], (stat
 
 // ---------------------------------------------------------------- assembly
 
-/** Everything except the language and the per-prop facets, which live in compartments. */
+/** The read-only view: everything except the language and the per-prop facets, which live in compartments. */
 export function baseExtensions(): Extension[] {
   return [
     EditorState.readOnly.of(true),
     EditorView.contentAttributes.of({ "aria-readonly": "true" }),
+    ...shared(),
+  ];
+}
+
+/** An editable view: history, the standard keys (Tab indents; Esc then Tab leaves), the lint gutter. */
+export function editableExtensions(): Extension[] {
+  return [
+    history(),
+    keymap.of([...defaultKeymap, ...historyKeymap, indentWithTab]),
+    lintGutter(),
+    ...shared(),
+  ];
+}
+
+function shared(): Extension[] {
+  return [
     lineNumbers(),
     changeGutter,
     focusGutter,
     focusDecorations,
     noteDecorations,
+    ownedDecorations,
     syntaxHighlighting(highlight),
     theme,
   ];
 }
+
+/** The design tokens' highlighting and theme, for editors that bring their own language and layout. */
+export const editorTheme: Extension = [syntaxHighlighting(highlight), theme];

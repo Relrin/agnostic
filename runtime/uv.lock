@@ -86,6 +86,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "cel-python", specifier = "==0.5.0" },
     { name = "cryptography", specifier = "==50.0.2" },
     { name = "fastmcp", specifier = "==4.1.4" },
     { name = "httpx", specifier = "==0.28.1" },

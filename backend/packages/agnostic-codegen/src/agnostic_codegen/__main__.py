@@ -1,4 +1,6 @@
-"""``python -m agnostic_codegen DIR``: write the generated code next to every ``agents/*.json`` and ``teams/*.json``.
+"""``python -m agnostic_codegen DIR``: write the generated code next to every golden config.
+
+The configs are ``agents/``, ``teams/``, ``workflows/`` and ``prototype/`` ``*.json``.
 
 Used for the golden fixtures: the JSON comes from agno's ``to_dict()`` in the reference runtime, the ``.py`` next to it
 is what Studio shows for that config.
@@ -12,13 +14,15 @@ import sys
 from pathlib import Path
 
 from agnostic_codegen import render
-from agnostic_spec.v3_1 import parse
+from agnostic_spec.v3_1 import Kind, parse
+
+KINDS: dict[str, Kind] = {"agents": "agent", "teams": "team", "workflows": "workflow", "prototype": "workflow"}
 
 
 def write_all(folder: Path) -> int:
     written = 0
     for path in sorted(folder.glob("*/*.json")):
-        kind = "team" if path.parent.name == "teams" else "agent"
+        kind = KINDS.get(path.parent.name, "agent")
         config = parse(kind, json.loads(path.read_text(encoding="utf-8")))
         rendered = asyncio.run(render(config))
         if not rendered.ruff.available:

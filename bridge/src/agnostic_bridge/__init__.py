@@ -12,11 +12,13 @@ the scopes in :data:`SCOPE_MAPPINGS` (``agent_os:admin`` passes too). The bridge
 eval route runs AgentOS's own eval helpers, which call models and store the result in the AgentOS db; its file
 provenance route reads the traces AgentOS already stores; its workers route describes the replica that answers; its
 events route reads the approvals and schedule runs AgentOS already stores; its component routes rebuild configs with
-agno's ``from_dict`` without storing them; its introspection routes read code-defined components and registry entries.
+agno's ``from_dict`` without storing them; its introspection routes read code-defined components and registry entries;
+its CEL route evaluates a workflow expression with agno's own CEL evaluation.
 """
 
 from agnostic_bridge._app import BRIDGE_PREFIX, SCOPE_MAPPINGS, create_router, install
 from agnostic_bridge._capabilities import BridgeCapabilities, BridgeFeatures, BridgeQueueFeatures, __version__
+from agnostic_bridge._cel import EVALUATE_CEL_PATH, CelEvaluation, CelEvaluationError, CelEvaluationInput
 from agnostic_bridge._components import (
     NORMALIZE_PATH,
     VALIDATE_PATH,
@@ -33,6 +35,7 @@ from agnostic_bridge._workers import WORKERS_PATH, WorkersQueueConfig, WorkersRe
 
 __all__ = [
     "BRIDGE_PREFIX",
+    "EVALUATE_CEL_PATH",
     "EVENTS_PATH",
     "INTROSPECT_COMPONENTS_PATH",
     "NORMALIZE_PATH",
@@ -46,6 +49,9 @@ __all__ = [
     "BridgeEvent",
     "BridgeFeatures",
     "BridgeQueueFeatures",
+    "CelEvaluation",
+    "CelEvaluationError",
+    "CelEvaluationInput",
     "CodeComponent",
     "ComponentConfigInput",
     "ComponentError",

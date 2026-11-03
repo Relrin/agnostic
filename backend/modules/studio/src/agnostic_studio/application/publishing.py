@@ -11,7 +11,6 @@ from agnostic_instances.facade import Instance
 from agnostic_kernel.auth import Principal
 from agnostic_kernel.db import utcnow
 from agnostic_kernel.errors import ConflictError, ValidationFailedError, VersionConflictError
-from agnostic_spec.v3_1 import Kind as SpecKind
 from agnostic_studio.application.access import (
     CONFLICT,
     OVERRIDE_SCOPE,
@@ -85,9 +84,7 @@ class Publisher:
     async def _check(self, principal: Principal, instance: Instance, component_id: str, number: int) -> PublishCheck:
         component = await self._reader.component(principal, instance, component_id)
         version = await self._reader.version(principal, instance, component_id, number)
-        validation = await self._validator.validate(
-            principal, instance, cast("SpecKind", component.kind), version.config or {}
-        )
+        validation = await self._validator.validate(principal, instance, component.kind, version.config or {})
         gates = await self._gates.check(instance.id, component_id, number, f"v{number} draft")
         current = await self._reader.current(principal, instance, component_id)
         changes = diff(current.config or {} if current else {}, version.config or {})

@@ -25,7 +25,9 @@ Sample components (one file each, matching the Sources path mapping):
 - agents: `support-triage`, `billing-agent`, `kb-researcher`, `qa-reviewer`, `web-researcher`, `summarizer`
   (`app/agents/`);
 - teams: `research-team` (coordinate), `escalation-team` (route) (`app/teams/`);
-- workflows: `ticket-router` (triage, then a CEL `Router`), `daily-brief` (`app/workflows/`).
+- workflows: `ticket-router` (triage, then a CEL `Router`), `daily-brief`, `refund-review` (`app/workflows/`);
+- step functions Studio workflows can run as executors, evaluators or selectors: `check_status`, `send_reply`,
+  `needs_escalation` (`app/functions.py`, registered with `Registry(functions=...)`).
 
 `refund_customer` is decorated with `@approval`: a run that calls it pauses (`PAUSED`) and an approval appears in
 `/approvals`.
@@ -64,6 +66,7 @@ Run two instances with `just runtimes` ([guide](../how-to/reference-runtimes.md)
 | `POST /agnostic/v1/components/validate` | `components:read` | `{kind, config}` → `{valid, errors: [{path, message}]}`: a strict `from_dict` against the registry and db |
 | `POST /agnostic/v1/components/normalize` | `components:read` | `{kind, config}` → `{config}`: a lenient `from_dict`, then `to_dict()`; 422 with `{valid, errors}` when it can't be built |
 | `GET /agnostic/v1/introspect/components` | `components:read` | Code-defined agents, teams and workflows: `[{id, kind, name, module, file, line, config}]` |
+| `POST /agnostic/v1/cel/evaluate` | `components:read` | `{expression, context: condition\|router\|loop, …sample}` → `{result, type}`: agno's own evaluation of a workflow CEL expression; 503 without cel-python (`agno[cel]`), which `features.cel` reports |
 | `GET /agnostic/v1/registry/{type}/{name}/source` | `registry:read` | `{type, name, module, file, line, declared, requires_confirmation, approval_type}` for one registry entry; 404 when it isn't registered |
 
 The component routes need a synchronous db (503 otherwise) and store nothing. Source locations are best-effort and

@@ -1,5 +1,5 @@
-// @agnostic/studio: the building blocks of the Studio editors (agents, teams, later workflows).
-export { CodePane, pathAtLine } from "./code-pane";
+// @agnostic/studio: the building blocks of the Studio editors (agents, teams, workflows).
+export { CodePane, pathAtLine, spanLines } from "./code-pane";
 export { ComponentIndex } from "./component-index";
 export {
   TEAM_MODES,
@@ -28,12 +28,14 @@ export {
   useDebouncedValue,
   useDraftDocument,
   useRegistry,
+  type CodeState,
   type DraftDocument,
   type FieldInfo,
+  type SourceCode,
   type SaveState,
   type Section,
 } from "./document";
-export { StudioEditor, unpublished, type Layout } from "./editor";
+export { DraftChip, FAMILY_LABEL, StudioEditor, unpublished, type Layout } from "./editor";
 export { ConfigForm, FieldControl, RawConfigEditor, fieldId, type FormContext } from "./form";
 export { MODE_BLURB, MODE_LABEL, flowSteps, sectionSummary } from "./summaries";
 export { TestPane, checkStructured } from "./test-pane";

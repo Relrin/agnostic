@@ -39,7 +39,7 @@ class Generated:
     notes: list[Note] = field(default_factory=list)
 
 
-class _Code:
+class Code:
     """An expression already rendered, emitted as is."""
 
     __slots__ = ("text",)
@@ -49,7 +49,7 @@ class _Code:
 
 
 @dataclass(slots=True)
-class _Imports:
+class Imports:
     modules: dict[str, set[str]] = field(default_factory=dict)
 
     def add(self, module: str, name: str) -> None:
@@ -70,25 +70,25 @@ def generate(config: ComponentConfig, convention: RegistryConvention | None = No
     convention = convention or RegistryConvention()
     kind = config.kind
     module, cls = CLASSES[kind]
-    imports = _Imports()
+    imports = Imports()
     imports.add(module, cls)
     data = config.dump()
     variable = snake(str(data.get("id") or data.get("name") or kind))
     generated = Generated(code="", variable=variable)
 
     arguments: list[tuple[str, object]] = []
-    for name in _ordered(kind, data):
+    for name in field_order(kind, data):
         value = _value(name, data[name], config, convention, imports, generated)
         arguments.append((name, value))
 
     lines = [f"{variable} = {cls}("]
-    lines.extend(f"{INDENT}{name}={_render(value, 1)}," for name, value in arguments)
+    lines.extend(f"{INDENT}{name}={render_literal(value, 1)}," for name, value in arguments)
     lines.append(")")
     generated.code = f"{imports.render()}\n\n{'\n'.join(lines)}\n"
     return generated
 
 
-def _ordered(kind: Kind, data: Mapping[str, Any]) -> list[str]:
+def field_order(kind: Kind, data: Mapping[str, Any]) -> list[str]:
     known = ["id", "name"]
     for section in layout(kind):
         known.extend(name for name in section["fields"] if name not in known)
@@ -102,20 +102,20 @@ def _value(
     value: Any,  # noqa: ANN401
     config: ComponentConfig,
     convention: RegistryConvention,
-    imports: _Imports,
+    imports: Imports,
     generated: Generated,
 ) -> object:
-    def ref(ref_type: RefType, entry: str) -> _Code:
+    def ref(ref_type: RefType, entry: str) -> Code:
         namespace = convention.namespace(ref_type)
         imports.add(convention.registry_module, namespace)
-        return _Code(f"{namespace}.{convention.attribute(ref_type, entry)}")
+        return Code(f"{namespace}.{convention.attribute(ref_type, entry)}")
 
     reference = _registry(name, value, config, ref, generated)
     if reference is not None:
         return reference
     if name == "mode" and isinstance(config, TeamConfig) and isinstance(value, str):
         imports.add("agno.team.mode", "TeamMode")
-        return _Code(f"TeamMode.{value}")
+        return Code(f"TeamMode.{value}")
     if name == "members" and isinstance(config, TeamConfig):
         members: list[object] = []
         paths: list[list[str]] = []
@@ -123,7 +123,7 @@ def _value(
             target = convention.teams_module if member.type == "team" else convention.agents_module
             attribute = snake(member.component_id or f"member_{index}")
             imports.add(target, attribute)
-            members.append(_Code(attribute))
+            members.append(Code(attribute))
             paths.append([f"members[{index}]"])
         generated.element_paths[name] = paths
         return members
@@ -137,7 +137,7 @@ def _value(
     return cast("object", value)
 
 
-RefMaker = Callable[[RefType, str], _Code]
+RefMaker = Callable[[RefType, str], Code]
 
 
 def _registry(
@@ -195,32 +195,52 @@ def _tool_refs(config: SharedConfig, ref: RefMaker, generated: Generated) -> lis
     return tools
 
 
-def _render(value: object, depth: int) -> str:  # noqa: PLR0911
-    if isinstance(value, _Code):
+def string_literal(value: str) -> str:
+    """Double quotes, unless the text has double quotes and no single ones (CEL often does): as ruff would write it."""
+    quoted = json.dumps(value, ensure_ascii=False)
+    if '"' in value and "'" not in value:
+        return "'" + quoted[1:-1].replace('\\"', '"') + "'"
+    return quoted
+
+
+def render_literal(value: object, depth: int) -> str:  # noqa: PLR0911
+    if isinstance(value, Code):
         return value.text
     if value is None or isinstance(value, bool):
         return repr(value)
     if isinstance(value, int | float):
         return repr(value)
     if isinstance(value, str):
-        return json.dumps(value, ensure_ascii=False)
+        return string_literal(value)
     pad = INDENT * (depth + 1)
     close = INDENT * depth
     if isinstance(value, list | tuple):
         items: list[object] = list(value)  # pyright: ignore[reportUnknownArgumentType]
         if not items:
             return "[]"
-        body = "".join(f"{pad}{_render(item, depth + 1)},\n" for item in items)
+        body = "".join(f"{pad}{render_literal(item, depth + 1)},\n" for item in items)
         return f"[\n{body}{close}]"
     if isinstance(value, dict):
         entries: dict[object, object] = dict(value)  # pyright: ignore[reportUnknownArgumentType]
         if not entries:
             return "{}"
         body = "".join(
-            f"{pad}{_render(str(key), depth + 1)}: {_render(item, depth + 1)},\n" for key, item in entries.items()
+            f"{pad}{render_literal(str(key), depth + 1)}: {render_literal(item, depth + 1)},\n"
+            for key, item in entries.items()
         )
         return f"{{\n{body}{close}}}"
     return json.dumps(str(value), ensure_ascii=False)
 
 
-__all__ = ["CLASSES", "Generated", "Note", "generate"]
+__all__ = [
+    "CLASSES",
+    "INDENT",
+    "Code",
+    "Generated",
+    "Imports",
+    "Note",
+    "field_order",
+    "generate",
+    "render_literal",
+    "string_literal",
+]

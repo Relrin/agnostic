@@ -14,6 +14,7 @@ import { http, HttpResponse } from "msw";
 import { API } from "./base";
 import agentSchema from "./fixtures/studio-schema-agent.json";
 import teamSchema from "./fixtures/studio-schema-team.json";
+import workflowSchema from "./fixtures/studio-schema-workflow.json";
 
 const T = "2026-11-02T09:00:00Z";
 const PARAMETERS = { type: "object", properties: { order_id: { type: "string" } }, required: ["order_id"] };
@@ -344,7 +345,9 @@ export function studioHandlers(calls: StudioCalls = { saves: [], publishes: [], 
   const base = `${API}/instances/:instance/studio`;
   return [
     http.get(`${API}/studio/schema/:kind`, ({ params }) =>
-      HttpResponse.json(params.kind === "team" ? teamSchema : agentSchema),
+      HttpResponse.json(
+        params.kind === "team" ? teamSchema : params.kind === "workflow" ? workflowSchema : agentSchema,
+      ),
     ),
     http.get(`${API}/studio/templates`, () => HttpResponse.json([])),
     http.get(`${base}/registry`, () => HttpResponse.json(studioRegistryOut())),
@@ -415,6 +418,15 @@ export function studioHandlers(calls: StudioCalls = { saves: [], publishes: [], 
         revision: `r-saved-${String(calls.saves.length)}`,
       });
     }),
+    http.get(`${base}/components/:id/configs/:version/code`, () =>
+      HttpResponse.json({
+        code_backed: false,
+        code: null,
+        stale: false,
+        updated_by_name: null,
+        updated_at: null,
+      }),
+    ),
     http.post(`${base}/codegen`, async ({ request }) => {
       const body = (await request.json()) as {
         kind: string;

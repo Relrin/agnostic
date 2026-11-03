@@ -1,3 +1,16 @@
-// @agnostic/editor: code views on CodeMirror 6, loaded on demand.
+// @agnostic/editor: code views and editors on CodeMirror 6, loaded on demand.
+export { CelEditor, CodeEditor, preloadCodeEditor } from "./code-editor";
 export { CodeView, CodeViewSkeleton, preloadCodeView } from "./code-view";
-export type { ChangeMark, CodeLanguage, CodeNote, CodeViewProps } from "./types";
+export type {
+  CelDiagnostic,
+  CelEditorHandle,
+  CelEditorProps,
+  CelSymbol,
+  ChangeMark,
+  CodeDiagnostic,
+  CodeEditorProps,
+  CodeLanguage,
+  CodeNote,
+  CodeViewProps,
+  LineRange,
+} from "./types";

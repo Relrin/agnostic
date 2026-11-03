@@ -1,17 +1,28 @@
 // The draft being edited: one config document in the client, autosaved to the AgentOS draft (2 s idle) with a
 // revision check, and projected into generated Python (250 ms after the last edit).
+//
+// Once someone edits the code, the draft is code-backed: their code is the artifact. Typing is read back into the
+// config 300 ms after the last keystroke (`/studio/parse`); a form edit is written into the code instead of
+// regenerating it (`/studio/transform`, keeping comments and layout); saves carry the code, which the server checks
+// reads as the config. Code that doesn't parse leaves the config at the last version that did, and isn't saved.
 import {
   describeError,
   problemCode,
   studioCodegen,
+  studioGetCodeDocumentOptions,
   studioGetComponentOptions,
   studioNewDraft,
+  studioParseCode,
   studioRegistryOptions,
   studioSaveDraft,
   studioSchemaOptions,
+  studioTransformCode,
+  type CodeDiagnosticOut,
   type CodegenOut,
   type ComponentDetailOut,
   type RegistryEntryOut,
+  type RuffOut,
+  type SpanOut,
   type VersionOut,
 } from "@agnostic/api";
 import { STALE_TIME, useDebouncedCallback, withQueryFn } from "@agnostic/core";
@@ -23,6 +34,7 @@ import { isRecord, pinsFrom, type Config, type EditableKind } from "./config";
 
 export const AUTOSAVE_MS = 2_000;
 export const CODEGEN_MS = 250;
+export const PARSE_MS = 300;
 
 export type SaveState = "saved" | "dirty" | "saving" | "conflict" | "error";
 
@@ -110,6 +122,34 @@ function enumOptions(property: Record<string, unknown>): { options?: string[] } 
   return {};
 }
 
+/** Where the code pane stands: generated from the form, or a person's code and how it reads back. */
+export type CodeState = "generated" | "synced" | "parsing" | "invalid" | "writing";
+
+export type SourceCode = {
+  /** The person's code is the artifact; otherwise the pane shows generated code. */
+  codeBacked: boolean;
+  code: string | undefined;
+  state: CodeState;
+  diagnostics: readonly CodeDiagnosticOut[];
+  spans: Record<string, SpanOut>;
+  /** Config paths set in code in a way the form can't edit. */
+  codeOwned: readonly string[];
+  ruff: RuffOut | undefined;
+  /** The draft was saved without its code since (e.g. straight on AgentOS), so they may disagree. */
+  stale: boolean;
+};
+
+const GENERATED: SourceCode = {
+  codeBacked: false,
+  code: undefined,
+  state: "generated",
+  diagnostics: [],
+  spans: {},
+  codeOwned: [],
+  ruff: undefined,
+  stale: false,
+};
+
 export type DraftDocument = {
   detail: ComponentDetailOut | undefined;
   isPending: boolean;
@@ -131,13 +171,22 @@ export type DraftDocument = {
   startingDraft: boolean;
   code: CodegenOut | undefined;
   codeError: unknown;
+  /** The code pane's source: generated, or the person's code once they edit it. */
+  source: SourceCode;
+  /** A person edited the code: from now on the draft is code-backed. */
+  setCode: (code: string) => void;
+  /** Go back to code generated from the form (the draft stops keeping its code on the next save). */
+  generateFromForm: () => void;
+  /** Field paths → spans of the code the pane shows. */
+  spans: Record<string, SpanOut>;
 };
 
 export function useDraftDocument(instance: string, componentId: string): DraftDocument {
   const queryClient = useQueryClient();
   const detailOptions = studioGetComponentOptions({ path: { instance, component_id: componentId } });
   const detail = useComponent(instance, componentId);
-  const kind: EditableKind = detail.data?.component.kind === "team" ? "team" : "agent";
+  const component = detail.data?.component.kind;
+  const kind: EditableKind = component === "team" || component === "workflow" ? component : "agent";
   const draft = detail.data?.draft ?? undefined;
   const base = detail.data?.current ?? undefined;
 
@@ -148,10 +197,18 @@ export function useDraftDocument(instance: string, componentId: string): DraftDo
   const [conflict, setConflict] = useState<Conflict | undefined>(undefined);
   const revision = useRef<string | undefined>(undefined);
   const loaded = useRef<number | undefined>(undefined);
-  const latest = useRef<{ config: Config | undefined; pins: Record<string, number> }>({ config, pins });
+  const [source, setSource] = useState<SourceCode>(GENERATED);
+  const dropCode = useRef(false);
+  /** The config the person's code reads as: what the form falls back to when an edit can't reach the code. */
+  const codeConfig = useRef<Config | undefined>(undefined);
+  const latest = useRef<{ config: Config | undefined; pins: Record<string, number>; source: SourceCode }>({
+    config,
+    pins,
+    source,
+  });
   useEffect(() => {
-    latest.current = { config, pins };
-  }, [config, pins]);
+    latest.current = { config, pins, source };
+  }, [config, pins, source]);
 
   useEffect(() => {
     if (!draft || loaded.current === draft.version) return;
@@ -163,20 +220,35 @@ export function useDraftDocument(instance: string, componentId: string): DraftDo
     setSavedAt(draft.saved_at ? new Date(draft.saved_at) : undefined);
   }, [draft]);
 
+  const codeDocument = useQuery({
+    ...withQueryFn(
+      studioGetCodeDocumentOptions({
+        path: { instance, component_id: componentId, version: draft?.version ?? 0 },
+      }),
+    ),
+    enabled: Boolean(draft),
+    staleTime: Infinity,
+    retry: false,
+  });
+  const loadedCode = useRef<number | undefined>(undefined);
+
   const mutation = useMutation({
     mutationFn: async () => {
-      if (!draft || !latest.current.config) return undefined;
-      return (
+      const current = latest.current;
+      if (!draft || !current.config) return undefined;
+      const human = current.source;
+      // The server refuses code that doesn't read as the config: wait until it parses again.
+      if (human.codeBacked && human.state !== "synced") return undefined;
+      const code = human.codeBacked ? (human.code ?? null) : dropCode.current ? "" : null;
+      const saved = (
         await studioSaveDraft({
           path: { instance, component_id: componentId, version: draft.version },
-          body: {
-            config: latest.current.config,
-            revision: revision.current ?? null,
-            pins: latest.current.pins,
-          },
+          body: { config: current.config, revision: revision.current ?? null, pins: current.pins, code },
           throwOnError: true,
         })
       ).data;
+      if (code === "") dropCode.current = false;
+      return saved;
     },
     onMutate: () => {
       setState("saving");
@@ -218,14 +290,119 @@ export function useDraftDocument(instance: string, componentId: string): DraftDo
     void save();
   }, AUTOSAVE_MS);
 
+  const parse = useDebouncedCallback((code: string) => {
+    void studioParseCode({
+      path: { instance },
+      body: { kind, code, component_id: componentId },
+      throwOnError: true,
+    })
+      .then(({ data }) => {
+        if (latest.current.source.code !== code) return;
+        setSource((current) => ({
+          ...current,
+          state: data.ok && data.config ? "synced" : "invalid",
+          diagnostics: data.diagnostics,
+          spans: data.spans,
+          codeOwned: data.code_owned,
+          ruff: data.ruff,
+        }));
+        if (data.ok && data.config) {
+          codeConfig.current = data.config;
+          setConfigState(data.config);
+          autosave();
+        }
+      })
+      .catch((error: unknown) => {
+        setSource((current) => ({ ...current, state: "invalid" }));
+        toast.error(describeError(error).reason);
+      });
+  }, PARSE_MS);
+
+  const write = useDebouncedCallback((next: Config) => {
+    const code = latest.current.source.code;
+    if (code === undefined) return;
+    void studioTransformCode({
+      path: { instance },
+      body: { kind, code, config: next, component_id: componentId },
+      throwOnError: true,
+    })
+      .then(({ data }) => {
+        if (data.equivalent) {
+          codeConfig.current = data.config ?? next;
+          setSource((current) => ({
+            ...current,
+            code: data.code,
+            state: "synced",
+            diagnostics: data.diagnostics,
+            spans: data.spans,
+            codeOwned: data.code_owned,
+            ruff: data.ruff,
+          }));
+          autosave();
+          return;
+        }
+        const reason = data.diagnostics.find((item) => item.severity === "error")?.message;
+        toast.error(reason ?? "This change can't be written into the code; edit it in the code instead.");
+        if (codeConfig.current) setConfigState(codeConfig.current);
+        setSource((current) => ({ ...current, state: "synced" }));
+      })
+      .catch((error: unknown) => {
+        toast.error(describeError(error).reason);
+        if (codeConfig.current) setConfigState(codeConfig.current);
+        setSource((current) => ({ ...current, state: "synced" }));
+      });
+  }, PARSE_MS);
+
   const setConfig = useCallback(
     (update: (current: Config) => Config) => {
-      setConfigState((current) => (current ? update(current) : current));
-      setState((current) => (current === "conflict" ? current : "dirty"));
-      autosave();
+      const current = latest.current.config;
+      if (!current) return;
+      const next = update(current);
+      // Kept ahead of the render, so edits in quick succession build on each other.
+      latest.current = { ...latest.current, config: next };
+      setConfigState(next);
+      setState((saved) => (saved === "conflict" ? saved : "dirty"));
+      if (latest.current.source.codeBacked) {
+        setSource((existing) => ({ ...existing, state: "writing" }));
+        write(next);
+      } else {
+        autosave();
+      }
     },
-    [autosave],
+    [autosave, write],
   );
+
+  const setCode = useCallback(
+    (code: string) => {
+      setSource((current) => ({ ...current, codeBacked: true, code, state: "parsing", stale: false }));
+      setState((current) => (current === "conflict" ? current : "dirty"));
+      parse(code);
+    },
+    [parse],
+  );
+
+  const generateFromForm = useCallback(() => {
+    dropCode.current = true;
+    codeConfig.current = undefined;
+    setSource(GENERATED);
+    setState((current) => (current === "conflict" ? current : "dirty"));
+    autosave();
+  }, [autosave]);
+
+  useEffect(() => {
+    const found = codeDocument.data;
+    if (!draft || !found || loadedCode.current === draft.version) return;
+    loadedCode.current = draft.version;
+    // Someone already started editing the code: their text wins over what the draft kept.
+    if (latest.current.source.codeBacked) return;
+    const kept = found.code_backed ? found.code : null;
+    setSource(
+      kept === null
+        ? GENERATED
+        : { ...GENERATED, codeBacked: true, code: kept, state: "parsing", stale: found.stale },
+    );
+    if (kept !== null) parse(kept);
+  }, [codeDocument.data, draft, parse]);
   const setPin = useCallback(
     (child: string, version: number | undefined) => {
       setPins((current) => {
@@ -253,12 +430,14 @@ export function useDraftDocument(instance: string, componentId: string): DraftDo
       if (keep === "theirs") {
         if (found.config) setConfigState(found.config);
         setState("saved");
+        loadedCode.current = undefined;
+        void codeDocument.refetch();
         return;
       }
       setState("dirty");
       void mutation.mutateAsync().catch(() => undefined);
     },
-    [conflict, mutation],
+    [conflict, mutation, codeDocument],
   );
 
   const newDraft = useMutation({
@@ -316,5 +495,9 @@ export function useDraftDocument(instance: string, componentId: string): DraftDo
     startingDraft: newDraft.isPending,
     code: code.data,
     codeError: code.error,
+    source,
+    setCode,
+    generateFromForm,
+    spans: source.codeBacked ? source.spans : (code.data?.spans ?? {}),
   };
 }

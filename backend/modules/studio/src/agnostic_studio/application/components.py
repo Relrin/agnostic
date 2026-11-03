@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime
 from typing import Any, Literal, cast
@@ -13,7 +13,8 @@ from agnostic_instances.facade import Instance
 from agnostic_kernel.auth import Principal
 from agnostic_kernel.db import utcnow
 from agnostic_kernel.errors import ConflictError, NotFoundError, ValidationFailedError
-from agnostic_spec.v3_1 import TeamConfig, parse, shape_errors
+from agnostic_spec.v3_1 import ComponentConfig, StepNode, TeamConfig, WorkflowConfig, parse, shape_errors
+from agnostic_spec.v3_1.workflow import Node
 from agnostic_studio.application.access import (
     CONFLICT,
     DELETE_SCOPE,
@@ -198,6 +199,83 @@ class Reader:
             )
         return links
 
+    async def step_links(
+        self, principal: Principal, instance: Instance, config: WorkflowConfig, pins: Mapping[str, int]
+    ) -> list[dict[str, Any]]:
+        """Links pinning each step's stored agent, team or workflow, keyed as agno keys them.
+
+        Executors defined in code get none.
+        """
+        links: list[dict[str, Any]] = []
+        seen: set[tuple[str, str]] = set()
+        current: dict[str, int | None] = {}
+        for link_kind, link_key, child, position in step_link_specs(config):
+            if (link_kind, link_key) in seen:
+                continue
+            seen.add((link_kind, link_key))
+            version = pins.get(child)
+            if version is None:
+                if child not in current:
+                    response = await self.access.call(principal, instance, "GET", f"/components/{child}")
+                    found = cast("dict[str, Any]", response.body) if response.ok else {}
+                    value = found.get("current_version")
+                    current[child] = int(value) if value is not None else None
+                version = current[child]
+            if version is None:
+                continue
+            links.append(
+                {
+                    "link_kind": link_kind,
+                    "link_key": link_key,
+                    "child_component_id": child,
+                    "child_version": int(version),
+                    "position": position,
+                }
+            )
+        return links
+
+    async def links_for(
+        self, principal: Principal, instance: Instance, config: ComponentConfig, pins: Mapping[str, int]
+    ) -> list[dict[str, Any]] | None:
+        """The pins a team's members or a workflow's step executors are saved with; ``None`` for an agent."""
+        if isinstance(config, TeamConfig):
+            return await self.member_links(principal, instance, config, pins)
+        if isinstance(config, WorkflowConfig):
+            return await self.step_links(principal, instance, config, pins)
+        return None
+
+
+STEP_LINK_KINDS = (("agent_id", "step_agent"), ("team_id", "step_team"), ("workflow_id", "step_workflow"))
+PINNED_LINKS = frozenset({"member", "step_agent", "step_team", "step_workflow"})
+
+
+def step_link_specs(config: WorkflowConfig) -> list[tuple[str, str, str, int]]:
+    """``(link_kind, link_key, child, position)`` for every step executor, as agno derives a workflow's links.
+
+    The key is the step's id or name; steps in an else branch add ``#else`` per level, so an else step may share an
+    if step's name. ``position`` is the step's index in its own list.
+    """
+    found: list[tuple[str, str, str, int]] = []
+
+    def walk(nodes: Sequence[Node], suffix: str) -> None:
+        for position, node in enumerate(nodes):
+            if isinstance(node, StepNode):
+                key = f"{node.step_id or node.name}{suffix}"
+                for field, link_kind in STEP_LINK_KINDS:
+                    child = getattr(node, field)
+                    if isinstance(child, str) and child:
+                        found.append((link_kind, key, child, position))
+                continue
+            if node.node_type == "Router":
+                walk(node.children("choices"), suffix)
+                continue
+            walk(node.children("steps"), suffix)
+            if node.node_type == "Condition":
+                walk(node.children("else_steps"), f"{suffix}#else")
+
+    walk(list(config.steps or []), "")
+    return found
+
 
 class Components:
     def __init__(self, access: StudioAccess, store: StudioStore, audit: AuditLog) -> None:
@@ -225,7 +303,7 @@ class Components:
                     latest_version=newest.version if newest else None,
                     draft=open_draft(versions),
                     meta=metas.get(component.id),
-                    editable=kind != "workflow",
+                    editable=True,
                 )
             )
         known = {row.component.id for row in rows}
@@ -252,7 +330,7 @@ class Components:
                 for version in reversed(versions)
             ],
             meta=await self._store.component_meta(instance.id, component_id),
-            editable=component.kind != "workflow",
+            editable=component.source == "studio",
         )
 
     async def create(self, principal: Principal, ref: str, request: CreateRequest) -> ComponentDetail:
@@ -281,8 +359,8 @@ class Components:
         raise_for(instance, response)
         versions = await self._reader.versions(principal, instance, component_id)
         version = latest(versions)
-        if version is not None and isinstance(parsed, TeamConfig):
-            links = await self._reader.member_links(principal, instance, parsed, {})
+        if version is not None:
+            links = await self._reader.links_for(principal, instance, parsed, {})
             if links:
                 await self._access.json(
                     principal,
@@ -390,7 +468,9 @@ class Components:
                 chosen = template(request.template_id or f"blank-{request.kind}")
                 if chosen is None or chosen.kind != request.kind:
                     raise ValidationFailedError(f"There is no {request.kind} template {request.template_id!r}.")
-                return start_config(chosen.config, component_id=component_id, name=request.name, model=request.model)
+                return start_config(
+                    chosen.config, component_id=component_id, name=request.name, model=request.model, kind=request.kind
+                )
             case "duplicate":
                 if not request.source_id:
                     raise ValidationFailedError("Pick the component to duplicate.")

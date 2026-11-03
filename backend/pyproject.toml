@@ -11,6 +11,7 @@ dependencies = [
   "agnostic-kernel",
   "agnostic-agentos-client",
   "agnostic-spec",
+  "agnostic-cel",
   "agnostic-codegen",
   "agnostic-audit",
   "agnostic-settings",
@@ -65,6 +66,7 @@ agnostic-server = { workspace = true }
 agnostic-kernel = { workspace = true }
 agnostic-agentos-client = { workspace = true }
 agnostic-spec = { workspace = true }
+agnostic-cel = { workspace = true }
 agnostic-codegen = { workspace = true }
 agnostic-audit = { workspace = true }
 agnostic-settings = { workspace = true }
@@ -119,7 +121,7 @@ ignore = [
 "**/migrations/env.py" = ["INP001"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["agnostic_kernel", "agnostic_server", "agnostic_agentos_client", "agnostic_spec", "agnostic_codegen", "agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_observe", "agnostic_search", "agnostic_evals", "agnostic_context", "agnostic_scheduler", "agnostic_queue", "agnostic_directory", "agnostic_service_accounts", "agnostic_studio"]
+known-first-party = ["agnostic_kernel", "agnostic_server", "agnostic_agentos_client", "agnostic_spec", "agnostic_cel", "agnostic_codegen", "agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_observe", "agnostic_search", "agnostic_evals", "agnostic_context", "agnostic_scheduler", "agnostic_queue", "agnostic_directory", "agnostic_service_accounts", "agnostic_studio"]
 
 [tool.ruff.lint.flake8-type-checking]
 runtime-evaluated-base-classes = ["pydantic.BaseModel", "pydantic_settings.BaseSettings", "sqlalchemy.orm.DeclarativeBase"]
@@ -162,7 +164,7 @@ filterwarnings = ["error::pytest.PytestUnraisableExceptionWarning"]
 
 [tool.coverage.run]
 branch = true
-source = ["agnostic_kernel", "agnostic_server", "agnostic_agentos_client", "agnostic_spec", "agnostic_codegen", "agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_observe", "agnostic_search", "agnostic_evals", "agnostic_context", "agnostic_scheduler", "agnostic_queue", "agnostic_directory", "agnostic_service_accounts", "agnostic_studio"]
+source = ["agnostic_kernel", "agnostic_server", "agnostic_agentos_client", "agnostic_spec", "agnostic_cel", "agnostic_codegen", "agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_observe", "agnostic_search", "agnostic_evals", "agnostic_context", "agnostic_scheduler", "agnostic_queue", "agnostic_directory", "agnostic_service_accounts", "agnostic_studio"]
 omit = ["*/migrations/*", "*/_generated/*", "*/__main__.py"]
 
 [tool.coverage.report]
@@ -172,13 +174,13 @@ exclude_also = ["if TYPE_CHECKING:", "raise NotImplementedError", '\.\.\.$']
 
 # ---------------------------------------------------------------- boundaries (02 §2.2)
 [tool.importlinter]
-root_packages = ["agnostic_kernel", "agnostic_server", "agnostic_agentos_client", "agnostic_spec", "agnostic_codegen", "agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_observe", "agnostic_search", "agnostic_evals", "agnostic_context", "agnostic_scheduler", "agnostic_queue", "agnostic_directory", "agnostic_service_accounts", "agnostic_studio"]
+root_packages = ["agnostic_kernel", "agnostic_server", "agnostic_agentos_client", "agnostic_spec", "agnostic_cel", "agnostic_codegen", "agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_observe", "agnostic_search", "agnostic_evals", "agnostic_context", "agnostic_scheduler", "agnostic_queue", "agnostic_directory", "agnostic_service_accounts", "agnostic_studio"]
 include_external_packages = true
 
 [[tool.importlinter.contracts]]
 name = "Packages never import modules or the server"
 type = "forbidden"
-source_modules = ["agnostic_kernel", "agnostic_agentos_client", "agnostic_spec", "agnostic_codegen"]
+source_modules = ["agnostic_kernel", "agnostic_agentos_client", "agnostic_spec", "agnostic_cel", "agnostic_codegen"]
 forbidden_modules = ["agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_observe", "agnostic_search", "agnostic_server", "agnostic_evals", "agnostic_context", "agnostic_scheduler", "agnostic_queue", "agnostic_directory", "agnostic_service_accounts", "agnostic_studio"]
 
 [[tool.importlinter.contracts]]
@@ -426,6 +428,7 @@ layers = [
   "agnostic_observe.providers | agnostic_observe.jobs",
   "agnostic_observe.api | agnostic_observe.infrastructure",
   "agnostic_observe.settings",
+  "agnostic_observe.facade",
   "agnostic_observe.application",
   "agnostic_observe.domain",
 ]
@@ -486,6 +489,13 @@ name = "evals: domain is pure (stdlib only)"
 type = "forbidden"
 source_modules = ["agnostic_evals.domain"]
 forbidden_modules = ["agnostic_kernel", "sqlalchemy", "fastapi", "pydantic", "procrastinate", "dishka", "redis", "httpx", "jwt"]
+
+[[tool.importlinter.contracts]]
+name = "other modules use observe only through its facade"
+type = "forbidden"
+source_modules = ["agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_search", "agnostic_evals", "agnostic_context", "agnostic_scheduler", "agnostic_queue", "agnostic_directory", "agnostic_service_accounts", "agnostic_studio"]
+forbidden_modules = ["agnostic_observe.api", "agnostic_observe.application", "agnostic_observe.domain", "agnostic_observe.infrastructure", "agnostic_observe.jobs", "agnostic_observe.providers", "agnostic_observe.settings", "agnostic_observe.module"]
+allow_indirect_imports = true
 
 [[tool.importlinter.contracts]]
 name = "other modules use evals only through its facade"
@@ -627,6 +637,7 @@ layers = [
   "agnostic_studio.module",
   "agnostic_studio.providers",
   "agnostic_studio.api | agnostic_studio.infrastructure",
+  "agnostic_studio.settings",
   "agnostic_studio.application",
   "agnostic_studio.domain",
 ]
@@ -635,7 +646,7 @@ layers = [
 name = "studio: domain is pure (stdlib only)"
 type = "forbidden"
 source_modules = ["agnostic_studio.domain"]
-forbidden_modules = ["agnostic_kernel", "agnostic_spec", "agnostic_codegen", "sqlalchemy", "fastapi", "pydantic", "procrastinate", "dishka", "redis", "httpx", "jwt"]
+forbidden_modules = ["agnostic_kernel", "agnostic_spec", "agnostic_cel", "agnostic_codegen", "sqlalchemy", "fastapi", "pydantic", "procrastinate", "dishka", "redis", "httpx", "jwt"]
 
 [[tool.importlinter.contracts]]
 name = "nothing imports studio internals"
@@ -646,4 +657,4 @@ allow_indirect_imports = true
 
 # ---------------------------------------------------------------- dependency hygiene
 [tool.deptry]
-known_first_party = ["agnostic_kernel", "agnostic_server", "agnostic_agentos_client", "agnostic_spec", "agnostic_codegen", "agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_observe", "agnostic_search", "agnostic_evals", "agnostic_context", "agnostic_scheduler", "agnostic_queue", "agnostic_directory", "agnostic_service_accounts", "agnostic_studio"]
+known_first_party = ["agnostic_kernel", "agnostic_server", "agnostic_agentos_client", "agnostic_spec", "agnostic_cel", "agnostic_codegen", "agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_observe", "agnostic_search", "agnostic_evals", "agnostic_context", "agnostic_scheduler", "agnostic_queue", "agnostic_directory", "agnostic_service_accounts", "agnostic_studio"]

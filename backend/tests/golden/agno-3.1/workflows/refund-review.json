@@ -1,0 +1,143 @@
+{
+  "add_workflow_history_to_steps": false,
+  "debug_mode": false,
+  "description": "Triages a refund request, checks the refund policy, then waits for a human to set and confirm it.",
+  "id": "refund-review",
+  "name": "refund-review",
+  "num_history_runs": 3,
+  "overwrite_db_session_state": false,
+  "steps": [
+    {
+      "add_workflow_history": null,
+      "agent_id": "support-triage",
+      "description": null,
+      "human_review": {
+        "allow_multiple_selections": false,
+        "confirmation_message": null,
+        "iteration_review_message": null,
+        "max_retries": 3,
+        "on_error": "skip",
+        "on_reject": "skip",
+        "on_timeout": "cancel",
+        "output_review_message": null,
+        "requires_confirmation": false,
+        "requires_iteration_review": false,
+        "requires_output_review": false,
+        "requires_user_input": false,
+        "timeout": null,
+        "user_input_message": null,
+        "user_input_schema": null
+      },
+      "max_retries": 3,
+      "name": "triage",
+      "num_history_runs": 3,
+      "skip_on_failure": false,
+      "step_id": null,
+      "strict_input_validation": false,
+      "type": "Step"
+    },
+    {
+      "description": null,
+      "end_condition": "last_step_content.contains(\"article\")",
+      "end_condition_type": "cel",
+      "forward_iteration_output": false,
+      "human_review": {
+        "allow_multiple_selections": false,
+        "confirmation_message": null,
+        "iteration_review_message": null,
+        "max_retries": 3,
+        "on_error": "skip",
+        "on_reject": "skip",
+        "on_timeout": "cancel",
+        "output_review_message": null,
+        "requires_confirmation": false,
+        "requires_iteration_review": false,
+        "requires_output_review": false,
+        "requires_user_input": false,
+        "timeout": null,
+        "user_input_message": null,
+        "user_input_schema": null
+      },
+      "max_iterations": 2,
+      "name": "research",
+      "steps": [
+        {
+          "add_workflow_history": null,
+          "agent_id": "kb-researcher",
+          "description": null,
+          "human_review": {
+            "allow_multiple_selections": false,
+            "confirmation_message": null,
+            "iteration_review_message": null,
+            "max_retries": 3,
+            "on_error": "skip",
+            "on_reject": "skip",
+            "on_timeout": "cancel",
+            "output_review_message": null,
+            "requires_confirmation": false,
+            "requires_iteration_review": false,
+            "requires_output_review": false,
+            "requires_user_input": false,
+            "timeout": null,
+            "user_input_message": null,
+            "user_input_schema": null
+          },
+          "max_retries": 3,
+          "name": "policy",
+          "num_history_runs": 3,
+          "skip_on_failure": false,
+          "step_id": null,
+          "strict_input_validation": false,
+          "type": "Step"
+        }
+      ],
+      "type": "Loop"
+    },
+    {
+      "add_workflow_history": null,
+      "description": null,
+      "executor_ref": "record_refund_decision",
+      "human_review": {
+        "allow_multiple_selections": false,
+        "confirmation_message": "Approve this refund?",
+        "iteration_review_message": null,
+        "max_retries": 3,
+        "on_error": "skip",
+        "on_reject": "skip",
+        "on_timeout": "cancel",
+        "output_review_message": "Check the refund decision before it is recorded.",
+        "requires_confirmation": true,
+        "requires_iteration_review": false,
+        "requires_output_review": true,
+        "requires_user_input": true,
+        "timeout": 86400,
+        "user_input_message": "Set the refund amount and the reason.",
+        "user_input_schema": [
+          {
+            "description": "Amount to refund",
+            "field_type": "float",
+            "name": "amount"
+          },
+          {
+            "description": "Why the refund is granted",
+            "field_type": "str",
+            "name": "reason"
+          }
+        ]
+      },
+      "max_retries": 3,
+      "name": "approve",
+      "num_history_runs": 3,
+      "skip_on_failure": false,
+      "step_id": null,
+      "strict_input_validation": false,
+      "type": "Step"
+    }
+  ],
+  "store_events": true,
+  "store_executor_outputs": true,
+  "store_media": true,
+  "stream_events": false,
+  "stream_executor_events": true,
+  "telemetry": true
+}

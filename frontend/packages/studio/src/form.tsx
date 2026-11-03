@@ -65,6 +65,9 @@ export type FormContext = {
     find: (type: string, name: string) => RegistryEntryOut | undefined;
   };
   readOnly?: boolean | undefined;
+  /** Fields set in code in a way the form can't edit: shown read-only with a way to the code. */
+  isCodeOwned?: ((path: string) => boolean) | undefined;
+  onEditInCode?: ((path: string) => void) | undefined;
 };
 
 export function fieldId(path: string): string {
@@ -430,7 +433,36 @@ function RefField({ name, info, ctx }: { name: string; info: FieldInfo; ctx: For
   );
 }
 
+function CodeOwnedField({ name, info, ctx }: { name: string; info: FieldInfo; ctx: FormContext }) {
+  return (
+    <FieldFrame name={name} info={info} ctx={ctx}>
+      {(id) => (
+        <div
+          id={id}
+          className="flex flex-wrap items-center gap-2 rounded-control border border-dashed border-border px-3 py-2 text-[12px] text-fg-secondary"
+        >
+          <span className="flex-1">Set in code in a way the form can't edit.</span>
+          <Button
+            variant="outline"
+            size="28"
+            onClick={() => {
+              ctx.onEditInCode?.(name);
+            }}
+          >
+            Edit in code
+          </Button>
+        </div>
+      )}
+    </FieldFrame>
+  );
+}
+
 function FieldControl({ name, info, ctx }: { name: string; info: FieldInfo; ctx: FormContext }) {
+  if (ctx.isCodeOwned?.(name)) return <CodeOwnedField name={name} info={info} ctx={ctx} />;
+  return <EditableField name={name} info={info} ctx={ctx} />;
+}
+
+function EditableField({ name, info, ctx }: { name: string; info: FieldInfo; ctx: FormContext }) {
   const value = ctx.config[name];
   const set = (next: unknown) => {
     ctx.onChange((config) => withField(config, name, next));

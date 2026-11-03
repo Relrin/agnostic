@@ -61,6 +61,30 @@ class RegistryIndexRow(StudioBase):
     indexed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
+class CanvasLayoutRow(StudioBase):
+    __tablename__ = "studio_canvas_layouts"
+
+    instance_id: Mapped[str] = mapped_column(String(40), primary_key=True)
+    component_id: Mapped[str] = mapped_column(String(200), primary_key=True)
+    version: Mapped[int] = mapped_column(Integer, primary_key=True)
+    layout: Mapped[dict[str, Any]] = mapped_column(JsonDocument, default=dict)
+    updated_by: Mapped[str | None] = mapped_column(String(40))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class CodeDocumentRow(StudioBase):
+    __tablename__ = "studio_code_documents"
+
+    instance_id: Mapped[str] = mapped_column(String(40), primary_key=True)
+    component_id: Mapped[str] = mapped_column(String(200), primary_key=True)
+    version: Mapped[int] = mapped_column(Integer, primary_key=True)
+    code: Mapped[str] = mapped_column(Text)
+    config_hash: Mapped[str] = mapped_column(String(64))
+    updated_by: Mapped[str | None] = mapped_column(String(40))
+    updated_by_name: Mapped[str | None] = mapped_column(String(200))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
 class PromotionRow(StudioBase):
     __tablename__ = "studio_promotions"
     __table_args__ = (Index("ix_studio_promotions_component", "from_instance", "component_id", "created_at"),)

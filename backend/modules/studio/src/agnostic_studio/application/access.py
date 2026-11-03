@@ -26,6 +26,7 @@ BRIDGE_VALIDATE = "POST /agnostic/v1/components/validate"
 BRIDGE_NORMALIZE = "POST /agnostic/v1/components/normalize"
 BRIDGE_INTROSPECT = "GET /agnostic/v1/introspect/components"
 BRIDGE_SOURCE = "GET /agnostic/v1/registry/{resource_type}/{name}/source"
+BRIDGE_CEL = "POST /agnostic/v1/cel/evaluate"
 BRIDGE_TTL = 300.0
 RETRY_TTL = 30.0
 PAGE_LIMIT = 100

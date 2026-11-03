@@ -1,0 +1,1950 @@
+{
+  "$defs": {
+    "ConditionNode": {
+      "additionalProperties": true,
+      "description": "Runs ``steps`` when the evaluator holds, ``else_steps`` otherwise.",
+      "properties": {
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name",
+          "x-agnostic": {
+            "label": "Name",
+            "legacy": false,
+            "order": 1,
+            "section": "settings",
+            "since_agno": "3.1",
+            "widget": "text"
+          }
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description",
+          "x-agnostic": {
+            "label": "Description",
+            "legacy": false,
+            "order": 2,
+            "section": "settings",
+            "since_agno": "3.1",
+            "widget": "textarea"
+          }
+        },
+        "type": {
+          "const": "Condition",
+          "default": "Condition",
+          "title": "Type",
+          "type": "string"
+        },
+        "evaluator": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "A CEL expression returning bool, or a registered function.",
+          "title": "Evaluator",
+          "x-agnostic": {
+            "help": "A CEL expression returning bool, or a registered function.",
+            "label": "Evaluator",
+            "legacy": false,
+            "order": 3,
+            "section": "settings",
+            "since_agno": "3.1",
+            "widget": "cel"
+          }
+        },
+        "evaluator_type": {
+          "anyOf": [
+            {
+              "enum": ["cel", "function", "bool"],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Evaluator Type"
+        },
+        "steps": {
+          "anyOf": [
+            {
+              "items": {
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/StepNode"
+                  },
+                  {
+                    "$ref": "#/$defs/StepsNode"
+                  },
+                  {
+                    "$ref": "#/$defs/ParallelNode"
+                  },
+                  {
+                    "$ref": "#/$defs/ConditionNode"
+                  },
+                  {
+                    "$ref": "#/$defs/LoopNode"
+                  },
+                  {
+                    "$ref": "#/$defs/RouterNode"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Steps",
+          "x-agnostic": {
+            "label": "When true",
+            "legacy": false,
+            "order": 1,
+            "section": "steps",
+            "since_agno": "3.1",
+            "widget": "steps"
+          }
+        },
+        "else_steps": {
+          "anyOf": [
+            {
+              "items": {
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/StepNode"
+                  },
+                  {
+                    "$ref": "#/$defs/StepsNode"
+                  },
+                  {
+                    "$ref": "#/$defs/ParallelNode"
+                  },
+                  {
+                    "$ref": "#/$defs/ConditionNode"
+                  },
+                  {
+                    "$ref": "#/$defs/LoopNode"
+                  },
+                  {
+                    "$ref": "#/$defs/RouterNode"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Else Steps",
+          "x-agnostic": {
+            "label": "Else",
+            "legacy": false,
+            "order": 2,
+            "section": "steps",
+            "since_agno": "3.1",
+            "widget": "steps"
+          }
+        },
+        "human_review": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/HumanReview"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "x-agnostic": {
+            "label": "Human review",
+            "legacy": false,
+            "order": 1,
+            "section": "review",
+            "since_agno": "3.1",
+            "widget": "human_review"
+          }
+        }
+      },
+      "title": "ConditionNode",
+      "type": "object"
+    },
+    "HumanReview": {
+      "additionalProperties": true,
+      "description": "``HumanReview.to_dict()``. Which fields a node may use depends on its type (:data:`HUMAN_REVIEW_SUPPORT`).",
+      "properties": {
+        "requires_confirmation": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Requires Confirmation",
+          "x-agnostic": {
+            "label": "Ask before it runs",
+            "legacy": false,
+            "order": 1,
+            "section": "confirmation",
+            "since_agno": "3.1",
+            "widget": "switch"
+          }
+        },
+        "confirmation_message": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confirmation Message",
+          "x-agnostic": {
+            "label": "Question",
+            "legacy": false,
+            "order": 2,
+            "section": "confirmation",
+            "since_agno": "3.1",
+            "widget": "text"
+          }
+        },
+        "requires_user_input": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Requires User Input",
+          "x-agnostic": {
+            "label": "Ask for input",
+            "legacy": false,
+            "order": 1,
+            "section": "user_input",
+            "since_agno": "3.1",
+            "widget": "switch"
+          }
+        },
+        "user_input_message": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "User Input Message",
+          "x-agnostic": {
+            "label": "Prompt",
+            "legacy": false,
+            "order": 2,
+            "section": "user_input",
+            "since_agno": "3.1",
+            "widget": "text"
+          }
+        },
+        "user_input_schema": {
+          "anyOf": [
+            {
+              "items": {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "User Input Schema",
+          "x-agnostic": {
+            "label": "Fields",
+            "legacy": false,
+            "order": 3,
+            "section": "user_input",
+            "since_agno": "3.1",
+            "widget": "json"
+          }
+        },
+        "allow_multiple_selections": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Allow Multiple Selections",
+          "x-agnostic": {
+            "label": "Allow several routes",
+            "legacy": false,
+            "order": 4,
+            "section": "user_input",
+            "since_agno": "3.1",
+            "widget": "switch"
+          }
+        },
+        "requires_output_review": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Requires Output Review",
+          "x-agnostic": {
+            "label": "Review the output",
+            "legacy": false,
+            "order": 1,
+            "section": "output_review",
+            "since_agno": "3.1",
+            "widget": "switch"
+          }
+        },
+        "output_review_message": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Output Review Message",
+          "x-agnostic": {
+            "label": "Question",
+            "legacy": false,
+            "order": 2,
+            "section": "output_review",
+            "since_agno": "3.1",
+            "widget": "text"
+          }
+        },
+        "requires_iteration_review": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Requires Iteration Review",
+          "x-agnostic": {
+            "label": "Review each iteration",
+            "legacy": false,
+            "order": 1,
+            "section": "iteration_review",
+            "since_agno": "3.1",
+            "widget": "switch"
+          }
+        },
+        "iteration_review_message": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Iteration Review Message",
+          "x-agnostic": {
+            "label": "Question",
+            "legacy": false,
+            "order": 2,
+            "section": "iteration_review",
+            "since_agno": "3.1",
+            "widget": "text"
+          }
+        },
+        "on_reject": {
+          "anyOf": [
+            {
+              "enum": ["skip", "cancel", "else", "retry"],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "On Reject",
+          "x-agnostic": {
+            "label": "When rejected",
+            "legacy": false,
+            "order": 1,
+            "section": "behaviour",
+            "since_agno": "3.1",
+            "widget": "select"
+          }
+        },
+        "on_error": {
+          "anyOf": [
+            {
+              "enum": ["skip", "fail", "pause"],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "On Error",
+          "x-agnostic": {
+            "label": "When a step fails",
+            "legacy": false,
+            "order": 2,
+            "section": "behaviour",
+            "since_agno": "3.1",
+            "widget": "select"
+          }
+        },
+        "max_retries": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Retries",
+          "x-agnostic": {
+            "label": "Retries after a rejection",
+            "legacy": false,
+            "order": 3,
+            "section": "behaviour",
+            "since_agno": "3.1",
+            "widget": "number"
+          }
+        },
+        "timeout": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Timeout",
+          "x-agnostic": {
+            "label": "Expires after (seconds)",
+            "legacy": false,
+            "order": 4,
+            "section": "behaviour",
+            "since_agno": "3.1",
+            "widget": "number"
+          }
+        },
+        "on_timeout": {
+          "anyOf": [
+            {
+              "enum": ["cancel", "skip", "approve"],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "On Timeout",
+          "x-agnostic": {
+            "label": "When it expires",
+            "legacy": false,
+            "order": 5,
+            "section": "behaviour",
+            "since_agno": "3.1",
+            "widget": "select"
+          }
+        }
+      },
+      "title": "HumanReview",
+      "type": "object"
+    },
+    "LoopNode": {
+      "additionalProperties": true,
+      "description": "Repeats its steps until the end condition holds or ``max_iterations`` is reached.",
+      "properties": {
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name",
+          "x-agnostic": {
+            "label": "Name",
+            "legacy": false,
+            "order": 1,
+            "section": "settings",
+            "since_agno": "3.1",
+            "widget": "text"
+          }
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description",
+          "x-agnostic": {
+            "label": "Description",
+            "legacy": false,
+            "order": 2,
+            "section": "settings",
+            "since_agno": "3.1",
+            "widget": "textarea"
+          }
+        },
+        "type": {
+          "const": "Loop",
+          "default": "Loop",
+          "title": "Type",
+          "type": "string"
+        },
+        "steps": {
+          "anyOf": [
+            {
+              "items": {
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/StepNode"
+                  },
+                  {
+                    "$ref": "#/$defs/StepsNode"
+                  },
+                  {
+                    "$ref": "#/$defs/ParallelNode"
+                  },
+                  {
+                    "$ref": "#/$defs/ConditionNode"
+                  },
+                  {
+                    "$ref": "#/$defs/LoopNode"
+                  },
+                  {
+                    "$ref": "#/$defs/RouterNode"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Steps",
+          "x-agnostic": {
+            "label": "Steps",
+            "legacy": false,
+            "order": 1,
+            "section": "steps",
+            "since_agno": "3.1",
+            "widget": "steps"
+          }
+        },
+        "max_iterations": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Iterations",
+          "x-agnostic": {
+            "default": 3,
+            "label": "Max iterations",
+            "legacy": false,
+            "order": 3,
+            "section": "settings",
+            "since_agno": "3.1",
+            "widget": "number"
+          }
+        },
+        "end_condition": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "A CEL expression returning bool, or a registered function. Empty runs every iteration.",
+          "title": "End Condition",
+          "x-agnostic": {
+            "help": "A CEL expression returning bool, or a registered function. Empty runs every iteration.",
+            "label": "End condition",
+            "legacy": false,
+            "order": 4,
+            "section": "settings",
+            "since_agno": "3.1",
+            "widget": "cel"
+          }
+        },
+        "end_condition_type": {
+          "anyOf": [
+            {
+              "enum": ["cel", "function"],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "End Condition Type"
+        },
+        "forward_iteration_output": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Forward Iteration Output",
+          "x-agnostic": {
+            "default": false,
+            "label": "Pass each iteration's output to the next",
+            "legacy": false,
+            "order": 5,
+            "section": "settings",
+            "since_agno": "3.1",
+            "widget": "switch"
+          }
+        },
+        "human_review": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/HumanReview"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "x-agnostic": {
+            "label": "Human review",
+            "legacy": false,
+            "order": 1,
+            "section": "review",
+            "since_agno": "3.1",
+            "widget": "human_review"
+          }
+        }
+      },
+      "title": "LoopNode",
+      "type": "object"
+    },
+    "ParallelNode": {
+      "additionalProperties": true,
+      "description": "Runs its branches at once. Nothing inside it can pause for a person.",
+      "properties": {
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name",
+          "x-agnostic": {
+            "label": "Name",
+            "legacy": false,
+            "order": 1,
+            "section": "settings",
+            "since_agno": "3.1",
+            "widget": "text"
+          }
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description",
+          "x-agnostic": {
+            "label": "Description",
+            "legacy": false,
+            "order": 2,
+            "section": "settings",
+            "since_agno": "3.1",
+            "widget": "textarea"
+          }
+        },
+        "type": {
+          "const": "Parallel",
+          "default": "Parallel",
+          "title": "Type",
+          "type": "string"
+        },
+        "steps": {
+          "anyOf": [
+            {
+              "items": {
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/StepNode"
+                  },
+                  {
+                    "$ref": "#/$defs/StepsNode"
+                  },
+                  {
+                    "$ref": "#/$defs/ParallelNode"
+                  },
+                  {
+                    "$ref": "#/$defs/ConditionNode"
+                  },
+                  {
+                    "$ref": "#/$defs/LoopNode"
+                  },
+                  {
+                    "$ref": "#/$defs/RouterNode"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Steps",
+          "x-agnostic": {
+            "label": "Branches",
+            "legacy": false,
+            "order": 1,
+            "section": "steps",
+            "since_agno": "3.1",
+            "widget": "steps"
+          }
+        }
+      },
+      "title": "ParallelNode",
+      "type": "object"
+    },
+    "RouterNode": {
+      "additionalProperties": true,
+      "description": "Runs the choice its selector names (or the one a person picks).",
+      "properties": {
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name",
+          "x-agnostic": {
+            "label": "Name",
+            "legacy": false,
+            "order": 1,
+            "section": "settings",
+            "since_agno": "3.1",
+            "widget": "text"
+          }
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description",
+          "x-agnostic": {
+            "label": "Description",
+            "legacy": false,
+            "order": 2,
+            "section": "settings",
+            "since_agno": "3.1",
+            "widget": "textarea"
+          }
+        },
+        "type": {
+          "const": "Router",
+          "default": "Router",
+          "title": "Type",
+          "type": "string"
+        },
+        "selector": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "A CEL expression returning a choice's name, or a registered function.",
+          "title": "Selector",
+          "x-agnostic": {
+            "help": "A CEL expression returning a choice's name, or a registered function.",
+            "label": "Selector",
+            "legacy": false,
+            "order": 3,
+            "section": "settings",
+            "since_agno": "3.1",
+            "widget": "cel"
+          }
+        },
+        "selector_type": {
+          "anyOf": [
+            {
+              "enum": ["cel", "function"],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Selector Type"
+        },
+        "choices": {
+          "anyOf": [
+            {
+              "items": {
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/StepNode"
+                  },
+                  {
+                    "$ref": "#/$defs/StepsNode"
+                  },
+                  {
+                    "$ref": "#/$defs/ParallelNode"
+                  },
+                  {
+                    "$ref": "#/$defs/ConditionNode"
+                  },
+                  {
+                    "$ref": "#/$defs/LoopNode"
+                  },
+                  {
+                    "$ref": "#/$defs/RouterNode"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Choices",
+          "x-agnostic": {
+            "label": "Choices",
+            "legacy": false,
+            "order": 1,
+            "section": "steps",
+            "since_agno": "3.1",
+            "widget": "steps"
+          }
+        },
+        "human_review": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/HumanReview"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "x-agnostic": {
+            "label": "Human review",
+            "legacy": false,
+            "order": 1,
+            "section": "review",
+            "since_agno": "3.1",
+            "widget": "human_review"
+          }
+        }
+      },
+      "title": "RouterNode",
+      "type": "object"
+    },
+    "StepNode": {
+      "additionalProperties": true,
+      "description": "Runs one executor: an agent, a team, a nested workflow or a registered function.",
+      "properties": {
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name",
+          "x-agnostic": {
+            "label": "Name",
+            "legacy": false,
+            "order": 1,
+            "section": "settings",
+            "since_agno": "3.1",
+            "widget": "text"
+          }
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description",
+          "x-agnostic": {
+            "label": "Description",
+            "legacy": false,
+            "order": 2,
+            "section": "settings",
+            "since_agno": "3.1",
+            "widget": "textarea"
+          }
+        },
+        "type": {
+          "const": "Step",
+          "default": "Step",
+          "title": "Type",
+          "type": "string"
+        },
+        "step_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Stable key for the executor's pin; the name is used when it's empty.",
+          "title": "Step Id",
+          "x-agnostic": {
+            "help": "Stable key for the executor's pin; the name is used when it's empty.",
+            "label": "Step id",
+            "legacy": false,
+            "order": 3,
+            "section": "settings",
+            "since_agno": "3.1",
+            "widget": "text"
+          }
+        },
+        "agent_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Agent Id",
+          "x-agnostic": {
+            "label": "Agent",
+            "legacy": false,
+            "order": 1,
+            "section": "executor",
+            "since_agno": "3.1",
+            "widget": "executor"
+          }
+        },
+        "team_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Team Id",
+          "x-agnostic": {
+            "label": "Team",
+            "legacy": false,
+            "order": 2,
+            "section": "executor",
+            "since_agno": "3.1",
+            "widget": "executor"
+          }
+        },
+        "workflow_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Workflow Id",
+          "x-agnostic": {
+            "label": "Workflow",
+            "legacy": false,
+            "order": 3,
+            "section": "executor",
+            "since_agno": "3.1",
+            "widget": "executor"
+          }
+        },
+        "executor_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Executor Ref",
+          "x-agnostic": {
+            "label": "Function",
+            "legacy": false,
+            "order": 4,
+            "section": "executor",
+            "since_agno": "3.1",
+            "widget": "executor"
+          }
+        },
+        "max_retries": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Retries",
+          "x-agnostic": {
+            "default": 3,
+            "label": "Retries",
+            "legacy": false,
+            "order": 10,
+            "section": "settings",
+            "since_agno": "3.1",
+            "widget": "number"
+          }
+        },
+        "skip_on_failure": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Skip On Failure",
+          "x-agnostic": {
+            "default": false,
+            "label": "Skip when it fails",
+            "legacy": false,
+            "order": 11,
+            "section": "settings",
+            "since_agno": "3.1",
+            "widget": "switch"
+          }
+        },
+        "strict_input_validation": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Strict Input Validation",
+          "x-agnostic": {
+            "default": false,
+            "label": "Validate the input strictly",
+            "legacy": false,
+            "order": 12,
+            "section": "settings",
+            "since_agno": "3.1",
+            "widget": "switch"
+          }
+        },
+        "add_workflow_history": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Add Workflow History",
+          "x-agnostic": {
+            "label": "Add workflow history",
+            "legacy": false,
+            "order": 1,
+            "section": "history",
+            "since_agno": "3.1",
+            "widget": "switch"
+          }
+        },
+        "num_history_runs": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Num History Runs",
+          "x-agnostic": {
+            "default": 3,
+            "label": "Runs of history",
+            "legacy": false,
+            "order": 2,
+            "section": "history",
+            "since_agno": "3.1",
+            "widget": "number"
+          }
+        },
+        "human_review": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/HumanReview"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "x-agnostic": {
+            "label": "Human review",
+            "legacy": false,
+            "order": 1,
+            "section": "review",
+            "since_agno": "3.1",
+            "widget": "human_review"
+          }
+        }
+      },
+      "title": "StepNode",
+      "type": "object"
+    },
+    "StepsNode": {
+      "additionalProperties": true,
+      "description": "Runs its steps in sequence, as one named group.",
+      "properties": {
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name",
+          "x-agnostic": {
+            "label": "Name",
+            "legacy": false,
+            "order": 1,
+            "section": "settings",
+            "since_agno": "3.1",
+            "widget": "text"
+          }
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description",
+          "x-agnostic": {
+            "label": "Description",
+            "legacy": false,
+            "order": 2,
+            "section": "settings",
+            "since_agno": "3.1",
+            "widget": "textarea"
+          }
+        },
+        "type": {
+          "const": "Steps",
+          "default": "Steps",
+          "title": "Type",
+          "type": "string"
+        },
+        "steps": {
+          "anyOf": [
+            {
+              "items": {
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/StepNode"
+                  },
+                  {
+                    "$ref": "#/$defs/StepsNode"
+                  },
+                  {
+                    "$ref": "#/$defs/ParallelNode"
+                  },
+                  {
+                    "$ref": "#/$defs/ConditionNode"
+                  },
+                  {
+                    "$ref": "#/$defs/LoopNode"
+                  },
+                  {
+                    "$ref": "#/$defs/RouterNode"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Steps",
+          "x-agnostic": {
+            "label": "Steps",
+            "legacy": false,
+            "order": 1,
+            "section": "steps",
+            "since_agno": "3.1",
+            "widget": "steps"
+          }
+        },
+        "human_review": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/HumanReview"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "x-agnostic": {
+            "label": "Human review",
+            "legacy": false,
+            "order": 1,
+            "section": "review",
+            "since_agno": "3.1",
+            "widget": "human_review"
+          }
+        }
+      },
+      "title": "StepsNode",
+      "type": "object"
+    }
+  },
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Stable id used in API paths and links.",
+      "title": "Id",
+      "x-agnostic": {
+        "help": "Stable id used in API paths and links.",
+        "label": "ID",
+        "legacy": false,
+        "order": 1,
+        "section": "identity",
+        "since_agno": "3.1",
+        "widget": "text"
+      }
+    },
+    "name": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Name",
+      "x-agnostic": {
+        "label": "Name",
+        "legacy": false,
+        "order": 2,
+        "section": "identity",
+        "since_agno": "3.1",
+        "widget": "text"
+      }
+    },
+    "description": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Description",
+      "x-agnostic": {
+        "label": "Description",
+        "legacy": false,
+        "order": 3,
+        "section": "identity",
+        "since_agno": "3.1",
+        "widget": "textarea"
+      }
+    },
+    "metadata": {
+      "anyOf": [
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Metadata",
+      "x-agnostic": {
+        "label": "Metadata",
+        "legacy": false,
+        "order": 90,
+        "section": "advanced",
+        "since_agno": "3.1",
+        "widget": "json"
+      }
+    },
+    "input_schema": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "A schema registered on the instance, or an inline JSON Schema.",
+      "title": "Input Schema",
+      "x-agnostic": {
+        "help": "A schema registered on the instance, or an inline JSON Schema.",
+        "label": "Input schema",
+        "legacy": false,
+        "order": 0,
+        "section": "input",
+        "since_agno": "3.1",
+        "widget": "schema"
+      }
+    },
+    "session_state": {
+      "anyOf": [
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Session State",
+      "x-agnostic": {
+        "label": "Initial session state",
+        "legacy": false,
+        "order": 2,
+        "section": "input",
+        "since_agno": "3.1",
+        "widget": "json"
+      }
+    },
+    "overwrite_db_session_state": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Overwrite Db Session State",
+      "x-agnostic": {
+        "label": "Replace the stored session state",
+        "legacy": false,
+        "order": 3,
+        "section": "input",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "add_session_state_to_context": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Add Session State To Context",
+      "x-agnostic": {
+        "label": "Add the state to the context",
+        "legacy": false,
+        "order": 4,
+        "section": "input",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "dependencies": {
+      "anyOf": [
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Dependencies",
+      "x-agnostic": {
+        "label": "Dependencies",
+        "legacy": false,
+        "order": 30,
+        "section": "advanced",
+        "since_agno": "3.1",
+        "widget": "json"
+      }
+    },
+    "add_dependencies_to_context": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Add Dependencies To Context",
+      "x-agnostic": {
+        "label": "Add dependencies to the context",
+        "legacy": false,
+        "order": 31,
+        "section": "advanced",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "add_workflow_history_to_steps": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Add Workflow History To Steps",
+      "x-agnostic": {
+        "label": "Give every step the workflow's history",
+        "legacy": false,
+        "order": 1,
+        "section": "history",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "num_history_runs": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Num History Runs",
+      "x-agnostic": {
+        "label": "Runs of history",
+        "legacy": false,
+        "order": 2,
+        "section": "history",
+        "since_agno": "3.1",
+        "widget": "number"
+      }
+    },
+    "stream": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Stream",
+      "x-agnostic": {
+        "label": "Stream responses",
+        "legacy": false,
+        "order": 50,
+        "section": "advanced",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "stream_events": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Stream Events",
+      "x-agnostic": {
+        "label": "Stream intermediate events",
+        "legacy": false,
+        "order": 51,
+        "section": "advanced",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "stream_executor_events": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Stream Executor Events",
+      "x-agnostic": {
+        "label": "Stream the executors' events",
+        "legacy": false,
+        "order": 52,
+        "section": "advanced",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "store_events": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Store Events",
+      "x-agnostic": {
+        "label": "Store run events",
+        "legacy": false,
+        "order": 53,
+        "section": "advanced",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "store_media": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Store Media",
+      "x-agnostic": {
+        "label": "Store media",
+        "legacy": false,
+        "order": 54,
+        "section": "advanced",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "store_executor_outputs": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Store Executor Outputs",
+      "x-agnostic": {
+        "label": "Store the executors' outputs",
+        "legacy": false,
+        "order": 55,
+        "section": "advanced",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "debug_mode": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Debug Mode",
+      "x-agnostic": {
+        "label": "Debug mode",
+        "legacy": false,
+        "order": 70,
+        "section": "advanced",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "telemetry": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Telemetry",
+      "x-agnostic": {
+        "label": "Telemetry",
+        "legacy": false,
+        "order": 72,
+        "section": "advanced",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "steps": {
+      "anyOf": [
+        {
+          "items": {
+            "oneOf": [
+              {
+                "$ref": "#/$defs/StepNode"
+              },
+              {
+                "$ref": "#/$defs/StepsNode"
+              },
+              {
+                "$ref": "#/$defs/ParallelNode"
+              },
+              {
+                "$ref": "#/$defs/ConditionNode"
+              },
+              {
+                "$ref": "#/$defs/LoopNode"
+              },
+              {
+                "$ref": "#/$defs/RouterNode"
+              }
+            ]
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Steps",
+      "x-agnostic": {
+        "label": "Steps",
+        "legacy": false,
+        "order": 1,
+        "section": "steps",
+        "since_agno": "3.1",
+        "widget": "steps"
+      }
+    }
+  },
+  "title": "WorkflowConfig",
+  "type": "object",
+  "x-agnostic-sections": [
+    {
+      "id": "identity",
+      "label": "Identity",
+      "fields": ["id", "name", "description"]
+    },
+    {
+      "id": "input",
+      "label": "Input and state",
+      "fields": [
+        "input_schema",
+        "session_state",
+        "overwrite_db_session_state",
+        "add_session_state_to_context"
+      ]
+    },
+    {
+      "id": "history",
+      "label": "History",
+      "fields": ["add_workflow_history_to_steps", "num_history_runs"]
+    },
+    {
+      "id": "advanced",
+      "label": "Advanced",
+      "fields": [
+        "dependencies",
+        "add_dependencies_to_context",
+        "stream",
+        "stream_events",
+        "stream_executor_events",
+        "store_events",
+        "store_media",
+        "store_executor_outputs",
+        "debug_mode",
+        "telemetry",
+        "metadata"
+      ]
+    }
+  ],
+  "x-agnostic-agno": "3.1",
+  "x-agnostic-nodes": {
+    "Step": [
+      {
+        "id": "settings",
+        "label": "Settings",
+        "fields": [
+          "name",
+          "description",
+          "step_id",
+          "max_retries",
+          "skip_on_failure",
+          "strict_input_validation"
+        ]
+      },
+      {
+        "id": "executor",
+        "label": "Executor",
+        "fields": ["agent_id", "team_id", "workflow_id", "executor_ref"]
+      },
+      {
+        "id": "history",
+        "label": "History",
+        "fields": ["add_workflow_history", "num_history_runs"]
+      },
+      {
+        "id": "review",
+        "label": "Human review",
+        "fields": ["human_review"]
+      }
+    ],
+    "Steps": [
+      {
+        "id": "settings",
+        "label": "Settings",
+        "fields": ["name", "description"]
+      },
+      {
+        "id": "review",
+        "label": "Human review",
+        "fields": ["human_review"]
+      }
+    ],
+    "Parallel": [
+      {
+        "id": "settings",
+        "label": "Settings",
+        "fields": ["name", "description"]
+      }
+    ],
+    "Condition": [
+      {
+        "id": "settings",
+        "label": "Settings",
+        "fields": ["name", "description", "evaluator"]
+      },
+      {
+        "id": "review",
+        "label": "Human review",
+        "fields": ["human_review"]
+      }
+    ],
+    "Loop": [
+      {
+        "id": "settings",
+        "label": "Settings",
+        "fields": ["name", "description", "max_iterations", "end_condition", "forward_iteration_output"]
+      },
+      {
+        "id": "review",
+        "label": "Human review",
+        "fields": ["human_review"]
+      }
+    ],
+    "Router": [
+      {
+        "id": "settings",
+        "label": "Settings",
+        "fields": ["name", "description", "selector"]
+      },
+      {
+        "id": "review",
+        "label": "Human review",
+        "fields": ["human_review"]
+      }
+    ]
+  },
+  "x-agnostic-human-review": {
+    "groups": {
+      "confirmation": ["requires_confirmation", "confirmation_message"],
+      "user_input": ["requires_user_input", "user_input_message", "user_input_schema"],
+      "route_selection": ["allow_multiple_selections"],
+      "output_review": ["requires_output_review", "output_review_message"],
+      "iteration_review": ["requires_iteration_review", "iteration_review_message"],
+      "rejection": ["on_reject", "max_retries"],
+      "errors": ["on_error"],
+      "timeout": ["timeout", "on_timeout"]
+    },
+    "support": {
+      "Step": ["confirmation", "user_input", "output_review", "rejection", "errors", "timeout"],
+      "Router": ["confirmation", "user_input", "route_selection", "output_review", "rejection"],
+      "Loop": ["confirmation", "iteration_review", "rejection"],
+      "Condition": ["confirmation", "rejection", "errors"],
+      "Steps": ["confirmation", "rejection"],
+      "Parallel": []
+    }
+  }
+}

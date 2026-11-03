@@ -1,10 +1,11 @@
-"""What Studio may compose with on this runtime: tools, models, schemas, a memory manager and databases passed
-explicitly."""
+"""What Studio may compose with on this runtime: tools, models, schemas, step functions, a memory manager and
+databases passed explicitly."""
 
 from agno.db.base import BaseDb
 from agno.memory import MemoryManager
 from agno.registry import Registry
 
+from app.functions import ALL_FUNCTIONS
 from app.models.mock import MockModel
 from app.schemas import SCHEMAS
 from app.tools import ALL_TOOLS
@@ -35,6 +36,7 @@ def build_registry(db: BaseDb) -> Registry:
         tools=list(ALL_TOOLS),
         models=list(MODEL_PRESETS),
         schemas=list(SCHEMAS),
+        functions=list(ALL_FUNCTIONS),
         memory_managers=[build_memory_manager(db)],
         dbs=[db],
     )

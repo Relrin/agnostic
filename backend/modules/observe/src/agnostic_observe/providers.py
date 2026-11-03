@@ -22,6 +22,7 @@ from agnostic_observe.application.metrics import (
 from agnostic_observe.application.overview import BuildOverview, GetOverview, WarmOverviews
 from agnostic_observe.application.ports import ComparisonStore, PriceRepository
 from agnostic_observe.application.traces import CompareTrace, GetSpanStats
+from agnostic_observe.facade import StepStats, StepStatsImpl
 from agnostic_observe.infrastructure.repository import SqlComparisonStore, SqlPriceRepository
 from agnostic_observe.settings import ObserveSettings
 
@@ -37,6 +38,7 @@ class ObserveProvider(Provider):
     comparisons = provide(SqlComparisonStore, provides=ComparisonStore)
     effective_prices = provide(EffectivePrices)
     get_price_table = provide(GetPriceTable)
+    step_stats = provide(StepStatsImpl, provides=StepStats)
     replace_price_table = provide(ReplacePriceTable)
 
     @provide

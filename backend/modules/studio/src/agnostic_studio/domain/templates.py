@@ -1,4 +1,7 @@
-"""Starting points for "New agent" and "New team". They reference no registry entry except the chosen model."""
+"""Starting points for "New agent", "New team" and "New workflow".
+
+They reference no registry entry except the chosen model; workflow templates leave their steps' executors to pick.
+"""
 
 from __future__ import annotations
 
@@ -61,6 +64,24 @@ TEMPLATES: tuple[Template, ...] = (
             "markdown": True,
         },
     ),
+    Template("blank-workflow", "workflow", "Blank workflow", "A workflow without steps: add them on the canvas.", {}),
+    Template(
+        "triage-and-route",
+        "workflow",
+        "Triage and route",
+        "Classify the input, then route it with a CEL selector to one of two steps.",
+        {
+            "steps": [
+                {"type": "Step", "name": "Classify"},
+                {
+                    "type": "Router",
+                    "name": "Route",
+                    "selector": 'previous_step_content.contains("BILLING") ? "Billing" : "Answer"',
+                    "choices": [{"type": "Step", "name": "Billing"}, {"type": "Step", "name": "Answer"}],
+                },
+            ]
+        },
+    ),
 )
 
 
@@ -69,9 +90,15 @@ def template(template_id: str) -> Template | None:
 
 
 def start_config(
-    base: Mapping[str, Any], *, component_id: str, name: str, model: Mapping[str, Any] | None
+    base: Mapping[str, Any],
+    *,
+    component_id: str,
+    name: str,
+    model: Mapping[str, Any] | None,
+    kind: EditableKind = "agent",
 ) -> dict[str, Any]:
+    """A template's config with the new id and name, and the chosen model (a workflow has none of its own)."""
     config: dict[str, Any] = {"id": component_id, "name": name, **base}
-    if model is not None:
+    if model is not None and kind != "workflow":
         config["model"] = dict(model)
     return config

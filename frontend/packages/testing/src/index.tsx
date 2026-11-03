@@ -7,6 +7,7 @@ import { API, configureTestApi } from "./base";
 
 export { API, configureTestApi };
 export * from "./p01";
+export * from "./studio-workflows";
 export * from "./p02";
 export * from "./observe";
 export * from "./context";

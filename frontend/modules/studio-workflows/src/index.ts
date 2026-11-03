@@ -4,6 +4,8 @@ import { useParams } from "@tanstack/react-router";
 import { Workflow } from "lucide-react";
 import { createElement } from "react";
 
+import { WorkflowBuilderPage } from "./builder-page";
+
 /** `/i/:instance/studio/workflows`: workflows with their live version and open drafts. */
 function WorkflowsPage() {
   const params = useParams({ strict: false }) as unknown as Record<string, string | undefined>;
@@ -14,7 +16,10 @@ export const studioWorkflowsModule = defineModule({
   id: "studio-workflows",
   scope: "instance",
   requires: { capabilities: ["components"] },
-  routes: [{ path: "studio/workflows", component: WorkflowsPage }],
+  routes: [
+    { path: "studio/workflows", component: WorkflowsPage },
+    { path: "studio/workflows/$componentId", component: WorkflowBuilderPage },
+  ],
   nav: [
     {
       id: "workflows",
@@ -26,3 +31,7 @@ export const studioWorkflowsModule = defineModule({
     },
   ],
 });
+
+export { WorkflowBuilderPage } from "./builder-page";
+export { buildGraph, layoutWorkflow } from "./layout";
+export * as tree from "./tree";

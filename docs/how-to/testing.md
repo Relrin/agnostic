@@ -18,7 +18,8 @@ runtime started without `JWT_VERIFICATION_KEY` (`auth_mode=none`). The same runt
 `frontend/packages/core/src/run-stream/__fixtures__/recorded/`, which `recorded.test.ts` checks against the reducer.
 
 Studio's golden fixtures live in `backend/tests/golden/agno-3.1`: agno's `to_dict()` of the reference runtime's
-agents and teams (`.json`) and the code Studio generates for each (`.py`). After an agno upgrade or a generator
+agents, teams and workflows, and of the design's ticket router (`prototype/`), as `.json`, with the code Studio
+generates for each (`.py`). After an agno upgrade or a generator
 change, run `just golden` and review the diff; the contract job fails when the runtime serializes differently from
 the committed JSON.
 
@@ -44,6 +45,11 @@ the committed JSON.
   the prototype's sample org: Localhost Company, Daniel, Marcus, prod-agentos, staging-agentos). Unhandled requests fail
   the test.
 - Every story is rendered in Chromium and checked with axe (WCAG 2.2 AA); a violation fails the run.
+- The workflow builder: `workflowHandlers()` serves the design's ticket router as a stored workflow with validation,
+  CEL, stats, runs and the canvas layout; React Flow and CodeMirror need the jsdom layout stubs in
+  `builder-page.test.tsx`, and canvas nodes are clicked with `fireEvent` (a pointer press starts React Flow's drag).
+- Playwright runs Chromium with its sandbox on (`launchOptions.chromiumSandbox`); `studio-workflows.spec.ts` also
+  checks that a 200-step workflow pans and zooms within the frame budget.
 - `packages/ui/src/lib/tokens.test.ts` checks text/background contrast ratios and that the token mirror matches
   `tokens.css`.
 
