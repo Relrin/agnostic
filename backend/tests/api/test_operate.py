@@ -127,14 +127,23 @@ async def test_reject_and_already_resolved(stack: Stack) -> None:
     pending_refund(fake, approval_id="apr_2")
     fake.approvals["apr_2"]["status"] = "approved"
 
-    resolved = await owner.post("/api/v1/instances/prod-agentos/approvals/apr_2/decide", json={"decision": "reject"})
+    unexplained = await owner.post("/api/v1/instances/prod-agentos/approvals/apr_2/decide", json={"decision": "reject"})
+    assert unexplained.status_code == 422  # rejecting needs a note the requester sees
+
+    resolved = await owner.post(
+        "/api/v1/instances/prod-agentos/approvals/apr_2/decide", json={"decision": "reject", "note": "Too late"}
+    )
     assert resolved.status_code == 200
     assert (resolved.json()["already_resolved"], resolved.json()["status"]) == (True, "approved")
     assert fake.resolutions == []
 
     pending_refund(fake, approval_id="apr_3")
-    rejected = await owner.post("/api/v1/instances/prod-agentos/approvals/apr_3/decide", json={"decision": "reject"})
+    rejected = await owner.post(
+        "/api/v1/instances/prod-agentos/approvals/apr_3/decide",
+        json={"decision": "reject", "note": "Outside the 30-day refund window."},
+    )
     assert rejected.json()["status"] == "rejected"
+    assert fake.resolutions[-1]["body"]["resolution_data"]["note"] == "Outside the 30-day refund window."
     tools = json.loads(fake.continuations[-1]["form"]["tools"])
     assert tools[0]["confirmed"] is False
     assert tools[0]["tool_args"]["amount"] == 49.0  # edits are ignored when rejecting

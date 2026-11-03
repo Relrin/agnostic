@@ -6,10 +6,15 @@ Event catalogue (``data`` always carries ``instance_id`` when the event concerns
 type                      channel                          visible to
 ========================  ===============================  ======================================
 ``approvals.count``       ``evt:instance:{id}``            holders of ``approvals:read`` there
+``approval.created``      ``evt:instance:{id}``            holders of ``approvals:read`` there
+``approval.viewed``       ``evt:instance:{id}``            holders of ``approvals:read`` there
 ``approval.resolved``     ``evt:instance:{id}``            holders of ``approvals:read`` there
+``schedule.failed``       ``evt:instance:{id}``            holders of ``schedules:read`` there
 ``instance.health``       ``evt:instance:{id}``            anyone with access to the instance
 ``access.changed``        (synthesised per stream)         the person whose stream it is
 ``job.progress``          ``evt:user:{id}``                that person
+``notification.created``  ``evt:user:{id}``                that person (the bell)
+``notification.read``     ``evt:user:{id}``                that person (other tabs clear the badge)
 ========================  ===============================  ======================================
 """
 
@@ -21,7 +26,10 @@ from typing import Any
 
 SCOPED_EVENTS: Mapping[str, str] = {
     "approvals.count": "approvals:read",
+    "approval.created": "approvals:read",
+    "approval.viewed": "approvals:read",
     "approval.resolved": "approvals:read",
+    "schedule.failed": "schedules:read",
 }
 
 

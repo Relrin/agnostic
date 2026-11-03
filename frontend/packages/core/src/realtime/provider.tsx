@@ -1,5 +1,12 @@
 // Wires realtime events into the query cache: badges update in place, lists refetch, access re-evaluates.
-import { approvalsCountOptions, approvalsCountQueryKey, type CountOut } from "@agnostic/api";
+import {
+  approvalsCountOptions,
+  approvalsCountQueryKey,
+  notificationsUnreadCountOptions,
+  notificationsUnreadCountQueryKey,
+  type CountOut,
+  type UnreadOut,
+} from "@agnostic/api";
 import { skipToken, useQuery, useQueryClient, type Query } from "@tanstack/react-query";
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
@@ -31,7 +38,40 @@ export function applyRealtimeEvent(
       break;
     case "approval.resolved":
       void client.invalidateQueries({
-        predicate: (query) => hasId(query, ["approvalsCount", "observeOverview"]),
+        predicate: (query) =>
+          hasId(query, [
+            "approvalsCount",
+            "observeOverview",
+            "approvalsListApprovals",
+            "approvalsApprovalCounts",
+            "approvalsGetApproval",
+          ]),
+      });
+      break;
+    case "approval.created":
+    case "approval.viewed":
+      void client.invalidateQueries({
+        predicate: (query) =>
+          hasId(query, ["approvalsListApprovals", "approvalsApprovalCounts", "approvalsGetApproval"]),
+      });
+      break;
+    case "schedule.failed":
+      void client.invalidateQueries({
+        predicate: (query) =>
+          hasId(query, ["schedulerListSchedules", "schedulerGetSchedule", "observeOverview"]),
+      });
+      break;
+    case "notification.created":
+      void client.invalidateQueries({
+        predicate: (query) => hasId(query, ["notificationsUnreadCount", "notificationsListNotifications"]),
+      });
+      break;
+    case "notification.read":
+      if (typeof message.data.unread === "number") {
+        client.setQueryData<UnreadOut>(notificationsUnreadCountQueryKey(), { unread: message.data.unread });
+      }
+      void client.invalidateQueries({
+        predicate: (query) => hasId(query, ["notificationsListNotifications"]),
       });
       break;
     case "access.changed":
@@ -74,6 +114,17 @@ export function useApprovalsCount(instanceId: string | undefined, enabled = true
   return useQuery({
     ...options,
     queryFn: instanceId && enabled ? (options.queryFn ?? skipToken) : skipToken,
+    staleTime: STALE_TIME.config,
+    retry: false,
+  });
+}
+
+/** Unread notifications (the bell): fetched once, then kept current by `notification.*` events. */
+export function useUnreadNotifications(enabled = true) {
+  const options = notificationsUnreadCountOptions();
+  return useQuery({
+    ...options,
+    queryFn: enabled ? (options.queryFn ?? skipToken) : skipToken,
     staleTime: STALE_TIME.config,
     retry: false,
   });

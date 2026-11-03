@@ -130,6 +130,22 @@ only; anyone else gets the component's 404); no version evaluates the current co
 AgentOS's own eval helpers with the OS db, so it is stored and listed by `GET /eval-runs`; the response is the
 `/eval-runs` schema plus `component_version`. It needs an AgentOS db (503 otherwise).
 
+Two more routes feed the Control pages:
+
+- `GET /agnostic/v1/workers` (`agent_os:admin`, like AgentOS's own `/queue/*`) describes *this* replica: its replica
+  id, the queue worker id that appears in a job's `locked_by`, deployment id, concurrency, in-flight jobs, the full
+  `QueueConfig` (depth, attempts, delays, timeouts, `lock_grace_seconds`, stop timeout, poll interval, retention)
+  and whether the scheduler runs and how often it polls. Behind a load balancer each call reaches one replica; the
+  Queue page merges what several calls returned with the workers it sees in `locked_by` of running jobs.
+- `GET /agnostic/v1/events?since=&limit=` (`approvals:read` and `schedules:read`) lists approvals created and
+  scheduled runs that failed since an epoch-seconds cursor, newest last, with `next_since`. The control plane's
+  schedule-failure watcher uses it instead of listing every schedule's runs.
+
+To try Slack notifications locally, `just up` also starts a Slack mock on http://localhost:8030. Add a Slack channel
+in Settings › Notifications with a bot token `xoxb-dev` and API base `http://localhost:8030/api` (or an incoming
+webhook `http://localhost:8030/hooks/dev`), route `refund_customer` approvals to yourself with Slack on, ask
+support-triage for a refund, and the message with its Approve and Reject buttons shows up on the mock's page.
+
 The bridge is a separate package (`bridge/`, its own `uv` project, Python 3.10-3.13 like agno) that customers add
 to their own AgentOS: `pip install agnostic-bridge`, then serve `install(agent_os)` instead of
 `agent_os.get_app()`. It mounts its routes ahead of AgentOS's MCP catch-all and registers their scopes in AgentOS's

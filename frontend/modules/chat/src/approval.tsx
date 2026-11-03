@@ -79,10 +79,10 @@ function ApprovalItem({
       if (data.continue_state === "continued") onContinued();
     },
   });
-  const run = (decision: "approve" | "reject", edited?: Record<string, unknown>) => {
+  const run = (decision: "approve" | "reject", edited?: Record<string, unknown>, note?: string) => {
     decide.mutate({
       path: { instance, approval_id: approval.id },
-      body: { decision, ...(edited ? { edited_args: edited } : {}) },
+      body: { decision, ...(edited ? { edited_args: edited } : {}), ...(note ? { note } : {}) },
     });
   };
   return (
@@ -97,8 +97,9 @@ function ApprovalItem({
         onApprove={(edited) => {
           run("approve", edited);
         }}
-        onReject={() => {
-          run("reject");
+        rejectNeedsNote
+        onReject={(note) => {
+          run("reject", undefined, note);
         }}
         outcome={result ? outcomeText(result) : undefined}
         footer={

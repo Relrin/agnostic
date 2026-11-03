@@ -28,6 +28,7 @@ export function Badge({ className, tone, ...props }: BadgeProps) {
 
 const STATUS_TONES = {
   COMPLETED: "success",
+  APPROVED: "success",
   OK: "success",
   ALLOWED: "success",
   ACTIVE: "success",
@@ -43,6 +44,10 @@ const STATUS_TONES = {
   ERROR: "danger",
   DENIED: "danger",
   REJECTED: "danger",
+  TIMEOUT: "danger",
+  EXPIRED: "muted",
+  CANCELLED: "muted",
+  QUEUED: "muted",
 } as const satisfies Record<string, NonNullable<BadgeProps["tone"]>>;
 
 export type StatusPillProps = Omit<BadgeProps, "tone" | "children"> & {

@@ -78,6 +78,7 @@ export {
   type CalloutProps,
   type Crumb,
 } from "./primitives/small";
+export { Popover, PopoverClose, PopoverContent, PopoverTrigger } from "./primitives/popover";
 export { Tabs, TabsContent, TabsList, TabsTrigger } from "./primitives/tabs";
 export { Tooltip, TooltipContent, TooltipProvider } from "./primitives/tooltip";
 
@@ -116,6 +117,17 @@ export {
   type KpiDelta,
 } from "./patterns/data";
 export { JsonEditor, JsonView, MarkdownView, Toaster, toast } from "./patterns/content";
+export {
+  ArgsDiff,
+  CRON_FIELDS,
+  Countdown,
+  CronFields,
+  SlotBar,
+  Timeline,
+  formatCountdown,
+  type TimelineItem,
+  type TimelineState,
+} from "./patterns/control";
 export { ShareList, StackedBarChart, ThinBar, type BarSeries } from "./patterns/chart";
 export {
   ApprovalCard,

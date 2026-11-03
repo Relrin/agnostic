@@ -18,6 +18,7 @@
 | [Operate and realtime](architecture/operate-and-realtime.md) | RunStream, approvals and delegated elevation, Home overview, realtime events, ⌘K search |
 | [Context](architecture/context.md) | memory duplicates, provenance and optimization, knowledge content and retrieval, learnings and data deletion, file provenance |
 | [Observe and evaluations](architecture/observe-and-evals.md) | trace comparison, span statistics, metrics and cost estimates, eval datasets, batches, version comparison, publish gates |
+| [Control](architecture/control.md) | approvals inbox, routing and expiry, notifications (inbox, Slack, email, webhooks), scheduler previews, the durable queue and checkpoint recovery |
 
 ## How-to guides
 

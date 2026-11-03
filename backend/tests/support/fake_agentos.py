@@ -4,7 +4,8 @@ Only the routes the tests need: health/info/config, sessions, an SSE run, approv
 run continuation, metrics, traces (list, detail), schedules, component configs, eval runs, and the bridge's
 capabilities and version-pinned eval routes (when ``bridge`` is on), and the context routes (memories, optimize,
 session runs, knowledge content and config, learnings, agents and teams, and the bridge's file provenance when
-``bridge_files`` is on). Approvals answer 503 (disabled) unless
+``bridge_files`` is on), schedule CRUD with enable/disable/trigger, the durable queue (``queue_enabled``; admin
+only, like agno), run checkpoints and cancel, and the bridge's workers and events feed. Approvals answer 503 unless
 ``approvals_enabled``. Under ``user_isolation`` non-admins get 404 for other people's approvals, runs and traces,
 like agno.
 """
@@ -12,6 +13,7 @@ like agno.
 from __future__ import annotations
 
 import asyncio
+import re
 from collections.abc import AsyncIterator
 from typing import Any, cast
 from urllib.parse import parse_qs
@@ -76,6 +78,14 @@ class FakeAgentOS:
         self.knowledge_content: dict[str, list[dict[str, Any]]] = {}
         self.agent_items: list[dict[str, Any]] = []
         self.learnings: list[dict[str, Any]] = []
+        self.queue_enabled = False
+        self.queue_jobs: dict[str, dict[str, Any]] = {}
+        self.requeued: list[dict[str, Any]] = []
+        self.cancelled: list[dict[str, Any]] = []
+        self.checkpoints: dict[str, list[dict[str, Any]]] = {}
+        self.runs: dict[str, dict[str, Any]] = {}
+        self.bridge_workers: dict[str, Any] | None = None
+        self.bridge_events: list[dict[str, Any]] = []
         self.app = self._build()
 
     def _claims(self, request: Request) -> dict[str, Any] | Response:
@@ -525,5 +535,192 @@ class FakeAgentOS:
                     return guarded
             path = request.query_params["path"]
             return JSONResponse({"path": path, "scanned_traces": 3, "events": self.file_events})
+
+        run_endpoint = re.compile(r"^/(agents|teams|workflows)/([^/]+)/runs/?$")
+
+        def schedule_or_404(schedule_id: str) -> dict[str, Any] | None:
+            return next((item for item in self.schedules if item["id"] == schedule_id), None)
+
+        async def schedule_write(request: Request, body: dict[str, Any]) -> dict[str, Any] | Response:
+            guarded = await self._guard(request, "schedules:write")
+            if isinstance(guarded, Response):
+                return guarded
+            endpoint = str(body.get("endpoint") or "")
+            custom = (body.get("method") or "POST") != "POST" or not run_endpoint.match(endpoint)
+            if custom and endpoint and ADMIN not in guarded.get("scopes", []):
+                detail = "Only admins can schedule an endpoint that is not a run endpoint"
+                return JSONResponse({"detail": detail}, status_code=403)
+            return guarded
+
+        @app.post("/schedules")
+        async def create_schedule(request: Request) -> Response:
+            body = orjson.loads(await request.body())
+            guarded = await schedule_write(request, body)
+            if isinstance(guarded, Response):
+                return guarded
+            item = {
+                "id": f"sch_{len(self.schedules) + 1}",
+                "user_id": guarded.get("sub"),
+                "enabled": True,
+                "next_run_at": 1793000000,
+                "disabled_reason": None,
+                "created_at": 1792000000,
+                **body,
+            }
+            self.schedules.append(item)
+            return JSONResponse(item, status_code=201)
+
+        @app.get("/schedules/{schedule_id}")
+        async def get_schedule(schedule_id: str, request: Request) -> Response:
+            guarded = await self._guard(request, "schedules:read")
+            if isinstance(guarded, Response):
+                return guarded
+            item = schedule_or_404(schedule_id)
+            return JSONResponse(item) if item else JSONResponse({"detail": "Schedule not found"}, status_code=404)
+
+        @app.patch("/schedules/{schedule_id}")
+        async def patch_schedule(schedule_id: str, request: Request) -> Response:
+            body = orjson.loads(await request.body())
+            item = schedule_or_404(schedule_id)
+            if item is None:
+                return JSONResponse({"detail": "Schedule not found"}, status_code=404)
+            guarded = await schedule_write(request, {**item, **body})
+            if isinstance(guarded, Response):
+                return guarded
+            item.update(body)
+            return JSONResponse(item)
+
+        @app.delete("/schedules/{schedule_id}")
+        async def delete_schedule(schedule_id: str, request: Request) -> Response:
+            guarded = await self._guard(request, "schedules:delete")
+            if isinstance(guarded, Response):
+                return guarded
+            self.schedules = [item for item in self.schedules if item["id"] != schedule_id]
+            return Response(status_code=204)
+
+        @app.post("/schedules/{schedule_id}/{action}")
+        async def schedule_action(schedule_id: str, action: str, request: Request) -> Response:
+            guarded = await self._guard(request, "schedules:write")
+            if isinstance(guarded, Response):
+                return guarded
+            item = schedule_or_404(schedule_id)
+            if item is None:
+                return JSONResponse({"detail": "Schedule not found"}, status_code=404)
+            if action in {"enable", "disable"}:
+                item["enabled"] = action == "enable"
+                return JSONResponse({"id": schedule_id, "name": item["name"], "enabled": item["enabled"]})
+            if action == "trigger":
+                if not item.get("enabled"):
+                    return JSONResponse({"detail": "Schedule is disabled"}, status_code=409)
+                runs = self.schedule_runs.setdefault(schedule_id, [])
+                run = {
+                    "id": f"srun_{len(runs) + 1}",
+                    "schedule_id": schedule_id,
+                    "attempt": 1,
+                    "status": "running",
+                    "triggered_at": 1792900000,
+                }
+                runs.insert(0, run)
+                return JSONResponse(run)
+            return JSONResponse({"detail": "Not Found"}, status_code=404)
+
+        def queue_guard(guarded: dict[str, Any] | Response) -> Response | None:
+            if isinstance(guarded, Response):
+                return guarded
+            if ADMIN not in guarded.get("scopes", []):
+                return JSONResponse({"detail": "Queue endpoints require admin"}, status_code=403)
+            if not self.queue_enabled:
+                return JSONResponse({"detail": "Durable queue is not configured"}, status_code=503)
+            return None
+
+        @app.get("/queue/stats")
+        async def queue_stats(request: Request) -> Response:
+            refused = queue_guard(await self._guard(request, ADMIN))
+            if refused:
+                return refused
+            counts: dict[str, int] = {}
+            for job in self.queue_jobs.values():
+                counts[job["status"]] = counts.get(job["status"], 0) + 1
+            return JSONResponse({"counts": counts, "oldest_queued_age_seconds": 3.0})
+
+        @app.get("/queue/jobs")
+        async def queue_jobs(request: Request) -> Response:
+            refused = queue_guard(await self._guard(request, ADMIN))
+            if refused:
+                return refused
+            status = request.query_params.get("status")
+            items = [job for job in self.queue_jobs.values() if status is None or job["status"] == status]
+            return JSONResponse(page(items, request))
+
+        @app.get("/queue/jobs/{job_id}")
+        async def queue_job(job_id: str, request: Request) -> Response:
+            refused = queue_guard(await self._guard(request, ADMIN))
+            if refused:
+                return refused
+            job = self.queue_jobs.get(job_id)
+            return JSONResponse(job) if job else JSONResponse({"detail": "Job not found"}, status_code=404)
+
+        @app.post("/queue/jobs/{job_id}/requeue")
+        async def requeue(job_id: str, request: Request) -> Response:
+            guarded = await self._guard(request, ADMIN)
+            refused = queue_guard(guarded)
+            if refused:
+                return refused
+            job = self.queue_jobs.get(job_id)
+            if job is None:
+                return JSONResponse({"detail": "Job not found"}, status_code=404)
+            job.update(status="queued", max_attempts=job["max_attempts"] + 1, locked_by=None)
+            self.requeued.append({"job_id": job_id, "params": dict(request.query_params), "claims": guarded})
+            return JSONResponse(job)
+
+        @app.get("/agents/{agent_id}/runs/{run_id}/checkpoints")
+        async def checkpoints(agent_id: str, run_id: str, request: Request) -> Response:
+            guarded = await self._guard(request, "agents:run", agent_id)
+            if isinstance(guarded, Response):
+                return guarded
+            session_id = request.query_params.get("session_id")
+            return JSONResponse(
+                {"run_id": run_id, "session_id": session_id, "checkpoints": self.checkpoints.get(run_id, [])}
+            )
+
+        @app.post("/agents/{agent_id}/runs/{run_id}/cancel")
+        async def cancel(agent_id: str, run_id: str, request: Request) -> Response:
+            guarded = await self._guard(request, "agents:run", agent_id)
+            if isinstance(guarded, Response):
+                return guarded
+            self.cancelled.append({"agent_id": agent_id, "run_id": run_id, "claims": guarded})
+            if run_id in self.queue_jobs:
+                self.queue_jobs[run_id]["status"] = "cancelled"
+            return JSONResponse({})
+
+        @app.get("/sessions/{session_id}/runs/{run_id}")
+        async def session_run(session_id: str, run_id: str, request: Request) -> Response:
+            guarded = await self._guard(request, "sessions:read")
+            if isinstance(guarded, Response):
+                return guarded
+            run = self.runs.get(run_id)
+            if run is None or run.get("session_id", session_id) != session_id:
+                return JSONResponse({"detail": "Run not found"}, status_code=404)
+            return JSONResponse(run)
+
+        @app.get("/agnostic/v1/workers")
+        async def bridge_workers(request: Request) -> Response:
+            guarded = await self._guard(request, ADMIN)
+            if isinstance(guarded, Response):
+                return guarded
+            if self.bridge_workers is None:
+                return JSONResponse({"detail": "Not Found"}, status_code=404)
+            return JSONResponse(self.bridge_workers)
+
+        @app.get("/agnostic/v1/events")
+        async def bridge_events(request: Request) -> Response:
+            guarded = await self._guard(request, "schedules:read")
+            if isinstance(guarded, Response):
+                return guarded
+            if not self.bridge:
+                return JSONResponse({"detail": "Not Found"}, status_code=404)
+            since = int(request.query_params.get("since", "0"))
+            events = [event for event in self.bridge_events if event["at"] > since]
+            return JSONResponse({"events": events, "next_since": max([e["at"] for e in events], default=since)})
 
         return app

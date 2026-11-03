@@ -62,17 +62,20 @@ export function Switch({
   label,
   description,
   disabled,
+  hideLabel = false,
 }: {
   checked: boolean;
   onCheckedChange: (checked: boolean) => void;
   label: ReactNode;
   description?: ReactNode;
   disabled?: boolean;
+  /** Only screen readers get the label (a switch in a table row: "Enable daily-brief"). */
+  hideLabel?: boolean;
 }) {
   const id = useId();
   return (
-    <div className="flex items-start justify-between gap-4">
-      <div className="flex flex-col gap-0.5">
+    <div className={cn("items-start", hideLabel ? "inline-flex" : "flex justify-between gap-4")}>
+      <div className={cn("flex flex-col gap-0.5", hideLabel && "sr-only")}>
         <label htmlFor={id} className="text-[13.5px] font-medium">
           {label}
         </label>
@@ -95,7 +98,7 @@ export function Switch({
         <span
           aria-hidden
           className={cn(
-            "absolute top-0.5 size-3.5 rounded-full transition-transform",
+            "absolute top-0.5 left-0 size-3.5 rounded-full transition-transform",
             checked ? "translate-x-[18px] bg-accent-fg" : "translate-x-0.5 bg-fg-secondary",
           )}
         />

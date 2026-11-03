@@ -23,6 +23,8 @@ dependencies = [
   "agnostic-search",
   "agnostic-evals",
   "agnostic-context",
+  "agnostic-scheduler",
+  "agnostic-queue",
 ]
 
 [dependency-groups]
@@ -69,6 +71,8 @@ agnostic-observe = { workspace = true }
 agnostic-search = { workspace = true }
 agnostic-evals = { workspace = true }
 agnostic-context = { workspace = true }
+agnostic-scheduler = { workspace = true }
+agnostic-queue = { workspace = true }
 
 # ---------------------------------------------------------------- lint & format
 [tool.ruff]
@@ -101,7 +105,7 @@ ignore = [
 "**/migrations/env.py" = ["INP001"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["agnostic_kernel", "agnostic_server", "agnostic_agentos_client", "agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_observe", "agnostic_search", "agnostic_evals", "agnostic_context"]
+known-first-party = ["agnostic_kernel", "agnostic_server", "agnostic_agentos_client", "agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_observe", "agnostic_search", "agnostic_evals", "agnostic_context", "agnostic_scheduler", "agnostic_queue"]
 
 [tool.ruff.lint.flake8-type-checking]
 runtime-evaluated-base-classes = ["pydantic.BaseModel", "pydantic_settings.BaseSettings", "sqlalchemy.orm.DeclarativeBase"]
@@ -144,7 +148,7 @@ filterwarnings = ["error::pytest.PytestUnraisableExceptionWarning"]
 
 [tool.coverage.run]
 branch = true
-source = ["agnostic_kernel", "agnostic_server", "agnostic_agentos_client", "agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_observe", "agnostic_search", "agnostic_evals", "agnostic_context"]
+source = ["agnostic_kernel", "agnostic_server", "agnostic_agentos_client", "agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_observe", "agnostic_search", "agnostic_evals", "agnostic_context", "agnostic_scheduler", "agnostic_queue"]
 omit = ["*/migrations/*", "*/_generated/*", "*/__main__.py"]
 
 [tool.coverage.report]
@@ -154,19 +158,19 @@ exclude_also = ["if TYPE_CHECKING:", "raise NotImplementedError", '\.\.\.$']
 
 # ---------------------------------------------------------------- boundaries (02 §2.2)
 [tool.importlinter]
-root_packages = ["agnostic_kernel", "agnostic_server", "agnostic_agentos_client", "agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_observe", "agnostic_search", "agnostic_evals", "agnostic_context"]
+root_packages = ["agnostic_kernel", "agnostic_server", "agnostic_agentos_client", "agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_observe", "agnostic_search", "agnostic_evals", "agnostic_context", "agnostic_scheduler", "agnostic_queue"]
 include_external_packages = true
 
 [[tool.importlinter.contracts]]
 name = "Packages never import modules or the server"
 type = "forbidden"
 source_modules = ["agnostic_kernel", "agnostic_agentos_client"]
-forbidden_modules = ["agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_observe", "agnostic_search", "agnostic_server", "agnostic_evals", "agnostic_context"]
+forbidden_modules = ["agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_observe", "agnostic_search", "agnostic_server", "agnostic_evals", "agnostic_context", "agnostic_scheduler", "agnostic_queue"]
 
 [[tool.importlinter.contracts]]
 name = "Modules never import the composition root"
 type = "forbidden"
-source_modules = ["agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_observe", "agnostic_search", "agnostic_evals", "agnostic_context"]
+source_modules = ["agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_observe", "agnostic_search", "agnostic_evals", "agnostic_context", "agnostic_scheduler", "agnostic_queue"]
 forbidden_modules = ["agnostic_server"]
 
 [[tool.importlinter.contracts]]
@@ -191,7 +195,7 @@ forbidden_modules = ["agnostic_kernel", "sqlalchemy", "fastapi", "pydantic", "pr
 [[tool.importlinter.contracts]]
 name = "other modules use audit only through its facade"
 type = "forbidden"
-source_modules = ["agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_observe", "agnostic_search", "agnostic_evals", "agnostic_context"]
+source_modules = ["agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_observe", "agnostic_search", "agnostic_evals", "agnostic_context", "agnostic_scheduler", "agnostic_queue"]
 forbidden_modules = ["agnostic_audit.api", "agnostic_audit.application", "agnostic_audit.domain", "agnostic_audit.infrastructure", "agnostic_audit.providers", "agnostic_audit.jobs", "agnostic_audit.settings", "agnostic_audit.module"]
 allow_indirect_imports = true
 
@@ -216,7 +220,7 @@ forbidden_modules = ["agnostic_kernel", "sqlalchemy", "fastapi", "pydantic", "pr
 [[tool.importlinter.contracts]]
 name = "other modules use settings only through its facade"
 type = "forbidden"
-source_modules = ["agnostic_audit", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_observe", "agnostic_search", "agnostic_evals", "agnostic_context"]
+source_modules = ["agnostic_audit", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_observe", "agnostic_search", "agnostic_evals", "agnostic_context", "agnostic_scheduler", "agnostic_queue"]
 forbidden_modules = ["agnostic_settings.application", "agnostic_settings.domain", "agnostic_settings.infrastructure", "agnostic_settings.providers", "agnostic_settings.module"]
 allow_indirect_imports = true
 
@@ -242,7 +246,7 @@ forbidden_modules = ["agnostic_kernel", "sqlalchemy", "fastapi", "pydantic", "pr
 [[tool.importlinter.contracts]]
 name = "other modules use identity only through its facade"
 type = "forbidden"
-source_modules = ["agnostic_audit", "agnostic_settings", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_observe", "agnostic_search", "agnostic_evals", "agnostic_context"]
+source_modules = ["agnostic_audit", "agnostic_settings", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_observe", "agnostic_search", "agnostic_evals", "agnostic_context", "agnostic_scheduler", "agnostic_queue"]
 forbidden_modules = ["agnostic_identity.api", "agnostic_identity.application", "agnostic_identity.domain", "agnostic_identity.infrastructure", "agnostic_identity.providers", "agnostic_identity.settings", "agnostic_identity.module"]
 allow_indirect_imports = true
 
@@ -267,7 +271,7 @@ forbidden_modules = ["agnostic_kernel", "sqlalchemy", "fastapi", "pydantic", "pr
 [[tool.importlinter.contracts]]
 name = "other modules use org only through its facade"
 type = "forbidden"
-source_modules = ["agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_observe", "agnostic_search", "agnostic_evals", "agnostic_context"]
+source_modules = ["agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_observe", "agnostic_search", "agnostic_evals", "agnostic_context", "agnostic_scheduler", "agnostic_queue"]
 forbidden_modules = ["agnostic_org.api", "agnostic_org.application", "agnostic_org.domain", "agnostic_org.infrastructure", "agnostic_org.providers", "agnostic_org.module"]
 allow_indirect_imports = true
 
@@ -293,7 +297,7 @@ forbidden_modules = ["agnostic_kernel", "sqlalchemy", "fastapi", "pydantic", "pr
 [[tool.importlinter.contracts]]
 name = "other modules use instances only through its facade"
 type = "forbidden"
-source_modules = ["agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_observe", "agnostic_search", "agnostic_evals", "agnostic_context"]
+source_modules = ["agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_observe", "agnostic_search", "agnostic_evals", "agnostic_context", "agnostic_scheduler", "agnostic_queue"]
 forbidden_modules = ["agnostic_instances.api", "agnostic_instances.application", "agnostic_instances.domain", "agnostic_instances.infrastructure", "agnostic_instances.providers", "agnostic_instances.jobs", "agnostic_instances.settings", "agnostic_instances.module"]
 allow_indirect_imports = true
 
@@ -318,7 +322,7 @@ forbidden_modules = ["agnostic_kernel", "sqlalchemy", "fastapi", "pydantic", "pr
 [[tool.importlinter.contracts]]
 name = "other modules use access only through its facade"
 type = "forbidden"
-source_modules = ["agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_observe", "agnostic_search", "agnostic_evals", "agnostic_context"]
+source_modules = ["agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_observe", "agnostic_search", "agnostic_evals", "agnostic_context", "agnostic_scheduler", "agnostic_queue"]
 forbidden_modules = ["agnostic_access.api", "agnostic_access.application", "agnostic_access.domain", "agnostic_access.infrastructure", "agnostic_access.providers", "agnostic_access.module"]
 allow_indirect_imports = true
 
@@ -344,7 +348,7 @@ forbidden_modules = ["agnostic_kernel", "sqlalchemy", "fastapi", "pydantic", "pr
 [[tool.importlinter.contracts]]
 name = "other modules use gateway only through its facade"
 type = "forbidden"
-source_modules = ["agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_approvals", "agnostic_notifications", "agnostic_observe", "agnostic_search", "agnostic_evals", "agnostic_context"]
+source_modules = ["agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_approvals", "agnostic_notifications", "agnostic_observe", "agnostic_search", "agnostic_evals", "agnostic_context", "agnostic_scheduler", "agnostic_queue"]
 forbidden_modules = ["agnostic_gateway.api", "agnostic_gateway.application", "agnostic_gateway.domain", "agnostic_gateway.infrastructure", "agnostic_gateway.providers", "agnostic_gateway.settings", "agnostic_gateway.module"]
 allow_indirect_imports = true
 
@@ -353,8 +357,8 @@ name = "approvals: hexagonal layers"
 type = "layers"
 layers = [
   "agnostic_approvals.module",
-  "agnostic_approvals.providers",
-  "agnostic_approvals.api",
+  "agnostic_approvals.providers | agnostic_approvals.jobs",
+  "agnostic_approvals.api | agnostic_approvals.infrastructure",
   "agnostic_approvals.settings",
   "agnostic_approvals.application",
   "agnostic_approvals.domain",
@@ -369,8 +373,8 @@ forbidden_modules = ["agnostic_kernel", "sqlalchemy", "fastapi", "pydantic", "pr
 [[tool.importlinter.contracts]]
 name = "nothing imports approvals internals"
 type = "forbidden"
-source_modules = ["agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_notifications", "agnostic_observe", "agnostic_search", "agnostic_evals", "agnostic_context"]
-forbidden_modules = ["agnostic_approvals.api", "agnostic_approvals.application", "agnostic_approvals.domain", "agnostic_approvals.providers", "agnostic_approvals.settings", "agnostic_approvals.module"]
+source_modules = ["agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_notifications", "agnostic_observe", "agnostic_search", "agnostic_evals", "agnostic_context", "agnostic_scheduler", "agnostic_queue"]
+forbidden_modules = ["agnostic_approvals.api", "agnostic_approvals.application", "agnostic_approvals.domain", "agnostic_approvals.infrastructure", "agnostic_approvals.jobs", "agnostic_approvals.providers", "agnostic_approvals.settings", "agnostic_approvals.module"]
 allow_indirect_imports = true
 
 [[tool.importlinter.contracts]]
@@ -378,9 +382,10 @@ name = "notifications: hexagonal layers"
 type = "layers"
 layers = [
   "agnostic_notifications.module",
-  "agnostic_notifications.providers",
-  "agnostic_notifications.api",
+  "agnostic_notifications.providers | agnostic_notifications.jobs",
+  "agnostic_notifications.api | agnostic_notifications.infrastructure",
   "agnostic_notifications.settings",
+  "agnostic_notifications.facade",
   "agnostic_notifications.application",
   "agnostic_notifications.domain",
 ]
@@ -392,10 +397,10 @@ source_modules = ["agnostic_notifications.domain"]
 forbidden_modules = ["agnostic_kernel", "sqlalchemy", "fastapi", "pydantic", "procrastinate", "dishka", "redis", "httpx", "jwt"]
 
 [[tool.importlinter.contracts]]
-name = "nothing imports notifications internals"
+name = "other modules use notifications only through its facade"
 type = "forbidden"
-source_modules = ["agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_observe", "agnostic_search", "agnostic_evals", "agnostic_context"]
-forbidden_modules = ["agnostic_notifications.api", "agnostic_notifications.application", "agnostic_notifications.domain", "agnostic_notifications.providers", "agnostic_notifications.settings", "agnostic_notifications.module"]
+source_modules = ["agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_observe", "agnostic_search", "agnostic_evals", "agnostic_context", "agnostic_scheduler", "agnostic_queue"]
+forbidden_modules = ["agnostic_notifications.api", "agnostic_notifications.application", "agnostic_notifications.domain", "agnostic_notifications.infrastructure", "agnostic_notifications.jobs", "agnostic_notifications.providers", "agnostic_notifications.settings", "agnostic_notifications.module"]
 allow_indirect_imports = true
 
 [[tool.importlinter.contracts]]
@@ -419,7 +424,7 @@ forbidden_modules = ["agnostic_kernel", "sqlalchemy", "fastapi", "pydantic", "pr
 [[tool.importlinter.contracts]]
 name = "nothing imports observe internals"
 type = "forbidden"
-source_modules = ["agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_search", "agnostic_evals", "agnostic_context"]
+source_modules = ["agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_search", "agnostic_evals", "agnostic_context", "agnostic_scheduler", "agnostic_queue"]
 forbidden_modules = ["agnostic_observe.api", "agnostic_observe.application", "agnostic_observe.domain", "agnostic_observe.infrastructure", "agnostic_observe.jobs", "agnostic_observe.providers", "agnostic_observe.settings", "agnostic_observe.module"]
 allow_indirect_imports = true
 
@@ -444,7 +449,7 @@ forbidden_modules = ["agnostic_kernel", "sqlalchemy", "fastapi", "pydantic", "pr
 [[tool.importlinter.contracts]]
 name = "nothing imports search internals"
 type = "forbidden"
-source_modules = ["agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_observe", "agnostic_evals"]
+source_modules = ["agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_observe", "agnostic_evals", "agnostic_scheduler", "agnostic_queue"]
 forbidden_modules = ["agnostic_search.api", "agnostic_search.application", "agnostic_search.domain", "agnostic_search.infrastructure", "agnostic_search.jobs", "agnostic_search.providers", "agnostic_search.settings", "agnostic_search.module"]
 allow_indirect_imports = true
 
@@ -469,7 +474,7 @@ forbidden_modules = ["agnostic_kernel", "sqlalchemy", "fastapi", "pydantic", "pr
 [[tool.importlinter.contracts]]
 name = "nothing imports evals internals"
 type = "forbidden"
-source_modules = ["agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_observe", "agnostic_search", "agnostic_context"]
+source_modules = ["agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_observe", "agnostic_search", "agnostic_context", "agnostic_scheduler", "agnostic_queue"]
 forbidden_modules = ["agnostic_evals.api", "agnostic_evals.application", "agnostic_evals.domain", "agnostic_evals.infrastructure", "agnostic_evals.jobs", "agnostic_evals.providers", "agnostic_evals.settings", "agnostic_evals.module"]
 allow_indirect_imports = true
 
@@ -494,10 +499,59 @@ forbidden_modules = ["agnostic_kernel", "sqlalchemy", "fastapi", "pydantic", "pr
 [[tool.importlinter.contracts]]
 name = "nothing imports context internals"
 type = "forbidden"
-source_modules = ["agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_observe", "agnostic_search", "agnostic_evals"]
+source_modules = ["agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_observe", "agnostic_search", "agnostic_evals", "agnostic_scheduler", "agnostic_queue"]
 forbidden_modules = ["agnostic_context.api", "agnostic_context.application", "agnostic_context.domain", "agnostic_context.providers", "agnostic_context.settings", "agnostic_context.module"]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "scheduler: hexagonal layers"
+type = "layers"
+layers = [
+  "agnostic_scheduler.module",
+  "agnostic_scheduler.providers | agnostic_scheduler.jobs",
+  "agnostic_scheduler.api | agnostic_scheduler.infrastructure",
+  "agnostic_scheduler.settings",
+  "agnostic_scheduler.application",
+  "agnostic_scheduler.domain",
+]
+
+[[tool.importlinter.contracts]]
+name = "scheduler: domain is pure (stdlib and croniter only)"
+type = "forbidden"
+source_modules = ["agnostic_scheduler.domain"]
+forbidden_modules = ["agnostic_kernel", "sqlalchemy", "fastapi", "pydantic", "procrastinate", "dishka", "redis", "httpx", "jwt"]
+
+[[tool.importlinter.contracts]]
+name = "nothing imports scheduler internals"
+type = "forbidden"
+source_modules = ["agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_observe", "agnostic_search", "agnostic_evals", "agnostic_context", "agnostic_queue"]
+forbidden_modules = ["agnostic_scheduler.api", "agnostic_scheduler.application", "agnostic_scheduler.domain", "agnostic_scheduler.infrastructure", "agnostic_scheduler.jobs", "agnostic_scheduler.providers", "agnostic_scheduler.settings", "agnostic_scheduler.module"]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "queue: hexagonal layers"
+type = "layers"
+layers = [
+  "agnostic_queue.module",
+  "agnostic_queue.providers",
+  "agnostic_queue.api",
+  "agnostic_queue.application",
+  "agnostic_queue.domain",
+]
+
+[[tool.importlinter.contracts]]
+name = "queue: domain is pure (stdlib only)"
+type = "forbidden"
+source_modules = ["agnostic_queue.domain"]
+forbidden_modules = ["agnostic_kernel", "sqlalchemy", "fastapi", "pydantic", "procrastinate", "dishka", "redis", "httpx", "jwt"]
+
+[[tool.importlinter.contracts]]
+name = "nothing imports queue internals"
+type = "forbidden"
+source_modules = ["agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_observe", "agnostic_search", "agnostic_evals", "agnostic_context", "agnostic_scheduler"]
+forbidden_modules = ["agnostic_queue.api", "agnostic_queue.application", "agnostic_queue.domain", "agnostic_queue.providers", "agnostic_queue.module"]
 allow_indirect_imports = true
 
 # ---------------------------------------------------------------- dependency hygiene
 [tool.deptry]
-known_first_party = ["agnostic_kernel", "agnostic_server", "agnostic_agentos_client", "agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_observe", "agnostic_search", "agnostic_evals", "agnostic_context"]
+known_first_party = ["agnostic_kernel", "agnostic_server", "agnostic_agentos_client", "agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_observe", "agnostic_search", "agnostic_evals", "agnostic_context", "agnostic_scheduler", "agnostic_queue"]

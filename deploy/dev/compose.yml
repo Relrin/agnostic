@@ -5,7 +5,7 @@
 #
 # Postgres uses the pgvector image so the two reference AgentOS runtimes (just runtimes) can keep their data and
 # vectors in the same server, in their own databases. Mailpit catches every email the control plane sends
-# (http://localhost:8025).
+# (http://localhost:8025), and slack-mock stands in for Slack (http://localhost:8030; see slack-mock/slack_mock.py).
 name: agnostic-dev
 
 services:
@@ -48,6 +48,19 @@ services:
       - "${AGNOSTIC_DEV_MAILPIT_PORT:-8025}:8025"
     healthcheck:
       test: ["CMD", "/mailpit", "readyz"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  slack-mock:
+    image: python:3.13.9-slim-trixie@sha256:326df678c20c78d465db501563f3492d17c42a4afe33a1f2bf5406a1d56b0e86
+    command: ["python", "/app/slack_mock.py"]
+    volumes:
+      - ./slack-mock:/app:ro
+    ports:
+      - "${AGNOSTIC_DEV_SLACK_PORT:-8030}:8030"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8030/healthz')"]
       interval: 2s
       timeout: 3s
       retries: 30

@@ -42,6 +42,10 @@ refund_review = Workflow(
                 ],
                 requires_output_review=True,
                 output_review_message="Check the refund decision before it is recorded.",
+                # Unanswered refunds expire after a day; AgentOS applies on_timeout when the run is next continued
+                # (Agnostic does that itself on instances that enforce approval expiry).
+                timeout=24 * 3600,
+                on_timeout="cancel",
             ),
         ),
     ],

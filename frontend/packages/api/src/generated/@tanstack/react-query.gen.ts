@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { accessCreateBinding, accessDeleteBinding, accessExplain, accessListBindings, accessListRoles, accessListScopes, approvalsCount, approvalsDecide, auditGetEvent, auditListActions, auditListEvents, authConfirmPasswordReset, authLogin, authLogout, authRequestPasswordReset, authSignInOptions, authSsoCallback, authSsoStart, contextDataSubjectRequest, contextDeleteUserLearnings, contextFileProvenance, contextKnowledgeBases, contextKnowledgeContent, contextLearningCounts, contextMemoryDuplicates, contextMemorySource, contextOptimizeMemories, evalsAddCases, evalsCancelBatch, evalsCompareBatches, evalsCreateDataset, evalsDeleteCase, evalsDeleteDataset, evalsDeleteGate, evalsEvalCapabilities, evalsEvalResults, evalsGetBatch, evalsGetDataset, evalsImportCases, evalsListDatasets, evalsListEvaluations, evalsListGates, evalsPutGate, evalsStartBatch, evalsUpdateCase, evalsUpdateDataset, gatewayListPolicies, instancesConnectInstance, instancesDeleteInstance, instancesDiscoverInstance, instancesGetCapabilities, instancesGetConfig, instancesGetHealth, instancesGetInstance, instancesGetKeys, instancesListInstances, instancesProbeEndpoint, instancesRotateKeys, instancesTestInstance, instancesUpdateInstance, instancesVerifyToken, invitationsAcceptInvitation, invitationsCreateInvitation, invitationsListInvitations, invitationsPreviewInvitation, invitationsResendInvitation, invitationsRevokeInvitation, jwksJwks, meGetMe, meListMySessions, membersGetMember, membersListMembers, membersRemoveMember, membersUpdateMember, meMyAccess, meRevokeMySession, meUpdateMe, observeGetOrgPriceTable, observeGetPriceTable, observeMetricsCsv, observeMetricsSummary, observeOverview, observePutOrgPriceTable, observePutPriceTable, observeSpanStats, observeTraceComparison, onboardingCompleteOnboarding, onboardingOnboardingStatus, type Options, orgGetOrg, orgUpdateOrg, searchSearch, systemListModules, systemLiveness, systemReadiness } from '../sdk.gen';
-import type { AccessCreateBindingData, AccessCreateBindingError, AccessCreateBindingResponse, AccessDeleteBindingData, AccessDeleteBindingError, AccessDeleteBindingResponse, AccessExplainData, AccessExplainError, AccessExplainResponse, AccessListBindingsData, AccessListBindingsError, AccessListBindingsResponse, AccessListRolesData, AccessListRolesError, AccessListRolesResponse, AccessListScopesData, AccessListScopesError, AccessListScopesResponse, ApprovalsCountData, ApprovalsCountError, ApprovalsCountResponse, ApprovalsDecideData, ApprovalsDecideError, ApprovalsDecideResponse, AuditGetEventData, AuditGetEventError, AuditGetEventResponse, AuditListActionsData, AuditListActionsError, AuditListActionsResponse, AuditListEventsData, AuditListEventsError, AuditListEventsResponse, AuthConfirmPasswordResetData, AuthConfirmPasswordResetError, AuthConfirmPasswordResetResponse, AuthLoginData, AuthLoginError, AuthLoginResponse, AuthLogoutData, AuthLogoutError, AuthLogoutResponse, AuthRequestPasswordResetData, AuthRequestPasswordResetError, AuthSignInOptionsData, AuthSignInOptionsError, AuthSignInOptionsResponse, AuthSsoCallbackData, AuthSsoCallbackError, AuthSsoStartData, AuthSsoStartError, ContextDataSubjectRequestData, ContextDataSubjectRequestError, ContextDataSubjectRequestResponse, ContextDeleteUserLearningsData, ContextDeleteUserLearningsError, ContextDeleteUserLearningsResponse, ContextFileProvenanceData, ContextFileProvenanceError, ContextFileProvenanceResponse, ContextKnowledgeBasesData, ContextKnowledgeBasesError, ContextKnowledgeBasesResponse, ContextKnowledgeContentData, ContextKnowledgeContentError, ContextKnowledgeContentResponse, ContextLearningCountsData, ContextLearningCountsError, ContextLearningCountsResponse, ContextMemoryDuplicatesData, ContextMemoryDuplicatesError, ContextMemoryDuplicatesResponse, ContextMemorySourceData, ContextMemorySourceError, ContextMemorySourceResponse, ContextOptimizeMemoriesData, ContextOptimizeMemoriesError, ContextOptimizeMemoriesResponse, EvalsAddCasesData, EvalsAddCasesError, EvalsAddCasesResponse, EvalsCancelBatchData, EvalsCancelBatchError, EvalsCancelBatchResponse, EvalsCompareBatchesData, EvalsCompareBatchesError, EvalsCompareBatchesResponse, EvalsCreateDatasetData, EvalsCreateDatasetError, EvalsCreateDatasetResponse, EvalsDeleteCaseData, EvalsDeleteCaseError, EvalsDeleteCaseResponse, EvalsDeleteDatasetData, EvalsDeleteDatasetError, EvalsDeleteDatasetResponse, EvalsDeleteGateData, EvalsDeleteGateError, EvalsDeleteGateResponse, EvalsEvalCapabilitiesData, EvalsEvalCapabilitiesError, EvalsEvalCapabilitiesResponse, EvalsEvalResultsData, EvalsEvalResultsError, EvalsEvalResultsResponse, EvalsGetBatchData, EvalsGetBatchError, EvalsGetBatchResponse, EvalsGetDatasetData, EvalsGetDatasetError, EvalsGetDatasetResponse, EvalsImportCasesData, EvalsImportCasesError, EvalsImportCasesResponse, EvalsListDatasetsData, EvalsListDatasetsError, EvalsListDatasetsResponse, EvalsListEvaluationsData, EvalsListEvaluationsError, EvalsListEvaluationsResponse, EvalsListGatesData, EvalsListGatesError, EvalsListGatesResponse, EvalsPutGateData, EvalsPutGateError, EvalsPutGateResponse, EvalsStartBatchData, EvalsStartBatchError, EvalsStartBatchResponse, EvalsUpdateCaseData, EvalsUpdateCaseError, EvalsUpdateCaseResponse, EvalsUpdateDatasetData, EvalsUpdateDatasetError, EvalsUpdateDatasetResponse, GatewayListPoliciesData, GatewayListPoliciesError, GatewayListPoliciesResponse, InstancesConnectInstanceData, InstancesConnectInstanceError, InstancesConnectInstanceResponse, InstancesDeleteInstanceData, InstancesDeleteInstanceError, InstancesDeleteInstanceResponse, InstancesDiscoverInstanceData, InstancesDiscoverInstanceError, InstancesDiscoverInstanceResponse, InstancesGetCapabilitiesData, InstancesGetCapabilitiesError, InstancesGetCapabilitiesResponse, InstancesGetConfigData, InstancesGetConfigError, InstancesGetConfigResponse, InstancesGetHealthData, InstancesGetHealthError, InstancesGetHealthResponse, InstancesGetInstanceData, InstancesGetInstanceError, InstancesGetInstanceResponse, InstancesGetKeysData, InstancesGetKeysError, InstancesGetKeysResponse, InstancesListInstancesData, InstancesListInstancesError, InstancesListInstancesResponse, InstancesProbeEndpointData, InstancesProbeEndpointError, InstancesProbeEndpointResponse, InstancesRotateKeysData, InstancesRotateKeysError, InstancesRotateKeysResponse, InstancesTestInstanceData, InstancesTestInstanceError, InstancesTestInstanceResponse, InstancesUpdateInstanceData, InstancesUpdateInstanceError, InstancesUpdateInstanceResponse, InstancesVerifyTokenData, InstancesVerifyTokenError, InstancesVerifyTokenResponse, InvitationsAcceptInvitationData, InvitationsAcceptInvitationError, InvitationsAcceptInvitationResponse, InvitationsCreateInvitationData, InvitationsCreateInvitationError, InvitationsCreateInvitationResponse, InvitationsListInvitationsData, InvitationsListInvitationsError, InvitationsListInvitationsResponse, InvitationsPreviewInvitationData, InvitationsPreviewInvitationError, InvitationsPreviewInvitationResponse, InvitationsResendInvitationData, InvitationsResendInvitationError, InvitationsResendInvitationResponse, InvitationsRevokeInvitationData, InvitationsRevokeInvitationError, InvitationsRevokeInvitationResponse, JwksJwksData, JwksJwksError, JwksJwksResponse, MeGetMeData, MeGetMeError, MeGetMeResponse, MeListMySessionsData, MeListMySessionsError, MeListMySessionsResponse, MembersGetMemberData, MembersGetMemberError, MembersGetMemberResponse, MembersListMembersData, MembersListMembersError, MembersListMembersResponse, MembersRemoveMemberData, MembersRemoveMemberError, MembersRemoveMemberResponse, MembersUpdateMemberData, MembersUpdateMemberError, MembersUpdateMemberResponse, MeMyAccessData, MeMyAccessError, MeMyAccessResponse, MeRevokeMySessionData, MeRevokeMySessionError, MeRevokeMySessionResponse, MeUpdateMeData, MeUpdateMeError, MeUpdateMeResponse, ObserveGetOrgPriceTableData, ObserveGetOrgPriceTableError, ObserveGetOrgPriceTableResponse, ObserveGetPriceTableData, ObserveGetPriceTableError, ObserveGetPriceTableResponse, ObserveMetricsCsvData, ObserveMetricsCsvError, ObserveMetricsSummaryData, ObserveMetricsSummaryError, ObserveMetricsSummaryResponse, ObserveOverviewData, ObserveOverviewError, ObserveOverviewResponse, ObservePutOrgPriceTableData, ObservePutOrgPriceTableError, ObservePutOrgPriceTableResponse, ObservePutPriceTableData, ObservePutPriceTableError, ObservePutPriceTableResponse, ObserveSpanStatsData, ObserveSpanStatsError, ObserveSpanStatsResponse, ObserveTraceComparisonData, ObserveTraceComparisonError, ObserveTraceComparisonResponse, OnboardingCompleteOnboardingData, OnboardingCompleteOnboardingError, OnboardingCompleteOnboardingResponse, OnboardingOnboardingStatusData, OnboardingOnboardingStatusError, OnboardingOnboardingStatusResponse, OrgGetOrgData, OrgGetOrgError, OrgGetOrgResponse, OrgUpdateOrgData, OrgUpdateOrgError, OrgUpdateOrgResponse, SearchSearchData, SearchSearchError, SearchSearchResponse, SystemListModulesData, SystemListModulesError, SystemListModulesResponse, SystemLivenessData, SystemLivenessResponse, SystemReadinessData, SystemReadinessError, SystemReadinessResponse } from '../types.gen';
+import { accessCreateBinding, accessDeleteBinding, accessExplain, accessListBindings, accessListRoles, accessListScopes, approvalsApprovalCounts, approvalsCount, approvalsCreateOrgRoute, approvalsCreateRoute, approvalsDecide, approvalsDeleteRoute, approvalsGetApproval, approvalsGetPolicy, approvalsListApprovals, approvalsListOrgRoutes, approvalsListRoutes, approvalsPutPolicy, approvalsUpdateRoute, auditGetEvent, auditListActions, auditListEvents, authConfirmPasswordReset, authLogin, authLogout, authRequestPasswordReset, authSignInOptions, authSsoCallback, authSsoStart, contextDataSubjectRequest, contextDeleteUserLearnings, contextFileProvenance, contextKnowledgeBases, contextKnowledgeContent, contextLearningCounts, contextMemoryDuplicates, contextMemorySource, contextOptimizeMemories, evalsAddCases, evalsCancelBatch, evalsCompareBatches, evalsCreateDataset, evalsDeleteCase, evalsDeleteDataset, evalsDeleteGate, evalsEvalCapabilities, evalsEvalResults, evalsGetBatch, evalsGetDataset, evalsImportCases, evalsListDatasets, evalsListEvaluations, evalsListGates, evalsPutGate, evalsStartBatch, evalsUpdateCase, evalsUpdateDataset, gatewayListPolicies, instancesConnectInstance, instancesDeleteInstance, instancesDiscoverInstance, instancesGetCapabilities, instancesGetConfig, instancesGetHealth, instancesGetInstance, instancesGetKeys, instancesListInstances, instancesProbeEndpoint, instancesRotateKeys, instancesTestInstance, instancesUpdateInstance, instancesVerifyToken, invitationsAcceptInvitation, invitationsCreateInvitation, invitationsListInvitations, invitationsPreviewInvitation, invitationsResendInvitation, invitationsRevokeInvitation, jwksJwks, meGetMe, meListMySessions, membersGetMember, membersListMembers, membersRemoveMember, membersUpdateMember, meMyAccess, meRevokeMySession, meUpdateMe, notificationsCreateChannel, notificationsDeleteChannel, notificationsEventTypes, notificationsGetChannel, notificationsGetDefaults, notificationsListChannels, notificationsListNotifications, notificationsMarkRead, notificationsMyPreferences, notificationsPutDefaults, notificationsTestChannel, notificationsUnreadCount, notificationsUpdateChannel, notificationsUpdateMyPreferences, observeGetOrgPriceTable, observeGetPriceTable, observeMetricsCsv, observeMetricsSummary, observeOverview, observePutOrgPriceTable, observePutPriceTable, observeSpanStats, observeTraceComparison, onboardingCompleteOnboarding, onboardingOnboardingStatus, type Options, orgGetOrg, orgUpdateOrg, queueCancelJob, queueQueueJob, queueQueueJobs, queueQueueOverview, queueQueueSummary, queueQueueWorkers, queueRequeueJob, queueResumeJob, schedulerCheckEndpoint, schedulerCreateSchedule, schedulerDeleteSchedule, schedulerDisableSchedule, schedulerEnableSchedule, schedulerGetSchedule, schedulerListSchedules, schedulerPreviewSchedule, schedulerSchedulerStatus, schedulerScheduleRuns, schedulerTriggerSchedule, schedulerUpdateSchedule, searchSearch, systemListModules, systemLiveness, systemReadiness } from '../sdk.gen';
+import type { AccessCreateBindingData, AccessCreateBindingError, AccessCreateBindingResponse, AccessDeleteBindingData, AccessDeleteBindingError, AccessDeleteBindingResponse, AccessExplainData, AccessExplainError, AccessExplainResponse, AccessListBindingsData, AccessListBindingsError, AccessListBindingsResponse, AccessListRolesData, AccessListRolesError, AccessListRolesResponse, AccessListScopesData, AccessListScopesError, AccessListScopesResponse, ApprovalsApprovalCountsData, ApprovalsApprovalCountsError, ApprovalsApprovalCountsResponse, ApprovalsCountData, ApprovalsCountError, ApprovalsCountResponse, ApprovalsCreateOrgRouteData, ApprovalsCreateOrgRouteError, ApprovalsCreateOrgRouteResponse, ApprovalsCreateRouteData, ApprovalsCreateRouteError, ApprovalsCreateRouteResponse, ApprovalsDecideData, ApprovalsDecideError, ApprovalsDecideResponse, ApprovalsDeleteRouteData, ApprovalsDeleteRouteError, ApprovalsDeleteRouteResponse, ApprovalsGetApprovalData, ApprovalsGetApprovalError, ApprovalsGetApprovalResponse, ApprovalsGetPolicyData, ApprovalsGetPolicyError, ApprovalsGetPolicyResponse, ApprovalsListApprovalsData, ApprovalsListApprovalsError, ApprovalsListApprovalsResponse, ApprovalsListOrgRoutesData, ApprovalsListOrgRoutesError, ApprovalsListOrgRoutesResponse, ApprovalsListRoutesData, ApprovalsListRoutesError, ApprovalsListRoutesResponse, ApprovalsPutPolicyData, ApprovalsPutPolicyError, ApprovalsPutPolicyResponse, ApprovalsUpdateRouteData, ApprovalsUpdateRouteError, ApprovalsUpdateRouteResponse, AuditGetEventData, AuditGetEventError, AuditGetEventResponse, AuditListActionsData, AuditListActionsError, AuditListActionsResponse, AuditListEventsData, AuditListEventsError, AuditListEventsResponse, AuthConfirmPasswordResetData, AuthConfirmPasswordResetError, AuthConfirmPasswordResetResponse, AuthLoginData, AuthLoginError, AuthLoginResponse, AuthLogoutData, AuthLogoutError, AuthLogoutResponse, AuthRequestPasswordResetData, AuthRequestPasswordResetError, AuthSignInOptionsData, AuthSignInOptionsError, AuthSignInOptionsResponse, AuthSsoCallbackData, AuthSsoCallbackError, AuthSsoStartData, AuthSsoStartError, ContextDataSubjectRequestData, ContextDataSubjectRequestError, ContextDataSubjectRequestResponse, ContextDeleteUserLearningsData, ContextDeleteUserLearningsError, ContextDeleteUserLearningsResponse, ContextFileProvenanceData, ContextFileProvenanceError, ContextFileProvenanceResponse, ContextKnowledgeBasesData, ContextKnowledgeBasesError, ContextKnowledgeBasesResponse, ContextKnowledgeContentData, ContextKnowledgeContentError, ContextKnowledgeContentResponse, ContextLearningCountsData, ContextLearningCountsError, ContextLearningCountsResponse, ContextMemoryDuplicatesData, ContextMemoryDuplicatesError, ContextMemoryDuplicatesResponse, ContextMemorySourceData, ContextMemorySourceError, ContextMemorySourceResponse, ContextOptimizeMemoriesData, ContextOptimizeMemoriesError, ContextOptimizeMemoriesResponse, EvalsAddCasesData, EvalsAddCasesError, EvalsAddCasesResponse, EvalsCancelBatchData, EvalsCancelBatchError, EvalsCancelBatchResponse, EvalsCompareBatchesData, EvalsCompareBatchesError, EvalsCompareBatchesResponse, EvalsCreateDatasetData, EvalsCreateDatasetError, EvalsCreateDatasetResponse, EvalsDeleteCaseData, EvalsDeleteCaseError, EvalsDeleteCaseResponse, EvalsDeleteDatasetData, EvalsDeleteDatasetError, EvalsDeleteDatasetResponse, EvalsDeleteGateData, EvalsDeleteGateError, EvalsDeleteGateResponse, EvalsEvalCapabilitiesData, EvalsEvalCapabilitiesError, EvalsEvalCapabilitiesResponse, EvalsEvalResultsData, EvalsEvalResultsError, EvalsEvalResultsResponse, EvalsGetBatchData, EvalsGetBatchError, EvalsGetBatchResponse, EvalsGetDatasetData, EvalsGetDatasetError, EvalsGetDatasetResponse, EvalsImportCasesData, EvalsImportCasesError, EvalsImportCasesResponse, EvalsListDatasetsData, EvalsListDatasetsError, EvalsListDatasetsResponse, EvalsListEvaluationsData, EvalsListEvaluationsError, EvalsListEvaluationsResponse, EvalsListGatesData, EvalsListGatesError, EvalsListGatesResponse, EvalsPutGateData, EvalsPutGateError, EvalsPutGateResponse, EvalsStartBatchData, EvalsStartBatchError, EvalsStartBatchResponse, EvalsUpdateCaseData, EvalsUpdateCaseError, EvalsUpdateCaseResponse, EvalsUpdateDatasetData, EvalsUpdateDatasetError, EvalsUpdateDatasetResponse, GatewayListPoliciesData, GatewayListPoliciesError, GatewayListPoliciesResponse, InstancesConnectInstanceData, InstancesConnectInstanceError, InstancesConnectInstanceResponse, InstancesDeleteInstanceData, InstancesDeleteInstanceError, InstancesDeleteInstanceResponse, InstancesDiscoverInstanceData, InstancesDiscoverInstanceError, InstancesDiscoverInstanceResponse, InstancesGetCapabilitiesData, InstancesGetCapabilitiesError, InstancesGetCapabilitiesResponse, InstancesGetConfigData, InstancesGetConfigError, InstancesGetConfigResponse, InstancesGetHealthData, InstancesGetHealthError, InstancesGetHealthResponse, InstancesGetInstanceData, InstancesGetInstanceError, InstancesGetInstanceResponse, InstancesGetKeysData, InstancesGetKeysError, InstancesGetKeysResponse, InstancesListInstancesData, InstancesListInstancesError, InstancesListInstancesResponse, InstancesProbeEndpointData, InstancesProbeEndpointError, InstancesProbeEndpointResponse, InstancesRotateKeysData, InstancesRotateKeysError, InstancesRotateKeysResponse, InstancesTestInstanceData, InstancesTestInstanceError, InstancesTestInstanceResponse, InstancesUpdateInstanceData, InstancesUpdateInstanceError, InstancesUpdateInstanceResponse, InstancesVerifyTokenData, InstancesVerifyTokenError, InstancesVerifyTokenResponse, InvitationsAcceptInvitationData, InvitationsAcceptInvitationError, InvitationsAcceptInvitationResponse, InvitationsCreateInvitationData, InvitationsCreateInvitationError, InvitationsCreateInvitationResponse, InvitationsListInvitationsData, InvitationsListInvitationsError, InvitationsListInvitationsResponse, InvitationsPreviewInvitationData, InvitationsPreviewInvitationError, InvitationsPreviewInvitationResponse, InvitationsResendInvitationData, InvitationsResendInvitationError, InvitationsResendInvitationResponse, InvitationsRevokeInvitationData, InvitationsRevokeInvitationError, InvitationsRevokeInvitationResponse, JwksJwksData, JwksJwksError, JwksJwksResponse, MeGetMeData, MeGetMeError, MeGetMeResponse, MeListMySessionsData, MeListMySessionsError, MeListMySessionsResponse, MembersGetMemberData, MembersGetMemberError, MembersGetMemberResponse, MembersListMembersData, MembersListMembersError, MembersListMembersResponse, MembersRemoveMemberData, MembersRemoveMemberError, MembersRemoveMemberResponse, MembersUpdateMemberData, MembersUpdateMemberError, MembersUpdateMemberResponse, MeMyAccessData, MeMyAccessError, MeMyAccessResponse, MeRevokeMySessionData, MeRevokeMySessionError, MeRevokeMySessionResponse, MeUpdateMeData, MeUpdateMeError, MeUpdateMeResponse, NotificationsCreateChannelData, NotificationsCreateChannelError, NotificationsCreateChannelResponse, NotificationsDeleteChannelData, NotificationsDeleteChannelError, NotificationsDeleteChannelResponse, NotificationsEventTypesData, NotificationsEventTypesError, NotificationsEventTypesResponse, NotificationsGetChannelData, NotificationsGetChannelError, NotificationsGetChannelResponse, NotificationsGetDefaultsData, NotificationsGetDefaultsError, NotificationsGetDefaultsResponse, NotificationsListChannelsData, NotificationsListChannelsError, NotificationsListChannelsResponse, NotificationsListNotificationsData, NotificationsListNotificationsError, NotificationsListNotificationsResponse, NotificationsMarkReadData, NotificationsMarkReadError, NotificationsMarkReadResponse, NotificationsMyPreferencesData, NotificationsMyPreferencesError, NotificationsMyPreferencesResponse, NotificationsPutDefaultsData, NotificationsPutDefaultsError, NotificationsPutDefaultsResponse, NotificationsTestChannelData, NotificationsTestChannelError, NotificationsTestChannelResponse, NotificationsUnreadCountData, NotificationsUnreadCountError, NotificationsUnreadCountResponse, NotificationsUpdateChannelData, NotificationsUpdateChannelError, NotificationsUpdateChannelResponse, NotificationsUpdateMyPreferencesData, NotificationsUpdateMyPreferencesError, NotificationsUpdateMyPreferencesResponse, ObserveGetOrgPriceTableData, ObserveGetOrgPriceTableError, ObserveGetOrgPriceTableResponse, ObserveGetPriceTableData, ObserveGetPriceTableError, ObserveGetPriceTableResponse, ObserveMetricsCsvData, ObserveMetricsCsvError, ObserveMetricsSummaryData, ObserveMetricsSummaryError, ObserveMetricsSummaryResponse, ObserveOverviewData, ObserveOverviewError, ObserveOverviewResponse, ObservePutOrgPriceTableData, ObservePutOrgPriceTableError, ObservePutOrgPriceTableResponse, ObservePutPriceTableData, ObservePutPriceTableError, ObservePutPriceTableResponse, ObserveSpanStatsData, ObserveSpanStatsError, ObserveSpanStatsResponse, ObserveTraceComparisonData, ObserveTraceComparisonError, ObserveTraceComparisonResponse, OnboardingCompleteOnboardingData, OnboardingCompleteOnboardingError, OnboardingCompleteOnboardingResponse, OnboardingOnboardingStatusData, OnboardingOnboardingStatusError, OnboardingOnboardingStatusResponse, OrgGetOrgData, OrgGetOrgError, OrgGetOrgResponse, OrgUpdateOrgData, OrgUpdateOrgError, OrgUpdateOrgResponse, QueueCancelJobData, QueueCancelJobError, QueueCancelJobResponse, QueueQueueJobData, QueueQueueJobError, QueueQueueJobResponse, QueueQueueJobsData, QueueQueueJobsError, QueueQueueJobsResponse, QueueQueueOverviewData, QueueQueueOverviewError, QueueQueueOverviewResponse, QueueQueueSummaryData, QueueQueueSummaryError, QueueQueueSummaryResponse, QueueQueueWorkersData, QueueQueueWorkersError, QueueQueueWorkersResponse, QueueRequeueJobData, QueueRequeueJobError, QueueRequeueJobResponse, QueueResumeJobData, QueueResumeJobError, QueueResumeJobResponse, SchedulerCheckEndpointData, SchedulerCheckEndpointError, SchedulerCheckEndpointResponse, SchedulerCreateScheduleData, SchedulerCreateScheduleError, SchedulerCreateScheduleResponse, SchedulerDeleteScheduleData, SchedulerDeleteScheduleError, SchedulerDeleteScheduleResponse, SchedulerDisableScheduleData, SchedulerDisableScheduleError, SchedulerDisableScheduleResponse, SchedulerEnableScheduleData, SchedulerEnableScheduleError, SchedulerEnableScheduleResponse, SchedulerGetScheduleData, SchedulerGetScheduleError, SchedulerGetScheduleResponse, SchedulerListSchedulesData, SchedulerListSchedulesError, SchedulerListSchedulesResponse, SchedulerPreviewScheduleData, SchedulerPreviewScheduleError, SchedulerPreviewScheduleResponse, SchedulerSchedulerStatusData, SchedulerSchedulerStatusError, SchedulerSchedulerStatusResponse, SchedulerScheduleRunsData, SchedulerScheduleRunsError, SchedulerScheduleRunsResponse, SchedulerTriggerScheduleData, SchedulerTriggerScheduleError, SchedulerTriggerScheduleResponse, SchedulerUpdateScheduleData, SchedulerUpdateScheduleError, SchedulerUpdateScheduleResponse, SearchSearchData, SearchSearchError, SearchSearchResponse, SystemListModulesData, SystemListModulesError, SystemListModulesResponse, SystemLivenessData, SystemLivenessResponse, SystemReadinessData, SystemReadinessError, SystemReadinessResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -161,6 +161,75 @@ export const accessListScopesOptions = (options?: Options<AccessListScopesData>)
     },
     queryKey: accessListScopesQueryKey(options)
 });
+
+export const approvalsListOrgRoutesQueryKey = (options?: Options<ApprovalsListOrgRoutesData>) => createQueryKey('approvalsListOrgRoutes', options);
+
+/**
+ * Org-wide routing rules (needs settings:write)
+ */
+export const approvalsListOrgRoutesOptions = (options?: Options<ApprovalsListOrgRoutesData>) => queryOptions<ApprovalsListOrgRoutesResponse, ApprovalsListOrgRoutesError, ApprovalsListOrgRoutesResponse, ReturnType<typeof approvalsListOrgRoutesQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await approvalsListOrgRoutes({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: approvalsListOrgRoutesQueryKey(options)
+});
+
+/**
+ * Add an org-wide routing rule (needs settings:write)
+ */
+export const approvalsCreateOrgRouteMutation = (options?: Partial<Options<ApprovalsCreateOrgRouteData>>): UseMutationOptions<ApprovalsCreateOrgRouteResponse, ApprovalsCreateOrgRouteError, Options<ApprovalsCreateOrgRouteData>> => {
+    const mutationOptions: UseMutationOptions<ApprovalsCreateOrgRouteResponse, ApprovalsCreateOrgRouteError, Options<ApprovalsCreateOrgRouteData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await approvalsCreateOrgRoute({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Remove a routing rule
+ */
+export const approvalsDeleteRouteMutation = (options?: Partial<Options<ApprovalsDeleteRouteData>>): UseMutationOptions<ApprovalsDeleteRouteResponse, ApprovalsDeleteRouteError, Options<ApprovalsDeleteRouteData>> => {
+    const mutationOptions: UseMutationOptions<ApprovalsDeleteRouteResponse, ApprovalsDeleteRouteError, Options<ApprovalsDeleteRouteData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await approvalsDeleteRoute({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Change a routing rule
+ */
+export const approvalsUpdateRouteMutation = (options?: Partial<Options<ApprovalsUpdateRouteData>>): UseMutationOptions<ApprovalsUpdateRouteResponse, ApprovalsUpdateRouteError, Options<ApprovalsUpdateRouteData>> => {
+    const mutationOptions: UseMutationOptions<ApprovalsUpdateRouteResponse, ApprovalsUpdateRouteError, Options<ApprovalsUpdateRouteData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await approvalsUpdateRoute({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const auditListActionsQueryKey = (options?: Options<AuditListActionsData>) => createQueryKey('auditListActions', options);
 
@@ -536,6 +605,54 @@ export const instancesUpdateInstanceMutation = (options?: Partial<Options<Instan
     return mutationOptions;
 };
 
+export const approvalsListApprovalsQueryKey = (options: Options<ApprovalsListApprovalsData>) => createQueryKey('approvalsListApprovals', options);
+
+/**
+ * Approvals by tab and filters, newest first (needs approvals:read)
+ */
+export const approvalsListApprovalsOptions = (options: Options<ApprovalsListApprovalsData>) => queryOptions<ApprovalsListApprovalsResponse, ApprovalsListApprovalsError, ApprovalsListApprovalsResponse, ReturnType<typeof approvalsListApprovalsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await approvalsListApprovals({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: approvalsListApprovalsQueryKey(options)
+});
+
+export const approvalsListApprovalsInfiniteQueryKey = (options: Options<ApprovalsListApprovalsData>): QueryKey<Options<ApprovalsListApprovalsData>> => createQueryKey('approvalsListApprovals', options, true);
+
+/**
+ * Approvals by tab and filters, newest first (needs approvals:read)
+ */
+export const approvalsListApprovalsInfiniteOptions = (options: Options<ApprovalsListApprovalsData>) => {
+    const opts = infiniteQueryOptions<ApprovalsListApprovalsResponse, ApprovalsListApprovalsError, InfiniteData<ApprovalsListApprovalsResponse>, QueryKey<Options<ApprovalsListApprovalsData>>, number | Pick<QueryKey<Options<ApprovalsListApprovalsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ApprovalsListApprovalsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    page: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await approvalsListApprovals({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: approvalsListApprovalsInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
+
 export const approvalsCountQueryKey = (options: Options<ApprovalsCountData>) => createQueryKey('approvalsCount', options);
 
 /**
@@ -552,6 +669,112 @@ export const approvalsCountOptions = (options: Options<ApprovalsCountData>) => q
         return data;
     },
     queryKey: approvalsCountQueryKey(options)
+});
+
+export const approvalsApprovalCountsQueryKey = (options: Options<ApprovalsApprovalCountsData>) => createQueryKey('approvalsApprovalCounts', options);
+
+/**
+ * How many approvals each tab holds (needs approvals:read)
+ */
+export const approvalsApprovalCountsOptions = (options: Options<ApprovalsApprovalCountsData>) => queryOptions<ApprovalsApprovalCountsResponse, ApprovalsApprovalCountsError, ApprovalsApprovalCountsResponse, ReturnType<typeof approvalsApprovalCountsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await approvalsApprovalCounts({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: approvalsApprovalCountsQueryKey(options)
+});
+
+export const approvalsGetPolicyQueryKey = (options: Options<ApprovalsGetPolicyData>) => createQueryKey('approvalsGetPolicy', options);
+
+/**
+ * Whether expiry stops runs on this instance, and its TTL
+ */
+export const approvalsGetPolicyOptions = (options: Options<ApprovalsGetPolicyData>) => queryOptions<ApprovalsGetPolicyResponse, ApprovalsGetPolicyError, ApprovalsGetPolicyResponse, ReturnType<typeof approvalsGetPolicyQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await approvalsGetPolicy({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: approvalsGetPolicyQueryKey(options)
+});
+
+/**
+ * Change the expiry policy (Instance admin; audited)
+ */
+export const approvalsPutPolicyMutation = (options?: Partial<Options<ApprovalsPutPolicyData>>): UseMutationOptions<ApprovalsPutPolicyResponse, ApprovalsPutPolicyError, Options<ApprovalsPutPolicyData>> => {
+    const mutationOptions: UseMutationOptions<ApprovalsPutPolicyResponse, ApprovalsPutPolicyError, Options<ApprovalsPutPolicyData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await approvalsPutPolicy({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const approvalsListRoutesQueryKey = (options: Options<ApprovalsListRoutesData>) => createQueryKey('approvalsListRoutes', options);
+
+/**
+ * Routing rules of the instance, then the org-wide ones
+ */
+export const approvalsListRoutesOptions = (options: Options<ApprovalsListRoutesData>) => queryOptions<ApprovalsListRoutesResponse, ApprovalsListRoutesError, ApprovalsListRoutesResponse, ReturnType<typeof approvalsListRoutesQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await approvalsListRoutes({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: approvalsListRoutesQueryKey(options)
+});
+
+/**
+ * Route approvals to members or roles
+ */
+export const approvalsCreateRouteMutation = (options?: Partial<Options<ApprovalsCreateRouteData>>): UseMutationOptions<ApprovalsCreateRouteResponse, ApprovalsCreateRouteError, Options<ApprovalsCreateRouteData>> => {
+    const mutationOptions: UseMutationOptions<ApprovalsCreateRouteResponse, ApprovalsCreateRouteError, Options<ApprovalsCreateRouteData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await approvalsCreateRoute({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const approvalsGetApprovalQueryKey = (options: Options<ApprovalsGetApprovalData>) => createQueryKey('approvalsGetApproval', options);
+
+/**
+ * One approval with its context and timeline; records that you viewed it (needs approvals:read)
+ */
+export const approvalsGetApprovalOptions = (options: Options<ApprovalsGetApprovalData>) => queryOptions<ApprovalsGetApprovalResponse, ApprovalsGetApprovalError, ApprovalsGetApprovalResponse, ReturnType<typeof approvalsGetApprovalQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await approvalsGetApproval({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: approvalsGetApprovalQueryKey(options)
 });
 
 /**
@@ -1286,6 +1509,446 @@ export const observePutPriceTableMutation = (options?: Partial<Options<ObservePu
     return mutationOptions;
 };
 
+export const queueQueueJobsQueryKey = (options: Options<QueueQueueJobsData>) => createQueryKey('queueQueueJobs', options);
+
+/**
+ * Durable jobs, newest first (queue:operate or Instance admin)
+ */
+export const queueQueueJobsOptions = (options: Options<QueueQueueJobsData>) => queryOptions<QueueQueueJobsResponse, QueueQueueJobsError, QueueQueueJobsResponse, ReturnType<typeof queueQueueJobsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await queueQueueJobs({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: queueQueueJobsQueryKey(options)
+});
+
+export const queueQueueJobsInfiniteQueryKey = (options: Options<QueueQueueJobsData>): QueryKey<Options<QueueQueueJobsData>> => createQueryKey('queueQueueJobs', options, true);
+
+/**
+ * Durable jobs, newest first (queue:operate or Instance admin)
+ */
+export const queueQueueJobsInfiniteOptions = (options: Options<QueueQueueJobsData>) => {
+    const opts = infiniteQueryOptions<QueueQueueJobsResponse, QueueQueueJobsError, InfiniteData<QueueQueueJobsResponse>, QueryKey<Options<QueueQueueJobsData>>, number | Pick<QueryKey<Options<QueueQueueJobsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<QueueQueueJobsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    page: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await queueQueueJobs({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: queueQueueJobsInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
+
+export const queueQueueJobQueryKey = (options: Options<QueueQueueJobData>) => createQueryKey('queueQueueJob', options);
+
+/**
+ * One job with its attempts and checkpoints
+ */
+export const queueQueueJobOptions = (options: Options<QueueQueueJobData>) => queryOptions<QueueQueueJobResponse, QueueQueueJobError, QueueQueueJobResponse, ReturnType<typeof queueQueueJobQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await queueQueueJob({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: queueQueueJobQueryKey(options)
+});
+
+/**
+ * Cancel a queued or running job's run (audited)
+ */
+export const queueCancelJobMutation = (options?: Partial<Options<QueueCancelJobData>>): UseMutationOptions<QueueCancelJobResponse, QueueCancelJobError, Options<QueueCancelJobData>> => {
+    const mutationOptions: UseMutationOptions<QueueCancelJobResponse, QueueCancelJobError, Options<QueueCancelJobData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await queueCancelJob({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * One more attempt with the same run id (audited)
+ */
+export const queueRequeueJobMutation = (options?: Partial<Options<QueueRequeueJobData>>): UseMutationOptions<QueueRequeueJobResponse, QueueRequeueJobError, Options<QueueRequeueJobData>> => {
+    const mutationOptions: UseMutationOptions<QueueRequeueJobResponse, QueueRequeueJobError, Options<QueueRequeueJobData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await queueRequeueJob({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Continue a failed run from a checkpoint; earlier tool calls aren't repeated (audited)
+ */
+export const queueResumeJobMutation = (options?: Partial<Options<QueueResumeJobData>>): UseMutationOptions<QueueResumeJobResponse, QueueResumeJobError, Options<QueueResumeJobData>> => {
+    const mutationOptions: UseMutationOptions<QueueResumeJobResponse, QueueResumeJobError, Options<QueueResumeJobData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await queueResumeJob({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const queueQueueOverviewQueryKey = (options: Options<QueueQueueOverviewData>) => createQueryKey('queueQueueOverview', options);
+
+/**
+ * Queue health, config and workers (queue:operate or Instance admin)
+ */
+export const queueQueueOverviewOptions = (options: Options<QueueQueueOverviewData>) => queryOptions<QueueQueueOverviewResponse, QueueQueueOverviewError, QueueQueueOverviewResponse, ReturnType<typeof queueQueueOverviewQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await queueQueueOverview({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: queueQueueOverviewQueryKey(options)
+});
+
+export const queueQueueSummaryQueryKey = (options: Options<QueueQueueSummaryData>) => createQueryKey('queueQueueSummary', options);
+
+/**
+ * Job counts for anyone with access to the instance
+ */
+export const queueQueueSummaryOptions = (options: Options<QueueQueueSummaryData>) => queryOptions<QueueQueueSummaryResponse, QueueQueueSummaryError, QueueQueueSummaryResponse, ReturnType<typeof queueQueueSummaryQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await queueQueueSummary({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: queueQueueSummaryQueryKey(options)
+});
+
+export const queueQueueWorkersQueryKey = (options: Options<QueueQueueWorkersData>) => createQueryKey('queueQueueWorkers', options);
+
+/**
+ * Replicas with heartbeats and slots (queue:operate or Instance admin)
+ */
+export const queueQueueWorkersOptions = (options: Options<QueueQueueWorkersData>) => queryOptions<QueueQueueWorkersResponse, QueueQueueWorkersError, QueueQueueWorkersResponse, ReturnType<typeof queueQueueWorkersQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await queueQueueWorkers({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: queueQueueWorkersQueryKey(options)
+});
+
+export const schedulerListSchedulesQueryKey = (options: Options<SchedulerListSchedulesData>) => createQueryKey('schedulerListSchedules', options);
+
+/**
+ * Schedules with their latest runs (needs schedules:read)
+ */
+export const schedulerListSchedulesOptions = (options: Options<SchedulerListSchedulesData>) => queryOptions<SchedulerListSchedulesResponse, SchedulerListSchedulesError, SchedulerListSchedulesResponse, ReturnType<typeof schedulerListSchedulesQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await schedulerListSchedules({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: schedulerListSchedulesQueryKey(options)
+});
+
+export const schedulerListSchedulesInfiniteQueryKey = (options: Options<SchedulerListSchedulesData>): QueryKey<Options<SchedulerListSchedulesData>> => createQueryKey('schedulerListSchedules', options, true);
+
+/**
+ * Schedules with their latest runs (needs schedules:read)
+ */
+export const schedulerListSchedulesInfiniteOptions = (options: Options<SchedulerListSchedulesData>) => {
+    const opts = infiniteQueryOptions<SchedulerListSchedulesResponse, SchedulerListSchedulesError, InfiniteData<SchedulerListSchedulesResponse>, QueryKey<Options<SchedulerListSchedulesData>>, number | Pick<QueryKey<Options<SchedulerListSchedulesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<SchedulerListSchedulesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    page: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await schedulerListSchedules({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: schedulerListSchedulesInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
+
+/**
+ * Create a schedule (schedules:write; a custom endpoint needs Instance admin)
+ */
+export const schedulerCreateScheduleMutation = (options?: Partial<Options<SchedulerCreateScheduleData>>): UseMutationOptions<SchedulerCreateScheduleResponse, SchedulerCreateScheduleError, Options<SchedulerCreateScheduleData>> => {
+    const mutationOptions: UseMutationOptions<SchedulerCreateScheduleResponse, SchedulerCreateScheduleError, Options<SchedulerCreateScheduleData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await schedulerCreateSchedule({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const schedulerCheckEndpointQueryKey = (options: Options<SchedulerCheckEndpointData>) => createQueryKey('schedulerCheckEndpoint', options);
+
+/**
+ * What an endpoint targets, and whether the instance's OpenAPI document knows it
+ */
+export const schedulerCheckEndpointOptions = (options: Options<SchedulerCheckEndpointData>) => queryOptions<SchedulerCheckEndpointResponse, SchedulerCheckEndpointError, SchedulerCheckEndpointResponse, ReturnType<typeof schedulerCheckEndpointQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await schedulerCheckEndpoint({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: schedulerCheckEndpointQueryKey(options)
+});
+
+/**
+ * A cron expression as a sentence, its next runs, DST notes
+ */
+export const schedulerPreviewScheduleMutation = (options?: Partial<Options<SchedulerPreviewScheduleData>>): UseMutationOptions<SchedulerPreviewScheduleResponse, SchedulerPreviewScheduleError, Options<SchedulerPreviewScheduleData>> => {
+    const mutationOptions: UseMutationOptions<SchedulerPreviewScheduleResponse, SchedulerPreviewScheduleError, Options<SchedulerPreviewScheduleData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await schedulerPreviewSchedule({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const schedulerSchedulerStatusQueryKey = (options: Options<SchedulerSchedulerStatusData>) => createQueryKey('schedulerSchedulerStatus', options);
+
+/**
+ * Whether the scheduler runs, and what you may do here
+ */
+export const schedulerSchedulerStatusOptions = (options: Options<SchedulerSchedulerStatusData>) => queryOptions<SchedulerSchedulerStatusResponse, SchedulerSchedulerStatusError, SchedulerSchedulerStatusResponse, ReturnType<typeof schedulerSchedulerStatusQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await schedulerSchedulerStatus({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: schedulerSchedulerStatusQueryKey(options)
+});
+
+/**
+ * Delete a schedule (schedules:delete)
+ */
+export const schedulerDeleteScheduleMutation = (options?: Partial<Options<SchedulerDeleteScheduleData>>): UseMutationOptions<SchedulerDeleteScheduleResponse, SchedulerDeleteScheduleError, Options<SchedulerDeleteScheduleData>> => {
+    const mutationOptions: UseMutationOptions<SchedulerDeleteScheduleResponse, SchedulerDeleteScheduleError, Options<SchedulerDeleteScheduleData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await schedulerDeleteSchedule({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const schedulerGetScheduleQueryKey = (options: Options<SchedulerGetScheduleData>) => createQueryKey('schedulerGetSchedule', options);
+
+/**
+ * One schedule with its recent runs
+ */
+export const schedulerGetScheduleOptions = (options: Options<SchedulerGetScheduleData>) => queryOptions<SchedulerGetScheduleResponse, SchedulerGetScheduleError, SchedulerGetScheduleResponse, ReturnType<typeof schedulerGetScheduleQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await schedulerGetSchedule({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: schedulerGetScheduleQueryKey(options)
+});
+
+/**
+ * Change a schedule (schedules:write)
+ */
+export const schedulerUpdateScheduleMutation = (options?: Partial<Options<SchedulerUpdateScheduleData>>): UseMutationOptions<SchedulerUpdateScheduleResponse, SchedulerUpdateScheduleError, Options<SchedulerUpdateScheduleData>> => {
+    const mutationOptions: UseMutationOptions<SchedulerUpdateScheduleResponse, SchedulerUpdateScheduleError, Options<SchedulerUpdateScheduleData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await schedulerUpdateSchedule({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Disable a schedule, with a reason (schedules:write)
+ */
+export const schedulerDisableScheduleMutation = (options?: Partial<Options<SchedulerDisableScheduleData>>): UseMutationOptions<SchedulerDisableScheduleResponse, SchedulerDisableScheduleError, Options<SchedulerDisableScheduleData>> => {
+    const mutationOptions: UseMutationOptions<SchedulerDisableScheduleResponse, SchedulerDisableScheduleError, Options<SchedulerDisableScheduleData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await schedulerDisableSchedule({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Enable a schedule (schedules:write)
+ */
+export const schedulerEnableScheduleMutation = (options?: Partial<Options<SchedulerEnableScheduleData>>): UseMutationOptions<SchedulerEnableScheduleResponse, SchedulerEnableScheduleError, Options<SchedulerEnableScheduleData>> => {
+    const mutationOptions: UseMutationOptions<SchedulerEnableScheduleResponse, SchedulerEnableScheduleError, Options<SchedulerEnableScheduleData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await schedulerEnableSchedule({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const schedulerScheduleRunsQueryKey = (options: Options<SchedulerScheduleRunsData>) => createQueryKey('schedulerScheduleRuns', options);
+
+/**
+ * Run history of a schedule, newest first
+ */
+export const schedulerScheduleRunsOptions = (options: Options<SchedulerScheduleRunsData>) => queryOptions<SchedulerScheduleRunsResponse, SchedulerScheduleRunsError, SchedulerScheduleRunsResponse, ReturnType<typeof schedulerScheduleRunsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await schedulerScheduleRuns({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: schedulerScheduleRunsQueryKey(options)
+});
+
+export const schedulerScheduleRunsInfiniteQueryKey = (options: Options<SchedulerScheduleRunsData>): QueryKey<Options<SchedulerScheduleRunsData>> => createQueryKey('schedulerScheduleRuns', options, true);
+
+/**
+ * Run history of a schedule, newest first
+ */
+export const schedulerScheduleRunsInfiniteOptions = (options: Options<SchedulerScheduleRunsData>) => {
+    const opts = infiniteQueryOptions<SchedulerScheduleRunsResponse, SchedulerScheduleRunsError, InfiniteData<SchedulerScheduleRunsResponse>, QueryKey<Options<SchedulerScheduleRunsData>>, number | Pick<QueryKey<Options<SchedulerScheduleRunsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<SchedulerScheduleRunsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    page: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await schedulerScheduleRuns({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: schedulerScheduleRunsInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
+
+/**
+ * Run a schedule now (schedules:write)
+ */
+export const schedulerTriggerScheduleMutation = (options?: Partial<Options<SchedulerTriggerScheduleData>>): UseMutationOptions<SchedulerTriggerScheduleResponse, SchedulerTriggerScheduleError, Options<SchedulerTriggerScheduleData>> => {
+    const mutationOptions: UseMutationOptions<SchedulerTriggerScheduleResponse, SchedulerTriggerScheduleError, Options<SchedulerTriggerScheduleData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await schedulerTriggerSchedule({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
 /**
  * Test connection: DNS, TLS, AgentOS, version, token, enforced scopes
  */
@@ -1496,6 +2159,41 @@ export const meMyAccessOptions = (options?: Options<MeMyAccessData>) => queryOpt
     queryKey: meMyAccessQueryKey(options)
 });
 
+export const notificationsMyPreferencesQueryKey = (options?: Options<NotificationsMyPreferencesData>) => createQueryKey('notificationsMyPreferences', options);
+
+/**
+ * Which channels each event reaches you through, and quiet hours
+ */
+export const notificationsMyPreferencesOptions = (options?: Options<NotificationsMyPreferencesData>) => queryOptions<NotificationsMyPreferencesResponse, NotificationsMyPreferencesError, NotificationsMyPreferencesResponse, ReturnType<typeof notificationsMyPreferencesQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await notificationsMyPreferences({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: notificationsMyPreferencesQueryKey(options)
+});
+
+/**
+ * Change your notification channels or quiet hours
+ */
+export const notificationsUpdateMyPreferencesMutation = (options?: Partial<Options<NotificationsUpdateMyPreferencesData>>): UseMutationOptions<NotificationsUpdateMyPreferencesResponse, NotificationsUpdateMyPreferencesError, Options<NotificationsUpdateMyPreferencesData>> => {
+    const mutationOptions: UseMutationOptions<NotificationsUpdateMyPreferencesResponse, NotificationsUpdateMyPreferencesError, Options<NotificationsUpdateMyPreferencesData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await notificationsUpdateMyPreferences({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
 export const meListMySessionsQueryKey = (options?: Options<MeListMySessionsData>) => createQueryKey('meListMySessions', options);
 
 /**
@@ -1600,6 +2298,246 @@ export const membersUpdateMemberMutation = (options?: Partial<Options<MembersUpd
     };
     return mutationOptions;
 };
+
+export const notificationsListNotificationsQueryKey = (options?: Options<NotificationsListNotificationsData>) => createQueryKey('notificationsListNotifications', options);
+
+/**
+ * Your notifications (the bell), newest first
+ */
+export const notificationsListNotificationsOptions = (options?: Options<NotificationsListNotificationsData>) => queryOptions<NotificationsListNotificationsResponse, NotificationsListNotificationsError, NotificationsListNotificationsResponse, ReturnType<typeof notificationsListNotificationsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await notificationsListNotifications({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: notificationsListNotificationsQueryKey(options)
+});
+
+export const notificationsListNotificationsInfiniteQueryKey = (options?: Options<NotificationsListNotificationsData>): QueryKey<Options<NotificationsListNotificationsData>> => createQueryKey('notificationsListNotifications', options, true);
+
+/**
+ * Your notifications (the bell), newest first
+ */
+export const notificationsListNotificationsInfiniteOptions = (options?: Options<NotificationsListNotificationsData>) => {
+    const opts = infiniteQueryOptions<NotificationsListNotificationsResponse, NotificationsListNotificationsError, InfiniteData<NotificationsListNotificationsResponse>, QueryKey<Options<NotificationsListNotificationsData>>, string | null | Pick<QueryKey<Options<NotificationsListNotificationsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<NotificationsListNotificationsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    cursor: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await notificationsListNotifications({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: notificationsListNotificationsInfiniteQueryKey(options)
+    });
+    return opts as Omit<typeof opts, 'initialData'>;
+};
+
+export const notificationsListChannelsQueryKey = (options?: Options<NotificationsListChannelsData>) => createQueryKey('notificationsListChannels', options);
+
+/**
+ * Org notification channels (needs notifications:write)
+ */
+export const notificationsListChannelsOptions = (options?: Options<NotificationsListChannelsData>) => queryOptions<NotificationsListChannelsResponse, NotificationsListChannelsError, NotificationsListChannelsResponse, ReturnType<typeof notificationsListChannelsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await notificationsListChannels({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: notificationsListChannelsQueryKey(options)
+});
+
+/**
+ * Add a Slack, email or webhook channel
+ */
+export const notificationsCreateChannelMutation = (options?: Partial<Options<NotificationsCreateChannelData>>): UseMutationOptions<NotificationsCreateChannelResponse, NotificationsCreateChannelError, Options<NotificationsCreateChannelData>> => {
+    const mutationOptions: UseMutationOptions<NotificationsCreateChannelResponse, NotificationsCreateChannelError, Options<NotificationsCreateChannelData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await notificationsCreateChannel({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Remove a channel
+ */
+export const notificationsDeleteChannelMutation = (options?: Partial<Options<NotificationsDeleteChannelData>>): UseMutationOptions<NotificationsDeleteChannelResponse, NotificationsDeleteChannelError, Options<NotificationsDeleteChannelData>> => {
+    const mutationOptions: UseMutationOptions<NotificationsDeleteChannelResponse, NotificationsDeleteChannelError, Options<NotificationsDeleteChannelData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await notificationsDeleteChannel({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const notificationsGetChannelQueryKey = (options: Options<NotificationsGetChannelData>) => createQueryKey('notificationsGetChannel', options);
+
+/**
+ * One channel with its recent deliveries
+ */
+export const notificationsGetChannelOptions = (options: Options<NotificationsGetChannelData>) => queryOptions<NotificationsGetChannelResponse, NotificationsGetChannelError, NotificationsGetChannelResponse, ReturnType<typeof notificationsGetChannelQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await notificationsGetChannel({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: notificationsGetChannelQueryKey(options)
+});
+
+/**
+ * Change a channel (secrets left out are kept)
+ */
+export const notificationsUpdateChannelMutation = (options?: Partial<Options<NotificationsUpdateChannelData>>): UseMutationOptions<NotificationsUpdateChannelResponse, NotificationsUpdateChannelError, Options<NotificationsUpdateChannelData>> => {
+    const mutationOptions: UseMutationOptions<NotificationsUpdateChannelResponse, NotificationsUpdateChannelError, Options<NotificationsUpdateChannelData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await notificationsUpdateChannel({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Send a test message now and report the outcome
+ */
+export const notificationsTestChannelMutation = (options?: Partial<Options<NotificationsTestChannelData>>): UseMutationOptions<NotificationsTestChannelResponse, NotificationsTestChannelError, Options<NotificationsTestChannelData>> => {
+    const mutationOptions: UseMutationOptions<NotificationsTestChannelResponse, NotificationsTestChannelError, Options<NotificationsTestChannelData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await notificationsTestChannel({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const notificationsGetDefaultsQueryKey = (options?: Options<NotificationsGetDefaultsData>) => createQueryKey('notificationsGetDefaults', options);
+
+/**
+ * Org default channels per event type (needs notifications:write)
+ */
+export const notificationsGetDefaultsOptions = (options?: Options<NotificationsGetDefaultsData>) => queryOptions<NotificationsGetDefaultsResponse, NotificationsGetDefaultsError, NotificationsGetDefaultsResponse, ReturnType<typeof notificationsGetDefaultsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await notificationsGetDefaults({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: notificationsGetDefaultsQueryKey(options)
+});
+
+/**
+ * Change org default channels (needs notifications:write; audited)
+ */
+export const notificationsPutDefaultsMutation = (options?: Partial<Options<NotificationsPutDefaultsData>>): UseMutationOptions<NotificationsPutDefaultsResponse, NotificationsPutDefaultsError, Options<NotificationsPutDefaultsData>> => {
+    const mutationOptions: UseMutationOptions<NotificationsPutDefaultsResponse, NotificationsPutDefaultsError, Options<NotificationsPutDefaultsData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await notificationsPutDefaults({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const notificationsEventTypesQueryKey = (options?: Options<NotificationsEventTypesData>) => createQueryKey('notificationsEventTypes', options);
+
+/**
+ * Everything that can be notified, with its default channels
+ */
+export const notificationsEventTypesOptions = (options?: Options<NotificationsEventTypesData>) => queryOptions<NotificationsEventTypesResponse, NotificationsEventTypesError, NotificationsEventTypesResponse, ReturnType<typeof notificationsEventTypesQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await notificationsEventTypes({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: notificationsEventTypesQueryKey(options)
+});
+
+/**
+ * Mark some or all of your notifications read
+ */
+export const notificationsMarkReadMutation = (options?: Partial<Options<NotificationsMarkReadData>>): UseMutationOptions<NotificationsMarkReadResponse, NotificationsMarkReadError, Options<NotificationsMarkReadData>> => {
+    const mutationOptions: UseMutationOptions<NotificationsMarkReadResponse, NotificationsMarkReadError, Options<NotificationsMarkReadData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await notificationsMarkRead({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const notificationsUnreadCountQueryKey = (options?: Options<NotificationsUnreadCountData>) => createQueryKey('notificationsUnreadCount', options);
+
+/**
+ * How many of your notifications are unread (the bell badge)
+ */
+export const notificationsUnreadCountOptions = (options?: Options<NotificationsUnreadCountData>) => queryOptions<NotificationsUnreadCountResponse, NotificationsUnreadCountError, NotificationsUnreadCountResponse, ReturnType<typeof notificationsUnreadCountQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await notificationsUnreadCount({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: notificationsUnreadCountQueryKey(options)
+});
 
 /**
  * Create the first Owner with the setup link from `agnostic bootstrap`

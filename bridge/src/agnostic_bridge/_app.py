@@ -21,7 +21,9 @@ from starlette.routing import BaseRoute, Mount
 
 from agnostic_bridge._capabilities import BridgeCapabilities, build_capabilities, default_replica_id
 from agnostic_bridge._evals import RUN_EVAL_PATH, add_eval_routes
+from agnostic_bridge._events import EVENTS_PATH, add_event_routes
 from agnostic_bridge._files import PROVENANCE_PATH, add_file_routes
+from agnostic_bridge._workers import WORKERS_PATH, add_worker_routes
 
 if TYPE_CHECKING:
     from agno.os import AgentOS
@@ -35,6 +37,9 @@ SCOPE_MAPPINGS: dict[str, list[str]] = {
     f"GET {CAPABILITIES_PATH}": ["config:read"],
     f"POST {BRIDGE_PREFIX}{RUN_EVAL_PATH}": ["evals:write"],
     f"GET {BRIDGE_PREFIX}{PROVENANCE_PATH}": ["filesystem:read", "traces:read"],
+    # Admin, as AgentOS gates its /queue operator routes: worker and queue internals are a cross-tenant surface.
+    f"GET {BRIDGE_PREFIX}{WORKERS_PATH}": ["agent_os:admin"],
+    f"GET {BRIDGE_PREFIX}{EVENTS_PATH}": ["approvals:read", "schedules:read"],
 }
 
 
@@ -57,6 +62,8 @@ def create_router(agent_os: AgentOS, *, replica_id: str | None = None, include_i
 
     add_eval_routes(router, agent_os)
     add_file_routes(router, agent_os)
+    add_worker_routes(router, agent_os, replica)
+    add_event_routes(router, agent_os)
     return router
 
 
@@ -68,8 +75,8 @@ def install(agent_os: AgentOS, *, replica_id: str | None = None, include_in_sche
 
     Args:
         agent_os: the configured AgentOS.
-        replica_id: identifies this process in ``/capabilities``; defaults to ``AGNOSTIC_BRIDGE_REPLICA_ID`` or
-            ``<hostname>:<pid>``.
+        replica_id: identifies this process in ``/capabilities`` and ``/workers``; defaults to
+            ``AGNOSTIC_BRIDGE_REPLICA_ID`` or ``<hostname>:<pid>``.
         include_in_schema: list the bridge routes in the app's OpenAPI document.
     """
     app = agent_os.get_app()

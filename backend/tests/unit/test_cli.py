@@ -77,3 +77,17 @@ def test_openapi_export(tmp_path: Path) -> None:
 def test_worker_refuses_sqlite() -> None:
     result = runner.invoke(app, ["worker"])
     assert result.exit_code == 2
+
+
+def test_control_branches_downgrade_cleanly() -> None:
+    assert runner.invoke(app, ["db", "upgrade"]).exit_code == 0
+    for branch, head in (
+        ("approvals", "p0001_approvals"),
+        ("notifications", "t0001_notifications"),
+        ("scheduler", "d0001_scheduler"),
+    ):
+        downgraded = runner.invoke(app, ["db", "downgrade", f"{branch}@base"])
+        assert downgraded.exit_code == 0, downgraded.output
+        pending = next(line for line in downgraded.output.splitlines() if line.startswith("pending:"))
+        assert head in pending
+    assert runner.invoke(app, ["db", "upgrade"]).exit_code == 0

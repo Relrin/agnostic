@@ -3,6 +3,7 @@
 import type { ModuleManifest } from "@agnostic/core";
 import { accessPeopleModule } from "@agnostic/module-access-people";
 import { accountModule } from "@agnostic/module-account";
+import { approvalsModule } from "@agnostic/module-approvals";
 import { auditModule } from "@agnostic/module-audit";
 import { chatModule } from "@agnostic/module-chat";
 import { evalsModule } from "@agnostic/module-evals";
@@ -14,6 +15,8 @@ import { knowledgeModule } from "@agnostic/module-knowledge";
 import { learningsModule } from "@agnostic/module-learnings";
 import { memoryModule } from "@agnostic/module-memory";
 import { metricsModule } from "@agnostic/module-metrics";
+import { queueModule } from "@agnostic/module-queue";
+import { schedulerModule } from "@agnostic/module-scheduler";
 import { sessionsModule } from "@agnostic/module-sessions";
 import { settingsModule } from "@agnostic/module-settings";
 import { tracesModule } from "@agnostic/module-traces";
@@ -35,4 +38,7 @@ export const MODULES: readonly ModuleManifest[] = [
   knowledgeModule,
   learningsModule,
   filesModule,
+  approvalsModule,
+  schedulerModule,
+  queueModule,
 ];

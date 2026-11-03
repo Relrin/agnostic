@@ -49,6 +49,7 @@ import { useEffect, useMemo, useState } from "react";
 import { MODULES } from "../modules";
 import { CommandPalette } from "./command-palette";
 import { GROUP_LABELS, NAV_CATALOG } from "./nav-catalog";
+import { NotificationBell } from "./notification-bell";
 import { lastInstance, rememberInstance } from "./session";
 
 /** `/i/<instance>/…` → that instance. */
@@ -307,7 +308,12 @@ export function RootLayout() {
                 />
               </>
             }
-            end={active ? <HealthIndicator health={health} /> : undefined}
+            end={
+              <>
+                {active ? <HealthIndicator health={health} /> : undefined}
+                <NotificationBell />
+              </>
+            }
           />
           <UnreachableBanner instance={fromPath ? active : undefined} health={health} />
           <div className="min-h-0 flex-1 overflow-auto">

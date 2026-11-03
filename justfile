@@ -22,7 +22,7 @@ setup:
 
 # ---------------------------------------------------------------- dev stack
 
-# Start PostgreSQL, Redis and Mailpit (mail UI on http://localhost:8025) for development
+# Start PostgreSQL, Redis, Mailpit (mail UI on http://localhost:8025) and the Slack mock (http://localhost:8030)
 up:
     {{compose}} up -d --wait
 

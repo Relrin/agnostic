@@ -1,0 +1,31 @@
+[project]
+name = "agnostic-queue"
+version = "0.1.0"
+description = "Queue: durable-queue health, workers, jobs and checkpoint recovery over AgentOS /queue with delegated elevation"
+requires-python = "==3.15.*"
+license = "BSD-3-Clause"
+dependencies = [
+  "agnostic-agentos-client",
+  "agnostic-audit",
+  "agnostic-gateway",
+  "agnostic-instances",
+  "agnostic-kernel",
+  "dishka==1.10.1",
+  "fastapi==0.162.0",
+  "orjson==3.13.0",
+  "pydantic==2.14.2",
+]
+
+[project.entry-points."agnostic.modules"]
+queue = "agnostic_queue.module:QueueModule"
+
+[tool.uv.sources]
+agnostic-agentos-client = { workspace = true }
+agnostic-audit = { workspace = true }
+agnostic-gateway = { workspace = true }
+agnostic-instances = { workspace = true }
+agnostic-kernel = { workspace = true }
+
+[build-system]
+requires = ["uv_build==0.13.6"]
+build-backend = "uv_build"

@@ -17,6 +17,8 @@ members = [
     "agnostic-notifications",
     "agnostic-observe",
     "agnostic-org",
+    "agnostic-queue",
+    "agnostic-scheduler",
     "agnostic-search",
     "agnostic-server",
     "agnostic-settings",
@@ -75,33 +77,47 @@ requires-dist = [
 
 [[package]]
 name = "agnostic-approvals"
-version = "0.1.0"
+version = "0.2.0"
 source = { editable = "modules/approvals" }
 dependencies = [
+    { name = "agnostic-access" },
     { name = "agnostic-agentos-client" },
     { name = "agnostic-audit" },
     { name = "agnostic-gateway" },
+    { name = "agnostic-identity" },
     { name = "agnostic-instances" },
     { name = "agnostic-kernel" },
+    { name = "agnostic-notifications" },
+    { name = "agnostic-settings" },
+    { name = "alembic" },
     { name = "dishka" },
     { name = "fastapi" },
     { name = "orjson" },
+    { name = "procrastinate" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
+    { name = "sqlalchemy", extra = ["asyncio"] },
 ]
 
 [package.metadata]
 requires-dist = [
+    { name = "agnostic-access", editable = "modules/access" },
     { name = "agnostic-agentos-client", editable = "packages/agnostic-agentos-client" },
     { name = "agnostic-audit", editable = "modules/audit" },
     { name = "agnostic-gateway", editable = "modules/gateway" },
+    { name = "agnostic-identity", editable = "modules/identity" },
     { name = "agnostic-instances", editable = "modules/instances" },
     { name = "agnostic-kernel", editable = "packages/agnostic-kernel" },
+    { name = "agnostic-notifications", editable = "modules/notifications" },
+    { name = "agnostic-settings", editable = "modules/settings" },
+    { name = "alembic", specifier = "==1.20.1" },
     { name = "dishka", specifier = "==1.10.1" },
     { name = "fastapi", specifier = "==0.162.0" },
     { name = "orjson", specifier = "==3.13.0" },
+    { name = "procrastinate", specifier = "==3.10.0" },
     { name = "pydantic", specifier = "==2.14.2" },
     { name = "pydantic-settings", specifier = "==2.16.2" },
+    { name = "sqlalchemy", extras = ["asyncio"], specifier = "==2.1.6" },
 ]
 
 [[package]]
@@ -379,10 +395,17 @@ version = "0.1.0"
 source = { editable = "modules/notifications" }
 dependencies = [
     { name = "agnostic-access" },
+    { name = "agnostic-audit" },
+    { name = "agnostic-identity" },
     { name = "agnostic-instances" },
     { name = "agnostic-kernel" },
+    { name = "agnostic-org" },
+    { name = "alembic" },
     { name = "dishka" },
     { name = "fastapi" },
+    { name = "httpx" },
+    { name = "orjson" },
+    { name = "procrastinate" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "sqlalchemy", extra = ["asyncio"] },
@@ -391,10 +414,17 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "agnostic-access", editable = "modules/access" },
+    { name = "agnostic-audit", editable = "modules/audit" },
+    { name = "agnostic-identity", editable = "modules/identity" },
     { name = "agnostic-instances", editable = "modules/instances" },
     { name = "agnostic-kernel", editable = "packages/agnostic-kernel" },
+    { name = "agnostic-org", editable = "modules/org" },
+    { name = "alembic", specifier = "==1.20.1" },
     { name = "dishka", specifier = "==1.10.1" },
     { name = "fastapi", specifier = "==0.162.0" },
+    { name = "httpx", specifier = "==0.28.1" },
+    { name = "orjson", specifier = "==3.13.0" },
+    { name = "procrastinate", specifier = "==3.10.0" },
     { name = "pydantic", specifier = "==2.14.2" },
     { name = "pydantic-settings", specifier = "==2.16.2" },
     { name = "sqlalchemy", extras = ["asyncio"], specifier = "==2.1.6" },
@@ -463,6 +493,80 @@ requires-dist = [
     { name = "dishka", specifier = "==1.10.1" },
     { name = "fastapi", specifier = "==0.162.0" },
     { name = "pydantic", specifier = "==2.14.2" },
+    { name = "sqlalchemy", extras = ["asyncio"], specifier = "==2.1.6" },
+]
+
+[[package]]
+name = "agnostic-queue"
+version = "0.1.0"
+source = { editable = "modules/queue" }
+dependencies = [
+    { name = "agnostic-agentos-client" },
+    { name = "agnostic-audit" },
+    { name = "agnostic-gateway" },
+    { name = "agnostic-instances" },
+    { name = "agnostic-kernel" },
+    { name = "dishka" },
+    { name = "fastapi" },
+    { name = "orjson" },
+    { name = "pydantic" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "agnostic-agentos-client", editable = "packages/agnostic-agentos-client" },
+    { name = "agnostic-audit", editable = "modules/audit" },
+    { name = "agnostic-gateway", editable = "modules/gateway" },
+    { name = "agnostic-instances", editable = "modules/instances" },
+    { name = "agnostic-kernel", editable = "packages/agnostic-kernel" },
+    { name = "dishka", specifier = "==1.10.1" },
+    { name = "fastapi", specifier = "==0.162.0" },
+    { name = "orjson", specifier = "==3.13.0" },
+    { name = "pydantic", specifier = "==2.14.2" },
+]
+
+[[package]]
+name = "agnostic-scheduler"
+version = "0.1.0"
+source = { editable = "modules/scheduler" }
+dependencies = [
+    { name = "agnostic-access" },
+    { name = "agnostic-agentos-client" },
+    { name = "agnostic-audit" },
+    { name = "agnostic-gateway" },
+    { name = "agnostic-identity" },
+    { name = "agnostic-instances" },
+    { name = "agnostic-kernel" },
+    { name = "agnostic-notifications" },
+    { name = "alembic" },
+    { name = "croniter" },
+    { name = "dishka" },
+    { name = "fastapi" },
+    { name = "orjson" },
+    { name = "procrastinate" },
+    { name = "pydantic" },
+    { name = "pydantic-settings" },
+    { name = "sqlalchemy", extra = ["asyncio"] },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "agnostic-access", editable = "modules/access" },
+    { name = "agnostic-agentos-client", editable = "packages/agnostic-agentos-client" },
+    { name = "agnostic-audit", editable = "modules/audit" },
+    { name = "agnostic-gateway", editable = "modules/gateway" },
+    { name = "agnostic-identity", editable = "modules/identity" },
+    { name = "agnostic-instances", editable = "modules/instances" },
+    { name = "agnostic-kernel", editable = "packages/agnostic-kernel" },
+    { name = "agnostic-notifications", editable = "modules/notifications" },
+    { name = "alembic", specifier = "==1.20.1" },
+    { name = "croniter", specifier = "==6.2.4" },
+    { name = "dishka", specifier = "==1.10.1" },
+    { name = "fastapi", specifier = "==0.162.0" },
+    { name = "orjson", specifier = "==3.13.0" },
+    { name = "procrastinate", specifier = "==3.10.0" },
+    { name = "pydantic", specifier = "==2.14.2" },
+    { name = "pydantic-settings", specifier = "==2.16.2" },
     { name = "sqlalchemy", extras = ["asyncio"], specifier = "==2.1.6" },
 ]
 
@@ -565,6 +669,8 @@ dependencies = [
     { name = "agnostic-notifications" },
     { name = "agnostic-observe" },
     { name = "agnostic-org" },
+    { name = "agnostic-queue" },
+    { name = "agnostic-scheduler" },
     { name = "agnostic-search" },
     { name = "agnostic-server" },
     { name = "agnostic-settings" },
@@ -605,6 +711,8 @@ requires-dist = [
     { name = "agnostic-notifications", editable = "modules/notifications" },
     { name = "agnostic-observe", editable = "modules/observe" },
     { name = "agnostic-org", editable = "modules/org" },
+    { name = "agnostic-queue", editable = "modules/queue" },
+    { name = "agnostic-scheduler", editable = "modules/scheduler" },
     { name = "agnostic-search", editable = "modules/search" },
     { name = "agnostic-server", editable = "apps/agnostic-server" },
     { name = "agnostic-settings", editable = "modules/settings" },

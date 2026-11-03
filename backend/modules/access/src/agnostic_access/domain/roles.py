@@ -68,7 +68,7 @@ BUILT_IN_ROLES: tuple[AccessRole, ...] = (
         "Instance admin",
         "Everything on the instance, including other people's sessions and the queue.",
         "#C5F25C",
-        {"agent_os": ("admin",)},
+        {"agent_os": ("admin",), "queue": ("operate",)},
     ),
     _role(
         "operator",
@@ -91,6 +91,7 @@ BUILT_IN_ROLES: tuple[AccessRole, ...] = (
             "approvals": _RWD,
             "schedules": _RW,
             "config": _READ,
+            "queue": ("operate",),
         },
     ),
     _role(

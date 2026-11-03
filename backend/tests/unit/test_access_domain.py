@@ -76,11 +76,14 @@ def test_compress() -> None:
     assert compress(["sessions:read", ADMIN_SCOPE]) == [ADMIN_SCOPE]
 
 
-def test_operator_has_the_designed_21_scopes() -> None:
+def test_operator_has_the_designed_21_runtime_scopes_and_queue_operate() -> None:
     operator = BUILT_IN_BY_ID["rol_operator"]
-    assert len(operator.scopes()) == 21
+    assert len(operator.scopes() - {"queue:operate"}) == 21
     assert "approvals:delete" in operator.scopes()
     assert "components:write" not in operator.scopes()
+    assert "queue:operate" in operator.scopes()
+    assert "queue:operate" in BUILT_IN_BY_ID["rol_instance_admin"].scopes()
+    assert "queue:operate" not in BUILT_IN_BY_ID["rol_builder"].scopes()
 
 
 ROLES = ("instance-admin", "operator", "builder", "viewer", "auditor")

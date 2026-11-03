@@ -141,6 +141,21 @@ See [sign-in providers](../how-to/sign-in-providers.md) for setup per identity p
 | `AGNOSTIC_NOTIFICATIONS__HEARTBEAT_SECONDS` | `15` | keepalive interval on `/api/v1/events` |
 | `AGNOSTIC_NOTIFICATIONS__MAX_STREAM_SECONDS` | `1800` | streams end after this; browsers reconnect with `Last-Event-ID` |
 
+## Control: approvals, notifications, scheduler, queue
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `AGNOSTIC_APPROVALS__WATCH_CRON` | `* * * * *` | when the approvals watcher routes new approvals, sends expiry reminders and enforces expiry; empty turns it off |
+| `AGNOSTIC_APPROVALS__SCAN_LIMIT` | `500` | newest approvals per status that the inbox (tool and text filters, the Expired tab, counts) and the watcher look at |
+| `AGNOSTIC_APPROVALS__EXPIRING_LEAD_MINUTES` | `60` | how long before an approval's expiry the routed people get a reminder |
+| `AGNOSTIC_NOTIFICATIONS__SLACK_API_BASE` | `https://slack.com/api` | Slack Web API base; a channel's own `api_base` wins (the development Slack mock is `http://localhost:8030/api`) |
+| `AGNOSTIC_NOTIFICATIONS__HTTP_TIMEOUT_SECONDS` | `10` | timeout of one Slack or webhook request |
+| `AGNOSTIC_NOTIFICATIONS__DELIVERY_RETRIES` | `4` | retries of a failed email, Slack or webhook delivery (the `notifications` job queue) before it is marked failed |
+| `AGNOSTIC_SCHEDULER__WATCH_CRON` | `* * * * *` | when the failure watcher looks for failed scheduled runs; empty turns it off |
+
+Org settings (changed in the app, stored by the `settings` module): `approval_ttl_hours` (default `0`, never) gives
+approvals without their own expiry one. Whether expiry stops runs is decided per instance, in Settings › Approvals.
+
 ## Tests only
 
 | Variable | Meaning |

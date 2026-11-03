@@ -1,15 +1,22 @@
 [project]
 name = "agnostic-notifications"
 version = "0.1.0"
-description = "Notifications: realtime SSE stream of control-plane events (badges, approvals, access changes)"
+description = "Notifications: realtime SSE stream, the in-app inbox, Slack/email/webhook channels and preferences"
 requires-python = "==3.15.*"
 license = "BSD-3-Clause"
 dependencies = [
   "agnostic-access",
+  "agnostic-audit",
+  "agnostic-identity",
   "agnostic-instances",
   "agnostic-kernel",
+  "agnostic-org",
+  "alembic==1.20.1",
   "dishka==1.10.1",
   "fastapi==0.162.0",
+  "httpx==0.28.1",
+  "orjson==3.13.0",
+  "procrastinate==3.10.0",
   "pydantic==2.14.2",
   "pydantic-settings==2.16.2",
   "sqlalchemy[asyncio]==2.1.6",
@@ -20,8 +27,11 @@ notifications = "agnostic_notifications.module:NotificationsModule"
 
 [tool.uv.sources]
 agnostic-access = { workspace = true }
+agnostic-audit = { workspace = true }
+agnostic-identity = { workspace = true }
 agnostic-instances = { workspace = true }
 agnostic-kernel = { workspace = true }
+agnostic-org = { workspace = true }
 
 [build-system]
 requires = ["uv_build==0.13.6"]

@@ -23,6 +23,8 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type SubmitEvent } from "react";
 
+import { NotificationPreferences } from "./notification-preferences";
+
 function ProfileForm({ me }: { me: MeOut }) {
   const queryClient = useQueryClient();
   const [name, setName] = useState(me.display_name);
@@ -196,6 +198,12 @@ export function AccountPage() {
               Preferences
             </h2>
             <Preferences me={me.data} />
+          </section>
+          <section id="notifications" aria-labelledby="notifications-title" className="flex flex-col gap-3">
+            <h2 id="notifications-title" className="text-[15px] font-semibold">
+              Notifications
+            </h2>
+            <NotificationPreferences />
           </section>
           <section aria-labelledby="sessions" className="flex flex-col gap-3">
             <h2 id="sessions" className="text-[15px] font-semibold">

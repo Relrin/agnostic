@@ -56,10 +56,12 @@ class InstancesFacade(Protocol):
         *,
         params: Mapping[str, str | int] | None = None,
         json: Any = None,  # noqa: ANN401
+        form: Mapping[str, str] | None = None,
     ) -> Any:  # noqa: ANN401
         """Call the runtime as the control plane itself (``agnostic-system``, ``agent_os:admin``).
 
-        For aggregate, control-plane-owned reads (Home overview, the approvals badge); never on behalf of a person.
+        For aggregate, control-plane-owned reads (Home overview, the approvals inbox after its own scope check) and
+        control-plane policy actions (expiring approvals); never on behalf of a person.
         Errors are the ``agnostic_agentos_client`` ones.
         """
         ...
@@ -113,7 +115,10 @@ class InstancesFacadeImpl:
         *,
         params: Mapping[str, str | int] | None = None,
         json: Any = None,  # noqa: ANN401
+        form: Mapping[str, str] | None = None,
     ) -> Any:  # noqa: ANN401
         sealed = await self._instances.security_key(instance.id) if instance.has_security_key else None
         headers = await self._auth.headers(instance, sealed_key=sealed)
-        return await self._client.request_json(Target.of(instance), method, path, headers, params=params, json=json)
+        return await self._client.request_json(
+            Target.of(instance), method, path, headers, params=params, json=json, form=form
+        )

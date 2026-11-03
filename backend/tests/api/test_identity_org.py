@@ -143,7 +143,8 @@ async def test_invite_accept_and_org_roles(stack: Stack) -> None:
     owner = await stack.owner()
     roles = (await owner.get("/api/v1/access/roles")).json()
     operator = next(role for role in roles if role["slug"] == "operator")
-    assert len(operator["scopes"]) == 21
+    assert len(operator["scopes"]) == 22  # the 21 AgentOS scopes plus queue:operate
+    assert "queue:operate" in operator["scopes"]
 
     invited = await owner.post(
         "/api/v1/invitations",

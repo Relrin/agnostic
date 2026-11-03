@@ -1,31 +1,42 @@
 [project]
 name = "agnostic-approvals"
-version = "0.1.0"
-description = "Approvals: inline decide (resolve + continue through delegated elevation), pending-count badge feed"
+version = "0.2.0"
+description = "Approvals: the inbox, routing rules, view tracking, expiry, inline decide and the pending-count badge feed"
 requires-python = "==3.15.*"
 license = "BSD-3-Clause"
 dependencies = [
+  "agnostic-access",
   "agnostic-agentos-client",
   "agnostic-audit",
   "agnostic-gateway",
+  "agnostic-identity",
   "agnostic-instances",
   "agnostic-kernel",
+  "agnostic-notifications",
+  "agnostic-settings",
+  "alembic==1.20.1",
   "dishka==1.10.1",
   "fastapi==0.162.0",
   "orjson==3.13.0",
+  "procrastinate==3.10.0",
   "pydantic==2.14.2",
   "pydantic-settings==2.16.2",
+  "sqlalchemy[asyncio]==2.1.6",
 ]
 
 [project.entry-points."agnostic.modules"]
 approvals = "agnostic_approvals.module:ApprovalsModule"
 
 [tool.uv.sources]
+agnostic-access = { workspace = true }
 agnostic-agentos-client = { workspace = true }
 agnostic-audit = { workspace = true }
 agnostic-gateway = { workspace = true }
+agnostic-identity = { workspace = true }
 agnostic-instances = { workspace = true }
 agnostic-kernel = { workspace = true }
+agnostic-notifications = { workspace = true }
+agnostic-settings = { workspace = true }
 
 [build-system]
 requires = ["uv_build==0.13.6"]

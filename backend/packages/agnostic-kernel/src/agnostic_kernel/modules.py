@@ -60,10 +60,13 @@ class JobSpec:
 
 @dataclass(frozen=True, slots=True)
 class EventHandlerSpec:
-    """Subscription to a domain event by name (dispatch lands with the outbox in P01)."""
+    """Subscription to a domain event by name (see :mod:`agnostic_kernel.domain_events`).
+
+    The handler runs in a background job with a request-scoped container and the event's payload.
+    """
 
     event: str
-    handler: Callable[[Mapping[str, Any]], Awaitable[None]]
+    handler: Callable[[AsyncContainer, Mapping[str, Any]], Awaitable[None]]
 
 
 @dataclass(frozen=True, slots=True)

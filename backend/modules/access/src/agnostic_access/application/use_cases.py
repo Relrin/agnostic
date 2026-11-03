@@ -10,12 +10,13 @@ from agnostic_access.application.evaluator import AccessEvaluator
 from agnostic_access.application.ports import BindingRepository, CatalogRepository, RoleRepository
 from agnostic_access.domain.effective import EffectiveAccess, Explanation
 from agnostic_access.domain.roles import BINDING_ID_PREFIX, BUILT_IN_ROLES, AccessRole, Binding
-from agnostic_access.domain.scopes import ScopeSpec, compress
+from agnostic_access.domain.scopes import ADMIN_SCOPE, ScopeSpec, compress
 from agnostic_audit.facade import AuditEntry, AuditLog, actor_of
 from agnostic_identity.facade import IdentityFacade
 from agnostic_instances.facade import Instance, InstancesFacade
 from agnostic_kernel.auth import Authorizer, Principal
 from agnostic_kernel.db import utcnow
+from agnostic_kernel.domain_events import DomainEvents
 from agnostic_kernel.ephemeral import EphemeralStore, bump_access_generation
 from agnostic_kernel.errors import ConflictError, NotFoundError, ValidationFailedError
 from agnostic_kernel.ids import new_id
@@ -23,6 +24,8 @@ from agnostic_org.facade import InitialBinding, OrgFacade
 
 READ = "org:roles:read"
 WRITE = "org:roles:write"
+PRIVILEGED_GRANT = "access.privileged_grant"
+"""Domain event: a binding grants ``agent_os:admin`` or a privileged control-plane scope."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -36,6 +39,7 @@ class AccessContext:
     authorizer: Authorizer
     audit: AuditLog
     store: EphemeralStore
+    events: DomainEvents
 
 
 class _UseCase:
@@ -108,7 +112,33 @@ class CreateBinding(_UseCase):
         await self.audit_binding(principal, "bindings.create", binding)
         await self.c.bindings.commit()
         await bump_access_generation(self.c.store)
+        await self.announce_privileged(principal, binding)
         return binding
+
+    async def announce_privileged(self, principal: Principal, binding: Binding) -> None:
+        role = await self.role(binding.role_id) if binding.role_id else None
+        granted: set[str] = set(binding.scopes) | (set(role.scopes()) if role else set())
+        privileged = sorted(
+            spec.scope
+            for spec in self.c.evaluator.catalog.specs()
+            if spec.scope in granted
+            and (spec.scope == ADMIN_SCOPE or (spec.privileged and spec.source == "control_plane"))
+        )
+        if not privileged:
+            return
+        await self.c.events.publish(
+            PRIVILEGED_GRANT,
+            {
+                "binding_id": binding.id,
+                "user_id": binding.principal_id,
+                "instance_id": binding.instance_id,
+                "role_name": role.name if role else None,
+                "scopes": privileged,
+                "granted_by": principal.id,
+                "granted_by_name": principal.display_name,
+                "expires_at": binding.expires_at.isoformat() if binding.expires_at else None,
+            },
+        )
 
     async def build(self, request: NewBinding, *, created_by: str) -> Binding:
         member = await self.c.org.member(request.user_id)

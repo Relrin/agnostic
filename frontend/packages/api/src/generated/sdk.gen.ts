@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, ServerSentEventsResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AccessCreateBindingData, AccessCreateBindingErrors, AccessCreateBindingResponses, AccessDeleteBindingData, AccessDeleteBindingErrors, AccessDeleteBindingResponses, AccessExplainData, AccessExplainErrors, AccessExplainResponses, AccessListBindingsData, AccessListBindingsErrors, AccessListBindingsResponses, AccessListRolesData, AccessListRolesErrors, AccessListRolesResponses, AccessListScopesData, AccessListScopesErrors, AccessListScopesResponses, ApprovalsCountData, ApprovalsCountErrors, ApprovalsCountResponses, ApprovalsDecideData, ApprovalsDecideErrors, ApprovalsDecideResponses, AuditGetEventData, AuditGetEventErrors, AuditGetEventResponses, AuditListActionsData, AuditListActionsErrors, AuditListActionsResponses, AuditListEventsData, AuditListEventsErrors, AuditListEventsResponses, AuthConfirmPasswordResetData, AuthConfirmPasswordResetErrors, AuthConfirmPasswordResetResponses, AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthLogoutData, AuthLogoutErrors, AuthLogoutResponses, AuthRequestPasswordResetData, AuthRequestPasswordResetErrors, AuthRequestPasswordResetResponses, AuthSignInOptionsData, AuthSignInOptionsErrors, AuthSignInOptionsResponses, AuthSsoCallbackData, AuthSsoCallbackErrors, AuthSsoStartData, AuthSsoStartErrors, ContextDataSubjectRequestData, ContextDataSubjectRequestErrors, ContextDataSubjectRequestResponses, ContextDeleteUserLearningsData, ContextDeleteUserLearningsErrors, ContextDeleteUserLearningsResponses, ContextFileProvenanceData, ContextFileProvenanceErrors, ContextFileProvenanceResponses, ContextKnowledgeBasesData, ContextKnowledgeBasesErrors, ContextKnowledgeBasesResponses, ContextKnowledgeContentData, ContextKnowledgeContentErrors, ContextKnowledgeContentResponses, ContextLearningCountsData, ContextLearningCountsErrors, ContextLearningCountsResponses, ContextMemoryDuplicatesData, ContextMemoryDuplicatesErrors, ContextMemoryDuplicatesResponses, ContextMemorySourceData, ContextMemorySourceErrors, ContextMemorySourceResponses, ContextOptimizeMemoriesData, ContextOptimizeMemoriesErrors, ContextOptimizeMemoriesResponses, EvalsAddCasesData, EvalsAddCasesErrors, EvalsAddCasesResponses, EvalsCancelBatchData, EvalsCancelBatchErrors, EvalsCancelBatchResponses, EvalsCompareBatchesData, EvalsCompareBatchesErrors, EvalsCompareBatchesResponses, EvalsCreateDatasetData, EvalsCreateDatasetErrors, EvalsCreateDatasetResponses, EvalsDeleteCaseData, EvalsDeleteCaseErrors, EvalsDeleteCaseResponses, EvalsDeleteDatasetData, EvalsDeleteDatasetErrors, EvalsDeleteDatasetResponses, EvalsDeleteGateData, EvalsDeleteGateErrors, EvalsDeleteGateResponses, EvalsEvalCapabilitiesData, EvalsEvalCapabilitiesErrors, EvalsEvalCapabilitiesResponses, EvalsEvalResultsData, EvalsEvalResultsErrors, EvalsEvalResultsResponses, EvalsGetBatchData, EvalsGetBatchErrors, EvalsGetBatchResponses, EvalsGetDatasetData, EvalsGetDatasetErrors, EvalsGetDatasetResponses, EvalsImportCasesData, EvalsImportCasesErrors, EvalsImportCasesResponses, EvalsListDatasetsData, EvalsListDatasetsErrors, EvalsListDatasetsResponses, EvalsListEvaluationsData, EvalsListEvaluationsErrors, EvalsListEvaluationsResponses, EvalsListGatesData, EvalsListGatesErrors, EvalsListGatesResponses, EvalsPutGateData, EvalsPutGateErrors, EvalsPutGateResponses, EvalsStartBatchData, EvalsStartBatchErrors, EvalsStartBatchResponses, EvalsUpdateCaseData, EvalsUpdateCaseErrors, EvalsUpdateCaseResponses, EvalsUpdateDatasetData, EvalsUpdateDatasetErrors, EvalsUpdateDatasetResponses, GatewayListPoliciesData, GatewayListPoliciesErrors, GatewayListPoliciesResponses, InstancesConnectInstanceData, InstancesConnectInstanceErrors, InstancesConnectInstanceResponses, InstancesDeleteInstanceData, InstancesDeleteInstanceErrors, InstancesDeleteInstanceResponses, InstancesDiscoverInstanceData, InstancesDiscoverInstanceErrors, InstancesDiscoverInstanceResponses, InstancesGetCapabilitiesData, InstancesGetCapabilitiesErrors, InstancesGetCapabilitiesResponses, InstancesGetConfigData, InstancesGetConfigErrors, InstancesGetConfigResponses, InstancesGetHealthData, InstancesGetHealthErrors, InstancesGetHealthResponses, InstancesGetInstanceData, InstancesGetInstanceErrors, InstancesGetInstanceResponses, InstancesGetKeysData, InstancesGetKeysErrors, InstancesGetKeysResponses, InstancesListInstancesData, InstancesListInstancesErrors, InstancesListInstancesResponses, InstancesProbeEndpointData, InstancesProbeEndpointErrors, InstancesProbeEndpointResponses, InstancesRotateKeysData, InstancesRotateKeysErrors, InstancesRotateKeysResponses, InstancesTestInstanceData, InstancesTestInstanceErrors, InstancesTestInstanceResponses, InstancesUpdateInstanceData, InstancesUpdateInstanceErrors, InstancesUpdateInstanceResponses, InstancesVerifyTokenData, InstancesVerifyTokenErrors, InstancesVerifyTokenResponses, InvitationsAcceptInvitationData, InvitationsAcceptInvitationErrors, InvitationsAcceptInvitationResponses, InvitationsCreateInvitationData, InvitationsCreateInvitationErrors, InvitationsCreateInvitationResponses, InvitationsListInvitationsData, InvitationsListInvitationsErrors, InvitationsListInvitationsResponses, InvitationsPreviewInvitationData, InvitationsPreviewInvitationErrors, InvitationsPreviewInvitationResponses, InvitationsResendInvitationData, InvitationsResendInvitationErrors, InvitationsResendInvitationResponses, InvitationsRevokeInvitationData, InvitationsRevokeInvitationErrors, InvitationsRevokeInvitationResponses, JwksJwksData, JwksJwksErrors, JwksJwksResponses, MeGetMeData, MeGetMeErrors, MeGetMeResponses, MeListMySessionsData, MeListMySessionsErrors, MeListMySessionsResponses, MembersGetMemberData, MembersGetMemberErrors, MembersGetMemberResponses, MembersListMembersData, MembersListMembersErrors, MembersListMembersResponses, MembersRemoveMemberData, MembersRemoveMemberErrors, MembersRemoveMemberResponses, MembersUpdateMemberData, MembersUpdateMemberErrors, MembersUpdateMemberResponses, MeMyAccessData, MeMyAccessErrors, MeMyAccessResponses, MeRevokeMySessionData, MeRevokeMySessionErrors, MeRevokeMySessionResponses, MeUpdateMeData, MeUpdateMeErrors, MeUpdateMeResponses, NotificationsEventsData, NotificationsEventsErrors, NotificationsEventsResponses, ObserveGetOrgPriceTableData, ObserveGetOrgPriceTableErrors, ObserveGetOrgPriceTableResponses, ObserveGetPriceTableData, ObserveGetPriceTableErrors, ObserveGetPriceTableResponses, ObserveMetricsCsvData, ObserveMetricsCsvErrors, ObserveMetricsCsvResponses, ObserveMetricsSummaryData, ObserveMetricsSummaryErrors, ObserveMetricsSummaryResponses, ObserveOverviewData, ObserveOverviewErrors, ObserveOverviewResponses, ObservePutOrgPriceTableData, ObservePutOrgPriceTableErrors, ObservePutOrgPriceTableResponses, ObservePutPriceTableData, ObservePutPriceTableErrors, ObservePutPriceTableResponses, ObserveSpanStatsData, ObserveSpanStatsErrors, ObserveSpanStatsResponses, ObserveTraceComparisonData, ObserveTraceComparisonErrors, ObserveTraceComparisonResponses, OnboardingCompleteOnboardingData, OnboardingCompleteOnboardingErrors, OnboardingCompleteOnboardingResponses, OnboardingOnboardingStatusData, OnboardingOnboardingStatusErrors, OnboardingOnboardingStatusResponses, OrgGetOrgData, OrgGetOrgErrors, OrgGetOrgResponses, OrgUpdateOrgData, OrgUpdateOrgErrors, OrgUpdateOrgResponses, SearchSearchData, SearchSearchErrors, SearchSearchResponses, SystemListModulesData, SystemListModulesErrors, SystemListModulesResponses, SystemLivenessData, SystemLivenessResponses, SystemReadinessData, SystemReadinessErrors, SystemReadinessResponses } from './types.gen';
+import type { AccessCreateBindingData, AccessCreateBindingErrors, AccessCreateBindingResponses, AccessDeleteBindingData, AccessDeleteBindingErrors, AccessDeleteBindingResponses, AccessExplainData, AccessExplainErrors, AccessExplainResponses, AccessListBindingsData, AccessListBindingsErrors, AccessListBindingsResponses, AccessListRolesData, AccessListRolesErrors, AccessListRolesResponses, AccessListScopesData, AccessListScopesErrors, AccessListScopesResponses, ApprovalsApprovalCountsData, ApprovalsApprovalCountsErrors, ApprovalsApprovalCountsResponses, ApprovalsCountData, ApprovalsCountErrors, ApprovalsCountResponses, ApprovalsCreateOrgRouteData, ApprovalsCreateOrgRouteErrors, ApprovalsCreateOrgRouteResponses, ApprovalsCreateRouteData, ApprovalsCreateRouteErrors, ApprovalsCreateRouteResponses, ApprovalsDecideData, ApprovalsDecideErrors, ApprovalsDecideResponses, ApprovalsDeleteRouteData, ApprovalsDeleteRouteErrors, ApprovalsDeleteRouteResponses, ApprovalsGetApprovalData, ApprovalsGetApprovalErrors, ApprovalsGetApprovalResponses, ApprovalsGetPolicyData, ApprovalsGetPolicyErrors, ApprovalsGetPolicyResponses, ApprovalsListApprovalsData, ApprovalsListApprovalsErrors, ApprovalsListApprovalsResponses, ApprovalsListOrgRoutesData, ApprovalsListOrgRoutesErrors, ApprovalsListOrgRoutesResponses, ApprovalsListRoutesData, ApprovalsListRoutesErrors, ApprovalsListRoutesResponses, ApprovalsPutPolicyData, ApprovalsPutPolicyErrors, ApprovalsPutPolicyResponses, ApprovalsUpdateRouteData, ApprovalsUpdateRouteErrors, ApprovalsUpdateRouteResponses, AuditGetEventData, AuditGetEventErrors, AuditGetEventResponses, AuditListActionsData, AuditListActionsErrors, AuditListActionsResponses, AuditListEventsData, AuditListEventsErrors, AuditListEventsResponses, AuthConfirmPasswordResetData, AuthConfirmPasswordResetErrors, AuthConfirmPasswordResetResponses, AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthLogoutData, AuthLogoutErrors, AuthLogoutResponses, AuthRequestPasswordResetData, AuthRequestPasswordResetErrors, AuthRequestPasswordResetResponses, AuthSignInOptionsData, AuthSignInOptionsErrors, AuthSignInOptionsResponses, AuthSsoCallbackData, AuthSsoCallbackErrors, AuthSsoStartData, AuthSsoStartErrors, ContextDataSubjectRequestData, ContextDataSubjectRequestErrors, ContextDataSubjectRequestResponses, ContextDeleteUserLearningsData, ContextDeleteUserLearningsErrors, ContextDeleteUserLearningsResponses, ContextFileProvenanceData, ContextFileProvenanceErrors, ContextFileProvenanceResponses, ContextKnowledgeBasesData, ContextKnowledgeBasesErrors, ContextKnowledgeBasesResponses, ContextKnowledgeContentData, ContextKnowledgeContentErrors, ContextKnowledgeContentResponses, ContextLearningCountsData, ContextLearningCountsErrors, ContextLearningCountsResponses, ContextMemoryDuplicatesData, ContextMemoryDuplicatesErrors, ContextMemoryDuplicatesResponses, ContextMemorySourceData, ContextMemorySourceErrors, ContextMemorySourceResponses, ContextOptimizeMemoriesData, ContextOptimizeMemoriesErrors, ContextOptimizeMemoriesResponses, EvalsAddCasesData, EvalsAddCasesErrors, EvalsAddCasesResponses, EvalsCancelBatchData, EvalsCancelBatchErrors, EvalsCancelBatchResponses, EvalsCompareBatchesData, EvalsCompareBatchesErrors, EvalsCompareBatchesResponses, EvalsCreateDatasetData, EvalsCreateDatasetErrors, EvalsCreateDatasetResponses, EvalsDeleteCaseData, EvalsDeleteCaseErrors, EvalsDeleteCaseResponses, EvalsDeleteDatasetData, EvalsDeleteDatasetErrors, EvalsDeleteDatasetResponses, EvalsDeleteGateData, EvalsDeleteGateErrors, EvalsDeleteGateResponses, EvalsEvalCapabilitiesData, EvalsEvalCapabilitiesErrors, EvalsEvalCapabilitiesResponses, EvalsEvalResultsData, EvalsEvalResultsErrors, EvalsEvalResultsResponses, EvalsGetBatchData, EvalsGetBatchErrors, EvalsGetBatchResponses, EvalsGetDatasetData, EvalsGetDatasetErrors, EvalsGetDatasetResponses, EvalsImportCasesData, EvalsImportCasesErrors, EvalsImportCasesResponses, EvalsListDatasetsData, EvalsListDatasetsErrors, EvalsListDatasetsResponses, EvalsListEvaluationsData, EvalsListEvaluationsErrors, EvalsListEvaluationsResponses, EvalsListGatesData, EvalsListGatesErrors, EvalsListGatesResponses, EvalsPutGateData, EvalsPutGateErrors, EvalsPutGateResponses, EvalsStartBatchData, EvalsStartBatchErrors, EvalsStartBatchResponses, EvalsUpdateCaseData, EvalsUpdateCaseErrors, EvalsUpdateCaseResponses, EvalsUpdateDatasetData, EvalsUpdateDatasetErrors, EvalsUpdateDatasetResponses, GatewayListPoliciesData, GatewayListPoliciesErrors, GatewayListPoliciesResponses, InstancesConnectInstanceData, InstancesConnectInstanceErrors, InstancesConnectInstanceResponses, InstancesDeleteInstanceData, InstancesDeleteInstanceErrors, InstancesDeleteInstanceResponses, InstancesDiscoverInstanceData, InstancesDiscoverInstanceErrors, InstancesDiscoverInstanceResponses, InstancesGetCapabilitiesData, InstancesGetCapabilitiesErrors, InstancesGetCapabilitiesResponses, InstancesGetConfigData, InstancesGetConfigErrors, InstancesGetConfigResponses, InstancesGetHealthData, InstancesGetHealthErrors, InstancesGetHealthResponses, InstancesGetInstanceData, InstancesGetInstanceErrors, InstancesGetInstanceResponses, InstancesGetKeysData, InstancesGetKeysErrors, InstancesGetKeysResponses, InstancesListInstancesData, InstancesListInstancesErrors, InstancesListInstancesResponses, InstancesProbeEndpointData, InstancesProbeEndpointErrors, InstancesProbeEndpointResponses, InstancesRotateKeysData, InstancesRotateKeysErrors, InstancesRotateKeysResponses, InstancesTestInstanceData, InstancesTestInstanceErrors, InstancesTestInstanceResponses, InstancesUpdateInstanceData, InstancesUpdateInstanceErrors, InstancesUpdateInstanceResponses, InstancesVerifyTokenData, InstancesVerifyTokenErrors, InstancesVerifyTokenResponses, InvitationsAcceptInvitationData, InvitationsAcceptInvitationErrors, InvitationsAcceptInvitationResponses, InvitationsCreateInvitationData, InvitationsCreateInvitationErrors, InvitationsCreateInvitationResponses, InvitationsListInvitationsData, InvitationsListInvitationsErrors, InvitationsListInvitationsResponses, InvitationsPreviewInvitationData, InvitationsPreviewInvitationErrors, InvitationsPreviewInvitationResponses, InvitationsResendInvitationData, InvitationsResendInvitationErrors, InvitationsResendInvitationResponses, InvitationsRevokeInvitationData, InvitationsRevokeInvitationErrors, InvitationsRevokeInvitationResponses, JwksJwksData, JwksJwksErrors, JwksJwksResponses, MeGetMeData, MeGetMeErrors, MeGetMeResponses, MeListMySessionsData, MeListMySessionsErrors, MeListMySessionsResponses, MembersGetMemberData, MembersGetMemberErrors, MembersGetMemberResponses, MembersListMembersData, MembersListMembersErrors, MembersListMembersResponses, MembersRemoveMemberData, MembersRemoveMemberErrors, MembersRemoveMemberResponses, MembersUpdateMemberData, MembersUpdateMemberErrors, MembersUpdateMemberResponses, MeMyAccessData, MeMyAccessErrors, MeMyAccessResponses, MeRevokeMySessionData, MeRevokeMySessionErrors, MeRevokeMySessionResponses, MeUpdateMeData, MeUpdateMeErrors, MeUpdateMeResponses, NotificationsCreateChannelData, NotificationsCreateChannelErrors, NotificationsCreateChannelResponses, NotificationsDeleteChannelData, NotificationsDeleteChannelErrors, NotificationsDeleteChannelResponses, NotificationsEventsData, NotificationsEventsErrors, NotificationsEventsResponses, NotificationsEventTypesData, NotificationsEventTypesErrors, NotificationsEventTypesResponses, NotificationsGetChannelData, NotificationsGetChannelErrors, NotificationsGetChannelResponses, NotificationsGetDefaultsData, NotificationsGetDefaultsErrors, NotificationsGetDefaultsResponses, NotificationsListChannelsData, NotificationsListChannelsErrors, NotificationsListChannelsResponses, NotificationsListNotificationsData, NotificationsListNotificationsErrors, NotificationsListNotificationsResponses, NotificationsMarkReadData, NotificationsMarkReadErrors, NotificationsMarkReadResponses, NotificationsMyPreferencesData, NotificationsMyPreferencesErrors, NotificationsMyPreferencesResponses, NotificationsPutDefaultsData, NotificationsPutDefaultsErrors, NotificationsPutDefaultsResponses, NotificationsTestChannelData, NotificationsTestChannelErrors, NotificationsTestChannelResponses, NotificationsUnreadCountData, NotificationsUnreadCountErrors, NotificationsUnreadCountResponses, NotificationsUpdateChannelData, NotificationsUpdateChannelErrors, NotificationsUpdateChannelResponses, NotificationsUpdateMyPreferencesData, NotificationsUpdateMyPreferencesErrors, NotificationsUpdateMyPreferencesResponses, ObserveGetOrgPriceTableData, ObserveGetOrgPriceTableErrors, ObserveGetOrgPriceTableResponses, ObserveGetPriceTableData, ObserveGetPriceTableErrors, ObserveGetPriceTableResponses, ObserveMetricsCsvData, ObserveMetricsCsvErrors, ObserveMetricsCsvResponses, ObserveMetricsSummaryData, ObserveMetricsSummaryErrors, ObserveMetricsSummaryResponses, ObserveOverviewData, ObserveOverviewErrors, ObserveOverviewResponses, ObservePutOrgPriceTableData, ObservePutOrgPriceTableErrors, ObservePutOrgPriceTableResponses, ObservePutPriceTableData, ObservePutPriceTableErrors, ObservePutPriceTableResponses, ObserveSpanStatsData, ObserveSpanStatsErrors, ObserveSpanStatsResponses, ObserveTraceComparisonData, ObserveTraceComparisonErrors, ObserveTraceComparisonResponses, OnboardingCompleteOnboardingData, OnboardingCompleteOnboardingErrors, OnboardingCompleteOnboardingResponses, OnboardingOnboardingStatusData, OnboardingOnboardingStatusErrors, OnboardingOnboardingStatusResponses, OrgGetOrgData, OrgGetOrgErrors, OrgGetOrgResponses, OrgUpdateOrgData, OrgUpdateOrgErrors, OrgUpdateOrgResponses, QueueCancelJobData, QueueCancelJobErrors, QueueCancelJobResponses, QueueQueueJobData, QueueQueueJobErrors, QueueQueueJobResponses, QueueQueueJobsData, QueueQueueJobsErrors, QueueQueueJobsResponses, QueueQueueOverviewData, QueueQueueOverviewErrors, QueueQueueOverviewResponses, QueueQueueSummaryData, QueueQueueSummaryErrors, QueueQueueSummaryResponses, QueueQueueWorkersData, QueueQueueWorkersErrors, QueueQueueWorkersResponses, QueueRequeueJobData, QueueRequeueJobErrors, QueueRequeueJobResponses, QueueResumeJobData, QueueResumeJobErrors, QueueResumeJobResponses, SchedulerCheckEndpointData, SchedulerCheckEndpointErrors, SchedulerCheckEndpointResponses, SchedulerCreateScheduleData, SchedulerCreateScheduleErrors, SchedulerCreateScheduleResponses, SchedulerDeleteScheduleData, SchedulerDeleteScheduleErrors, SchedulerDeleteScheduleResponses, SchedulerDisableScheduleData, SchedulerDisableScheduleErrors, SchedulerDisableScheduleResponses, SchedulerEnableScheduleData, SchedulerEnableScheduleErrors, SchedulerEnableScheduleResponses, SchedulerGetScheduleData, SchedulerGetScheduleErrors, SchedulerGetScheduleResponses, SchedulerListSchedulesData, SchedulerListSchedulesErrors, SchedulerListSchedulesResponses, SchedulerPreviewScheduleData, SchedulerPreviewScheduleErrors, SchedulerPreviewScheduleResponses, SchedulerSchedulerStatusData, SchedulerSchedulerStatusErrors, SchedulerSchedulerStatusResponses, SchedulerScheduleRunsData, SchedulerScheduleRunsErrors, SchedulerScheduleRunsResponses, SchedulerTriggerScheduleData, SchedulerTriggerScheduleErrors, SchedulerTriggerScheduleResponses, SchedulerUpdateScheduleData, SchedulerUpdateScheduleErrors, SchedulerUpdateScheduleResponses, SearchSearchData, SearchSearchErrors, SearchSearchResponses, SystemListModulesData, SystemListModulesErrors, SystemListModulesResponses, SystemLivenessData, SystemLivenessResponses, SystemReadinessData, SystemReadinessErrors, SystemReadinessResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -66,6 +66,40 @@ export const accessListRoles = <ThrowOnError extends boolean = false>(options?: 
  * The scope catalog: AgentOS 3.1 and control-plane scopes
  */
 export const accessListScopes = <ThrowOnError extends boolean = false>(options?: Options<AccessListScopesData, ThrowOnError>): RequestResult<AccessListScopesResponses, AccessListScopesErrors, ThrowOnError> => (options?.client ?? client).get<AccessListScopesResponses, AccessListScopesErrors, ThrowOnError>({ url: '/api/v1/access/scopes', ...options });
+
+/**
+ * Org-wide routing rules (needs settings:write)
+ */
+export const approvalsListOrgRoutes = <ThrowOnError extends boolean = false>(options?: Options<ApprovalsListOrgRoutesData, ThrowOnError>): RequestResult<ApprovalsListOrgRoutesResponses, ApprovalsListOrgRoutesErrors, ThrowOnError> => (options?.client ?? client).get<ApprovalsListOrgRoutesResponses, ApprovalsListOrgRoutesErrors, ThrowOnError>({ url: '/api/v1/approvals/routes', ...options });
+
+/**
+ * Add an org-wide routing rule (needs settings:write)
+ */
+export const approvalsCreateOrgRoute = <ThrowOnError extends boolean = false>(options: Options<ApprovalsCreateOrgRouteData, ThrowOnError>): RequestResult<ApprovalsCreateOrgRouteResponses, ApprovalsCreateOrgRouteErrors, ThrowOnError> => (options.client ?? client).post<ApprovalsCreateOrgRouteResponses, ApprovalsCreateOrgRouteErrors, ThrowOnError>({
+    url: '/api/v1/approvals/routes',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Remove a routing rule
+ */
+export const approvalsDeleteRoute = <ThrowOnError extends boolean = false>(options: Options<ApprovalsDeleteRouteData, ThrowOnError>): RequestResult<ApprovalsDeleteRouteResponses, ApprovalsDeleteRouteErrors, ThrowOnError> => (options.client ?? client).delete<ApprovalsDeleteRouteResponses, ApprovalsDeleteRouteErrors, ThrowOnError>({ url: '/api/v1/approvals/routes/{route_id}', ...options });
+
+/**
+ * Change a routing rule
+ */
+export const approvalsUpdateRoute = <ThrowOnError extends boolean = false>(options: Options<ApprovalsUpdateRouteData, ThrowOnError>): RequestResult<ApprovalsUpdateRouteResponses, ApprovalsUpdateRouteErrors, ThrowOnError> => (options.client ?? client).put<ApprovalsUpdateRouteResponses, ApprovalsUpdateRouteErrors, ThrowOnError>({
+    url: '/api/v1/approvals/routes/{route_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * The audit vocabulary: every action and its summary template
@@ -212,9 +246,58 @@ export const instancesUpdateInstance = <ThrowOnError extends boolean = false>(op
 });
 
 /**
+ * Approvals by tab and filters, newest first (needs approvals:read)
+ */
+export const approvalsListApprovals = <ThrowOnError extends boolean = false>(options: Options<ApprovalsListApprovalsData, ThrowOnError>): RequestResult<ApprovalsListApprovalsResponses, ApprovalsListApprovalsErrors, ThrowOnError> => (options.client ?? client).get<ApprovalsListApprovalsResponses, ApprovalsListApprovalsErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/approvals', ...options });
+
+/**
  * Pending approvals on the instance (the nav badge; live updates arrive as approvals.count events)
  */
 export const approvalsCount = <ThrowOnError extends boolean = false>(options: Options<ApprovalsCountData, ThrowOnError>): RequestResult<ApprovalsCountResponses, ApprovalsCountErrors, ThrowOnError> => (options.client ?? client).get<ApprovalsCountResponses, ApprovalsCountErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/approvals/count', ...options });
+
+/**
+ * How many approvals each tab holds (needs approvals:read)
+ */
+export const approvalsApprovalCounts = <ThrowOnError extends boolean = false>(options: Options<ApprovalsApprovalCountsData, ThrowOnError>): RequestResult<ApprovalsApprovalCountsResponses, ApprovalsApprovalCountsErrors, ThrowOnError> => (options.client ?? client).get<ApprovalsApprovalCountsResponses, ApprovalsApprovalCountsErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/approvals/counts', ...options });
+
+/**
+ * Whether expiry stops runs on this instance, and its TTL
+ */
+export const approvalsGetPolicy = <ThrowOnError extends boolean = false>(options: Options<ApprovalsGetPolicyData, ThrowOnError>): RequestResult<ApprovalsGetPolicyResponses, ApprovalsGetPolicyErrors, ThrowOnError> => (options.client ?? client).get<ApprovalsGetPolicyResponses, ApprovalsGetPolicyErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/approvals/policy', ...options });
+
+/**
+ * Change the expiry policy (Instance admin; audited)
+ */
+export const approvalsPutPolicy = <ThrowOnError extends boolean = false>(options: Options<ApprovalsPutPolicyData, ThrowOnError>): RequestResult<ApprovalsPutPolicyResponses, ApprovalsPutPolicyErrors, ThrowOnError> => (options.client ?? client).put<ApprovalsPutPolicyResponses, ApprovalsPutPolicyErrors, ThrowOnError>({
+    url: '/api/v1/instances/{instance}/approvals/policy',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Routing rules of the instance, then the org-wide ones
+ */
+export const approvalsListRoutes = <ThrowOnError extends boolean = false>(options: Options<ApprovalsListRoutesData, ThrowOnError>): RequestResult<ApprovalsListRoutesResponses, ApprovalsListRoutesErrors, ThrowOnError> => (options.client ?? client).get<ApprovalsListRoutesResponses, ApprovalsListRoutesErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/approvals/routes', ...options });
+
+/**
+ * Route approvals to members or roles
+ */
+export const approvalsCreateRoute = <ThrowOnError extends boolean = false>(options: Options<ApprovalsCreateRouteData, ThrowOnError>): RequestResult<ApprovalsCreateRouteResponses, ApprovalsCreateRouteErrors, ThrowOnError> => (options.client ?? client).post<ApprovalsCreateRouteResponses, ApprovalsCreateRouteErrors, ThrowOnError>({
+    url: '/api/v1/instances/{instance}/approvals/routes',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * One approval with its context and timeline; records that you viewed it (needs approvals:read)
+ */
+export const approvalsGetApproval = <ThrowOnError extends boolean = false>(options: Options<ApprovalsGetApprovalData, ThrowOnError>): RequestResult<ApprovalsGetApprovalResponses, ApprovalsGetApprovalErrors, ThrowOnError> => (options.client ?? client).get<ApprovalsGetApprovalResponses, ApprovalsGetApprovalErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/approvals/{approval_id}', ...options });
 
 /**
  * Approve or reject a paused run's approval, then continue the run (needs approvals:write)
@@ -508,6 +591,148 @@ export const observePutPriceTable = <ThrowOnError extends boolean = false>(optio
 });
 
 /**
+ * Durable jobs, newest first (queue:operate or Instance admin)
+ */
+export const queueQueueJobs = <ThrowOnError extends boolean = false>(options: Options<QueueQueueJobsData, ThrowOnError>): RequestResult<QueueQueueJobsResponses, QueueQueueJobsErrors, ThrowOnError> => (options.client ?? client).get<QueueQueueJobsResponses, QueueQueueJobsErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/queue/jobs', ...options });
+
+/**
+ * One job with its attempts and checkpoints
+ */
+export const queueQueueJob = <ThrowOnError extends boolean = false>(options: Options<QueueQueueJobData, ThrowOnError>): RequestResult<QueueQueueJobResponses, QueueQueueJobErrors, ThrowOnError> => (options.client ?? client).get<QueueQueueJobResponses, QueueQueueJobErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/queue/jobs/{job_id}', ...options });
+
+/**
+ * Cancel a queued or running job's run (audited)
+ */
+export const queueCancelJob = <ThrowOnError extends boolean = false>(options: Options<QueueCancelJobData, ThrowOnError>): RequestResult<QueueCancelJobResponses, QueueCancelJobErrors, ThrowOnError> => (options.client ?? client).post<QueueCancelJobResponses, QueueCancelJobErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/queue/jobs/{job_id}/cancel', ...options });
+
+/**
+ * One more attempt with the same run id (audited)
+ */
+export const queueRequeueJob = <ThrowOnError extends boolean = false>(options: Options<QueueRequeueJobData, ThrowOnError>): RequestResult<QueueRequeueJobResponses, QueueRequeueJobErrors, ThrowOnError> => (options.client ?? client).post<QueueRequeueJobResponses, QueueRequeueJobErrors, ThrowOnError>({
+    url: '/api/v1/instances/{instance}/queue/jobs/{job_id}/requeue',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Continue a failed run from a checkpoint; earlier tool calls aren't repeated (audited)
+ */
+export const queueResumeJob = <ThrowOnError extends boolean = false>(options: Options<QueueResumeJobData, ThrowOnError>): RequestResult<QueueResumeJobResponses, QueueResumeJobErrors, ThrowOnError> => (options.client ?? client).post<QueueResumeJobResponses, QueueResumeJobErrors, ThrowOnError>({
+    url: '/api/v1/instances/{instance}/queue/jobs/{job_id}/resume',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Queue health, config and workers (queue:operate or Instance admin)
+ */
+export const queueQueueOverview = <ThrowOnError extends boolean = false>(options: Options<QueueQueueOverviewData, ThrowOnError>): RequestResult<QueueQueueOverviewResponses, QueueQueueOverviewErrors, ThrowOnError> => (options.client ?? client).get<QueueQueueOverviewResponses, QueueQueueOverviewErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/queue/overview', ...options });
+
+/**
+ * Job counts for anyone with access to the instance
+ */
+export const queueQueueSummary = <ThrowOnError extends boolean = false>(options: Options<QueueQueueSummaryData, ThrowOnError>): RequestResult<QueueQueueSummaryResponses, QueueQueueSummaryErrors, ThrowOnError> => (options.client ?? client).get<QueueQueueSummaryResponses, QueueQueueSummaryErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/queue/summary', ...options });
+
+/**
+ * Replicas with heartbeats and slots (queue:operate or Instance admin)
+ */
+export const queueQueueWorkers = <ThrowOnError extends boolean = false>(options: Options<QueueQueueWorkersData, ThrowOnError>): RequestResult<QueueQueueWorkersResponses, QueueQueueWorkersErrors, ThrowOnError> => (options.client ?? client).get<QueueQueueWorkersResponses, QueueQueueWorkersErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/queue/workers', ...options });
+
+/**
+ * Schedules with their latest runs (needs schedules:read)
+ */
+export const schedulerListSchedules = <ThrowOnError extends boolean = false>(options: Options<SchedulerListSchedulesData, ThrowOnError>): RequestResult<SchedulerListSchedulesResponses, SchedulerListSchedulesErrors, ThrowOnError> => (options.client ?? client).get<SchedulerListSchedulesResponses, SchedulerListSchedulesErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/schedules', ...options });
+
+/**
+ * Create a schedule (schedules:write; a custom endpoint needs Instance admin)
+ */
+export const schedulerCreateSchedule = <ThrowOnError extends boolean = false>(options: Options<SchedulerCreateScheduleData, ThrowOnError>): RequestResult<SchedulerCreateScheduleResponses, SchedulerCreateScheduleErrors, ThrowOnError> => (options.client ?? client).post<SchedulerCreateScheduleResponses, SchedulerCreateScheduleErrors, ThrowOnError>({
+    url: '/api/v1/instances/{instance}/schedules',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * What an endpoint targets, and whether the instance's OpenAPI document knows it
+ */
+export const schedulerCheckEndpoint = <ThrowOnError extends boolean = false>(options: Options<SchedulerCheckEndpointData, ThrowOnError>): RequestResult<SchedulerCheckEndpointResponses, SchedulerCheckEndpointErrors, ThrowOnError> => (options.client ?? client).get<SchedulerCheckEndpointResponses, SchedulerCheckEndpointErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/schedules/endpoint-check', ...options });
+
+/**
+ * A cron expression as a sentence, its next runs, DST notes
+ */
+export const schedulerPreviewSchedule = <ThrowOnError extends boolean = false>(options: Options<SchedulerPreviewScheduleData, ThrowOnError>): RequestResult<SchedulerPreviewScheduleResponses, SchedulerPreviewScheduleErrors, ThrowOnError> => (options.client ?? client).post<SchedulerPreviewScheduleResponses, SchedulerPreviewScheduleErrors, ThrowOnError>({
+    url: '/api/v1/instances/{instance}/schedules/preview',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Whether the scheduler runs, and what you may do here
+ */
+export const schedulerSchedulerStatus = <ThrowOnError extends boolean = false>(options: Options<SchedulerSchedulerStatusData, ThrowOnError>): RequestResult<SchedulerSchedulerStatusResponses, SchedulerSchedulerStatusErrors, ThrowOnError> => (options.client ?? client).get<SchedulerSchedulerStatusResponses, SchedulerSchedulerStatusErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/schedules/status', ...options });
+
+/**
+ * Delete a schedule (schedules:delete)
+ */
+export const schedulerDeleteSchedule = <ThrowOnError extends boolean = false>(options: Options<SchedulerDeleteScheduleData, ThrowOnError>): RequestResult<SchedulerDeleteScheduleResponses, SchedulerDeleteScheduleErrors, ThrowOnError> => (options.client ?? client).delete<SchedulerDeleteScheduleResponses, SchedulerDeleteScheduleErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/schedules/{schedule_id}', ...options });
+
+/**
+ * One schedule with its recent runs
+ */
+export const schedulerGetSchedule = <ThrowOnError extends boolean = false>(options: Options<SchedulerGetScheduleData, ThrowOnError>): RequestResult<SchedulerGetScheduleResponses, SchedulerGetScheduleErrors, ThrowOnError> => (options.client ?? client).get<SchedulerGetScheduleResponses, SchedulerGetScheduleErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/schedules/{schedule_id}', ...options });
+
+/**
+ * Change a schedule (schedules:write)
+ */
+export const schedulerUpdateSchedule = <ThrowOnError extends boolean = false>(options: Options<SchedulerUpdateScheduleData, ThrowOnError>): RequestResult<SchedulerUpdateScheduleResponses, SchedulerUpdateScheduleErrors, ThrowOnError> => (options.client ?? client).patch<SchedulerUpdateScheduleResponses, SchedulerUpdateScheduleErrors, ThrowOnError>({
+    url: '/api/v1/instances/{instance}/schedules/{schedule_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Disable a schedule, with a reason (schedules:write)
+ */
+export const schedulerDisableSchedule = <ThrowOnError extends boolean = false>(options: Options<SchedulerDisableScheduleData, ThrowOnError>): RequestResult<SchedulerDisableScheduleResponses, SchedulerDisableScheduleErrors, ThrowOnError> => (options.client ?? client).post<SchedulerDisableScheduleResponses, SchedulerDisableScheduleErrors, ThrowOnError>({
+    url: '/api/v1/instances/{instance}/schedules/{schedule_id}/disable',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Enable a schedule (schedules:write)
+ */
+export const schedulerEnableSchedule = <ThrowOnError extends boolean = false>(options: Options<SchedulerEnableScheduleData, ThrowOnError>): RequestResult<SchedulerEnableScheduleResponses, SchedulerEnableScheduleErrors, ThrowOnError> => (options.client ?? client).post<SchedulerEnableScheduleResponses, SchedulerEnableScheduleErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/schedules/{schedule_id}/enable', ...options });
+
+/**
+ * Run history of a schedule, newest first
+ */
+export const schedulerScheduleRuns = <ThrowOnError extends boolean = false>(options: Options<SchedulerScheduleRunsData, ThrowOnError>): RequestResult<SchedulerScheduleRunsResponses, SchedulerScheduleRunsErrors, ThrowOnError> => (options.client ?? client).get<SchedulerScheduleRunsResponses, SchedulerScheduleRunsErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/schedules/{schedule_id}/runs', ...options });
+
+/**
+ * Run a schedule now (schedules:write)
+ */
+export const schedulerTriggerSchedule = <ThrowOnError extends boolean = false>(options: Options<SchedulerTriggerScheduleData, ThrowOnError>): RequestResult<SchedulerTriggerScheduleResponses, SchedulerTriggerScheduleErrors, ThrowOnError> => (options.client ?? client).post<SchedulerTriggerScheduleResponses, SchedulerTriggerScheduleErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/schedules/{schedule_id}/trigger', ...options });
+
+/**
  * Test connection: DNS, TLS, AgentOS, version, token, enforced scopes
  */
 export const instancesTestInstance = <ThrowOnError extends boolean = false>(options: Options<InstancesTestInstanceData, ThrowOnError>): RequestResult<InstancesTestInstanceResponses, InstancesTestInstanceErrors, ThrowOnError> => (options.client ?? client).post<InstancesTestInstanceResponses, InstancesTestInstanceErrors, ThrowOnError>({ url: '/api/v1/instances/{instance}/test', ...options });
@@ -589,6 +814,23 @@ export const meUpdateMe = <ThrowOnError extends boolean = false>(options: Option
 export const meMyAccess = <ThrowOnError extends boolean = false>(options?: Options<MeMyAccessData, ThrowOnError>): RequestResult<MeMyAccessResponses, MeMyAccessErrors, ThrowOnError> => (options?.client ?? client).get<MeMyAccessResponses, MeMyAccessErrors, ThrowOnError>({ url: '/api/v1/me/access', ...options });
 
 /**
+ * Which channels each event reaches you through, and quiet hours
+ */
+export const notificationsMyPreferences = <ThrowOnError extends boolean = false>(options?: Options<NotificationsMyPreferencesData, ThrowOnError>): RequestResult<NotificationsMyPreferencesResponses, NotificationsMyPreferencesErrors, ThrowOnError> => (options?.client ?? client).get<NotificationsMyPreferencesResponses, NotificationsMyPreferencesErrors, ThrowOnError>({ url: '/api/v1/me/notification-preferences', ...options });
+
+/**
+ * Change your notification channels or quiet hours
+ */
+export const notificationsUpdateMyPreferences = <ThrowOnError extends boolean = false>(options: Options<NotificationsUpdateMyPreferencesData, ThrowOnError>): RequestResult<NotificationsUpdateMyPreferencesResponses, NotificationsUpdateMyPreferencesErrors, ThrowOnError> => (options.client ?? client).put<NotificationsUpdateMyPreferencesResponses, NotificationsUpdateMyPreferencesErrors, ThrowOnError>({
+    url: '/api/v1/me/notification-preferences',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
  * Your signed-in browsers
  */
 export const meListMySessions = <ThrowOnError extends boolean = false>(options?: Options<MeListMySessionsData, ThrowOnError>): RequestResult<MeListMySessionsResponses, MeListMySessionsErrors, ThrowOnError> => (options?.client ?? client).get<MeListMySessionsResponses, MeListMySessionsErrors, ThrowOnError>({ url: '/api/v1/me/sessions', ...options });
@@ -624,6 +866,94 @@ export const membersUpdateMember = <ThrowOnError extends boolean = false>(option
         ...options.headers
     }
 });
+
+/**
+ * Your notifications (the bell), newest first
+ */
+export const notificationsListNotifications = <ThrowOnError extends boolean = false>(options?: Options<NotificationsListNotificationsData, ThrowOnError>): RequestResult<NotificationsListNotificationsResponses, NotificationsListNotificationsErrors, ThrowOnError> => (options?.client ?? client).get<NotificationsListNotificationsResponses, NotificationsListNotificationsErrors, ThrowOnError>({ url: '/api/v1/notifications', ...options });
+
+/**
+ * Org notification channels (needs notifications:write)
+ */
+export const notificationsListChannels = <ThrowOnError extends boolean = false>(options?: Options<NotificationsListChannelsData, ThrowOnError>): RequestResult<NotificationsListChannelsResponses, NotificationsListChannelsErrors, ThrowOnError> => (options?.client ?? client).get<NotificationsListChannelsResponses, NotificationsListChannelsErrors, ThrowOnError>({ url: '/api/v1/notifications/channels', ...options });
+
+/**
+ * Add a Slack, email or webhook channel
+ */
+export const notificationsCreateChannel = <ThrowOnError extends boolean = false>(options: Options<NotificationsCreateChannelData, ThrowOnError>): RequestResult<NotificationsCreateChannelResponses, NotificationsCreateChannelErrors, ThrowOnError> => (options.client ?? client).post<NotificationsCreateChannelResponses, NotificationsCreateChannelErrors, ThrowOnError>({
+    url: '/api/v1/notifications/channels',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Remove a channel
+ */
+export const notificationsDeleteChannel = <ThrowOnError extends boolean = false>(options: Options<NotificationsDeleteChannelData, ThrowOnError>): RequestResult<NotificationsDeleteChannelResponses, NotificationsDeleteChannelErrors, ThrowOnError> => (options.client ?? client).delete<NotificationsDeleteChannelResponses, NotificationsDeleteChannelErrors, ThrowOnError>({ url: '/api/v1/notifications/channels/{channel_id}', ...options });
+
+/**
+ * One channel with its recent deliveries
+ */
+export const notificationsGetChannel = <ThrowOnError extends boolean = false>(options: Options<NotificationsGetChannelData, ThrowOnError>): RequestResult<NotificationsGetChannelResponses, NotificationsGetChannelErrors, ThrowOnError> => (options.client ?? client).get<NotificationsGetChannelResponses, NotificationsGetChannelErrors, ThrowOnError>({ url: '/api/v1/notifications/channels/{channel_id}', ...options });
+
+/**
+ * Change a channel (secrets left out are kept)
+ */
+export const notificationsUpdateChannel = <ThrowOnError extends boolean = false>(options: Options<NotificationsUpdateChannelData, ThrowOnError>): RequestResult<NotificationsUpdateChannelResponses, NotificationsUpdateChannelErrors, ThrowOnError> => (options.client ?? client).patch<NotificationsUpdateChannelResponses, NotificationsUpdateChannelErrors, ThrowOnError>({
+    url: '/api/v1/notifications/channels/{channel_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Send a test message now and report the outcome
+ */
+export const notificationsTestChannel = <ThrowOnError extends boolean = false>(options: Options<NotificationsTestChannelData, ThrowOnError>): RequestResult<NotificationsTestChannelResponses, NotificationsTestChannelErrors, ThrowOnError> => (options.client ?? client).post<NotificationsTestChannelResponses, NotificationsTestChannelErrors, ThrowOnError>({ url: '/api/v1/notifications/channels/{channel_id}/test', ...options });
+
+/**
+ * Org default channels per event type (needs notifications:write)
+ */
+export const notificationsGetDefaults = <ThrowOnError extends boolean = false>(options?: Options<NotificationsGetDefaultsData, ThrowOnError>): RequestResult<NotificationsGetDefaultsResponses, NotificationsGetDefaultsErrors, ThrowOnError> => (options?.client ?? client).get<NotificationsGetDefaultsResponses, NotificationsGetDefaultsErrors, ThrowOnError>({ url: '/api/v1/notifications/defaults', ...options });
+
+/**
+ * Change org default channels (needs notifications:write; audited)
+ */
+export const notificationsPutDefaults = <ThrowOnError extends boolean = false>(options: Options<NotificationsPutDefaultsData, ThrowOnError>): RequestResult<NotificationsPutDefaultsResponses, NotificationsPutDefaultsErrors, ThrowOnError> => (options.client ?? client).put<NotificationsPutDefaultsResponses, NotificationsPutDefaultsErrors, ThrowOnError>({
+    url: '/api/v1/notifications/defaults',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Everything that can be notified, with its default channels
+ */
+export const notificationsEventTypes = <ThrowOnError extends boolean = false>(options?: Options<NotificationsEventTypesData, ThrowOnError>): RequestResult<NotificationsEventTypesResponses, NotificationsEventTypesErrors, ThrowOnError> => (options?.client ?? client).get<NotificationsEventTypesResponses, NotificationsEventTypesErrors, ThrowOnError>({ url: '/api/v1/notifications/event-types', ...options });
+
+/**
+ * Mark some or all of your notifications read
+ */
+export const notificationsMarkRead = <ThrowOnError extends boolean = false>(options: Options<NotificationsMarkReadData, ThrowOnError>): RequestResult<NotificationsMarkReadResponses, NotificationsMarkReadErrors, ThrowOnError> => (options.client ?? client).post<NotificationsMarkReadResponses, NotificationsMarkReadErrors, ThrowOnError>({
+    url: '/api/v1/notifications/read',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * How many of your notifications are unread (the bell badge)
+ */
+export const notificationsUnreadCount = <ThrowOnError extends boolean = false>(options?: Options<NotificationsUnreadCountData, ThrowOnError>): RequestResult<NotificationsUnreadCountResponses, NotificationsUnreadCountErrors, ThrowOnError> => (options?.client ?? client).get<NotificationsUnreadCountResponses, NotificationsUnreadCountErrors, ThrowOnError>({ url: '/api/v1/notifications/unread-count', ...options });
 
 /**
  * Create the first Owner with the setup link from `agnostic bootstrap`

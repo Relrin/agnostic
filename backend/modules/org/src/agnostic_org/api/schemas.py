@@ -18,6 +18,7 @@ type OrgRoleName = Literal["owner", "administrator", "member"]
 class OrgSettingsOut(BaseModel):
     require_explicit_bindings: bool
     audit_log_all_reads: bool
+    approval_ttl_hours: int = Field(description="Hours until approvals without their own expiry expire; 0 = never")
 
 
 class OrgOut(BaseModel):
@@ -47,6 +48,7 @@ class OrgOut(BaseModel):
             settings=OrgSettingsOut(
                 require_explicit_bindings=view.settings.require_explicit_bindings,
                 audit_log_all_reads=view.settings.audit_log_all_reads,
+                approval_ttl_hours=view.settings.approval_ttl_hours,
             ),
             updated_at=profile.updated_at,
         )
@@ -55,6 +57,7 @@ class OrgOut(BaseModel):
 class OrgSettingsUpdate(BaseModel):
     require_explicit_bindings: bool | None = None
     audit_log_all_reads: bool | None = None
+    approval_ttl_hours: int | None = Field(default=None, ge=0, le=720)
 
 
 class OrgUpdate(BaseModel):

@@ -26,8 +26,10 @@ from agnostic_kernel.mail import Email, Mailer
 from agnostic_kernel.modules import load_modules
 from agnostic_kernel.settings import Settings
 from agnostic_kernel.testing import make_settings
+from agnostic_notifications.application.ports import OutboundHttp
 from agnostic_server.app import create_app
 from tests.support.fake_agentos import FakeAgentOS
+from tests.support.fake_slack import FakeSlack
 
 PUBLIC_URL = "http://agnostic.test"
 OWNER_PASSWORD = "correct horse battery staple"
@@ -74,6 +76,7 @@ class Stack:
     routes: Routes
     mailer: CapturingMailer
     settings: Settings
+    slack: FakeSlack
     clients: list[httpx.AsyncClient] = field(default_factory=list[httpx.AsyncClient])
 
     def runtime(self, host: str, **kwargs: Any) -> FakeAgentOS:
@@ -116,6 +119,7 @@ async def running_stack(database_url: str, **overrides: Any) -> AsyncGenerator[S
     await migrate(settings)
     routes = Routes()
     mailer = CapturingMailer()
+    slack = FakeSlack()
     transport = routes.transport()
 
     class TestAdapters(Provider):
@@ -133,13 +137,17 @@ async def running_stack(database_url: str, **overrides: Any) -> AsyncGenerator[S
         def mail(self) -> Mailer:
             return mailer
 
+        @provide(scope=Scope.APP)
+        def outbound(self) -> OutboundHttp:
+            return slack
+
     modules = load_modules(settings.modules.disabled)
     container = build_container(
         settings, modules, extra=(FastapiProvider(), HttpAuthProvider()), overrides=(TestAdapters(),)
     )
     app = create_app(settings, modules=modules, container=container)
     async with LifespanManager(app):
-        stack = Stack(app=app, container=container, routes=routes, mailer=mailer, settings=settings)
+        stack = Stack(app=app, container=container, routes=routes, mailer=mailer, settings=settings, slack=slack)
         try:
             yield stack
         finally:

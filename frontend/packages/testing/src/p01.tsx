@@ -85,7 +85,7 @@ export const sampleOrg: OrgOut = {
   member_count: 2,
   pending_invitations: 1,
   viewer_role: "owner",
-  settings: { require_explicit_bindings: false, audit_log_all_reads: false },
+  settings: { require_explicit_bindings: false, audit_log_all_reads: false, approval_ttl_hours: 0 },
   updated_at: T,
 };
 

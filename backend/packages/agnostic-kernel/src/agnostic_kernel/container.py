@@ -22,6 +22,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 from agnostic_kernel.cache import create_redis
 from agnostic_kernel.crypto import SecretBox, load_master_key
 from agnostic_kernel.db import create_engine, create_sessionmaker
+from agnostic_kernel.domain_events import DomainEvents, kernel_jobs
 from agnostic_kernel.ephemeral import EphemeralStore, MemoryStore, RedisStore
 from agnostic_kernel.events import EventBus, MemoryEventBus, RedisEventBus
 from agnostic_kernel.jobs import JobProgressReporter, JobQueue, create_jobs_app, register_jobs
@@ -86,11 +87,12 @@ class KernelProvider(Provider):
     @provide(scope=Scope.APP)
     async def jobs_app(self, settings: Settings, modules: LoadedModules) -> AsyncIterator[procrastinate.App]:
         app = create_jobs_app(settings.database)
-        _ = register_jobs(app, (spec for module in modules.enabled for spec in module.jobs()))
+        _ = register_jobs(app, (*kernel_jobs(), *(spec for module in modules.enabled for spec in module.jobs())))
         async with app.open_async():
             yield app
 
     job_queue = provide(JobQueue, scope=Scope.APP)
+    domain_events = provide(DomainEvents, scope=Scope.APP)
     job_progress = provide(JobProgressReporter, scope=Scope.APP)
 
 

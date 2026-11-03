@@ -164,6 +164,833 @@
         "title": "AlternativeOut",
         "type": "object"
       },
+      "ApprovalCountsOut": {
+        "properties": {
+          "approved": {
+            "title": "Approved",
+            "type": "integer"
+          },
+          "cancelled": {
+            "title": "Cancelled",
+            "type": "integer"
+          },
+          "expired": {
+            "title": "Expired",
+            "type": "integer"
+          },
+          "pending": {
+            "title": "Pending",
+            "type": "integer"
+          },
+          "rejected": {
+            "title": "Rejected",
+            "type": "integer"
+          },
+          "truncated": {
+            "title": "Truncated",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "pending",
+          "approved",
+          "rejected",
+          "expired",
+          "cancelled",
+          "truncated"
+        ],
+        "title": "ApprovalCountsOut",
+        "type": "object"
+      },
+      "ApprovalDetailOut": {
+        "properties": {
+          "agentos_status": {
+            "title": "Agentos Status",
+            "type": "string"
+          },
+          "args_changed": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Args Changed",
+            "type": "array"
+          },
+          "can_resolve": {
+            "title": "Can Resolve",
+            "type": "boolean"
+          },
+          "cannot_resolve_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cannot Resolve Reason"
+          },
+          "channels": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Channels",
+            "type": "array"
+          },
+          "component_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Component Id"
+          },
+          "component_kind": {
+            "anyOf": [
+              {
+                "enum": [
+                  "agent",
+                  "team",
+                  "workflow"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Component Kind"
+          },
+          "context": {
+            "$ref": "#/components/schemas/ContextOut"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "elevation_enabled": {
+            "title": "Elevation Enabled",
+            "type": "boolean"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
+          },
+          "expiry_enforced": {
+            "description": "Expired and acted on (run stopped), not just past its expiry",
+            "title": "Expiry Enforced",
+            "type": "boolean"
+          },
+          "expiry_source": {
+            "anyOf": [
+              {
+                "enum": [
+                  "approval",
+                  "step_timeout",
+                  "ttl"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expiry Source"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "policy": {
+            "$ref": "#/components/schemas/PolicyOut"
+          },
+          "requirements": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Requirements",
+            "type": "array"
+          },
+          "resolution_data": {
+            "additionalProperties": true,
+            "title": "Resolution Data",
+            "type": "object"
+          },
+          "resolved_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved At"
+          },
+          "resolved_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved By"
+          },
+          "resolved_by_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved By Name"
+          },
+          "routed_to": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Routed To",
+            "type": "array"
+          },
+          "run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Id"
+          },
+          "run_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Status"
+          },
+          "schedule_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Schedule Id"
+          },
+          "session_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Id"
+          },
+          "source_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Id"
+          },
+          "source_kind": {
+            "anyOf": [
+              {
+                "enum": [
+                  "agent",
+                  "team",
+                  "workflow",
+                  "schedule"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Kind"
+          },
+          "source_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Name"
+          },
+          "status": {
+            "$ref": "#/components/schemas/StatusName"
+          },
+          "timeline": {
+            "items": {
+              "$ref": "#/components/schemas/TimelineEntryOut"
+            },
+            "title": "Timeline",
+            "type": "array"
+          },
+          "tool_args": {
+            "additionalProperties": true,
+            "title": "Tool Args",
+            "type": "object"
+          },
+          "tool_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tool Name"
+          },
+          "type": {
+            "enum": [
+              "blocking",
+              "audit"
+            ],
+            "title": "Type",
+            "type": "string"
+          },
+          "user_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Id"
+          },
+          "user_isolation": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Isolation"
+          },
+          "user_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Name"
+          },
+          "via": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Via"
+          },
+          "views": {
+            "items": {
+              "$ref": "#/components/schemas/ViewOut"
+            },
+            "title": "Views",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "tool_name",
+          "type",
+          "status",
+          "agentos_status",
+          "expiry_enforced",
+          "source_kind",
+          "source_id",
+          "source_name",
+          "component_kind",
+          "component_id",
+          "user_id",
+          "user_name",
+          "via",
+          "session_id",
+          "run_id",
+          "schedule_id",
+          "created_at",
+          "expires_at",
+          "expiry_source",
+          "resolved_at",
+          "resolved_by",
+          "resolved_by_name",
+          "note",
+          "args_changed",
+          "tool_args",
+          "resolution_data",
+          "requirements",
+          "context",
+          "timeline",
+          "routed_to",
+          "channels",
+          "views",
+          "can_resolve",
+          "cannot_resolve_reason",
+          "run_status",
+          "user_isolation",
+          "elevation_enabled",
+          "policy"
+        ],
+        "title": "ApprovalDetailOut",
+        "type": "object"
+      },
+      "ApprovalOut": {
+        "properties": {
+          "agentos_status": {
+            "title": "Agentos Status",
+            "type": "string"
+          },
+          "args_changed": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Args Changed",
+            "type": "array"
+          },
+          "component_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Component Id"
+          },
+          "component_kind": {
+            "anyOf": [
+              {
+                "enum": [
+                  "agent",
+                  "team",
+                  "workflow"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Component Kind"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
+          },
+          "expiry_enforced": {
+            "description": "Expired and acted on (run stopped), not just past its expiry",
+            "title": "Expiry Enforced",
+            "type": "boolean"
+          },
+          "expiry_source": {
+            "anyOf": [
+              {
+                "enum": [
+                  "approval",
+                  "step_timeout",
+                  "ttl"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expiry Source"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "resolved_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved At"
+          },
+          "resolved_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved By"
+          },
+          "resolved_by_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved By Name"
+          },
+          "run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Id"
+          },
+          "schedule_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Schedule Id"
+          },
+          "session_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Id"
+          },
+          "source_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Id"
+          },
+          "source_kind": {
+            "anyOf": [
+              {
+                "enum": [
+                  "agent",
+                  "team",
+                  "workflow",
+                  "schedule"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Kind"
+          },
+          "source_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Name"
+          },
+          "status": {
+            "$ref": "#/components/schemas/StatusName"
+          },
+          "tool_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tool Name"
+          },
+          "type": {
+            "enum": [
+              "blocking",
+              "audit"
+            ],
+            "title": "Type",
+            "type": "string"
+          },
+          "user_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Id"
+          },
+          "user_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Name"
+          },
+          "via": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Via"
+          }
+        },
+        "required": [
+          "id",
+          "tool_name",
+          "type",
+          "status",
+          "agentos_status",
+          "expiry_enforced",
+          "source_kind",
+          "source_id",
+          "source_name",
+          "component_kind",
+          "component_id",
+          "user_id",
+          "user_name",
+          "via",
+          "session_id",
+          "run_id",
+          "schedule_id",
+          "created_at",
+          "expires_at",
+          "expiry_source",
+          "resolved_at",
+          "resolved_by",
+          "resolved_by_name",
+          "note",
+          "args_changed"
+        ],
+        "title": "ApprovalOut",
+        "type": "object"
+      },
+      "ApprovalsPageOut": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/ApprovalOut"
+            },
+            "title": "Data",
+            "type": "array"
+          },
+          "limit": {
+            "title": "Limit",
+            "type": "integer"
+          },
+          "oldest_pending_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Oldest Pending At"
+          },
+          "page": {
+            "title": "Page",
+            "type": "integer"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          },
+          "truncated": {
+            "description": "Only the newest approvals were searched (see scan_limit)",
+            "title": "Truncated",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "data",
+          "page",
+          "limit",
+          "total",
+          "truncated",
+          "oldest_pending_at"
+        ],
+        "title": "ApprovalsPageOut",
+        "type": "object"
+      },
+      "AttemptOut": {
+        "properties": {
+          "at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "At"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
+          "state": {
+            "enum": [
+              "done",
+              "error",
+              "now"
+            ],
+            "title": "State",
+            "type": "string"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text",
+          "at",
+          "detail",
+          "state"
+        ],
+        "title": "AttemptOut",
+        "type": "object"
+      },
       "AttentionOut": {
         "properties": {
           "action": {
@@ -1295,6 +2122,283 @@
         "title": "CasesIn",
         "type": "object"
       },
+      "ChannelIn": {
+        "properties": {
+          "config": {
+            "additionalProperties": true,
+            "description": "slack: {mode: bot|webhook, token?, channel?, direct_messages?, webhook_url?, api_base?}; email: {to: [addresses]}; webhook: {url, secret?}",
+            "title": "Config",
+            "type": "object"
+          },
+          "enabled": {
+            "default": true,
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "events": {
+            "description": "Event types posted here for everyone",
+            "items": {
+              "type": "string"
+            },
+            "title": "Events",
+            "type": "array"
+          },
+          "instance_ids": {
+            "description": "Empty: every instance",
+            "items": {
+              "type": "string"
+            },
+            "title": "Instance Ids",
+            "type": "array"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/ChannelKindName"
+          },
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "name",
+          "config"
+        ],
+        "title": "ChannelIn",
+        "type": "object"
+      },
+      "ChannelKindName": {
+        "enum": [
+          "slack",
+          "email",
+          "webhook"
+        ],
+        "type": "string"
+      },
+      "ChannelOut": {
+        "properties": {
+          "config": {
+            "additionalProperties": true,
+            "description": "Secrets are shown as their last characters, never in full",
+            "title": "Config",
+            "type": "object"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "events": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Events",
+            "type": "array"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "instance_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Instance Ids",
+            "type": "array"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/ChannelKindName"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "recent": {
+            "items": {
+              "$ref": "#/components/schemas/DeliveryOut"
+            },
+            "title": "Recent",
+            "type": "array"
+          },
+          "sends_direct_messages": {
+            "title": "Sends Direct Messages",
+            "type": "boolean"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "name",
+          "config",
+          "events",
+          "instance_ids",
+          "enabled",
+          "sends_direct_messages",
+          "created_at",
+          "updated_at",
+          "recent"
+        ],
+        "title": "ChannelOut",
+        "type": "object"
+      },
+      "ChannelPatch": {
+        "properties": {
+          "config": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Secrets left out keep their current value",
+            "title": "Config"
+          },
+          "enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enabled"
+          },
+          "events": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Events"
+          },
+          "instance_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instance Ids"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          }
+        },
+        "title": "ChannelPatch",
+        "type": "object"
+      },
+      "CheckpointOut": {
+        "properties": {
+          "created_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "is_latest": {
+            "title": "Is Latest",
+            "type": "boolean"
+          },
+          "message_index": {
+            "title": "Message Index",
+            "type": "integer"
+          },
+          "number": {
+            "title": "Number",
+            "type": "integer"
+          },
+          "preview": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preview"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "number",
+          "message_index",
+          "title",
+          "preview",
+          "role",
+          "reason",
+          "created_at",
+          "is_latest"
+        ],
+        "title": "CheckpointOut",
+        "type": "object"
+      },
       "ComparisonCountsOut": {
         "properties": {
           "below_after": {
@@ -1781,6 +2885,38 @@
         "title": "ContentPageOut",
         "type": "object"
       },
+      "ContextOut": {
+        "properties": {
+          "agent_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent Message"
+          },
+          "user_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Message"
+          }
+        },
+        "required": [
+          "user_message",
+          "agent_message"
+        ],
+        "title": "ContextOut",
+        "type": "object"
+      },
       "CostOut": {
         "properties": {
           "approximate": {
@@ -2224,6 +3360,7 @@
                 "type": "null"
               }
             ],
+            "description": "Required to reject",
             "title": "Note"
           }
         },
@@ -2327,6 +3464,32 @@
         "title": "DecideOut",
         "type": "object"
       },
+      "DefaultsBody": {
+        "properties": {
+          "events": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "items": {
+                    "$ref": "#/components/schemas/PersonalChannelName"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "title": "Events",
+            "type": "object"
+          }
+        },
+        "required": [
+          "events"
+        ],
+        "title": "DefaultsBody",
+        "type": "object"
+      },
       "DeleteUserLearningsIn": {
         "properties": {
           "confirm": {
@@ -2415,6 +3578,129 @@
           "deleted"
         ],
         "title": "DeletionOut",
+        "type": "object"
+      },
+      "DeliveryOut": {
+        "properties": {
+          "attempts": {
+            "title": "Attempts",
+            "type": "integer"
+          },
+          "channel": {
+            "title": "Channel",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "event_type": {
+            "title": "Event Type",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "sent_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sent At"
+          },
+          "status": {
+            "enum": [
+              "pending",
+              "sent",
+              "failed",
+              "skipped"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "target": {
+            "title": "Target",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "event_type",
+          "channel",
+          "target",
+          "status",
+          "attempts",
+          "error",
+          "created_at",
+          "sent_at"
+        ],
+        "title": "DeliveryOut",
+        "type": "object"
+      },
+      "DisableIn": {
+        "properties": {
+          "reason": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Shown next to the schedule",
+            "title": "Reason"
+          }
+        },
+        "title": "DisableIn",
+        "type": "object"
+      },
+      "DisabledNoteOut": {
+        "properties": {
+          "at": {
+            "format": "date-time",
+            "title": "At",
+            "type": "string"
+          },
+          "by": {
+            "title": "By",
+            "type": "string"
+          },
+          "by_name": {
+            "title": "By Name",
+            "type": "string"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reason",
+          "by",
+          "by_name",
+          "at"
+        ],
+        "title": "DisabledNoteOut",
         "type": "object"
       },
       "DiscoveryOut": {
@@ -2581,6 +3867,48 @@
           "duplicates"
         ],
         "title": "DuplicatesOut",
+        "type": "object"
+      },
+      "EndpointCheckOut": {
+        "properties": {
+          "documented": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "In the instance's OpenAPI document; None when it publishes none",
+            "title": "Documented"
+          },
+          "needs_admin": {
+            "title": "Needs Admin",
+            "type": "boolean"
+          },
+          "target_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Id"
+          },
+          "target_kind": {
+            "$ref": "#/components/schemas/TargetKindName"
+          }
+        },
+        "required": [
+          "target_kind",
+          "target_id",
+          "documented",
+          "needs_admin"
+        ],
+        "title": "EndpointCheckOut",
         "type": "object"
       },
       "EnvTagName": {
@@ -2809,6 +4137,62 @@
           "standalone_unavailable"
         ],
         "title": "EvaluationsOut",
+        "type": "object"
+      },
+      "EventPreferenceOut": {
+        "properties": {
+          "channels": {
+            "items": {
+              "$ref": "#/components/schemas/PersonalChannelName"
+            },
+            "title": "Channels",
+            "type": "array"
+          },
+          "custom": {
+            "title": "Custom",
+            "type": "boolean"
+          },
+          "event": {
+            "$ref": "#/components/schemas/EventTypeOut"
+          }
+        },
+        "required": [
+          "event",
+          "channels",
+          "custom"
+        ],
+        "title": "EventPreferenceOut",
+        "type": "object"
+      },
+      "EventTypeOut": {
+        "properties": {
+          "defaults": {
+            "items": {
+              "$ref": "#/components/schemas/PersonalChannelName"
+            },
+            "title": "Defaults",
+            "type": "array"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "label",
+          "description",
+          "defaults"
+        ],
+        "title": "EventTypeOut",
         "type": "object"
       },
       "ExplainIn": {
@@ -4839,6 +6223,46 @@
         "title": "LoginRequest",
         "type": "object"
       },
+      "MarkReadIn": {
+        "properties": {
+          "ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 500,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Leave out to mark everything read",
+            "title": "Ids"
+          }
+        },
+        "title": "MarkReadIn",
+        "type": "object"
+      },
+      "MarkReadOut": {
+        "properties": {
+          "changed": {
+            "title": "Changed",
+            "type": "integer"
+          },
+          "unread": {
+            "title": "Unread",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "changed",
+          "unread"
+        ],
+        "title": "MarkReadOut",
+        "type": "object"
+      },
       "MeOut": {
         "properties": {
           "avatar_seed": {
@@ -5216,6 +6640,16 @@
         "title": "MemorySourceOut",
         "type": "object"
       },
+      "Method": {
+        "enum": [
+          "GET",
+          "POST",
+          "PUT",
+          "PATCH",
+          "DELETE"
+        ],
+        "type": "string"
+      },
       "MetricsSummaryOut": {
         "properties": {
           "components": {
@@ -5318,6 +6752,13 @@
         ],
         "title": "MetricsSummaryOut",
         "type": "object"
+      },
+      "ModeName": {
+        "enum": [
+          "elevated",
+          "admin"
+        ],
+        "type": "string"
       },
       "ModelTokensOut": {
         "properties": {
@@ -5480,6 +6921,101 @@
           "grants"
         ],
         "title": "MyAccessOut",
+        "type": "object"
+      },
+      "NamedRef": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "NamedRef",
+        "type": "object"
+      },
+      "NotificationOut": {
+        "properties": {
+          "body": {
+            "title": "Body",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "data": {
+            "additionalProperties": true,
+            "title": "Data",
+            "type": "object"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "instance_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instance Id"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "link": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Link"
+          },
+          "read_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Read At"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "title",
+          "body",
+          "link",
+          "instance_id",
+          "data",
+          "created_at",
+          "read_at"
+        ],
+        "title": "NotificationOut",
         "type": "object"
       },
       "OnboardingComplete": {
@@ -5778,6 +7314,11 @@
       },
       "OrgSettingsOut": {
         "properties": {
+          "approval_ttl_hours": {
+            "description": "Hours until approvals without their own expiry expire; 0 = never",
+            "title": "Approval Ttl Hours",
+            "type": "integer"
+          },
           "audit_log_all_reads": {
             "title": "Audit Log All Reads",
             "type": "boolean"
@@ -5789,13 +7330,27 @@
         },
         "required": [
           "require_explicit_bindings",
-          "audit_log_all_reads"
+          "audit_log_all_reads",
+          "approval_ttl_hours"
         ],
         "title": "OrgSettingsOut",
         "type": "object"
       },
       "OrgSettingsUpdate": {
         "properties": {
+          "approval_ttl_hours": {
+            "anyOf": [
+              {
+                "maximum": 720.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approval Ttl Hours"
+          },
           "audit_log_all_reads": {
             "anyOf": [
               {
@@ -6082,6 +7637,44 @@
         "title": "Page[AuditEventOut]",
         "type": "object"
       },
+      "Page_NotificationOut_": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/NotificationOut"
+            },
+            "title": "Data",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          },
+          "total_estimate": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Estimate"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "Page[NotificationOut]",
+        "type": "object"
+      },
       "PasswordResetConfirm": {
         "properties": {
           "password": {
@@ -6115,6 +7708,268 @@
           "email"
         ],
         "title": "PasswordResetRequest",
+        "type": "object"
+      },
+      "PersonalChannelName": {
+        "enum": [
+          "in_app",
+          "email",
+          "slack"
+        ],
+        "type": "string"
+      },
+      "PolicyIn": {
+        "properties": {
+          "enforce_expiry": {
+            "title": "Enforce Expiry",
+            "type": "boolean"
+          },
+          "ttl_hours": {
+            "anyOf": [
+              {
+                "maximum": 720.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "None: use the org's approval_ttl_hours",
+            "title": "Ttl Hours"
+          }
+        },
+        "required": [
+          "enforce_expiry"
+        ],
+        "title": "PolicyIn",
+        "type": "object"
+      },
+      "PolicyOut": {
+        "properties": {
+          "enforce_expiry": {
+            "title": "Enforce Expiry",
+            "type": "boolean"
+          },
+          "instance_id": {
+            "title": "Instance Id",
+            "type": "string"
+          },
+          "ttl_hours": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "None: the org's approval_ttl_hours applies",
+            "title": "Ttl Hours"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "updated_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated By"
+          }
+        },
+        "required": [
+          "instance_id",
+          "enforce_expiry",
+          "ttl_hours",
+          "updated_by",
+          "updated_at"
+        ],
+        "title": "PolicyOut",
+        "type": "object"
+      },
+      "PreferencesIn": {
+        "properties": {
+          "clear_quiet_hours": {
+            "default": false,
+            "title": "Clear Quiet Hours",
+            "type": "boolean"
+          },
+          "events": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "items": {
+                    "$ref": "#/components/schemas/PersonalChannelName"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "description": "Event type → channels; null goes back to the org default",
+            "title": "Events",
+            "type": "object"
+          },
+          "quiet_hours": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/QuietHoursBody"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "title": "PreferencesIn",
+        "type": "object"
+      },
+      "PreferencesOut": {
+        "properties": {
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/EventPreferenceOut"
+            },
+            "title": "Events",
+            "type": "array"
+          },
+          "quiet_hours": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/QuietHoursBody"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "slack_available": {
+            "title": "Slack Available",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "events",
+          "quiet_hours",
+          "slack_available"
+        ],
+        "title": "PreferencesOut",
+        "type": "object"
+      },
+      "PreviewIn": {
+        "properties": {
+          "count": {
+            "default": 5,
+            "maximum": 20.0,
+            "minimum": 1.0,
+            "title": "Count",
+            "type": "integer"
+          },
+          "cron_expr": {
+            "maxLength": 120,
+            "title": "Cron Expr",
+            "type": "string"
+          },
+          "start": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Preview from this moment (default: now)",
+            "title": "Start"
+          },
+          "timezone": {
+            "default": "UTC",
+            "maxLength": 64,
+            "title": "Timezone",
+            "type": "string"
+          }
+        },
+        "required": [
+          "cron_expr"
+        ],
+        "title": "PreviewIn",
+        "type": "object"
+      },
+      "PreviewOut": {
+        "properties": {
+          "cron_expr": {
+            "title": "Cron Expr",
+            "type": "string"
+          },
+          "human": {
+            "title": "Human",
+            "type": "string"
+          },
+          "notes": {
+            "description": "Daylight-saving warnings",
+            "items": {
+              "type": "string"
+            },
+            "title": "Notes",
+            "type": "array"
+          },
+          "runs": {
+            "items": {
+              "$ref": "#/components/schemas/PreviewRunOut"
+            },
+            "title": "Runs",
+            "type": "array"
+          },
+          "timezone": {
+            "title": "Timezone",
+            "type": "string"
+          }
+        },
+        "required": [
+          "cron_expr",
+          "timezone",
+          "human",
+          "runs",
+          "notes"
+        ],
+        "title": "PreviewOut",
+        "type": "object"
+      },
+      "PreviewRunOut": {
+        "properties": {
+          "local": {
+            "format": "date-time",
+            "title": "Local",
+            "type": "string"
+          },
+          "utc": {
+            "format": "date-time",
+            "title": "Utc",
+            "type": "string"
+          }
+        },
+        "required": [
+          "local",
+          "utc"
+        ],
+        "title": "PreviewRunOut",
         "type": "object"
       },
       "PriceIn": {
@@ -6544,6 +8399,681 @@
         "title": "Problem",
         "type": "object"
       },
+      "QueueJobDetailOut": {
+        "properties": {
+          "access": {
+            "$ref": "#/components/schemas/ModeName"
+          },
+          "attempt": {
+            "title": "Attempt",
+            "type": "integer"
+          },
+          "attempts": {
+            "items": {
+              "$ref": "#/components/schemas/AttemptOut"
+            },
+            "title": "Attempts",
+            "type": "array"
+          },
+          "checkpoints": {
+            "items": {
+              "$ref": "#/components/schemas/CheckpointOut"
+            },
+            "title": "Checkpoints",
+            "type": "array"
+          },
+          "checkpoints_unavailable": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Checkpoints Unavailable"
+          },
+          "completed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At"
+          },
+          "component_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Component Id"
+          },
+          "component_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Component Type"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "deployment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deployment"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "idempotency_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Idempotency Key"
+          },
+          "locked_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Locked By"
+          },
+          "max_attempts": {
+            "title": "Max Attempts",
+            "type": "integer"
+          },
+          "run_content": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Content"
+          },
+          "run_id": {
+            "title": "Run Id",
+            "type": "string"
+          },
+          "run_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Status"
+          },
+          "session_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Id"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "user_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Id"
+          }
+        },
+        "required": [
+          "id",
+          "run_id",
+          "component_type",
+          "component_id",
+          "session_id",
+          "user_id",
+          "status",
+          "detail",
+          "attempt",
+          "max_attempts",
+          "idempotency_key",
+          "locked_by",
+          "deployment",
+          "error",
+          "created_at",
+          "updated_at",
+          "completed_at",
+          "run_status",
+          "run_content",
+          "attempts",
+          "checkpoints",
+          "checkpoints_unavailable",
+          "access"
+        ],
+        "title": "QueueJobDetailOut",
+        "type": "object"
+      },
+      "QueueJobOut": {
+        "properties": {
+          "attempt": {
+            "title": "Attempt",
+            "type": "integer"
+          },
+          "completed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At"
+          },
+          "component_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Component Id"
+          },
+          "component_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Component Type"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "deployment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deployment"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "idempotency_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Idempotency Key"
+          },
+          "locked_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Locked By"
+          },
+          "max_attempts": {
+            "title": "Max Attempts",
+            "type": "integer"
+          },
+          "run_id": {
+            "title": "Run Id",
+            "type": "string"
+          },
+          "session_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Id"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "user_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Id"
+          }
+        },
+        "required": [
+          "id",
+          "run_id",
+          "component_type",
+          "component_id",
+          "session_id",
+          "user_id",
+          "status",
+          "detail",
+          "attempt",
+          "max_attempts",
+          "idempotency_key",
+          "locked_by",
+          "deployment",
+          "error",
+          "created_at",
+          "updated_at",
+          "completed_at"
+        ],
+        "title": "QueueJobOut",
+        "type": "object"
+      },
+      "QueueJobsPageOut": {
+        "properties": {
+          "access": {
+            "$ref": "#/components/schemas/ModeName"
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/QueueJobOut"
+            },
+            "title": "Data",
+            "type": "array"
+          },
+          "limit": {
+            "title": "Limit",
+            "type": "integer"
+          },
+          "page": {
+            "title": "Page",
+            "type": "integer"
+          },
+          "total": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total"
+          }
+        },
+        "required": [
+          "data",
+          "page",
+          "limit",
+          "total",
+          "access"
+        ],
+        "title": "QueueJobsPageOut",
+        "type": "object"
+      },
+      "QueueOverviewOut": {
+        "properties": {
+          "config": {
+            "additionalProperties": true,
+            "description": "QueueConfig as agnostic-bridge reports it (empty without the bridge)",
+            "title": "Config",
+            "type": "object"
+          },
+          "paused_approvals": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paused Approvals"
+          },
+          "slots_total": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Slots Total"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/QueueSummaryOut"
+          },
+          "workers": {
+            "items": {
+              "$ref": "#/components/schemas/QueueWorkerOut"
+            },
+            "title": "Workers",
+            "type": "array"
+          }
+        },
+        "required": [
+          "summary",
+          "config",
+          "workers",
+          "slots_total",
+          "paused_approvals"
+        ],
+        "title": "QueueOverviewOut",
+        "type": "object"
+      },
+      "QueueSummaryOut": {
+        "properties": {
+          "access": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ModeName"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "How you reach the queue; None: counts only"
+          },
+          "counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Counts",
+            "type": "object"
+          },
+          "explanation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Explanation"
+          },
+          "instance_id": {
+            "title": "Instance Id",
+            "type": "string"
+          },
+          "oldest_queued_age_seconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Oldest Queued Age Seconds"
+          }
+        },
+        "required": [
+          "instance_id",
+          "counts",
+          "oldest_queued_age_seconds",
+          "access",
+          "explanation"
+        ],
+        "title": "QueueSummaryOut",
+        "type": "object"
+      },
+      "QueueWorkerOut": {
+        "properties": {
+          "deployment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deployment"
+          },
+          "heartbeat_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Heartbeat At"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "slots_busy": {
+            "title": "Slots Busy",
+            "type": "integer"
+          },
+          "slots_total": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Slots Total"
+          },
+          "source": {
+            "description": "jobs: known only from locked_by of running jobs",
+            "enum": [
+              "bridge",
+              "jobs"
+            ],
+            "title": "Source",
+            "type": "string"
+          },
+          "worker_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Worker Id"
+          }
+        },
+        "required": [
+          "name",
+          "worker_id",
+          "heartbeat_at",
+          "slots_busy",
+          "slots_total",
+          "deployment",
+          "source"
+        ],
+        "title": "QueueWorkerOut",
+        "type": "object"
+      },
+      "QuietHoursBody": {
+        "properties": {
+          "end": {
+            "examples": [
+              "07:00"
+            ],
+            "pattern": "^\\d{2}:\\d{2}$",
+            "title": "End",
+            "type": "string"
+          },
+          "start": {
+            "examples": [
+              "22:00"
+            ],
+            "pattern": "^\\d{2}:\\d{2}$",
+            "title": "Start",
+            "type": "string"
+          },
+          "timezone": {
+            "default": "UTC",
+            "maxLength": 64,
+            "title": "Timezone",
+            "type": "string"
+          }
+        },
+        "required": [
+          "start",
+          "end"
+        ],
+        "title": "QuietHoursBody",
+        "type": "object"
+      },
       "Readiness": {
         "properties": {
           "checks": {
@@ -6590,6 +9120,33 @@
           "detail"
         ],
         "title": "ReadinessCheck",
+        "type": "object"
+      },
+      "RequeueIn": {
+        "properties": {
+          "force": {
+            "default": false,
+            "description": "Requeue even inside lock_grace_seconds of the failure",
+            "title": "Force",
+            "type": "boolean"
+          }
+        },
+        "title": "RequeueIn",
+        "type": "object"
+      },
+      "ResumeIn": {
+        "properties": {
+          "message_index": {
+            "description": "The checkpoint's message_index (AgentOS continue_from)",
+            "minimum": 0.0,
+            "title": "Message Index",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "message_index"
+        ],
+        "title": "ResumeIn",
         "type": "object"
       },
       "RoleOut": {
@@ -6715,6 +9272,210 @@
         "title": "RotateIn",
         "type": "object"
       },
+      "RouteIn": {
+        "properties": {
+          "channel_ids": {
+            "description": "Org notification channels",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 20,
+            "title": "Channel Ids",
+            "type": "array"
+          },
+          "channels": {
+            "items": {
+              "$ref": "#/components/schemas/PersonalChannelName"
+            },
+            "title": "Channels",
+            "type": "array"
+          },
+          "component_ids": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 100,
+            "title": "Component Ids",
+            "type": "array"
+          },
+          "component_kind": {
+            "anyOf": [
+              {
+                "enum": [
+                  "agent",
+                  "team",
+                  "workflow"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Component Kind"
+          },
+          "member_ids": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 200,
+            "title": "Member Ids",
+            "type": "array"
+          },
+          "name": {
+            "examples": [
+              "Billing ops"
+            ],
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "role_ids": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 50,
+            "title": "Role Ids",
+            "type": "array"
+          },
+          "tool_name": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Empty: every tool",
+            "title": "Tool Name"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "RouteIn",
+        "type": "object"
+      },
+      "RouteOut": {
+        "properties": {
+          "channel_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Channel Ids",
+            "type": "array"
+          },
+          "channels": {
+            "items": {
+              "$ref": "#/components/schemas/PersonalChannelName"
+            },
+            "title": "Channels",
+            "type": "array"
+          },
+          "component_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Component Ids",
+            "type": "array"
+          },
+          "component_kind": {
+            "anyOf": [
+              {
+                "enum": [
+                  "agent",
+                  "team",
+                  "workflow"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Component Kind"
+          },
+          "created_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created By"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "instance_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instance Id"
+          },
+          "members": {
+            "items": {
+              "$ref": "#/components/schemas/NamedRef"
+            },
+            "title": "Members",
+            "type": "array"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "roles": {
+            "items": {
+              "$ref": "#/components/schemas/NamedRef"
+            },
+            "title": "Roles",
+            "type": "array"
+          },
+          "tool_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tool Name"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "instance_id",
+          "name",
+          "tool_name",
+          "component_kind",
+          "component_ids",
+          "members",
+          "roles",
+          "channels",
+          "channel_ids",
+          "created_by",
+          "updated_at"
+        ],
+        "title": "RouteOut",
+        "type": "object"
+      },
       "RoutePolicyOut": {
         "properties": {
           "audit_level": {
@@ -6792,6 +9553,714 @@
           "total"
         ],
         "title": "RunsOut",
+        "type": "object"
+      },
+      "RunsPageOut": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/ScheduleRunOut"
+            },
+            "title": "Data",
+            "type": "array"
+          },
+          "limit": {
+            "title": "Limit",
+            "type": "integer"
+          },
+          "page": {
+            "title": "Page",
+            "type": "integer"
+          },
+          "total": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total"
+          }
+        },
+        "required": [
+          "data",
+          "page",
+          "limit",
+          "total"
+        ],
+        "title": "RunsPageOut",
+        "type": "object"
+      },
+      "ScheduleIn": {
+        "properties": {
+          "cron_expr": {
+            "default": "",
+            "description": "5-field cron; empty runs only when triggered",
+            "maxLength": 120,
+            "title": "Cron Expr",
+            "type": "string"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "endpoint": {
+            "examples": [
+              "/agents/billing-agent/runs"
+            ],
+            "maxLength": 512,
+            "pattern": "^/[^\\s]*$",
+            "title": "Endpoint",
+            "type": "string"
+          },
+          "max_retries": {
+            "default": 0,
+            "maximum": 10.0,
+            "minimum": 0.0,
+            "title": "Max Retries",
+            "type": "integer"
+          },
+          "method": {
+            "$ref": "#/components/schemas/Method",
+            "default": "POST"
+          },
+          "name": {
+            "maxLength": 255,
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9 ._-]*$",
+            "title": "Name",
+            "type": "string"
+          },
+          "payload": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payload"
+          },
+          "retry_delay_seconds": {
+            "default": 60,
+            "maximum": 3600.0,
+            "minimum": 1.0,
+            "title": "Retry Delay Seconds",
+            "type": "integer"
+          },
+          "timeout_seconds": {
+            "default": 3600,
+            "maximum": 86400.0,
+            "minimum": 1.0,
+            "title": "Timeout Seconds",
+            "type": "integer"
+          },
+          "timezone": {
+            "default": "UTC",
+            "maxLength": 64,
+            "title": "Timezone",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "endpoint"
+        ],
+        "title": "ScheduleIn",
+        "type": "object"
+      },
+      "ScheduleOut": {
+        "properties": {
+          "consecutive_failures": {
+            "title": "Consecutive Failures",
+            "type": "integer"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "cron_expr": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cron Expr"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "disabled_note": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DisabledNoteOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Why a person disabled it"
+          },
+          "disabled_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Set by AgentOS (e.g. the target was archived)",
+            "title": "Disabled Reason"
+          },
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "endpoint": {
+            "title": "Endpoint",
+            "type": "string"
+          },
+          "human": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The cron expression as a sentence",
+            "title": "Human"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "last_runs": {
+            "items": {
+              "$ref": "#/components/schemas/ScheduleRunOut"
+            },
+            "title": "Last Runs",
+            "type": "array"
+          },
+          "managed_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Managed By"
+          },
+          "max_retries": {
+            "title": "Max Retries",
+            "type": "integer"
+          },
+          "method": {
+            "title": "Method",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "next_run_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Run At"
+          },
+          "payload": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payload"
+          },
+          "retry_delay_seconds": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Retry Delay Seconds"
+          },
+          "target_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Id"
+          },
+          "target_kind": {
+            "$ref": "#/components/schemas/TargetKindName"
+          },
+          "timeout_seconds": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timeout Seconds"
+          },
+          "timezone": {
+            "title": "Timezone",
+            "type": "string"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "user_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Id"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "method",
+          "endpoint",
+          "payload",
+          "cron_expr",
+          "timezone",
+          "human",
+          "timeout_seconds",
+          "max_retries",
+          "retry_delay_seconds",
+          "enabled",
+          "next_run_at",
+          "target_kind",
+          "target_id",
+          "disabled_reason",
+          "disabled_note",
+          "user_id",
+          "managed_by",
+          "created_at",
+          "updated_at",
+          "last_runs",
+          "consecutive_failures"
+        ],
+        "title": "ScheduleOut",
+        "type": "object"
+      },
+      "SchedulePatch": {
+        "properties": {
+          "cron_expr": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cron Expr"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "endpoint": {
+            "anyOf": [
+              {
+                "maxLength": 512,
+                "pattern": "^/[^\\s]*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Endpoint"
+          },
+          "max_retries": {
+            "anyOf": [
+              {
+                "maximum": 10.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Retries"
+          },
+          "method": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Method"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 255,
+                "pattern": "^[a-zA-Z0-9][a-zA-Z0-9 ._-]*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "payload": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payload"
+          },
+          "retry_delay_seconds": {
+            "anyOf": [
+              {
+                "maximum": 3600.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Retry Delay Seconds"
+          },
+          "timeout_seconds": {
+            "anyOf": [
+              {
+                "maximum": 86400.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timeout Seconds"
+          },
+          "timezone": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timezone"
+          }
+        },
+        "title": "SchedulePatch",
+        "type": "object"
+      },
+      "ScheduleRunOut": {
+        "properties": {
+          "attempt": {
+            "title": "Attempt",
+            "type": "integer"
+          },
+          "attempt_label": {
+            "title": "Attempt Label",
+            "type": "string"
+          },
+          "completed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At"
+          },
+          "duration_seconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Seconds"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Id"
+          },
+          "schedule_id": {
+            "title": "Schedule Id",
+            "type": "string"
+          },
+          "session_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Id"
+          },
+          "states": {
+            "description": "Badges in order, e.g. PAUSED then COMPLETED",
+            "items": {
+              "type": "string"
+            },
+            "title": "States",
+            "type": "array"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "status_code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status Code"
+          },
+          "triggered_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Triggered At"
+          }
+        },
+        "required": [
+          "id",
+          "schedule_id",
+          "attempt",
+          "status",
+          "states",
+          "attempt_label",
+          "status_code",
+          "run_id",
+          "session_id",
+          "error",
+          "triggered_at",
+          "completed_at",
+          "duration_seconds"
+        ],
+        "title": "ScheduleRunOut",
+        "type": "object"
+      },
+      "SchedulerStatusOut": {
+        "properties": {
+          "can_custom_endpoint": {
+            "description": "Instance admins may schedule any endpoint",
+            "title": "Can Custom Endpoint",
+            "type": "boolean"
+          },
+          "can_delete": {
+            "title": "Can Delete",
+            "type": "boolean"
+          },
+          "can_write": {
+            "title": "Can Write",
+            "type": "boolean"
+          },
+          "instance_id": {
+            "title": "Instance Id",
+            "type": "string"
+          },
+          "poll_interval_seconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Poll Interval Seconds"
+          },
+          "running": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "None: unknown (the instance has no agnostic-bridge to ask)",
+            "title": "Running"
+          }
+        },
+        "required": [
+          "instance_id",
+          "running",
+          "poll_interval_seconds",
+          "can_write",
+          "can_delete",
+          "can_custom_endpoint"
+        ],
+        "title": "SchedulerStatusOut",
+        "type": "object"
+      },
+      "SchedulesPageOut": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/ScheduleOut"
+            },
+            "title": "Data",
+            "type": "array"
+          },
+          "limit": {
+            "title": "Limit",
+            "type": "integer"
+          },
+          "page": {
+            "title": "Page",
+            "type": "integer"
+          },
+          "total": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total"
+          }
+        },
+        "required": [
+          "data",
+          "page",
+          "limit",
+          "total"
+        ],
+        "title": "SchedulesPageOut",
         "type": "object"
       },
       "ScopeOut": {
@@ -7143,6 +10612,16 @@
         "title": "SpanTypeStatOut",
         "type": "object"
       },
+      "StatusName": {
+        "enum": [
+          "pending",
+          "approved",
+          "rejected",
+          "expired",
+          "cancelled"
+        ],
+        "type": "string"
+      },
       "StepOut": {
         "properties": {
           "detail": {
@@ -7347,6 +10826,15 @@
         "title": "SystemModules",
         "type": "object"
       },
+      "TargetKindName": {
+        "enum": [
+          "agent",
+          "team",
+          "workflow",
+          "custom"
+        ],
+        "type": "string"
+      },
       "TestReportOut": {
         "properties": {
           "capabilities": {
@@ -7378,6 +10866,54 @@
           "capabilities"
         ],
         "title": "TestReportOut",
+        "type": "object"
+      },
+      "TimelineEntryOut": {
+        "properties": {
+          "at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "At"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
+          "state": {
+            "enum": [
+              "done",
+              "now",
+              "end"
+            ],
+            "title": "State",
+            "type": "string"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text",
+          "at",
+          "detail",
+          "state"
+        ],
+        "title": "TimelineEntryOut",
         "type": "object"
       },
       "TokenCheckOut": {
@@ -7628,6 +11164,19 @@
         "title": "TraceComparisonOut",
         "type": "object"
       },
+      "UnreadOut": {
+        "properties": {
+          "unread": {
+            "title": "Unread",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "unread"
+        ],
+        "title": "UnreadOut",
+        "type": "object"
+      },
       "ValidationError": {
         "properties": {
           "ctx": {
@@ -7714,6 +11263,30 @@
           "token"
         ],
         "title": "VerifyTokenIn",
+        "type": "object"
+      },
+      "ViewOut": {
+        "properties": {
+          "at": {
+            "format": "date-time",
+            "title": "At",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "user_id": {
+            "title": "User Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id",
+          "name",
+          "at"
+        ],
+        "title": "ViewOut",
         "type": "object"
       },
       "agnostic_observe__api__metrics_schemas__ModelUsageOut": {
@@ -8162,6 +11735,213 @@
         "summary": "The scope catalog: AgentOS 3.1 and control-plane scopes",
         "tags": [
           "access"
+        ]
+      }
+    },
+    "/api/v1/approvals/routes": {
+      "get": {
+        "operationId": "approvals_list_org_routes",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RouteOut"
+                  },
+                  "title": "Response Approvals List Org Routes",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Org-wide routing rules (needs settings:write)",
+        "tags": [
+          "approvals"
+        ]
+      },
+      "post": {
+        "operationId": "approvals_create_org_route",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RouteIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RouteOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Add an org-wide routing rule (needs settings:write)",
+        "tags": [
+          "approvals"
+        ]
+      }
+    },
+    "/api/v1/approvals/routes/{route_id}": {
+      "delete": {
+        "operationId": "approvals_delete_route",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "route_id",
+            "required": true,
+            "schema": {
+              "title": "Route Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Remove a routing rule",
+        "tags": [
+          "approvals"
+        ]
+      },
+      "put": {
+        "operationId": "approvals_update_route",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "route_id",
+            "required": true,
+            "schema": {
+              "title": "Route Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RouteIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RouteOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Change a routing rule",
+        "tags": [
+          "approvals"
         ]
       }
     },
@@ -9340,6 +13120,227 @@
         ]
       }
     },
+    "/api/v1/instances/{instance}/approvals": {
+      "get": {
+        "operationId": "approvals_list_approvals",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "default": "pending",
+              "enum": [
+                "pending",
+                "approved",
+                "rejected",
+                "expired",
+                "cancelled"
+              ],
+              "title": "Status",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "tool",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 200,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Tool"
+            }
+          },
+          {
+            "in": "query",
+            "name": "source_kind",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "agent",
+                    "team",
+                    "workflow",
+                    "schedule"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Source Kind"
+            }
+          },
+          {
+            "in": "query",
+            "name": "source_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 200,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Source Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "user_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 200,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "schedule_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 200,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Schedule Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "blocking",
+                    "audit"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Type"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 260,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApprovalsPageOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Approvals by tab and filters, newest first (needs approvals:read)",
+        "tags": [
+          "approvals"
+        ]
+      }
+    },
     "/api/v1/instances/{instance}/approvals/count": {
       "get": {
         "operationId": "approvals_count",
@@ -9389,6 +13390,359 @@
           }
         },
         "summary": "Pending approvals on the instance (the nav badge; live updates arrive as approvals.count events)",
+        "tags": [
+          "approvals"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/approvals/counts": {
+      "get": {
+        "operationId": "approvals_approval_counts",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApprovalCountsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "How many approvals each tab holds (needs approvals:read)",
+        "tags": [
+          "approvals"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/approvals/policy": {
+      "get": {
+        "operationId": "approvals_get_policy",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Whether expiry stops runs on this instance, and its TTL",
+        "tags": [
+          "approvals"
+        ]
+      },
+      "put": {
+        "operationId": "approvals_put_policy",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PolicyIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Change the expiry policy (Instance admin; audited)",
+        "tags": [
+          "approvals"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/approvals/routes": {
+      "get": {
+        "operationId": "approvals_list_routes",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RouteOut"
+                  },
+                  "title": "Response Approvals List Routes",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Routing rules of the instance, then the org-wide ones",
+        "tags": [
+          "approvals"
+        ]
+      },
+      "post": {
+        "operationId": "approvals_create_route",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RouteIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RouteOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Route approvals to members or roles",
+        "tags": [
+          "approvals"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/approvals/{approval_id}": {
+      "get": {
+        "operationId": "approvals_get_approval",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "approval_id",
+            "required": true,
+            "schema": {
+              "title": "Approval Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApprovalDetailOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "One approval with its context and timeline; records that you viewed it (needs approvals:read)",
         "tags": [
           "approvals"
         ]
@@ -12277,6 +16631,1373 @@
         ]
       }
     },
+    "/api/v1/instances/{instance}/queue/jobs": {
+      "get": {
+        "operationId": "queue_queue_jobs",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "queued",
+                    "running",
+                    "paused",
+                    "failed",
+                    "completed",
+                    "cancelled"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QueueJobsPageOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Durable jobs, newest first (queue:operate or Instance admin)",
+        "tags": [
+          "queue"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/queue/jobs/{job_id}": {
+      "get": {
+        "operationId": "queue_queue_job",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "title": "Job Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QueueJobDetailOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "One job with its attempts and checkpoints",
+        "tags": [
+          "queue"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/queue/jobs/{job_id}/cancel": {
+      "post": {
+        "operationId": "queue_cancel_job",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "title": "Job Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QueueJobDetailOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Cancel a queued or running job's run (audited)",
+        "tags": [
+          "queue"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/queue/jobs/{job_id}/requeue": {
+      "post": {
+        "operationId": "queue_requeue_job",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "title": "Job Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequeueIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QueueJobDetailOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "One more attempt with the same run id (audited)",
+        "tags": [
+          "queue"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/queue/jobs/{job_id}/resume": {
+      "post": {
+        "operationId": "queue_resume_job",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "title": "Job Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResumeIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QueueJobDetailOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Continue a failed run from a checkpoint; earlier tool calls aren't repeated (audited)",
+        "tags": [
+          "queue"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/queue/overview": {
+      "get": {
+        "operationId": "queue_queue_overview",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QueueOverviewOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Queue health, config and workers (queue:operate or Instance admin)",
+        "tags": [
+          "queue"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/queue/summary": {
+      "get": {
+        "operationId": "queue_queue_summary",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QueueSummaryOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Job counts for anyone with access to the instance",
+        "tags": [
+          "queue"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/queue/workers": {
+      "get": {
+        "operationId": "queue_queue_workers",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/QueueWorkerOut"
+                  },
+                  "title": "Response Queue Queue Workers",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Replicas with heartbeats and slots (queue:operate or Instance admin)",
+        "tags": [
+          "queue"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/schedules": {
+      "get": {
+        "operationId": "scheduler_list_schedules",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "enabled",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Enabled"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchedulesPageOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Schedules with their latest runs (needs schedules:read)",
+        "tags": [
+          "scheduler"
+        ]
+      },
+      "post": {
+        "operationId": "scheduler_create_schedule",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScheduleIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Create a schedule (schedules:write; a custom endpoint needs Instance admin)",
+        "tags": [
+          "scheduler"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/schedules/endpoint-check": {
+      "get": {
+        "operationId": "scheduler_check_endpoint",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "path",
+            "required": true,
+            "schema": {
+              "maxLength": 512,
+              "pattern": "^/",
+              "title": "Path",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "method",
+            "required": false,
+            "schema": {
+              "default": "POST",
+              "enum": [
+                "GET",
+                "POST",
+                "PUT",
+                "PATCH",
+                "DELETE"
+              ],
+              "title": "Method",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EndpointCheckOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "What an endpoint targets, and whether the instance's OpenAPI document knows it",
+        "tags": [
+          "scheduler"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/schedules/preview": {
+      "post": {
+        "operationId": "scheduler_preview_schedule",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreviewIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreviewOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "A cron expression as a sentence, its next runs, DST notes",
+        "tags": [
+          "scheduler"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/schedules/status": {
+      "get": {
+        "operationId": "scheduler_scheduler_status",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchedulerStatusOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Whether the scheduler runs, and what you may do here",
+        "tags": [
+          "scheduler"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/schedules/{schedule_id}": {
+      "delete": {
+        "operationId": "scheduler_delete_schedule",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "schedule_id",
+            "required": true,
+            "schema": {
+              "title": "Schedule Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Delete a schedule (schedules:delete)",
+        "tags": [
+          "scheduler"
+        ]
+      },
+      "get": {
+        "operationId": "scheduler_get_schedule",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "schedule_id",
+            "required": true,
+            "schema": {
+              "title": "Schedule Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "One schedule with its recent runs",
+        "tags": [
+          "scheduler"
+        ]
+      },
+      "patch": {
+        "operationId": "scheduler_update_schedule",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "schedule_id",
+            "required": true,
+            "schema": {
+              "title": "Schedule Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SchedulePatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Change a schedule (schedules:write)",
+        "tags": [
+          "scheduler"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/schedules/{schedule_id}/disable": {
+      "post": {
+        "operationId": "scheduler_disable_schedule",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "schedule_id",
+            "required": true,
+            "schema": {
+              "title": "Schedule Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DisableIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Disable a schedule, with a reason (schedules:write)",
+        "tags": [
+          "scheduler"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/schedules/{schedule_id}/enable": {
+      "post": {
+        "operationId": "scheduler_enable_schedule",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "schedule_id",
+            "required": true,
+            "schema": {
+              "title": "Schedule Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Enable a schedule (schedules:write)",
+        "tags": [
+          "scheduler"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/schedules/{schedule_id}/runs": {
+      "get": {
+        "operationId": "scheduler_schedule_runs",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "schedule_id",
+            "required": true,
+            "schema": {
+              "title": "Schedule Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunsPageOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Run history of a schedule, newest first",
+        "tags": [
+          "scheduler"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/schedules/{schedule_id}/trigger": {
+      "post": {
+        "operationId": "scheduler_trigger_schedule",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "schedule_id",
+            "required": true,
+            "schema": {
+              "title": "Schedule Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleRunOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Run a schedule now (schedules:write)",
+        "tags": [
+          "scheduler"
+        ]
+      }
+    },
     "/api/v1/instances/{instance}/test": {
       "post": {
         "operationId": "instances_test_instance",
@@ -12937,6 +18658,100 @@
         ]
       }
     },
+    "/api/v1/me/notification-preferences": {
+      "get": {
+        "operationId": "notifications_my_preferences",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreferencesOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Which channels each event reaches you through, and quiet hours",
+        "tags": [
+          "notifications"
+        ]
+      },
+      "put": {
+        "operationId": "notifications_update_my_preferences",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreferencesIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreferencesOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Change your notification channels or quiet hours",
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
     "/api/v1/me/sessions": {
       "get": {
         "operationId": "me_list_my_sessions",
@@ -13236,6 +19051,645 @@
         "summary": "Change a member's org role",
         "tags": [
           "members"
+        ]
+      }
+    },
+    "/api/v1/notifications": {
+      "get": {
+        "operationId": "notifications_list_notifications",
+        "parameters": [
+          {
+            "description": "Only unread ones",
+            "in": "query",
+            "name": "unread",
+            "required": false,
+            "schema": {
+              "default": false,
+              "description": "Only unread ones",
+              "title": "Unread",
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Maximum items to return",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "description": "Maximum items to return",
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Opaque cursor from a previous page",
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Opaque cursor from a previous page",
+              "title": "Cursor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_NotificationOut_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Your notifications (the bell), newest first",
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/api/v1/notifications/channels": {
+      "get": {
+        "operationId": "notifications_list_channels",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ChannelOut"
+                  },
+                  "title": "Response Notifications List Channels",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Org notification channels (needs notifications:write)",
+        "tags": [
+          "notifications"
+        ]
+      },
+      "post": {
+        "operationId": "notifications_create_channel",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChannelIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChannelOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Add a Slack, email or webhook channel",
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/api/v1/notifications/channels/{channel_id}": {
+      "delete": {
+        "operationId": "notifications_delete_channel",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "channel_id",
+            "required": true,
+            "schema": {
+              "title": "Channel Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Remove a channel",
+        "tags": [
+          "notifications"
+        ]
+      },
+      "get": {
+        "operationId": "notifications_get_channel",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "channel_id",
+            "required": true,
+            "schema": {
+              "title": "Channel Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChannelOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "One channel with its recent deliveries",
+        "tags": [
+          "notifications"
+        ]
+      },
+      "patch": {
+        "operationId": "notifications_update_channel",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "channel_id",
+            "required": true,
+            "schema": {
+              "title": "Channel Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChannelPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChannelOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Change a channel (secrets left out are kept)",
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/api/v1/notifications/channels/{channel_id}/test": {
+      "post": {
+        "operationId": "notifications_test_channel",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "channel_id",
+            "required": true,
+            "schema": {
+              "title": "Channel Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Send a test message now and report the outcome",
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/api/v1/notifications/defaults": {
+      "get": {
+        "operationId": "notifications_get_defaults",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultsBody"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Org default channels per event type (needs notifications:write)",
+        "tags": [
+          "notifications"
+        ]
+      },
+      "put": {
+        "operationId": "notifications_put_defaults",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DefaultsBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultsBody"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Change org default channels (needs notifications:write; audited)",
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/api/v1/notifications/event-types": {
+      "get": {
+        "operationId": "notifications_event_types",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/EventTypeOut"
+                  },
+                  "title": "Response Notifications Event Types",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Everything that can be notified, with its default channels",
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/api/v1/notifications/read": {
+      "post": {
+        "operationId": "notifications_mark_read",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarkReadIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarkReadOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Mark some or all of your notifications read",
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/api/v1/notifications/unread-count": {
+      "get": {
+        "operationId": "notifications_unread_count",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnreadOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "How many of your notifications are unread (the bell badge)",
+        "tags": [
+          "notifications"
         ]
       }
     },

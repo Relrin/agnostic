@@ -13,6 +13,7 @@ from typing import Any, Protocol, cast
 
 from agnostic_evals.application.access import EvalAccess, detail
 from agnostic_evals.application.ports import BatchRepository
+from agnostic_evals.domain.compare import compare_cases, counts
 from agnostic_evals.domain.model import Batch, Case, Outcome
 from agnostic_evals.domain.runs import run_input, run_path
 from agnostic_evals.domain.scoring import outcome, summarize
@@ -20,6 +21,7 @@ from agnostic_gateway.facade import GatewayResponse
 from agnostic_instances.facade import Instance
 from agnostic_kernel.auth import Principal
 from agnostic_kernel.db import utcnow
+from agnostic_kernel.domain_events import DomainEvents
 from agnostic_kernel.errors import AppError
 from agnostic_kernel.events import EventBus, RealtimeEvent, instance_channel
 from agnostic_kernel.logging import get_logger
@@ -27,6 +29,8 @@ from agnostic_kernel.logging import get_logger
 log = get_logger(__name__)
 
 PROGRESS_EVENT = "evals.batch.progress"
+REGRESSION_EVENT = "evals.regression"
+"""Domain event: a completed batch scored worse than the previous one on the same component and dataset."""
 
 
 class CaseCaller(Protocol):
@@ -47,11 +51,19 @@ class CaseCaller(Protocol):
 
 
 class RunBatch:
-    def __init__(self, access: EvalAccess, batches: BatchRepository, bus: EventBus, concurrency: int) -> None:
+    def __init__(
+        self,
+        access: EvalAccess,
+        batches: BatchRepository,
+        bus: EventBus,
+        concurrency: int,
+        events: DomainEvents | None = None,
+    ) -> None:
         self._access = access
         self._batches = batches
         self._bus = bus
         self._concurrency = concurrency
+        self._events = events
         self._db = asyncio.Lock()
 
     async def __call__(self, batch_id: str, caller: CaseCaller | None = None) -> Batch | None:
@@ -144,6 +156,46 @@ class RunBatch:
         )
         await self._batches.commit()
         await self._announce(batch, final, 1.0 if final == "completed" else None)
+        if final == "completed":
+            await self._regressions(batch, threshold)
+
+    async def _regressions(self, batch: Batch, threshold: float) -> None:
+        """Announce regressions against the previous completed batch of the same component, dataset and type."""
+        if self._events is None or not self._events.subscribed(REGRESSION_EVENT):
+            return
+        previous = next(
+            (
+                other
+                for other in await self._batches.latest(
+                    batch.instance_id, batch.target.component_id, batch.dataset_id, batch.eval_type
+                )
+                if other.id != batch.id and other.status == "completed" and other.started_at <= batch.started_at
+            ),
+            None,
+        )
+        if previous is None:
+            return
+        found = counts(
+            compare_cases(await self._batches.items(previous.id), await self._batches.items(batch.id), threshold),
+            threshold,
+        )
+        if found.regressions == 0:
+            return
+        await self._events.publish(
+            REGRESSION_EVENT,
+            {
+                "instance_id": batch.instance_id,
+                "batch_id": batch.id,
+                "previous_batch_id": previous.id,
+                "batch_name": batch.name,
+                "component_kind": batch.target.kind,
+                "component_id": batch.target.component_id,
+                "dataset_name": batch.dataset_name,
+                "regressions": found.regressions,
+                "fixes": found.fixes,
+                "started_by": batch.started_by,
+            },
+        )
 
     async def _announce(self, batch: Batch, status: str, progress: float | None) -> None:
         await self._bus.publish(

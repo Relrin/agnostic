@@ -9,32 +9,35 @@ resolved elsewhere is reported as such instead of failing.
 
 from __future__ import annotations
 
-import asyncio
 from collections.abc import Mapping, Sequence
 from dataclasses import asdict, dataclass
-from typing import Any, Literal, cast
+from typing import Any, cast
 
 import orjson
 
-from agnostic_approvals.domain.decisions import Approval, ApprovalShapeError, Decision, args_diff, continue_form
+from agnostic_approvals.application.ports import ApprovalStore
+from agnostic_approvals.application.resolution import (
+    ContinueState,
+    RunContinuer,
+    detail,
+    elevated_sender,
+)
+from agnostic_approvals.domain.decisions import Approval, ApprovalShapeError, Decision, args_diff
 from agnostic_audit.facade import AuditEntry, AuditLog, actor_of
-from agnostic_gateway.facade import ElevatedResponse, GatewayFacade
+from agnostic_gateway.facade import GatewayFacade
 from agnostic_instances.facade import Instance
 from agnostic_kernel.auth import Principal
 from agnostic_kernel.ephemeral import EphemeralStore
-from agnostic_kernel.errors import AppError, ConflictError, NotFoundError
+from agnostic_kernel.errors import AppError, ConflictError, NotFoundError, ValidationFailedError
 from agnostic_kernel.events import EventBus, RealtimeEvent, instance_channel
 from agnostic_kernel.logging import get_logger
+from agnostic_notifications.facade import NotificationRequest, Notifier
 
 log = get_logger(__name__)
 
 JUSTIFICATION = "approvals:write"
 RESULT_TTL = 24 * 3600
 LOCK_TTL = 120
-CONFLICT = 409
-FORBIDDEN = 403
-
-type ContinueState = Literal["continued", "pending_admin", "conflict", "failed", "skipped"]
 
 
 class UpstreamApprovalError(AppError):
@@ -78,16 +81,6 @@ def resolved_by(principal: Principal) -> str:
     return f"{principal.display_name} ({principal.id})"[:255]
 
 
-def _detail(response: ElevatedResponse) -> str:
-    body: object = response.body
-    if isinstance(body, dict):
-        detail = cast("dict[str, object]", body).get("detail")
-        return str(detail) if detail is not None else f"HTTP {response.status}"
-    if body is None:
-        return f"HTTP {response.status}"
-    return str(cast("str", body))[:500]
-
-
 class DecideApproval:
     def __init__(
         self,
@@ -96,12 +89,16 @@ class DecideApproval:
         store: EphemeralStore,
         bus: EventBus,
         retry_delays: Sequence[float],
+        approvals: ApprovalStore,
+        notifier: Notifier,
     ) -> None:
         self._gateway = gateway
         self._audit = audit
         self._store = store
         self._bus = bus
-        self._delays = tuple(retry_delays)
+        self._continuer = RunContinuer(tuple(retry_delays))
+        self._approvals = approvals
+        self._notifier = notifier
 
     async def __call__(
         self, principal: Principal, instance_ref: str, approval_id: str, request: DecideRequest
@@ -111,6 +108,8 @@ class DecideApproval:
         stored = await self._store.get(key)
         if stored is not None and stored != b"pending":
             return DecideResult.from_json(stored)
+        if request.decision == "reject" and not (request.note or "").strip():
+            raise ValidationFailedError("Rejecting needs a note: the requester sees it, and so does the audit log.")
         if not await self._store.set_if_absent(key, b"pending", ttl=LOCK_TTL):
             raise ConflictError("Someone is deciding this approval right now. Refresh in a moment.")
         try:
@@ -124,19 +123,14 @@ class DecideApproval:
     async def _decide(
         self, principal: Principal, instance: Instance, approval_id: str, request: DecideRequest
     ) -> DecideResult:
-        action = "decide approvals"
-        fetched = await self._gateway.elevated(
-            principal,
-            instance,
-            "GET",
-            f"/approvals/{approval_id}",
-            justification=JUSTIFICATION,
-            action_label=action,
+        send = elevated_sender(
+            self._gateway, principal, instance, justification=JUSTIFICATION, action_label="decide approvals"
         )
+        fetched = await send("GET", f"/approvals/{approval_id}")
         if fetched.status == 404:  # noqa: PLR2004
             raise NotFoundError(f"Approval {approval_id} doesn't exist on {instance.display_name}.")
         if not fetched.ok or not isinstance(fetched.body, dict):
-            raise UpstreamApprovalError(f"{instance.display_name}: {_detail(fetched)}")
+            raise UpstreamApprovalError(f"{instance.display_name}: {detail(fetched)}")
         try:
             approval = Approval.parse(cast("dict[str, Any]", fetched.body))
         except ApprovalShapeError as exc:
@@ -164,25 +158,27 @@ class DecideApproval:
         if diff:
             resolution["edited_args"] = dict(edited or {})
             resolution["diff"] = diff
-        resolved = await self._gateway.elevated(
-            principal,
-            instance,
-            "POST",
-            f"/approvals/{approval.id}/resolve",
-            justification=JUSTIFICATION,
-            action_label=action,
-            json={
-                "status": "approved" if request.decision == "approve" else "rejected",
-                "resolved_by": resolved_by(principal),
-                "resolution_data": resolution,
-            },
+        resolved = await self._continuer.resolve(
+            send,
+            approval,
+            approved=request.decision == "approve",
+            resolved_by=resolved_by(principal),
+            resolution=resolution,
         )
         if not resolved.ok:
-            raise UpstreamApprovalError(f"{instance.display_name} didn't resolve {approval.id}: {_detail(resolved)}")
+            raise UpstreamApprovalError(f"{instance.display_name} didn't resolve {approval.id}: {detail(resolved)}")
 
-        state, detail = await self._continue(principal, instance, approval, request.decision, edited)
+        state, continue_detail = await self._continuer.continue_run(send, approval, request.decision, edited)
         status = "approved" if request.decision == "approve" else "rejected"
         await self._record(principal, instance, approval, request, status, diff, state)
+        await self._approvals.add_event(
+            instance.id,
+            approval.id,
+            "continued",
+            {"continue_state": state, "detail": continue_detail, "decision": status},
+            actor=principal.id,
+        )
+        await self._approvals.commit()
         await self._bus.publish(
             instance_channel(instance.id),
             RealtimeEvent(
@@ -197,6 +193,7 @@ class DecideApproval:
                 instance_id=instance.id,
             ),
         )
+        await self._tell_requester(principal, instance, approval, status, request.note)
         return DecideResult(
             approval_id=approval.id,
             instance_id=instance.id,
@@ -205,50 +202,30 @@ class DecideApproval:
             run_id=approval.run_id,
             session_id=approval.session_id,
             continue_state=state,
-            continue_detail=detail,
+            continue_detail=continue_detail,
             already_resolved=False,
             args_changed=tuple(diff),
         )
 
-    async def _continue(
-        self,
-        principal: Principal,
-        instance: Instance,
-        approval: Approval,
-        decision: Decision,
-        edited: Mapping[str, Any] | None,
-    ) -> tuple[ContinueState, str | None]:
-        if approval.run_id is None:
-            return "skipped", "The approval isn't attached to a run."
-        try:
-            family, component_id, form = continue_form(approval, decision, edited)
-        except ApprovalShapeError as exc:
-            return "failed", str(exc)
-        path = f"/{family}/{component_id}/runs/{approval.run_id}/continue"
-        response: ElevatedResponse | None = None
-        for attempt, delay in enumerate((0.0, *self._delays)):
-            if delay:
-                await asyncio.sleep(delay)
-            response = await self._gateway.elevated(
-                principal,
-                instance,
-                "POST",
-                path,
-                justification=JUSTIFICATION,
-                action_label="continue approved runs",
-                form=form,
+    async def _tell_requester(
+        self, principal: Principal, instance: Instance, approval: Approval, status: str, note: str | None
+    ) -> None:
+        """The person whose run paused hears the outcome (when they are someone else in this org)."""
+        if not approval.user_id or approval.user_id == principal.id:
+            return
+        _ = await self._notifier.notify(
+            NotificationRequest(
+                event_type="approval.resolved",
+                title=f"{principal.display_name} {status} {approval.tool_name or 'a step'}",
+                body=note or "",
+                link=f"/i/{instance.slug}/approvals?status={status}&approval={approval.id}",
+                instance_id=instance.id,
+                recipients=[approval.user_id],
+                context=instance.display_name,
+                data={"approval_id": approval.id, "status": status, "run_id": approval.run_id},
+                dedupe_key=f"resolved:{instance.id}:{approval.id}",
             )
-            if response.status != CONFLICT:
-                break
-            log.info("approvals.continue_conflict", approval=approval.id, attempt=attempt + 1)
-        assert response is not None
-        if response.ok:
-            return "continued", None
-        if response.status == CONFLICT:
-            return "conflict", "Another continuation owns the run; it resumes when that finishes."
-        if response.status == FORBIDDEN:
-            return "pending_admin", _detail(response)
-        return "failed", _detail(response)
+        )
 
     async def _record(
         self,

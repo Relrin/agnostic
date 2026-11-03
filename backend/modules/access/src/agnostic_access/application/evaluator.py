@@ -154,6 +154,23 @@ class AccessEvaluator:
         await self._store.set(key, _dump(access), ttl=CACHE_TTL)
         return access
 
+    async def holders(
+        self, instance_id: str | None, *, scope: str | None = None, role_ids: Iterable[str] = ()
+    ) -> list[str]:
+        """Active members who hold ``scope`` on the instance, or any of ``role_ids`` there (user ids, sorted)."""
+        roles = frozenset(role_ids)
+        control_plane = scope is not None and self.catalog.is_control_plane(scope)
+        found: list[str] = []
+        for member in await self._org.members():
+            if not member.active:
+                continue
+            access = await self.access(member.user_id, instance_id)
+            if (scope is not None and access.find(scope, control_plane=control_plane)) or any(
+                grant.role_id in roles for grant in access.grants
+            ):
+                found.append(member.user_id)
+        return sorted(found)
+
     async def explain(
         self,
         principal: Principal,

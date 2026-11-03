@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from collections.abc import AsyncIterator, Mapping
 from typing import Any, Protocol
+from urllib.parse import urlencode
 
 import orjson
 
@@ -46,6 +47,7 @@ class GatewayFacade(Protocol):
         *,
         params: Mapping[str, str | int] | None = None,
         json: Any = None,  # noqa: ANN401
+        form: Mapping[str, str] | None = None,
     ) -> GatewayResponse:
         """One AgentOS call as ``principal`` (their scopes, their isolation), audited like the passthrough.
 
@@ -85,12 +87,16 @@ class GatewayFacadeImpl:
         *,
         params: Mapping[str, str | int] | None = None,
         json: Any = None,  # noqa: ANN401
+        form: Mapping[str, str] | None = None,
     ) -> GatewayResponse:
         headers = [("accept", "application/json")]
         body: AsyncIterator[bytes] | None = None
         if json is not None:
             headers.append(("content-type", "application/json"))
             body = _once(orjson.dumps(json))
+        elif form is not None:
+            headers.append(("content-type", "application/x-www-form-urlencoded"))
+            body = _once(urlencode(dict(form)).encode())
         response = await self._gateway.handle(
             principal,
             instance.id,

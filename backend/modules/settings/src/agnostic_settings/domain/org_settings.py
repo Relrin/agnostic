@@ -18,6 +18,9 @@ class OrgSettings:
     on every instance (06 §3.1, decision Q2)."""
     audit_log_all_reads: bool = False
     """Record every gateway read in the audit log, not a sample (regulated orgs)."""
+    approval_ttl_hours: int = 0
+    """Approvals without their own expiry (AgentOS sets none for agents and teams) expire this many hours after they
+    were requested; 0 means they never expire. Instances decide separately whether expiry cancels the run."""
 
     @classmethod
     def keys(cls) -> tuple[str, ...]:
@@ -36,6 +39,9 @@ class OrgSettings:
             if type(value) is not type(getattr(defaults, key)):
                 expected = type(getattr(defaults, key)).__name__
                 raise InvalidSettingError(f"Org setting {key!r} must be a {expected}.")
+        ttl = changes.get("approval_ttl_hours")
+        if isinstance(ttl, int) and not 0 <= ttl <= MAX_APPROVAL_TTL_HOURS:
+            raise InvalidSettingError(f"approval_ttl_hours must be between 0 and {MAX_APPROVAL_TTL_HOURS}.")
         return replace(self, **dict(changes))
 
     def diff(self, other: OrgSettings) -> dict[str, dict[str, Any]]:
@@ -45,5 +51,7 @@ class OrgSettings:
             if getattr(self, key) != getattr(other, key)
         }
 
+
+MAX_APPROVAL_TTL_HOURS = 24 * 30
 
 ACCESS_RELEVANT = frozenset({"require_explicit_bindings"})

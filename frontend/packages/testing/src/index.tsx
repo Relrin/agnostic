@@ -10,6 +10,10 @@ export * from "./p01";
 export * from "./p02";
 export * from "./observe";
 export * from "./context";
+export * from "./approvals";
+export * from "./scheduler";
+export * from "./queue";
+export * from "./notifications";
 
 export function renderWithProviders(ui: ReactElement): RenderResult & { queryClient: QueryClient } {
   configureTestApi();

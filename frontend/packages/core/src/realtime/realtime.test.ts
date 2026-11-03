@@ -1,4 +1,10 @@
-import { approvalsCountQueryKey, configureApi } from "@agnostic/api";
+import {
+  approvalsApprovalCountsQueryKey,
+  approvalsCountQueryKey,
+  configureApi,
+  notificationsUnreadCountQueryKey,
+  schedulerListSchedulesQueryKey,
+} from "@agnostic/api";
 import { QueryClient } from "@tanstack/react-query";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
@@ -73,5 +79,30 @@ describe("applyRealtimeEvent", () => {
     const spy = vi.spyOn(client, "invalidateQueries");
     applyRealtimeEvent(client, { id: "2", type: "access.changed", data: {} });
     expect(spy).toHaveBeenCalledOnce();
+  });
+
+  it("keeps the bell, the approvals inbox and schedules current", async () => {
+    const client = new QueryClient();
+    const seed = (queryKey: readonly unknown[]) => {
+      client.setQueryData(queryKey, { seeded: true });
+    };
+    const counts = approvalsApprovalCountsQueryKey({ path: { instance: "ins_a" } });
+    const schedules = schedulerListSchedulesQueryKey({ path: { instance: "ins_a" } });
+    const unread = notificationsUnreadCountQueryKey();
+    seed(counts);
+    seed(schedules);
+    seed(unread);
+
+    applyRealtimeEvent(client, { id: "1", type: "approval.created", data: { instance_id: "ins_a" } });
+    applyRealtimeEvent(client, { id: "2", type: "schedule.failed", data: { instance_id: "ins_a" } });
+    await Promise.resolve();
+    expect(client.getQueryState(counts)?.isInvalidated).toBe(true);
+    expect(client.getQueryState(schedules)?.isInvalidated).toBe(true);
+    expect(client.getQueryState(unread)?.isInvalidated).toBe(false);
+
+    applyRealtimeEvent(client, { id: "3", type: "notification.created", data: {} });
+    expect(client.getQueryState(unread)?.isInvalidated).toBe(true);
+    applyRealtimeEvent(client, { id: "4", type: "notification.read", data: { unread: 0 } });
+    expect(client.getQueryData(unread)).toEqual({ unread: 0 });
   });
 });

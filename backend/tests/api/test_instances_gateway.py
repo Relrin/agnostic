@@ -88,7 +88,7 @@ async def test_connect_wizard_and_test_connection(stack: Stack) -> None:
     assert capabilities["jwt_rbac"] == "available"
     assert capabilities["approvals"] == "disabled"
     assert capabilities["components"] == "available"
-    assert capabilities["durable_queue"] == "unsupported"
+    assert capabilities["durable_queue"] == "disabled"  # agno answers 503 without a queue worker
 
     fake.name = "Fake prod (renamed)"  # a changed /config: a new snapshot next to the loaded one
     again = await owner.post(f"/api/v1/instances/{instance['id']}/test")

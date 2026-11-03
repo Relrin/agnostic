@@ -164,13 +164,16 @@ export function ApprovalCard({
   cannotDecideReason,
   footer,
   outcome,
+  rejectNeedsNote = false,
 }: {
   toolName: string;
   args: Record<string, unknown>;
   /** "requested 2 min ago". */
   requested?: string | undefined;
   onApprove: (editedArgs: Record<string, unknown> | undefined) => void;
-  onReject: () => void;
+  /** With ``rejectNeedsNote`` the first click asks for the note the requester will see. */
+  onReject: (note?: string) => void;
+  rejectNeedsNote?: boolean;
   busy?: boolean;
   canDecide: boolean;
   cannotDecideReason?: string | undefined;
@@ -182,7 +185,10 @@ export function ApprovalCard({
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(() => JSON.stringify(args, null, 2));
   const [error, setError] = useState<string | undefined>();
+  const [rejecting, setRejecting] = useState(false);
+  const [note, setNote] = useState("");
   const editorId = useId();
+  const noteId = useId();
 
   const approve = () => {
     if (!editing) {
@@ -238,6 +244,21 @@ export function ApprovalCard({
           {JSON.stringify(args, null, 2)}
         </pre>
       )}
+      {rejecting && !outcome && (
+        <div className="flex flex-col gap-1">
+          <label htmlFor={noteId} className="text-[12px] text-fg-muted">
+            Note · required to reject (the requester sees it, and so does the audit log)
+          </label>
+          <textarea
+            id={noteId}
+            value={note}
+            onChange={(event) => {
+              setNote(event.target.value);
+            }}
+            className="min-h-16 rounded-control border border-border-input bg-inset px-3 py-2 text-[13px] text-fg focus-visible:outline-2 focus-visible:outline-accent"
+          />
+        </div>
+      )}
       {outcome ? (
         <p className="text-[12.5px] text-fg-secondary">{outcome}</p>
       ) : canDecide ? (
@@ -245,8 +266,17 @@ export function ApprovalCard({
           <Button variant="primary" size="30" disabled={busy} onClick={approve}>
             {editing ? "Approve with edits" : "Approve"}
           </Button>
-          <Button variant="outline" size="30" disabled={busy} onClick={onReject}>
-            Reject
+          <Button
+            variant="outline"
+            size="30"
+            disabled={busy || (rejecting && !note.trim())}
+            onClick={() => {
+              if (!rejectNeedsNote) onReject();
+              else if (!rejecting) setRejecting(true);
+              else onReject(note.trim());
+            }}
+          >
+            {rejecting ? "Reject with note" : "Reject"}
           </Button>
           <Button
             variant="ghost"

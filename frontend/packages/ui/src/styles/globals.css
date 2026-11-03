@@ -56,6 +56,7 @@
   --color-warning-pill-fg: var(--warning-pill-fg);
   --color-warning-pill-bg: var(--warning-pill-bg);
   --color-danger: var(--danger);
+  --color-danger-pre: var(--danger-pre);
   --color-destructive: var(--danger);
   --color-info: var(--info);
   --color-info-hover: var(--info-hover);

@@ -1,4 +1,4 @@
-import { API, p01Handlers, PROD, renderPage } from "@agnostic/testing";
+import { API, notificationsHandlers, p01Handlers, PROD, renderPage } from "@agnostic/testing";
 import { screen } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
@@ -54,5 +54,29 @@ describe("SettingsPage", () => {
     expect(await screen.findByText("vector-db")).toBeInTheDocument();
     expect(screen.getByText("OS database")).toBeInTheDocument();
     expect(await screen.findAllByRole("button", { name: "Migrate" })).toHaveLength(2);
+  });
+});
+
+describe("SettingsPage control sections", () => {
+  it("lists org notification channels and the defaults", async () => {
+    server.use(...notificationsHandlers());
+    renderPage(SettingsPage, {
+      path: "/i/$instance/settings/$section",
+      url: "/i/prod-agentos/settings/notifications",
+    });
+    expect(await screen.findByText("Slack · billing-ops")).toBeInTheDocument();
+    expect(screen.getByRole("switch", { name: "Enable Slack · billing-ops" })).toBeChecked();
+    expect(await screen.findByRole("checkbox", { name: "Default Schedule failed by In app" })).toBeChecked();
+  });
+
+  it("shows the approval expiry policy", async () => {
+    server.use(...notificationsHandlers());
+    renderPage(SettingsPage, {
+      path: "/i/$instance/settings/$section",
+      url: "/i/prod-agentos/settings/approvals",
+    });
+    expect(
+      await screen.findByRole("switch", { name: "Stop runs when their approval expires" }),
+    ).not.toBeChecked();
   });
 });

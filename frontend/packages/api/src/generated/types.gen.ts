@@ -108,6 +108,356 @@ export type AlternativeOut = {
 };
 
 /**
+ * ApprovalCountsOut
+ */
+export type ApprovalCountsOut = {
+    /**
+     * Approved
+     */
+    approved: number;
+    /**
+     * Cancelled
+     */
+    cancelled: number;
+    /**
+     * Expired
+     */
+    expired: number;
+    /**
+     * Pending
+     */
+    pending: number;
+    /**
+     * Rejected
+     */
+    rejected: number;
+    /**
+     * Truncated
+     */
+    truncated: boolean;
+};
+
+/**
+ * ApprovalDetailOut
+ */
+export type ApprovalDetailOut = {
+    /**
+     * Agentos Status
+     */
+    agentos_status: string;
+    /**
+     * Args Changed
+     */
+    args_changed: Array<string>;
+    /**
+     * Can Resolve
+     */
+    can_resolve: boolean;
+    /**
+     * Cannot Resolve Reason
+     */
+    cannot_resolve_reason: string | null;
+    /**
+     * Channels
+     */
+    channels: Array<string>;
+    /**
+     * Component Id
+     */
+    component_id: string | null;
+    /**
+     * Component Kind
+     */
+    component_kind: 'agent' | 'team' | 'workflow' | null;
+    context: ContextOut;
+    /**
+     * Created At
+     */
+    created_at: string | null;
+    /**
+     * Elevation Enabled
+     */
+    elevation_enabled: boolean;
+    /**
+     * Expires At
+     */
+    expires_at: string | null;
+    /**
+     * Expiry Enforced
+     *
+     * Expired and acted on (run stopped), not just past its expiry
+     */
+    expiry_enforced: boolean;
+    /**
+     * Expiry Source
+     */
+    expiry_source: 'approval' | 'step_timeout' | 'ttl' | null;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Note
+     */
+    note: string | null;
+    policy: PolicyOut;
+    /**
+     * Requirements
+     */
+    requirements: Array<{
+        [key: string]: unknown;
+    }>;
+    /**
+     * Resolution Data
+     */
+    resolution_data: {
+        [key: string]: unknown;
+    };
+    /**
+     * Resolved At
+     */
+    resolved_at: string | null;
+    /**
+     * Resolved By
+     */
+    resolved_by: string | null;
+    /**
+     * Resolved By Name
+     */
+    resolved_by_name: string | null;
+    /**
+     * Routed To
+     */
+    routed_to: Array<string>;
+    /**
+     * Run Id
+     */
+    run_id: string | null;
+    /**
+     * Run Status
+     */
+    run_status: string | null;
+    /**
+     * Schedule Id
+     */
+    schedule_id: string | null;
+    /**
+     * Session Id
+     */
+    session_id: string | null;
+    /**
+     * Source Id
+     */
+    source_id: string | null;
+    /**
+     * Source Kind
+     */
+    source_kind: 'agent' | 'team' | 'workflow' | 'schedule' | null;
+    /**
+     * Source Name
+     */
+    source_name: string | null;
+    status: StatusName;
+    /**
+     * Timeline
+     */
+    timeline: Array<TimelineEntryOut>;
+    /**
+     * Tool Args
+     */
+    tool_args: {
+        [key: string]: unknown;
+    };
+    /**
+     * Tool Name
+     */
+    tool_name: string | null;
+    /**
+     * Type
+     */
+    type: 'blocking' | 'audit';
+    /**
+     * User Id
+     */
+    user_id: string | null;
+    /**
+     * User Isolation
+     */
+    user_isolation: boolean | null;
+    /**
+     * User Name
+     */
+    user_name: string | null;
+    /**
+     * Via
+     */
+    via: string | null;
+    /**
+     * Views
+     */
+    views: Array<ViewOut>;
+};
+
+/**
+ * ApprovalOut
+ */
+export type ApprovalOut = {
+    /**
+     * Agentos Status
+     */
+    agentos_status: string;
+    /**
+     * Args Changed
+     */
+    args_changed: Array<string>;
+    /**
+     * Component Id
+     */
+    component_id: string | null;
+    /**
+     * Component Kind
+     */
+    component_kind: 'agent' | 'team' | 'workflow' | null;
+    /**
+     * Created At
+     */
+    created_at: string | null;
+    /**
+     * Expires At
+     */
+    expires_at: string | null;
+    /**
+     * Expiry Enforced
+     *
+     * Expired and acted on (run stopped), not just past its expiry
+     */
+    expiry_enforced: boolean;
+    /**
+     * Expiry Source
+     */
+    expiry_source: 'approval' | 'step_timeout' | 'ttl' | null;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Note
+     */
+    note: string | null;
+    /**
+     * Resolved At
+     */
+    resolved_at: string | null;
+    /**
+     * Resolved By
+     */
+    resolved_by: string | null;
+    /**
+     * Resolved By Name
+     */
+    resolved_by_name: string | null;
+    /**
+     * Run Id
+     */
+    run_id: string | null;
+    /**
+     * Schedule Id
+     */
+    schedule_id: string | null;
+    /**
+     * Session Id
+     */
+    session_id: string | null;
+    /**
+     * Source Id
+     */
+    source_id: string | null;
+    /**
+     * Source Kind
+     */
+    source_kind: 'agent' | 'team' | 'workflow' | 'schedule' | null;
+    /**
+     * Source Name
+     */
+    source_name: string | null;
+    status: StatusName;
+    /**
+     * Tool Name
+     */
+    tool_name: string | null;
+    /**
+     * Type
+     */
+    type: 'blocking' | 'audit';
+    /**
+     * User Id
+     */
+    user_id: string | null;
+    /**
+     * User Name
+     */
+    user_name: string | null;
+    /**
+     * Via
+     */
+    via: string | null;
+};
+
+/**
+ * ApprovalsPageOut
+ */
+export type ApprovalsPageOut = {
+    /**
+     * Data
+     */
+    data: Array<ApprovalOut>;
+    /**
+     * Limit
+     */
+    limit: number;
+    /**
+     * Oldest Pending At
+     */
+    oldest_pending_at: string | null;
+    /**
+     * Page
+     */
+    page: number;
+    /**
+     * Total
+     */
+    total: number;
+    /**
+     * Truncated
+     *
+     * Only the newest approvals were searched (see scan_limit)
+     */
+    truncated: boolean;
+};
+
+/**
+ * AttemptOut
+ */
+export type AttemptOut = {
+    /**
+     * At
+     */
+    at: string | null;
+    /**
+     * Detail
+     */
+    detail: string | null;
+    /**
+     * State
+     */
+    state: 'done' | 'error' | 'now';
+    /**
+     * Text
+     */
+    text: string;
+};
+
+/**
  * AttentionOut
  */
 export type AttentionOut = {
@@ -674,6 +1024,162 @@ export type CasesIn = {
 };
 
 /**
+ * ChannelIn
+ */
+export type ChannelIn = {
+    /**
+     * Config
+     *
+     * slack: {mode: bot|webhook, token?, channel?, direct_messages?, webhook_url?, api_base?}; email: {to: [addresses]}; webhook: {url, secret?}
+     */
+    config: {
+        [key: string]: unknown;
+    };
+    /**
+     * Enabled
+     */
+    enabled?: boolean;
+    /**
+     * Events
+     *
+     * Event types posted here for everyone
+     */
+    events?: Array<string>;
+    /**
+     * Instance Ids
+     *
+     * Empty: every instance
+     */
+    instance_ids?: Array<string>;
+    kind: ChannelKindName;
+    /**
+     * Name
+     */
+    name: string;
+};
+
+export type ChannelKindName = 'slack' | 'email' | 'webhook';
+
+/**
+ * ChannelOut
+ */
+export type ChannelOut = {
+    /**
+     * Config
+     *
+     * Secrets are shown as their last characters, never in full
+     */
+    config: {
+        [key: string]: unknown;
+    };
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Enabled
+     */
+    enabled: boolean;
+    /**
+     * Events
+     */
+    events: Array<string>;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Instance Ids
+     */
+    instance_ids: Array<string>;
+    kind: ChannelKindName;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Recent
+     */
+    recent: Array<DeliveryOut>;
+    /**
+     * Sends Direct Messages
+     */
+    sends_direct_messages: boolean;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
+ * ChannelPatch
+ */
+export type ChannelPatch = {
+    /**
+     * Config
+     *
+     * Secrets left out keep their current value
+     */
+    config?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Enabled
+     */
+    enabled?: boolean | null;
+    /**
+     * Events
+     */
+    events?: Array<string> | null;
+    /**
+     * Instance Ids
+     */
+    instance_ids?: Array<string> | null;
+    /**
+     * Name
+     */
+    name?: string | null;
+};
+
+/**
+ * CheckpointOut
+ */
+export type CheckpointOut = {
+    /**
+     * Created At
+     */
+    created_at: string | null;
+    /**
+     * Is Latest
+     */
+    is_latest: boolean;
+    /**
+     * Message Index
+     */
+    message_index: number;
+    /**
+     * Number
+     */
+    number: number;
+    /**
+     * Preview
+     */
+    preview: string | null;
+    /**
+     * Reason
+     */
+    reason: string | null;
+    /**
+     * Role
+     */
+    role: string | null;
+    /**
+     * Title
+     */
+    title: string;
+};
+
+/**
  * ComparisonCountsOut
  */
 export type ComparisonCountsOut = {
@@ -946,6 +1452,20 @@ export type ContentPageOut = {
      * Total
      */
     total: number | null;
+};
+
+/**
+ * ContextOut
+ */
+export type ContextOut = {
+    /**
+     * Agent Message
+     */
+    agent_message: string | null;
+    /**
+     * User Message
+     */
+    user_message: string | null;
 };
 
 /**
@@ -1223,6 +1743,8 @@ export type DecideIn = {
     } | null;
     /**
      * Note
+     *
+     * Required to reject
      */
     note?: string | null;
 };
@@ -1276,6 +1798,18 @@ export type DecideOut = {
 };
 
 /**
+ * DefaultsBody
+ */
+export type DefaultsBody = {
+    /**
+     * Events
+     */
+    events: {
+        [key: string]: Array<PersonalChannelName> | null;
+    };
+};
+
+/**
  * DeleteUserLearningsIn
  */
 export type DeleteUserLearningsIn = {
@@ -1325,6 +1859,82 @@ export type DeletionOut = {
      * User Id
      */
     user_id: string;
+};
+
+/**
+ * DeliveryOut
+ */
+export type DeliveryOut = {
+    /**
+     * Attempts
+     */
+    attempts: number;
+    /**
+     * Channel
+     */
+    channel: string;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Error
+     */
+    error: string | null;
+    /**
+     * Event Type
+     */
+    event_type: string;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Sent At
+     */
+    sent_at: string | null;
+    /**
+     * Status
+     */
+    status: 'pending' | 'sent' | 'failed' | 'skipped';
+    /**
+     * Target
+     */
+    target: string;
+};
+
+/**
+ * DisableIn
+ */
+export type DisableIn = {
+    /**
+     * Reason
+     *
+     * Shown next to the schedule
+     */
+    reason?: string | null;
+};
+
+/**
+ * DisabledNoteOut
+ */
+export type DisabledNoteOut = {
+    /**
+     * At
+     */
+    at: string;
+    /**
+     * By
+     */
+    by: string;
+    /**
+     * By Name
+     */
+    by_name: string;
+    /**
+     * Reason
+     */
+    reason: string;
 };
 
 /**
@@ -1431,6 +2041,27 @@ export type DuplicatesOut = {
      * User Id
      */
     user_id: string;
+};
+
+/**
+ * EndpointCheckOut
+ */
+export type EndpointCheckOut = {
+    /**
+     * Documented
+     *
+     * In the instance's OpenAPI document; None when it publishes none
+     */
+    documented: boolean | null;
+    /**
+     * Needs Admin
+     */
+    needs_admin: boolean;
+    /**
+     * Target Id
+     */
+    target_id: string | null;
+    target_kind: TargetKindName;
 };
 
 export type EnvTagName = 'production' | 'staging' | 'development';
@@ -1542,6 +2173,43 @@ export type EvaluationsOut = {
      * Why AgentOS eval runs couldn't be listed
      */
     standalone_unavailable: string | null;
+};
+
+/**
+ * EventPreferenceOut
+ */
+export type EventPreferenceOut = {
+    /**
+     * Channels
+     */
+    channels: Array<PersonalChannelName>;
+    /**
+     * Custom
+     */
+    custom: boolean;
+    event: EventTypeOut;
+};
+
+/**
+ * EventTypeOut
+ */
+export type EventTypeOut = {
+    /**
+     * Defaults
+     */
+    defaults: Array<PersonalChannelName>;
+    /**
+     * Description
+     */
+    description: string;
+    /**
+     * Label
+     */
+    label: string;
+    /**
+     * Name
+     */
+    name: string;
 };
 
 /**
@@ -2606,6 +3274,32 @@ export type LoginRequest = {
 };
 
 /**
+ * MarkReadIn
+ */
+export type MarkReadIn = {
+    /**
+     * Ids
+     *
+     * Leave out to mark everything read
+     */
+    ids?: Array<string> | null;
+};
+
+/**
+ * MarkReadOut
+ */
+export type MarkReadOut = {
+    /**
+     * Changed
+     */
+    changed: number;
+    /**
+     * Unread
+     */
+    unread: number;
+};
+
+/**
  * MeOut
  */
 export type MeOut = {
@@ -2787,6 +3481,8 @@ export type MemorySourceOut = {
     user_id: string | null;
 };
 
+export type Method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+
 /**
  * MetricsSummaryOut
  */
@@ -2846,6 +3542,8 @@ export type MetricsSummaryOut = {
         [key: string]: string;
     };
 };
+
+export type ModeName = 'elevated' | 'admin';
 
 /**
  * ModelTokensOut
@@ -2932,6 +3630,64 @@ export type MyAccessOut = {
      * What the gateway puts in this person's JWT for the instance
      */
     token_scopes: Array<string>;
+};
+
+/**
+ * NamedRef
+ */
+export type NamedRef = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Name
+     */
+    name: string;
+};
+
+/**
+ * NotificationOut
+ */
+export type NotificationOut = {
+    /**
+     * Body
+     */
+    body: string;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Data
+     */
+    data: {
+        [key: string]: unknown;
+    };
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Instance Id
+     */
+    instance_id: string | null;
+    /**
+     * Kind
+     */
+    kind: string;
+    /**
+     * Link
+     */
+    link: string | null;
+    /**
+     * Read At
+     */
+    read_at: string | null;
+    /**
+     * Title
+     */
+    title: string;
 };
 
 /**
@@ -3111,6 +3867,12 @@ export type OrgRoleName = 'owner' | 'administrator' | 'member';
  */
 export type OrgSettingsOut = {
     /**
+     * Approval Ttl Hours
+     *
+     * Hours until approvals without their own expiry expire; 0 = never
+     */
+    approval_ttl_hours: number;
+    /**
      * Audit Log All Reads
      */
     audit_log_all_reads: boolean;
@@ -3124,6 +3886,10 @@ export type OrgSettingsOut = {
  * OrgSettingsUpdate
  */
 export type OrgSettingsUpdate = {
+    /**
+     * Approval Ttl Hours
+     */
+    approval_ttl_hours?: number | null;
     /**
      * Audit Log All Reads
      */
@@ -3250,6 +4016,24 @@ export type PageAuditEventOut = {
 };
 
 /**
+ * Page[NotificationOut]
+ */
+export type PageNotificationOut = {
+    /**
+     * Data
+     */
+    data: Array<NotificationOut>;
+    /**
+     * Next Cursor
+     */
+    next_cursor?: string | null;
+    /**
+     * Total Estimate
+     */
+    total_estimate?: number | null;
+};
+
+/**
  * PasswordResetConfirm
  */
 export type PasswordResetConfirm = {
@@ -3271,6 +4055,152 @@ export type PasswordResetRequest = {
      * Email
      */
     email: string;
+};
+
+export type PersonalChannelName = 'in_app' | 'email' | 'slack';
+
+/**
+ * PolicyIn
+ */
+export type PolicyIn = {
+    /**
+     * Enforce Expiry
+     */
+    enforce_expiry: boolean;
+    /**
+     * Ttl Hours
+     *
+     * None: use the org's approval_ttl_hours
+     */
+    ttl_hours?: number | null;
+};
+
+/**
+ * PolicyOut
+ */
+export type PolicyOut = {
+    /**
+     * Enforce Expiry
+     */
+    enforce_expiry: boolean;
+    /**
+     * Instance Id
+     */
+    instance_id: string;
+    /**
+     * Ttl Hours
+     *
+     * None: the org's approval_ttl_hours applies
+     */
+    ttl_hours: number | null;
+    /**
+     * Updated At
+     */
+    updated_at: string | null;
+    /**
+     * Updated By
+     */
+    updated_by: string | null;
+};
+
+/**
+ * PreferencesIn
+ */
+export type PreferencesIn = {
+    /**
+     * Clear Quiet Hours
+     */
+    clear_quiet_hours?: boolean;
+    /**
+     * Events
+     *
+     * Event type → channels; null goes back to the org default
+     */
+    events?: {
+        [key: string]: Array<PersonalChannelName> | null;
+    };
+    quiet_hours?: QuietHoursBody | null;
+};
+
+/**
+ * PreferencesOut
+ */
+export type PreferencesOut = {
+    /**
+     * Events
+     */
+    events: Array<EventPreferenceOut>;
+    quiet_hours: QuietHoursBody | null;
+    /**
+     * Slack Available
+     */
+    slack_available: boolean;
+};
+
+/**
+ * PreviewIn
+ */
+export type PreviewIn = {
+    /**
+     * Count
+     */
+    count?: number;
+    /**
+     * Cron Expr
+     */
+    cron_expr: string;
+    /**
+     * Start
+     *
+     * Preview from this moment (default: now)
+     */
+    start?: string | null;
+    /**
+     * Timezone
+     */
+    timezone?: string;
+};
+
+/**
+ * PreviewOut
+ */
+export type PreviewOut = {
+    /**
+     * Cron Expr
+     */
+    cron_expr: string;
+    /**
+     * Human
+     */
+    human: string;
+    /**
+     * Notes
+     *
+     * Daylight-saving warnings
+     */
+    notes: Array<string>;
+    /**
+     * Runs
+     */
+    runs: Array<PreviewRunOut>;
+    /**
+     * Timezone
+     */
+    timezone: string;
+};
+
+/**
+ * PreviewRunOut
+ */
+export type PreviewRunOut = {
+    /**
+     * Local
+     */
+    local: string;
+    /**
+     * Utc
+     */
+    utc: string;
 };
 
 /**
@@ -3483,6 +4413,307 @@ export type Problem = {
 };
 
 /**
+ * QueueJobDetailOut
+ */
+export type QueueJobDetailOut = {
+    access: ModeName;
+    /**
+     * Attempt
+     */
+    attempt: number;
+    /**
+     * Attempts
+     */
+    attempts: Array<AttemptOut>;
+    /**
+     * Checkpoints
+     */
+    checkpoints: Array<CheckpointOut>;
+    /**
+     * Checkpoints Unavailable
+     */
+    checkpoints_unavailable: string | null;
+    /**
+     * Completed At
+     */
+    completed_at: string | null;
+    /**
+     * Component Id
+     */
+    component_id: string | null;
+    /**
+     * Component Type
+     */
+    component_type: string | null;
+    /**
+     * Created At
+     */
+    created_at: string | null;
+    /**
+     * Deployment
+     */
+    deployment: string | null;
+    /**
+     * Detail
+     */
+    detail: string | null;
+    /**
+     * Error
+     */
+    error: string | null;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Idempotency Key
+     */
+    idempotency_key: string | null;
+    /**
+     * Locked By
+     */
+    locked_by: string | null;
+    /**
+     * Max Attempts
+     */
+    max_attempts: number;
+    /**
+     * Run Content
+     */
+    run_content: string | null;
+    /**
+     * Run Id
+     */
+    run_id: string;
+    /**
+     * Run Status
+     */
+    run_status: string | null;
+    /**
+     * Session Id
+     */
+    session_id: string | null;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Updated At
+     */
+    updated_at: string | null;
+    /**
+     * User Id
+     */
+    user_id: string | null;
+};
+
+/**
+ * QueueJobOut
+ */
+export type QueueJobOut = {
+    /**
+     * Attempt
+     */
+    attempt: number;
+    /**
+     * Completed At
+     */
+    completed_at: string | null;
+    /**
+     * Component Id
+     */
+    component_id: string | null;
+    /**
+     * Component Type
+     */
+    component_type: string | null;
+    /**
+     * Created At
+     */
+    created_at: string | null;
+    /**
+     * Deployment
+     */
+    deployment: string | null;
+    /**
+     * Detail
+     */
+    detail: string | null;
+    /**
+     * Error
+     */
+    error: string | null;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Idempotency Key
+     */
+    idempotency_key: string | null;
+    /**
+     * Locked By
+     */
+    locked_by: string | null;
+    /**
+     * Max Attempts
+     */
+    max_attempts: number;
+    /**
+     * Run Id
+     */
+    run_id: string;
+    /**
+     * Session Id
+     */
+    session_id: string | null;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Updated At
+     */
+    updated_at: string | null;
+    /**
+     * User Id
+     */
+    user_id: string | null;
+};
+
+/**
+ * QueueJobsPageOut
+ */
+export type QueueJobsPageOut = {
+    access: ModeName;
+    /**
+     * Data
+     */
+    data: Array<QueueJobOut>;
+    /**
+     * Limit
+     */
+    limit: number;
+    /**
+     * Page
+     */
+    page: number;
+    /**
+     * Total
+     */
+    total: number | null;
+};
+
+/**
+ * QueueOverviewOut
+ */
+export type QueueOverviewOut = {
+    /**
+     * Config
+     *
+     * QueueConfig as agnostic-bridge reports it (empty without the bridge)
+     */
+    config: {
+        [key: string]: unknown;
+    };
+    /**
+     * Paused Approvals
+     */
+    paused_approvals: number | null;
+    /**
+     * Slots Total
+     */
+    slots_total: number | null;
+    summary: QueueSummaryOut;
+    /**
+     * Workers
+     */
+    workers: Array<QueueWorkerOut>;
+};
+
+/**
+ * QueueSummaryOut
+ */
+export type QueueSummaryOut = {
+    /**
+     * How you reach the queue; None: counts only
+     */
+    access: ModeName | null;
+    /**
+     * Counts
+     */
+    counts: {
+        [key: string]: number;
+    };
+    /**
+     * Explanation
+     */
+    explanation: string | null;
+    /**
+     * Instance Id
+     */
+    instance_id: string;
+    /**
+     * Oldest Queued Age Seconds
+     */
+    oldest_queued_age_seconds: number | null;
+};
+
+/**
+ * QueueWorkerOut
+ */
+export type QueueWorkerOut = {
+    /**
+     * Deployment
+     */
+    deployment: string | null;
+    /**
+     * Heartbeat At
+     */
+    heartbeat_at: string | null;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Slots Busy
+     */
+    slots_busy: number;
+    /**
+     * Slots Total
+     */
+    slots_total: number | null;
+    /**
+     * Source
+     *
+     * jobs: known only from locked_by of running jobs
+     */
+    source: 'bridge' | 'jobs';
+    /**
+     * Worker Id
+     */
+    worker_id: string | null;
+};
+
+/**
+ * QuietHoursBody
+ */
+export type QuietHoursBody = {
+    /**
+     * End
+     */
+    end: string;
+    /**
+     * Start
+     */
+    start: string;
+    /**
+     * Timezone
+     */
+    timezone?: string;
+};
+
+/**
  * Readiness
  */
 export type Readiness = {
@@ -3512,6 +4743,30 @@ export type ReadinessCheck = {
      * Ok
      */
     ok: boolean;
+};
+
+/**
+ * RequeueIn
+ */
+export type RequeueIn = {
+    /**
+     * Force
+     *
+     * Requeue even inside lock_grace_seconds of the failure
+     */
+    force?: boolean;
+};
+
+/**
+ * ResumeIn
+ */
+export type ResumeIn = {
+    /**
+     * Message Index
+     *
+     * The checkpoint's message_index (AgentOS continue_from)
+     */
+    message_index: number;
 };
 
 /**
@@ -3583,6 +4838,102 @@ export type RotateIn = {
 };
 
 /**
+ * RouteIn
+ */
+export type RouteIn = {
+    /**
+     * Channel Ids
+     *
+     * Org notification channels
+     */
+    channel_ids?: Array<string>;
+    /**
+     * Channels
+     */
+    channels?: Array<PersonalChannelName>;
+    /**
+     * Component Ids
+     */
+    component_ids?: Array<string>;
+    /**
+     * Component Kind
+     */
+    component_kind?: 'agent' | 'team' | 'workflow' | null;
+    /**
+     * Member Ids
+     */
+    member_ids?: Array<string>;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Role Ids
+     */
+    role_ids?: Array<string>;
+    /**
+     * Tool Name
+     *
+     * Empty: every tool
+     */
+    tool_name?: string | null;
+};
+
+/**
+ * RouteOut
+ */
+export type RouteOut = {
+    /**
+     * Channel Ids
+     */
+    channel_ids: Array<string>;
+    /**
+     * Channels
+     */
+    channels: Array<PersonalChannelName>;
+    /**
+     * Component Ids
+     */
+    component_ids: Array<string>;
+    /**
+     * Component Kind
+     */
+    component_kind: 'agent' | 'team' | 'workflow' | null;
+    /**
+     * Created By
+     */
+    created_by: string | null;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Instance Id
+     */
+    instance_id: string | null;
+    /**
+     * Members
+     */
+    members: Array<NamedRef>;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Roles
+     */
+    roles: Array<NamedRef>;
+    /**
+     * Tool Name
+     */
+    tool_name: string | null;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
  * RoutePolicyOut
  */
 export type RoutePolicyOut = {
@@ -3640,6 +4991,341 @@ export type RunsOut = {
      * Workflow
      */
     workflow: number;
+};
+
+/**
+ * RunsPageOut
+ */
+export type RunsPageOut = {
+    /**
+     * Data
+     */
+    data: Array<ScheduleRunOut>;
+    /**
+     * Limit
+     */
+    limit: number;
+    /**
+     * Page
+     */
+    page: number;
+    /**
+     * Total
+     */
+    total: number | null;
+};
+
+/**
+ * ScheduleIn
+ */
+export type ScheduleIn = {
+    /**
+     * Cron Expr
+     *
+     * 5-field cron; empty runs only when triggered
+     */
+    cron_expr?: string;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Endpoint
+     */
+    endpoint: string;
+    /**
+     * Max Retries
+     */
+    max_retries?: number;
+    method?: Method;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Payload
+     */
+    payload?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Retry Delay Seconds
+     */
+    retry_delay_seconds?: number;
+    /**
+     * Timeout Seconds
+     */
+    timeout_seconds?: number;
+    /**
+     * Timezone
+     */
+    timezone?: string;
+};
+
+/**
+ * ScheduleOut
+ */
+export type ScheduleOut = {
+    /**
+     * Consecutive Failures
+     */
+    consecutive_failures: number;
+    /**
+     * Created At
+     */
+    created_at: string | null;
+    /**
+     * Cron Expr
+     */
+    cron_expr: string | null;
+    /**
+     * Description
+     */
+    description: string | null;
+    /**
+     * Why a person disabled it
+     */
+    disabled_note: DisabledNoteOut | null;
+    /**
+     * Disabled Reason
+     *
+     * Set by AgentOS (e.g. the target was archived)
+     */
+    disabled_reason: string | null;
+    /**
+     * Enabled
+     */
+    enabled: boolean;
+    /**
+     * Endpoint
+     */
+    endpoint: string;
+    /**
+     * Human
+     *
+     * The cron expression as a sentence
+     */
+    human: string | null;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Last Runs
+     */
+    last_runs: Array<ScheduleRunOut>;
+    /**
+     * Managed By
+     */
+    managed_by: string | null;
+    /**
+     * Max Retries
+     */
+    max_retries: number;
+    /**
+     * Method
+     */
+    method: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Next Run At
+     */
+    next_run_at: string | null;
+    /**
+     * Payload
+     */
+    payload: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Retry Delay Seconds
+     */
+    retry_delay_seconds: number | null;
+    /**
+     * Target Id
+     */
+    target_id: string | null;
+    target_kind: TargetKindName;
+    /**
+     * Timeout Seconds
+     */
+    timeout_seconds: number | null;
+    /**
+     * Timezone
+     */
+    timezone: string;
+    /**
+     * Updated At
+     */
+    updated_at: string | null;
+    /**
+     * User Id
+     */
+    user_id: string | null;
+};
+
+/**
+ * SchedulePatch
+ */
+export type SchedulePatch = {
+    /**
+     * Cron Expr
+     */
+    cron_expr?: string | null;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Endpoint
+     */
+    endpoint?: string | null;
+    /**
+     * Max Retries
+     */
+    max_retries?: number | null;
+    method?: Method | null;
+    /**
+     * Name
+     */
+    name?: string | null;
+    /**
+     * Payload
+     */
+    payload?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Retry Delay Seconds
+     */
+    retry_delay_seconds?: number | null;
+    /**
+     * Timeout Seconds
+     */
+    timeout_seconds?: number | null;
+    /**
+     * Timezone
+     */
+    timezone?: string | null;
+};
+
+/**
+ * ScheduleRunOut
+ */
+export type ScheduleRunOut = {
+    /**
+     * Attempt
+     */
+    attempt: number;
+    /**
+     * Attempt Label
+     */
+    attempt_label: string;
+    /**
+     * Completed At
+     */
+    completed_at: string | null;
+    /**
+     * Duration Seconds
+     */
+    duration_seconds: number | null;
+    /**
+     * Error
+     */
+    error: string | null;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Run Id
+     */
+    run_id: string | null;
+    /**
+     * Schedule Id
+     */
+    schedule_id: string;
+    /**
+     * Session Id
+     */
+    session_id: string | null;
+    /**
+     * States
+     *
+     * Badges in order, e.g. PAUSED then COMPLETED
+     */
+    states: Array<string>;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Status Code
+     */
+    status_code: number | null;
+    /**
+     * Triggered At
+     */
+    triggered_at: string | null;
+};
+
+/**
+ * SchedulerStatusOut
+ */
+export type SchedulerStatusOut = {
+    /**
+     * Can Custom Endpoint
+     *
+     * Instance admins may schedule any endpoint
+     */
+    can_custom_endpoint: boolean;
+    /**
+     * Can Delete
+     */
+    can_delete: boolean;
+    /**
+     * Can Write
+     */
+    can_write: boolean;
+    /**
+     * Instance Id
+     */
+    instance_id: string;
+    /**
+     * Poll Interval Seconds
+     */
+    poll_interval_seconds: number | null;
+    /**
+     * Running
+     *
+     * None: unknown (the instance has no agnostic-bridge to ask)
+     */
+    running: boolean | null;
+};
+
+/**
+ * SchedulesPageOut
+ */
+export type SchedulesPageOut = {
+    /**
+     * Data
+     */
+    data: Array<ScheduleOut>;
+    /**
+     * Limit
+     */
+    limit: number;
+    /**
+     * Page
+     */
+    page: number;
+    /**
+     * Total
+     */
+    total: number | null;
 };
 
 /**
@@ -3870,6 +5556,8 @@ export type SpanTypeStatOut = {
     name: string;
 };
 
+export type StatusName = 'pending' | 'approved' | 'rejected' | 'expired' | 'cancelled';
+
 /**
  * StepOut
  */
@@ -3972,6 +5660,8 @@ export type SystemModules = {
     enabled: Array<ModuleInfo>;
 };
 
+export type TargetKindName = 'agent' | 'team' | 'workflow' | 'custom';
+
 /**
  * TestReportOut
  */
@@ -3989,6 +5679,28 @@ export type TestReportOut = {
      * Steps
      */
     steps: Array<StepOut>;
+};
+
+/**
+ * TimelineEntryOut
+ */
+export type TimelineEntryOut = {
+    /**
+     * At
+     */
+    at: string | null;
+    /**
+     * Detail
+     */
+    detail: string | null;
+    /**
+     * State
+     */
+    state: 'done' | 'now' | 'end';
+    /**
+     * Text
+     */
+    text: string;
 };
 
 /**
@@ -4121,6 +5833,16 @@ export type TraceComparisonOut = {
 };
 
 /**
+ * UnreadOut
+ */
+export type UnreadOut = {
+    /**
+     * Unread
+     */
+    unread: number;
+};
+
+/**
  * ValidationError
  */
 export type ValidationError = {
@@ -4174,6 +5896,24 @@ export type VerifyTokenIn = {
      * Token
      */
     token: string;
+};
+
+/**
+ * ViewOut
+ */
+export type ViewOut = {
+    /**
+     * At
+     */
+    at: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * User Id
+     */
+    user_id: string;
 };
 
 /**
@@ -4449,6 +6189,134 @@ export type AccessListScopesResponses = {
 };
 
 export type AccessListScopesResponse = AccessListScopesResponses[keyof AccessListScopesResponses];
+
+export type ApprovalsListOrgRoutesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/approvals/routes';
+};
+
+export type ApprovalsListOrgRoutesErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ApprovalsListOrgRoutesError = ApprovalsListOrgRoutesErrors[keyof ApprovalsListOrgRoutesErrors];
+
+export type ApprovalsListOrgRoutesResponses = {
+    /**
+     * Response Approvals List Org Routes
+     *
+     * Successful Response
+     */
+    200: Array<RouteOut>;
+};
+
+export type ApprovalsListOrgRoutesResponse = ApprovalsListOrgRoutesResponses[keyof ApprovalsListOrgRoutesResponses];
+
+export type ApprovalsCreateOrgRouteData = {
+    body: RouteIn;
+    path?: never;
+    query?: never;
+    url: '/api/v1/approvals/routes';
+};
+
+export type ApprovalsCreateOrgRouteErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ApprovalsCreateOrgRouteError = ApprovalsCreateOrgRouteErrors[keyof ApprovalsCreateOrgRouteErrors];
+
+export type ApprovalsCreateOrgRouteResponses = {
+    /**
+     * Successful Response
+     */
+    201: RouteOut;
+};
+
+export type ApprovalsCreateOrgRouteResponse = ApprovalsCreateOrgRouteResponses[keyof ApprovalsCreateOrgRouteResponses];
+
+export type ApprovalsDeleteRouteData = {
+    body?: never;
+    path: {
+        /**
+         * Route Id
+         */
+        route_id: string;
+    };
+    query?: never;
+    url: '/api/v1/approvals/routes/{route_id}';
+};
+
+export type ApprovalsDeleteRouteErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ApprovalsDeleteRouteError = ApprovalsDeleteRouteErrors[keyof ApprovalsDeleteRouteErrors];
+
+export type ApprovalsDeleteRouteResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type ApprovalsDeleteRouteResponse = ApprovalsDeleteRouteResponses[keyof ApprovalsDeleteRouteResponses];
+
+export type ApprovalsUpdateRouteData = {
+    body: RouteIn;
+    path: {
+        /**
+         * Route Id
+         */
+        route_id: string;
+    };
+    query?: never;
+    url: '/api/v1/approvals/routes/{route_id}';
+};
+
+export type ApprovalsUpdateRouteErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ApprovalsUpdateRouteError = ApprovalsUpdateRouteErrors[keyof ApprovalsUpdateRouteErrors];
+
+export type ApprovalsUpdateRouteResponses = {
+    /**
+     * Successful Response
+     */
+    200: RouteOut;
+};
+
+export type ApprovalsUpdateRouteResponse = ApprovalsUpdateRouteResponses[keyof ApprovalsUpdateRouteResponses];
 
 export type AuditListActionsData = {
     body?: never;
@@ -5097,6 +6965,81 @@ export type InstancesUpdateInstanceResponses = {
 
 export type InstancesUpdateInstanceResponse = InstancesUpdateInstanceResponses[keyof InstancesUpdateInstanceResponses];
 
+export type ApprovalsListApprovalsData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: {
+        /**
+         * Status
+         */
+        status?: 'pending' | 'approved' | 'rejected' | 'expired' | 'cancelled';
+        /**
+         * Tool
+         */
+        tool?: string | null;
+        /**
+         * Source Kind
+         */
+        source_kind?: 'agent' | 'team' | 'workflow' | 'schedule' | null;
+        /**
+         * Source Id
+         */
+        source_id?: string | null;
+        /**
+         * User Id
+         */
+        user_id?: string | null;
+        /**
+         * Schedule Id
+         */
+        schedule_id?: string | null;
+        /**
+         * Type
+         */
+        type?: 'blocking' | 'audit' | null;
+        /**
+         * Q
+         */
+        q?: string | null;
+        /**
+         * Page
+         */
+        page?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/api/v1/instances/{instance}/approvals';
+};
+
+export type ApprovalsListApprovalsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ApprovalsListApprovalsError = ApprovalsListApprovalsErrors[keyof ApprovalsListApprovalsErrors];
+
+export type ApprovalsListApprovalsResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApprovalsPageOut;
+};
+
+export type ApprovalsListApprovalsResponse = ApprovalsListApprovalsResponses[keyof ApprovalsListApprovalsResponses];
+
 export type ApprovalsCountData = {
     body?: never;
     path: {
@@ -5130,6 +7073,216 @@ export type ApprovalsCountResponses = {
 };
 
 export type ApprovalsCountResponse = ApprovalsCountResponses[keyof ApprovalsCountResponses];
+
+export type ApprovalsApprovalCountsData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/approvals/counts';
+};
+
+export type ApprovalsApprovalCountsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ApprovalsApprovalCountsError = ApprovalsApprovalCountsErrors[keyof ApprovalsApprovalCountsErrors];
+
+export type ApprovalsApprovalCountsResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApprovalCountsOut;
+};
+
+export type ApprovalsApprovalCountsResponse = ApprovalsApprovalCountsResponses[keyof ApprovalsApprovalCountsResponses];
+
+export type ApprovalsGetPolicyData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/approvals/policy';
+};
+
+export type ApprovalsGetPolicyErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ApprovalsGetPolicyError = ApprovalsGetPolicyErrors[keyof ApprovalsGetPolicyErrors];
+
+export type ApprovalsGetPolicyResponses = {
+    /**
+     * Successful Response
+     */
+    200: PolicyOut;
+};
+
+export type ApprovalsGetPolicyResponse = ApprovalsGetPolicyResponses[keyof ApprovalsGetPolicyResponses];
+
+export type ApprovalsPutPolicyData = {
+    body: PolicyIn;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/approvals/policy';
+};
+
+export type ApprovalsPutPolicyErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ApprovalsPutPolicyError = ApprovalsPutPolicyErrors[keyof ApprovalsPutPolicyErrors];
+
+export type ApprovalsPutPolicyResponses = {
+    /**
+     * Successful Response
+     */
+    200: PolicyOut;
+};
+
+export type ApprovalsPutPolicyResponse = ApprovalsPutPolicyResponses[keyof ApprovalsPutPolicyResponses];
+
+export type ApprovalsListRoutesData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/approvals/routes';
+};
+
+export type ApprovalsListRoutesErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ApprovalsListRoutesError = ApprovalsListRoutesErrors[keyof ApprovalsListRoutesErrors];
+
+export type ApprovalsListRoutesResponses = {
+    /**
+     * Response Approvals List Routes
+     *
+     * Successful Response
+     */
+    200: Array<RouteOut>;
+};
+
+export type ApprovalsListRoutesResponse = ApprovalsListRoutesResponses[keyof ApprovalsListRoutesResponses];
+
+export type ApprovalsCreateRouteData = {
+    body: RouteIn;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/approvals/routes';
+};
+
+export type ApprovalsCreateRouteErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ApprovalsCreateRouteError = ApprovalsCreateRouteErrors[keyof ApprovalsCreateRouteErrors];
+
+export type ApprovalsCreateRouteResponses = {
+    /**
+     * Successful Response
+     */
+    201: RouteOut;
+};
+
+export type ApprovalsCreateRouteResponse = ApprovalsCreateRouteResponses[keyof ApprovalsCreateRouteResponses];
+
+export type ApprovalsGetApprovalData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Approval Id
+         */
+        approval_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/approvals/{approval_id}';
+};
+
+export type ApprovalsGetApprovalErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ApprovalsGetApprovalError = ApprovalsGetApprovalErrors[keyof ApprovalsGetApprovalErrors];
+
+export type ApprovalsGetApprovalResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApprovalDetailOut;
+};
+
+export type ApprovalsGetApprovalResponse = ApprovalsGetApprovalResponses[keyof ApprovalsGetApprovalResponses];
 
 export type ApprovalsDecideData = {
     body: DecideIn;
@@ -6723,6 +8876,776 @@ export type ObservePutPriceTableResponses = {
 
 export type ObservePutPriceTableResponse = ObservePutPriceTableResponses[keyof ObservePutPriceTableResponses];
 
+export type QueueQueueJobsData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: {
+        /**
+         * Status
+         */
+        status?: 'queued' | 'running' | 'paused' | 'failed' | 'completed' | 'cancelled' | null;
+        /**
+         * Page
+         */
+        page?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/api/v1/instances/{instance}/queue/jobs';
+};
+
+export type QueueQueueJobsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type QueueQueueJobsError = QueueQueueJobsErrors[keyof QueueQueueJobsErrors];
+
+export type QueueQueueJobsResponses = {
+    /**
+     * Successful Response
+     */
+    200: QueueJobsPageOut;
+};
+
+export type QueueQueueJobsResponse = QueueQueueJobsResponses[keyof QueueQueueJobsResponses];
+
+export type QueueQueueJobData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Job Id
+         */
+        job_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/queue/jobs/{job_id}';
+};
+
+export type QueueQueueJobErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type QueueQueueJobError = QueueQueueJobErrors[keyof QueueQueueJobErrors];
+
+export type QueueQueueJobResponses = {
+    /**
+     * Successful Response
+     */
+    200: QueueJobDetailOut;
+};
+
+export type QueueQueueJobResponse = QueueQueueJobResponses[keyof QueueQueueJobResponses];
+
+export type QueueCancelJobData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Job Id
+         */
+        job_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/queue/jobs/{job_id}/cancel';
+};
+
+export type QueueCancelJobErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type QueueCancelJobError = QueueCancelJobErrors[keyof QueueCancelJobErrors];
+
+export type QueueCancelJobResponses = {
+    /**
+     * Successful Response
+     */
+    200: QueueJobDetailOut;
+};
+
+export type QueueCancelJobResponse = QueueCancelJobResponses[keyof QueueCancelJobResponses];
+
+export type QueueRequeueJobData = {
+    body: RequeueIn;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Job Id
+         */
+        job_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/queue/jobs/{job_id}/requeue';
+};
+
+export type QueueRequeueJobErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type QueueRequeueJobError = QueueRequeueJobErrors[keyof QueueRequeueJobErrors];
+
+export type QueueRequeueJobResponses = {
+    /**
+     * Successful Response
+     */
+    200: QueueJobDetailOut;
+};
+
+export type QueueRequeueJobResponse = QueueRequeueJobResponses[keyof QueueRequeueJobResponses];
+
+export type QueueResumeJobData = {
+    body: ResumeIn;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Job Id
+         */
+        job_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/queue/jobs/{job_id}/resume';
+};
+
+export type QueueResumeJobErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type QueueResumeJobError = QueueResumeJobErrors[keyof QueueResumeJobErrors];
+
+export type QueueResumeJobResponses = {
+    /**
+     * Successful Response
+     */
+    200: QueueJobDetailOut;
+};
+
+export type QueueResumeJobResponse = QueueResumeJobResponses[keyof QueueResumeJobResponses];
+
+export type QueueQueueOverviewData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/queue/overview';
+};
+
+export type QueueQueueOverviewErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type QueueQueueOverviewError = QueueQueueOverviewErrors[keyof QueueQueueOverviewErrors];
+
+export type QueueQueueOverviewResponses = {
+    /**
+     * Successful Response
+     */
+    200: QueueOverviewOut;
+};
+
+export type QueueQueueOverviewResponse = QueueQueueOverviewResponses[keyof QueueQueueOverviewResponses];
+
+export type QueueQueueSummaryData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/queue/summary';
+};
+
+export type QueueQueueSummaryErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type QueueQueueSummaryError = QueueQueueSummaryErrors[keyof QueueQueueSummaryErrors];
+
+export type QueueQueueSummaryResponses = {
+    /**
+     * Successful Response
+     */
+    200: QueueSummaryOut;
+};
+
+export type QueueQueueSummaryResponse = QueueQueueSummaryResponses[keyof QueueQueueSummaryResponses];
+
+export type QueueQueueWorkersData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/queue/workers';
+};
+
+export type QueueQueueWorkersErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type QueueQueueWorkersError = QueueQueueWorkersErrors[keyof QueueQueueWorkersErrors];
+
+export type QueueQueueWorkersResponses = {
+    /**
+     * Response Queue Queue Workers
+     *
+     * Successful Response
+     */
+    200: Array<QueueWorkerOut>;
+};
+
+export type QueueQueueWorkersResponse = QueueQueueWorkersResponses[keyof QueueQueueWorkersResponses];
+
+export type SchedulerListSchedulesData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: {
+        /**
+         * Enabled
+         */
+        enabled?: boolean | null;
+        /**
+         * Page
+         */
+        page?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/api/v1/instances/{instance}/schedules';
+};
+
+export type SchedulerListSchedulesErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SchedulerListSchedulesError = SchedulerListSchedulesErrors[keyof SchedulerListSchedulesErrors];
+
+export type SchedulerListSchedulesResponses = {
+    /**
+     * Successful Response
+     */
+    200: SchedulesPageOut;
+};
+
+export type SchedulerListSchedulesResponse = SchedulerListSchedulesResponses[keyof SchedulerListSchedulesResponses];
+
+export type SchedulerCreateScheduleData = {
+    body: ScheduleIn;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/schedules';
+};
+
+export type SchedulerCreateScheduleErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SchedulerCreateScheduleError = SchedulerCreateScheduleErrors[keyof SchedulerCreateScheduleErrors];
+
+export type SchedulerCreateScheduleResponses = {
+    /**
+     * Successful Response
+     */
+    201: ScheduleOut;
+};
+
+export type SchedulerCreateScheduleResponse = SchedulerCreateScheduleResponses[keyof SchedulerCreateScheduleResponses];
+
+export type SchedulerCheckEndpointData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query: {
+        /**
+         * Path
+         */
+        path: string;
+        /**
+         * Method
+         */
+        method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+    };
+    url: '/api/v1/instances/{instance}/schedules/endpoint-check';
+};
+
+export type SchedulerCheckEndpointErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SchedulerCheckEndpointError = SchedulerCheckEndpointErrors[keyof SchedulerCheckEndpointErrors];
+
+export type SchedulerCheckEndpointResponses = {
+    /**
+     * Successful Response
+     */
+    200: EndpointCheckOut;
+};
+
+export type SchedulerCheckEndpointResponse = SchedulerCheckEndpointResponses[keyof SchedulerCheckEndpointResponses];
+
+export type SchedulerPreviewScheduleData = {
+    body: PreviewIn;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/schedules/preview';
+};
+
+export type SchedulerPreviewScheduleErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SchedulerPreviewScheduleError = SchedulerPreviewScheduleErrors[keyof SchedulerPreviewScheduleErrors];
+
+export type SchedulerPreviewScheduleResponses = {
+    /**
+     * Successful Response
+     */
+    200: PreviewOut;
+};
+
+export type SchedulerPreviewScheduleResponse = SchedulerPreviewScheduleResponses[keyof SchedulerPreviewScheduleResponses];
+
+export type SchedulerSchedulerStatusData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/schedules/status';
+};
+
+export type SchedulerSchedulerStatusErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SchedulerSchedulerStatusError = SchedulerSchedulerStatusErrors[keyof SchedulerSchedulerStatusErrors];
+
+export type SchedulerSchedulerStatusResponses = {
+    /**
+     * Successful Response
+     */
+    200: SchedulerStatusOut;
+};
+
+export type SchedulerSchedulerStatusResponse = SchedulerSchedulerStatusResponses[keyof SchedulerSchedulerStatusResponses];
+
+export type SchedulerDeleteScheduleData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Schedule Id
+         */
+        schedule_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/schedules/{schedule_id}';
+};
+
+export type SchedulerDeleteScheduleErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SchedulerDeleteScheduleError = SchedulerDeleteScheduleErrors[keyof SchedulerDeleteScheduleErrors];
+
+export type SchedulerDeleteScheduleResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type SchedulerDeleteScheduleResponse = SchedulerDeleteScheduleResponses[keyof SchedulerDeleteScheduleResponses];
+
+export type SchedulerGetScheduleData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Schedule Id
+         */
+        schedule_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/schedules/{schedule_id}';
+};
+
+export type SchedulerGetScheduleErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SchedulerGetScheduleError = SchedulerGetScheduleErrors[keyof SchedulerGetScheduleErrors];
+
+export type SchedulerGetScheduleResponses = {
+    /**
+     * Successful Response
+     */
+    200: ScheduleOut;
+};
+
+export type SchedulerGetScheduleResponse = SchedulerGetScheduleResponses[keyof SchedulerGetScheduleResponses];
+
+export type SchedulerUpdateScheduleData = {
+    body: SchedulePatch;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Schedule Id
+         */
+        schedule_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/schedules/{schedule_id}';
+};
+
+export type SchedulerUpdateScheduleErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SchedulerUpdateScheduleError = SchedulerUpdateScheduleErrors[keyof SchedulerUpdateScheduleErrors];
+
+export type SchedulerUpdateScheduleResponses = {
+    /**
+     * Successful Response
+     */
+    200: ScheduleOut;
+};
+
+export type SchedulerUpdateScheduleResponse = SchedulerUpdateScheduleResponses[keyof SchedulerUpdateScheduleResponses];
+
+export type SchedulerDisableScheduleData = {
+    body: DisableIn;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Schedule Id
+         */
+        schedule_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/schedules/{schedule_id}/disable';
+};
+
+export type SchedulerDisableScheduleErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SchedulerDisableScheduleError = SchedulerDisableScheduleErrors[keyof SchedulerDisableScheduleErrors];
+
+export type SchedulerDisableScheduleResponses = {
+    /**
+     * Successful Response
+     */
+    200: ScheduleOut;
+};
+
+export type SchedulerDisableScheduleResponse = SchedulerDisableScheduleResponses[keyof SchedulerDisableScheduleResponses];
+
+export type SchedulerEnableScheduleData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Schedule Id
+         */
+        schedule_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/schedules/{schedule_id}/enable';
+};
+
+export type SchedulerEnableScheduleErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SchedulerEnableScheduleError = SchedulerEnableScheduleErrors[keyof SchedulerEnableScheduleErrors];
+
+export type SchedulerEnableScheduleResponses = {
+    /**
+     * Successful Response
+     */
+    200: ScheduleOut;
+};
+
+export type SchedulerEnableScheduleResponse = SchedulerEnableScheduleResponses[keyof SchedulerEnableScheduleResponses];
+
+export type SchedulerScheduleRunsData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Schedule Id
+         */
+        schedule_id: string;
+    };
+    query?: {
+        /**
+         * Page
+         */
+        page?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/api/v1/instances/{instance}/schedules/{schedule_id}/runs';
+};
+
+export type SchedulerScheduleRunsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SchedulerScheduleRunsError = SchedulerScheduleRunsErrors[keyof SchedulerScheduleRunsErrors];
+
+export type SchedulerScheduleRunsResponses = {
+    /**
+     * Successful Response
+     */
+    200: RunsPageOut;
+};
+
+export type SchedulerScheduleRunsResponse = SchedulerScheduleRunsResponses[keyof SchedulerScheduleRunsResponses];
+
+export type SchedulerTriggerScheduleData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Schedule Id
+         */
+        schedule_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/schedules/{schedule_id}/trigger';
+};
+
+export type SchedulerTriggerScheduleErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SchedulerTriggerScheduleError = SchedulerTriggerScheduleErrors[keyof SchedulerTriggerScheduleErrors];
+
+export type SchedulerTriggerScheduleResponses = {
+    /**
+     * Successful Response
+     */
+    200: ScheduleRunOut;
+};
+
+export type SchedulerTriggerScheduleResponse = SchedulerTriggerScheduleResponses[keyof SchedulerTriggerScheduleResponses];
+
 export type InstancesTestInstanceData = {
     body?: never;
     path: {
@@ -7124,6 +10047,64 @@ export type MeMyAccessResponses = {
 
 export type MeMyAccessResponse = MeMyAccessResponses[keyof MeMyAccessResponses];
 
+export type NotificationsMyPreferencesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/me/notification-preferences';
+};
+
+export type NotificationsMyPreferencesErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type NotificationsMyPreferencesError = NotificationsMyPreferencesErrors[keyof NotificationsMyPreferencesErrors];
+
+export type NotificationsMyPreferencesResponses = {
+    /**
+     * Successful Response
+     */
+    200: PreferencesOut;
+};
+
+export type NotificationsMyPreferencesResponse = NotificationsMyPreferencesResponses[keyof NotificationsMyPreferencesResponses];
+
+export type NotificationsUpdateMyPreferencesData = {
+    body: PreferencesIn;
+    path?: never;
+    query?: never;
+    url: '/api/v1/me/notification-preferences';
+};
+
+export type NotificationsUpdateMyPreferencesErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type NotificationsUpdateMyPreferencesError = NotificationsUpdateMyPreferencesErrors[keyof NotificationsUpdateMyPreferencesErrors];
+
+export type NotificationsUpdateMyPreferencesResponses = {
+    /**
+     * Successful Response
+     */
+    200: PreferencesOut;
+};
+
+export type NotificationsUpdateMyPreferencesResponse = NotificationsUpdateMyPreferencesResponses[keyof NotificationsUpdateMyPreferencesResponses];
+
 export type MeListMySessionsData = {
     body?: never;
     path?: never;
@@ -7321,6 +10302,397 @@ export type MembersUpdateMemberResponses = {
 };
 
 export type MembersUpdateMemberResponse = MembersUpdateMemberResponses[keyof MembersUpdateMemberResponses];
+
+export type NotificationsListNotificationsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Unread
+         *
+         * Only unread ones
+         */
+        unread?: boolean;
+        /**
+         * Limit
+         *
+         * Maximum items to return
+         */
+        limit?: number;
+        /**
+         * Cursor
+         *
+         * Opaque cursor from a previous page
+         */
+        cursor?: string | null;
+    };
+    url: '/api/v1/notifications';
+};
+
+export type NotificationsListNotificationsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type NotificationsListNotificationsError = NotificationsListNotificationsErrors[keyof NotificationsListNotificationsErrors];
+
+export type NotificationsListNotificationsResponses = {
+    /**
+     * Successful Response
+     */
+    200: PageNotificationOut;
+};
+
+export type NotificationsListNotificationsResponse = NotificationsListNotificationsResponses[keyof NotificationsListNotificationsResponses];
+
+export type NotificationsListChannelsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/notifications/channels';
+};
+
+export type NotificationsListChannelsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type NotificationsListChannelsError = NotificationsListChannelsErrors[keyof NotificationsListChannelsErrors];
+
+export type NotificationsListChannelsResponses = {
+    /**
+     * Response Notifications List Channels
+     *
+     * Successful Response
+     */
+    200: Array<ChannelOut>;
+};
+
+export type NotificationsListChannelsResponse = NotificationsListChannelsResponses[keyof NotificationsListChannelsResponses];
+
+export type NotificationsCreateChannelData = {
+    body: ChannelIn;
+    path?: never;
+    query?: never;
+    url: '/api/v1/notifications/channels';
+};
+
+export type NotificationsCreateChannelErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type NotificationsCreateChannelError = NotificationsCreateChannelErrors[keyof NotificationsCreateChannelErrors];
+
+export type NotificationsCreateChannelResponses = {
+    /**
+     * Successful Response
+     */
+    201: ChannelOut;
+};
+
+export type NotificationsCreateChannelResponse = NotificationsCreateChannelResponses[keyof NotificationsCreateChannelResponses];
+
+export type NotificationsDeleteChannelData = {
+    body?: never;
+    path: {
+        /**
+         * Channel Id
+         */
+        channel_id: string;
+    };
+    query?: never;
+    url: '/api/v1/notifications/channels/{channel_id}';
+};
+
+export type NotificationsDeleteChannelErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type NotificationsDeleteChannelError = NotificationsDeleteChannelErrors[keyof NotificationsDeleteChannelErrors];
+
+export type NotificationsDeleteChannelResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type NotificationsDeleteChannelResponse = NotificationsDeleteChannelResponses[keyof NotificationsDeleteChannelResponses];
+
+export type NotificationsGetChannelData = {
+    body?: never;
+    path: {
+        /**
+         * Channel Id
+         */
+        channel_id: string;
+    };
+    query?: never;
+    url: '/api/v1/notifications/channels/{channel_id}';
+};
+
+export type NotificationsGetChannelErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type NotificationsGetChannelError = NotificationsGetChannelErrors[keyof NotificationsGetChannelErrors];
+
+export type NotificationsGetChannelResponses = {
+    /**
+     * Successful Response
+     */
+    200: ChannelOut;
+};
+
+export type NotificationsGetChannelResponse = NotificationsGetChannelResponses[keyof NotificationsGetChannelResponses];
+
+export type NotificationsUpdateChannelData = {
+    body: ChannelPatch;
+    path: {
+        /**
+         * Channel Id
+         */
+        channel_id: string;
+    };
+    query?: never;
+    url: '/api/v1/notifications/channels/{channel_id}';
+};
+
+export type NotificationsUpdateChannelErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type NotificationsUpdateChannelError = NotificationsUpdateChannelErrors[keyof NotificationsUpdateChannelErrors];
+
+export type NotificationsUpdateChannelResponses = {
+    /**
+     * Successful Response
+     */
+    200: ChannelOut;
+};
+
+export type NotificationsUpdateChannelResponse = NotificationsUpdateChannelResponses[keyof NotificationsUpdateChannelResponses];
+
+export type NotificationsTestChannelData = {
+    body?: never;
+    path: {
+        /**
+         * Channel Id
+         */
+        channel_id: string;
+    };
+    query?: never;
+    url: '/api/v1/notifications/channels/{channel_id}/test';
+};
+
+export type NotificationsTestChannelErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type NotificationsTestChannelError = NotificationsTestChannelErrors[keyof NotificationsTestChannelErrors];
+
+export type NotificationsTestChannelResponses = {
+    /**
+     * Successful Response
+     */
+    200: DeliveryOut;
+};
+
+export type NotificationsTestChannelResponse = NotificationsTestChannelResponses[keyof NotificationsTestChannelResponses];
+
+export type NotificationsGetDefaultsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/notifications/defaults';
+};
+
+export type NotificationsGetDefaultsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type NotificationsGetDefaultsError = NotificationsGetDefaultsErrors[keyof NotificationsGetDefaultsErrors];
+
+export type NotificationsGetDefaultsResponses = {
+    /**
+     * Successful Response
+     */
+    200: DefaultsBody;
+};
+
+export type NotificationsGetDefaultsResponse = NotificationsGetDefaultsResponses[keyof NotificationsGetDefaultsResponses];
+
+export type NotificationsPutDefaultsData = {
+    body: DefaultsBody;
+    path?: never;
+    query?: never;
+    url: '/api/v1/notifications/defaults';
+};
+
+export type NotificationsPutDefaultsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type NotificationsPutDefaultsError = NotificationsPutDefaultsErrors[keyof NotificationsPutDefaultsErrors];
+
+export type NotificationsPutDefaultsResponses = {
+    /**
+     * Successful Response
+     */
+    200: DefaultsBody;
+};
+
+export type NotificationsPutDefaultsResponse = NotificationsPutDefaultsResponses[keyof NotificationsPutDefaultsResponses];
+
+export type NotificationsEventTypesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/notifications/event-types';
+};
+
+export type NotificationsEventTypesErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type NotificationsEventTypesError = NotificationsEventTypesErrors[keyof NotificationsEventTypesErrors];
+
+export type NotificationsEventTypesResponses = {
+    /**
+     * Response Notifications Event Types
+     *
+     * Successful Response
+     */
+    200: Array<EventTypeOut>;
+};
+
+export type NotificationsEventTypesResponse = NotificationsEventTypesResponses[keyof NotificationsEventTypesResponses];
+
+export type NotificationsMarkReadData = {
+    body: MarkReadIn;
+    path?: never;
+    query?: never;
+    url: '/api/v1/notifications/read';
+};
+
+export type NotificationsMarkReadErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type NotificationsMarkReadError = NotificationsMarkReadErrors[keyof NotificationsMarkReadErrors];
+
+export type NotificationsMarkReadResponses = {
+    /**
+     * Successful Response
+     */
+    200: MarkReadOut;
+};
+
+export type NotificationsMarkReadResponse = NotificationsMarkReadResponses[keyof NotificationsMarkReadResponses];
+
+export type NotificationsUnreadCountData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/notifications/unread-count';
+};
+
+export type NotificationsUnreadCountErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type NotificationsUnreadCountError = NotificationsUnreadCountErrors[keyof NotificationsUnreadCountErrors];
+
+export type NotificationsUnreadCountResponses = {
+    /**
+     * Successful Response
+     */
+    200: UnreadOut;
+};
+
+export type NotificationsUnreadCountResponse = NotificationsUnreadCountResponses[keyof NotificationsUnreadCountResponses];
 
 export type OnboardingCompleteOnboardingData = {
     body: OnboardingComplete;

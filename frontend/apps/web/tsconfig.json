@@ -64,6 +64,15 @@
     },
     {
       "path": "../../modules/files"
+    },
+    {
+      "path": "../../modules/approvals"
+    },
+    {
+      "path": "../../modules/scheduler"
+    },
+    {
+      "path": "../../modules/queue"
     }
   ]
 }

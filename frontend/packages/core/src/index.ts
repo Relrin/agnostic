@@ -120,6 +120,7 @@ export {
   RealtimeProvider,
   applyRealtimeEvent,
   useApprovalsCount,
+  useUnreadNotifications,
   useRealtimeEvent,
 } from "./realtime/provider";
 export {

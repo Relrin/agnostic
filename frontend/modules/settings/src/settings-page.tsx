@@ -20,6 +20,7 @@ import {
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams } from "@tanstack/react-router";
 
+import { ApprovalsSection, NotificationsSection } from "./control-sections";
 import {
   AuthorizationSection,
   ConnectionSection,
@@ -36,6 +37,8 @@ export const SECTIONS = [
   { id: "interfaces", label: "Interfaces" },
   { id: "tracing", label: "Tracing" },
   { id: "queue", label: "Queue" },
+  { id: "approvals", label: "Approvals" },
+  { id: "notifications", label: "Notifications" },
   { id: "danger", label: "Danger zone" },
 ] as const;
 
@@ -146,6 +149,12 @@ export function SettingsPage() {
             {section === id && configBody()}
           </TabsContent>
         ))}
+        <TabsContent value="approvals" className="pt-5">
+          {section === "approvals" && <ApprovalsSection instance={instance.data} />}
+        </TabsContent>
+        <TabsContent value="notifications" className="pt-5">
+          {section === "notifications" && <NotificationsSection />}
+        </TabsContent>
         <TabsContent value="danger" className="pt-5">
           <DangerZone
             instance={instance.data}

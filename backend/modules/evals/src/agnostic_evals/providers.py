@@ -16,6 +16,7 @@ from agnostic_evals.application.ports import BatchRepository, DatasetRepository,
 from agnostic_evals.application.run_batch import RunBatch
 from agnostic_evals.infrastructure.repository import SqlBatchRepository, SqlDatasetRepository, SqlGateRepository
 from agnostic_evals.settings import EvalsSettings
+from agnostic_kernel.domain_events import DomainEvents
 from agnostic_kernel.events import EventBus
 
 
@@ -34,6 +35,11 @@ class EvalsProvider(Provider):
 
     @provide
     def run_batch(
-        self, access: EvalAccess, batches: BatchRepository, bus: EventBus, settings: EvalsSettings
+        self,
+        access: EvalAccess,
+        batches: BatchRepository,
+        bus: EventBus,
+        settings: EvalsSettings,
+        events: DomainEvents,
     ) -> RunBatch:
-        return RunBatch(access, batches, bus, settings.concurrency)
+        return RunBatch(access, batches, bus, settings.concurrency, events)
