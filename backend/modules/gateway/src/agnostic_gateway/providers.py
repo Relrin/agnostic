@@ -11,6 +11,7 @@ from dishka import (
 )
 
 from agnostic_gateway.application.elevation import Elevation
+from agnostic_gateway.application.ingest import IngestAuthz
 from agnostic_gateway.application.ports import RoutePolicyRepository, Upstream
 from agnostic_gateway.application.proxy import Gateway, GatewaySettingsView, InstanceCache, PolicyTableCache
 from agnostic_gateway.application.streaming import CircuitBreaker
@@ -28,6 +29,7 @@ class GatewayProvider(Provider):
     gateway = provide(Gateway)
     elevation = provide(Elevation)
     facade = provide(GatewayFacadeImpl, provides=GatewayFacade)
+    ingest_authz = provide(IngestAuthz)
 
     @provide(scope=Scope.APP)
     def view(self, settings: GatewaySettings) -> GatewaySettingsView:

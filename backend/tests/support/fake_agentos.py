@@ -13,7 +13,11 @@ like agno.
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import re
+import secrets
+import string
+import time
 from collections.abc import AsyncIterator
 from typing import Any, cast
 from urllib.parse import parse_qs
@@ -24,6 +28,15 @@ from fastapi import FastAPI, Request, Response
 from fastapi.responses import JSONResponse, StreamingResponse
 
 ADMIN = "agent_os:admin"
+PAT_PREFIX = "agno_pat_"
+RESERVED_SUBJECT_PREFIX = "sa:"
+_BASE62 = string.ascii_letters + string.digits
+_SA_NAME = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$")
+
+
+def _privileged(scope: str) -> bool:
+    parts = scope.split(":")
+    return scope == ADMIN or parts[0] == "service_accounts" or parts[-1] in {"write", "delete"}
 
 
 def _holds(scopes: list[str], required: str, resource_id: str | None = None) -> bool:
@@ -34,6 +47,11 @@ def _holds(scopes: list[str], required: str, resource_id: str | None = None) -> 
 
 
 class FakeAgentOS:
+    authz_decisions: list[dict[str, Any]] | None = None
+    """Rows of ``GET /authz/decisions`` like agno's ``DbAuditSink.read_decisions`` (``None``: no authz store)."""
+    authz_changes: list[dict[str, Any]] | None = None
+    """Rows of ``GET /authz/audit`` (``None``: change audit off, 404 like agno)."""
+
     def __init__(
         self,
         *,
@@ -86,6 +104,10 @@ class FakeAgentOS:
         self.runs: dict[str, dict[str, Any]] = {}
         self.bridge_workers: dict[str, Any] | None = None
         self.bridge_events: list[dict[str, Any]] = []
+        self.service_accounts: dict[str, dict[str, Any]] = {}
+        """``agno_service_accounts`` rows by id (with the token's ``token_hash``)."""
+        self.run_requests: list[dict[str, Any]] = []
+        """Agent runs: ``{agent_id, user_id (as attributed), form, sub}``."""
         self.app = self._build()
 
     def _claims(self, request: Request) -> dict[str, Any] | Response:
@@ -93,6 +115,8 @@ class FakeAgentOS:
         if not header.startswith("Bearer "):
             return JSONResponse({"detail": "Authorization header missing"}, status_code=401)
         token = header.removeprefix("Bearer ")
+        if token.startswith(PAT_PREFIX):
+            return self._pat_claims(token)
         for key in self.public_keys:
             try:
                 claims: dict[str, Any] = jwt.decode(
@@ -106,6 +130,8 @@ class FakeAgentOS:
                 return JSONResponse({"detail": "Invalid audience"}, status_code=401)
             except jwt.PyJWTError:
                 continue
+            if str(claims.get("sub", "")).startswith(RESERVED_SUBJECT_PREFIX):
+                return JSONResponse({"detail": "Reserved subject prefix 'sa:'"}, status_code=401)
             return claims
         return JSONResponse({"detail": "Invalid token"}, status_code=401)
 
@@ -129,6 +155,8 @@ class FakeAgentOS:
 
     def _build(self) -> FastAPI:  # noqa: C901, PLR0915
         app = FastAPI()
+        self._service_account_routes(app)
+        self._authz_routes(app)
 
         @app.get("/health")
         async def health() -> dict[str, str]:
@@ -209,6 +237,15 @@ class FakeAgentOS:
                 return guarded
             form = parse_qs((await request.body()).decode())
             message = form.get("message", [""])[0]
+            self.run_requests.append(
+                {
+                    "agent_id": agent_id,
+                    "user_id": self._run_user(guarded, form.get("user_id", [None])[0]),
+                    "form": {key: values[0] for key, values in form.items()},
+                    "query": dict(request.query_params),
+                    "sub": guarded.get("sub"),
+                }
+            )
 
             async def events() -> AsyncIterator[bytes]:
                 for index, name in enumerate(("RunStarted", "RunContent", "RunCompleted")):
@@ -724,3 +761,161 @@ class FakeAgentOS:
             return JSONResponse({"events": events, "next_since": max([e["at"] for e in events], default=since)})
 
         return app
+
+    # ------------------------------------------------------------------ service accounts (agno_pat_ tokens)
+
+    def _pat_claims(self, token: str) -> dict[str, Any] | Response:
+        digest = hashlib.sha256(token.encode()).hexdigest()
+        account = next((a for a in self.service_accounts.values() if a["token_hash"] == digest), None)
+        now = int(time.time())
+        if account is None or account["revoked_at"] is not None:
+            return JSONResponse({"detail": "Invalid or revoked service account token"}, status_code=401)
+        if account["expires_at"] is not None and account["expires_at"] <= now:
+            return JSONResponse({"detail": "Service account token expired"}, status_code=401)
+        account["last_used_at"] = now
+        return {
+            "sub": account["principal"],
+            "scopes": [item["scope"] for item in account["scopes"]],
+            "service_account_id": account["id"],
+        }
+
+    def _run_user(self, claims: dict[str, Any], requested: str | None) -> str | None:
+        """Who a run belongs to, like agno: PATs always ``sa:<name>``; JWTs under isolation their ``sub``."""
+        scopes = claims.get("scopes", [])
+        if "service_account_id" in claims and ADMIN not in scopes:
+            return claims["sub"]
+        if self.user_isolation and ADMIN not in scopes:
+            return claims.get("sub")
+        return requested or claims.get("sub")
+
+    def touch_service_account(self, name: str, at: int | None = None) -> None:
+        """Pretend the account's token was just used (``last_used_at``, epoch seconds)."""
+        for account in self.service_accounts.values():
+            if account["name"] == name and account["revoked_at"] is None:
+                account["last_used_at"] = at if at is not None else int(time.time())
+
+    @staticmethod
+    def _public(account: dict[str, Any]) -> dict[str, Any]:
+        return {key: value for key, value in account.items() if key not in {"token_hash", "token"}}
+
+    def _service_account_routes(self, app: FastAPI) -> None:  # noqa: C901
+        @app.post("/service-accounts")
+        async def create_service_account(request: Request) -> Response:  # noqa: PLR0911
+            guarded = await self._guard(request, "service_accounts:write")
+            if isinstance(guarded, Response):
+                return guarded
+            body: dict[str, Any] = orjson.loads(await request.body())
+            name = str(body.get("name", ""))
+            if not _SA_NAME.fullmatch(name):
+                return JSONResponse(
+                    {"detail": "name must be a lowercase slug of at most 63 characters"}, status_code=400
+                )
+            if any(a["name"] == name and a["revoked_at"] is None for a in self.service_accounts.values()):
+                return JSONResponse({"detail": f"A service account named {name!r} already exists"}, status_code=409)
+            raw_scopes = body.get("scopes")
+            if raw_scopes is None:
+                raw_scopes = [
+                    {"scope": s, "effect": "allow"}
+                    for s in ("agents:run", "teams:run", "workflows:run", "sessions:read", "config:read")
+                ]
+            scopes = [{"scope": str(item["scope"]), "effect": item.get("effect", "allow")} for item in raw_scopes]
+            privileged = [item["scope"] for item in scopes if _privileged(item["scope"])]
+            if privileged and not body.get("allow_privileged_scopes", False):
+                return JSONResponse(
+                    {"detail": f"Privileged scopes need allow_privileged_scopes=true: {', '.join(privileged)}"},
+                    status_code=400,
+                )
+            granted = guarded.get("scopes", [])
+            if ADMIN not in granted and any(item["scope"] not in granted for item in scopes):
+                return JSONResponse({"detail": "You can only grant scopes you hold"}, status_code=403)
+            now = int(time.time())
+            days = int(body.get("expires_in_days", 90))
+            if not 1 <= days <= 3650:
+                return JSONResponse({"detail": "expires_in_days must be between 1 and 3650"}, status_code=400)
+            token = PAT_PREFIX + "".join(secrets.choice(_BASE62) for _ in range(32))
+            account_id = f"sa_{secrets.token_hex(8)}"
+            account: dict[str, Any] = {
+                "id": account_id,
+                "name": name,
+                "principal": f"sa:{name}",
+                "token_prefix": token[: len(PAT_PREFIX) + 4],
+                "token_hash": hashlib.sha256(token.encode()).hexdigest(),
+                "scopes": scopes,
+                "user_id": guarded.get("sub"),
+                "created_by": guarded.get("sub"),
+                "created_at": now,
+                "expires_at": None if body.get("never_expires") else now + days * 86400,
+                "last_used_at": None,
+                "revoked_at": None,
+            }
+            self.service_accounts[account_id] = account
+            return JSONResponse({**self._public(account), "token": token}, status_code=201)
+
+        @app.get("/service-accounts")
+        async def list_service_accounts(request: Request) -> Response:
+            guarded = await self._guard(request, "service_accounts:read")
+            if isinstance(guarded, Response):
+                return guarded
+            include_revoked = request.query_params.get("include_revoked", "false").lower() == "true"
+            items = [
+                self._public(a) for a in self.service_accounts.values() if include_revoked or a["revoked_at"] is None
+            ]
+            items.sort(key=lambda a: a["created_at"], reverse=True)
+            limit = int(request.query_params.get("limit", "20"))
+            number = int(request.query_params.get("page", "1"))
+            chunk = items[(number - 1) * limit : number * limit]
+            total_pages = max(1, -(-len(items) // limit))
+            meta = {"page": number, "limit": limit, "total_pages": total_pages, "total_count": len(items)}
+            return JSONResponse({"data": chunk, "meta": meta})
+
+        @app.delete("/service-accounts/{account_id}")
+        async def revoke_service_account(account_id: str, request: Request) -> Response:
+            guarded = await self._guard(request, "service_accounts:delete")
+            if isinstance(guarded, Response):
+                return guarded
+            account = self.service_accounts.get(account_id)
+            if account is None:
+                return JSONResponse({"detail": "Service account not found"}, status_code=404)
+            if account["revoked_at"] is None:
+                account["revoked_at"] = int(time.time())
+            return Response(status_code=204)
+
+    # ------------------------------------------------------------------ authorization trails (admin only, like agno)
+
+    def _authz_routes(self, app: FastAPI) -> None:  # noqa: C901  (one route each)
+        def trail(rows: list[dict[str, Any]], request: Request) -> Response:
+            limit = int(request.query_params.get("limit", "100"))
+            number = int(request.query_params.get("page", "1"))
+            descending = request.query_params.get("sort_order", "desc") == "desc"
+            ordered = sorted(rows, key=lambda row: row["created_at"], reverse=descending)
+            chunk = ordered[(number - 1) * limit : number * limit]
+            total_pages = (len(rows) + limit - 1) // limit
+            meta = {"page": number, "limit": limit, "total_pages": total_pages, "total_count": len(rows)}
+            return JSONResponse({"data": chunk, "meta": meta})
+
+        @app.get("/authz/scopes")
+        async def authz_scopes(request: Request) -> Response:
+            guarded = await self._guard(request, ADMIN)
+            if isinstance(guarded, Response):
+                return guarded
+            if self.authz_decisions is None:
+                return JSONResponse({"detail": "Not Found"}, status_code=404)
+            return JSONResponse([{"scope": "agents:read", "resource": "agents", "action": "read"}])
+
+        @app.get("/authz/decisions")
+        async def authz_decisions(request: Request) -> Response:
+            guarded = await self._guard(request, ADMIN)
+            if isinstance(guarded, Response):
+                return guarded
+            if self.authz_decisions is None:
+                return JSONResponse({"detail": "Decision audit is not enabled"}, status_code=404)
+            return trail(self.authz_decisions, request)
+
+        @app.get("/authz/audit")
+        async def authz_audit(request: Request) -> Response:
+            guarded = await self._guard(request, ADMIN)
+            if isinstance(guarded, Response):
+                return guarded
+            if self.authz_changes is None:
+                return JSONResponse({"detail": "Change audit is not enabled"}, status_code=404)
+            return trail(self.authz_changes, request)

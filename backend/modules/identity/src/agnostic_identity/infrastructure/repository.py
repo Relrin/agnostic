@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from datetime import datetime
-from typing import Any
+from typing import Any, cast
 
-from sqlalchemy import select, update
+from sqlalchemy import CursorResult, delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from agnostic_identity.domain.providers import ExternalProfile
@@ -169,6 +169,12 @@ class SqlExternalIdentityRepository:
             select(ExternalIdentityRow.provider_id).where(ExternalIdentityRow.user_id == user_id)
         )
         return sorted(set(rows))
+
+    async def unlink_provider(self, provider_id: str) -> int:
+        result = await self._session.execute(
+            delete(ExternalIdentityRow).where(ExternalIdentityRow.provider_id == provider_id)
+        )
+        return cast("CursorResult[Any]", result).rowcount or 0
 
 
 class SqlPreferenceRepository:

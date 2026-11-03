@@ -56,6 +56,7 @@ class OrgModule(BaseModule):
             AuditActionDecl("members.join", "{actor} joined the org ({via})"),
             AuditActionDecl("members.update", "{actor} changed {resource}'s org role from {before} to {after}"),
             AuditActionDecl("members.remove", "{actor} removed {resource} from the org"),
+            AuditActionDecl("members.bulk_add_to_group", "{actor} added {count} members to a group"),
             AuditActionDecl("invitations.create", "{actor} invited {email} as {role}"),
             AuditActionDecl("invitations.resend", "{actor} resent the invitation to {email}"),
             AuditActionDecl("invitations.revoke", "{actor} revoked the invitation to {email}"),

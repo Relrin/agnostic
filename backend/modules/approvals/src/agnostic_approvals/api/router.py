@@ -147,6 +147,13 @@ async def list_org_routes(principal: FromDishka[Principal], routing: FromDishka[
     return [RouteOut.of(view) for view in await routing.list(principal, None)]
 
 
+@org_router.get("/approvals/routes/by-group/{group_id}", summary="Routing rules naming a group, on any instance")
+async def list_group_routes(
+    group_id: str, principal: FromDishka[Principal], routing: FromDishka[ApprovalRouting]
+) -> list[RouteOut]:
+    return [RouteOut.of(view) for view in await routing.for_group(principal, group_id)]
+
+
 @org_router.post("/approvals/routes", status_code=201, summary="Add an org-wide routing rule (needs settings:write)")
 async def create_org_route(
     principal: FromDishka[Principal], routing: FromDishka[ApprovalRouting], body: RouteIn

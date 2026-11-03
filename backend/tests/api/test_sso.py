@@ -98,6 +98,7 @@ async def test_providers_are_listed(stack: Stack) -> None:
     options = (await stack.client().get("/api/v1/auth/providers")).json()
     assert options == {
         "local_login": True,
+        "sso_enforced": False,
         "providers": [
             {"id": "corp", "display_name": "Localhost Company SSO", "preset": "oidc"},
             {"id": "github", "display_name": "GitHub", "preset": "github"},

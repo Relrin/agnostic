@@ -1,8 +1,9 @@
 """Effective access of a person on an instance, and the explanation of a decision.
 
-Effective scopes for (user, instance) are the union of direct bindings (on the instance or on all instances, for
-roles bindable there, not expired), the implicit "Full access" of Owners and Administrators (unless the org requires
-explicit bindings), plus the control-plane scopes of the org role. No deny rules.
+Effective scopes for (user, instance) are the union of direct bindings and the bindings of every group the person is
+in (on the instance or on all instances, for roles bindable there, not expired), the implicit "Full access" of Owners
+and Administrators (unless the org requires explicit bindings), plus the control-plane scopes of the org role. A
+service account has only its own bindings. No deny rules.
 """
 
 from __future__ import annotations
@@ -12,7 +13,14 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Literal
 
-from agnostic_access.domain.roles import FULL_ACCESS, AccessRole, Binding, implicit_full_access, org_role_scopes
+from agnostic_access.domain.roles import (
+    FULL_ACCESS,
+    AccessRole,
+    Binding,
+    PrincipalKind,
+    implicit_full_access,
+    org_role_scopes,
+)
 from agnostic_access.domain.scopes import ADMIN_SCOPE, satisfies
 
 ORG_ROLE_NAMES = {"owner": "Owner", "administrator": "Administrator", "member": "Member"}
@@ -28,17 +36,22 @@ class Grant:
     instance_id: str | None = None
     """``None``: the grant applies on all instances."""
     expires_at: datetime | None = None
+    via_group_id: str | None = None
+    via_group_name: str | None = None
+    """Set when the binding belongs to a group the person is in."""
 
 
 @dataclass(frozen=True, slots=True)
 class EffectiveAccess:
     user_id: str
+    """The principal's id: a person (``usr_…``) or a service account (``sac_…``)."""
     org_role: str | None
     instance_id: str | None
     implicit_full: bool
     grants: tuple[Grant, ...]
     control_plane: frozenset[str]
     """Which scopes in ``grants`` are control-plane scopes (never sent to AgentOS)."""
+    principal_kind: PrincipalKind = "user"
 
     def runtime_scopes(self) -> frozenset[str]:
         return frozenset(g.scope for g in self.grants if g.scope not in self.control_plane)
@@ -70,7 +83,10 @@ def compute_access(
     require_explicit_bindings: bool,
     control_plane_scopes: Iterable[str],
     now: datetime,
+    groups: Mapping[str, str] | None = None,
+    principal_kind: PrincipalKind = "user",
 ) -> EffectiveAccess:
+    """``bindings`` are the principal's own and (for people) their groups'; ``groups`` maps group ids to names."""
     cp = frozenset(control_plane_scopes)
     grants: list[Grant] = []
     if org_role is not None:
@@ -83,8 +99,11 @@ def compute_access(
     if implicit and instance_id is not None:
         grants.append(Grant(scope=ADMIN_SCOPE, source="implicit", role_id=None, role_name=FULL_ACCESS))
 
-    if org_role is not None:
+    group_names = groups or {}
+    if org_role is not None or principal_kind == "service_account":
         for binding in bindings:
+            if binding.principal_kind == "group" and binding.principal_id not in group_names:
+                continue
             if not binding.active(now):
                 continue
             if instance_id is None and binding.instance_id is not None:
@@ -105,6 +124,8 @@ def compute_access(
                     binding_id=binding.id,
                     instance_id=binding.instance_id,
                     expires_at=binding.expires_at,
+                    via_group_id=binding.principal_id if binding.principal_kind == "group" else None,
+                    via_group_name=group_names.get(binding.principal_id) if binding.principal_kind == "group" else None,
                 )
                 for scope in sorted(scopes)
             )
@@ -115,6 +136,7 @@ def compute_access(
         implicit_full=implicit,
         grants=tuple(grants),
         control_plane=cp,
+        principal_kind=principal_kind,
     )
 
 
@@ -142,7 +164,7 @@ def _join(names: Sequence[str]) -> str:
     return ", ".join(names[:-1]) + " and " + names[-1]
 
 
-def explain(
+def explain(  # noqa: C901  (one branch per kind of grant and of denial)
     required: str,
     access: EffectiveAccess,
     *,
@@ -163,6 +185,8 @@ def explain(
             text = f"{who} has {FULL_ACCESS}{where} as {ORG_ROLE_NAMES.get(access.org_role or '', '')}."
         elif grant.source == "org_role":
             text = f"Granted by {who}'s org role {grant.role_name} → `{grant.scope}`."
+        elif grant.via_group_name:
+            text = f"Granted by {grant.role_name} via {grant.via_group_name} → `{grant.scope}`{where}."
         else:
             text = f"Granted by {grant.role_name} → `{grant.scope}`{where}."
         return Explanation(
@@ -175,6 +199,17 @@ def explain(
             text=text,
         )
 
+    if control_plane and access.principal_kind == "service_account":
+        return Explanation(
+            allowed=False,
+            scope=required,
+            instance_id=access.instance_id,
+            granted_by=(),
+            missing_scopes=(required,),
+            alternatives=(),
+            text=f"{subject} needs `{required}`. {who} is a service account without it; "
+            "service accounts only have the scopes they were given.",
+        )
     if control_plane:
         org = ORG_ROLE_NAMES.get(access.org_role or "", "not a member")
         holders = [

@@ -7,6 +7,7 @@ import {
   moduleAvailable,
   ORG_ROLE_LABELS,
   RealtimeProvider,
+  ReauthProvider,
   scopedPath,
   useApprovalsCount,
   useCan,
@@ -287,55 +288,57 @@ export function RootLayout() {
   return (
     <RealtimeProvider>
       <TooltipProvider delayDuration={300}>
-        <AppShell sidebar={sidebar}>
-          <PageHeader
-            start={
-              <>
-                <InstanceMenu instances={instances.data ?? []} active={active} />
-                <Breadcrumb
-                  items={[
-                    ...(groupLabel ? [{ label: groupLabel }] : []),
-                    {
-                      label:
-                        activeEntry?.label ??
-                        (pathname.startsWith("/account")
-                          ? "Account"
-                          : pathname.startsWith("/instances")
-                            ? "Instances"
-                            : ""),
-                    },
-                  ]}
-                />
-              </>
-            }
-            end={
-              <>
-                {active ? <HealthIndicator health={health} /> : undefined}
-                <NotificationBell />
-              </>
-            }
+        <ReauthProvider>
+          <AppShell sidebar={sidebar}>
+            <PageHeader
+              start={
+                <>
+                  <InstanceMenu instances={instances.data ?? []} active={active} />
+                  <Breadcrumb
+                    items={[
+                      ...(groupLabel ? [{ label: groupLabel }] : []),
+                      {
+                        label:
+                          activeEntry?.label ??
+                          (pathname.startsWith("/account")
+                            ? "Account"
+                            : pathname.startsWith("/instances")
+                              ? "Instances"
+                              : ""),
+                      },
+                    ]}
+                  />
+                </>
+              }
+              end={
+                <>
+                  {active ? <HealthIndicator health={health} /> : undefined}
+                  <NotificationBell />
+                </>
+              }
+            />
+            <UnreachableBanner instance={fromPath ? active : undefined} health={health} />
+            <div className="min-h-0 flex-1 overflow-auto">
+              {unknownInstance ? (
+                <div className="mx-auto w-full max-w-[1320px] px-8 pt-6">
+                  <Callout tone="danger" title={`There is no instance ${fromPath}`}>
+                    It may have been renamed or deleted. <Link to="/instances">See all instances</Link>.
+                  </Callout>
+                </div>
+              ) : (
+                <Outlet />
+              )}
+            </div>
+          </AppShell>
+          <CommandPalette
+            open={paletteOpen}
+            onOpenChange={setPaletteOpen}
+            navigation={navigation}
+            commands={commands}
+            instance={instanceSlug}
+            instanceId={active?.id}
           />
-          <UnreachableBanner instance={fromPath ? active : undefined} health={health} />
-          <div className="min-h-0 flex-1 overflow-auto">
-            {unknownInstance ? (
-              <div className="mx-auto w-full max-w-[1320px] px-8 pt-6">
-                <Callout tone="danger" title={`There is no instance ${fromPath}`}>
-                  It may have been renamed or deleted. <Link to="/instances">See all instances</Link>.
-                </Callout>
-              </div>
-            ) : (
-              <Outlet />
-            )}
-          </div>
-        </AppShell>
-        <CommandPalette
-          open={paletteOpen}
-          onOpenChange={setPaletteOpen}
-          navigation={navigation}
-          commands={commands}
-          instance={instanceSlug}
-          instanceId={active?.id}
-        />
+        </ReauthProvider>
         <Toaster />
       </TooltipProvider>
     </RealtimeProvider>

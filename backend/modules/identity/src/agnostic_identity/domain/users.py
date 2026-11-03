@@ -24,6 +24,9 @@ class CreatedVia(StrEnum):
     BOOTSTRAP = "bootstrap"
     INVITE = "invite"
     OIDC = "oidc"
+    SAML = "saml"
+    SCIM = "scim"
+    GOOGLE = "google"
 
 
 class InvalidEmailError(ValueError):
@@ -103,6 +106,8 @@ class WebSession:
     user_agent: str | None
     method: str
     """How the person signed in: ``password`` or ``sso:<provider>``."""
+    authenticated_at: datetime | None = None
+    """When the person last proved who they are (sign-in or step-up); sensitive changes need it to be recent."""
 
 
 def safe_next(target: str | None, default: str = "/") -> str:

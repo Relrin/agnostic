@@ -146,6 +146,7 @@ def _invitation(row: InvitationRow) -> Invitation:
         expires_at=aware(row.expires_at),
         status=InvitationStatus(row.status),
         created_at=aware(row.created_at),
+        group_ids=tuple(row.group_ids or ()),
     )
 
 
@@ -160,6 +161,7 @@ class SqlInvitationRepository:
                 email=invitation.email,
                 org_role=invitation.org_role.value,
                 bindings=[{"role_id": b.role_id, "instance_id": b.instance_id} for b in invitation.bindings],
+                group_ids=list(invitation.group_ids),
                 access_ends_at=invitation.access_ends_at,
                 invited_by=invitation.invited_by,
                 token_hash=token_hash,

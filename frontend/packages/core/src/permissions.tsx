@@ -5,6 +5,7 @@ import { Tooltip } from "@agnostic/ui";
 import { Info } from "lucide-react";
 import type { ReactNode } from "react";
 
+import { RequestAccessButton } from "./request-access";
 import { useMyAccess } from "./session";
 
 const ADMIN = "agent_os:admin";
@@ -80,11 +81,14 @@ export function PermissionGate({
   return <>{typeof fallback === "function" ? fallback(can.reason) : fallback}</>;
 }
 
-/** A small (i) that says which grant makes something visible or available ("Granted by Operator → …"). */
+/**
+ * A small (i) that says which grant makes something visible or available ("Granted by Operator → …"). When an
+ * instance scope is denied it also offers "Request access" (temporary access, decided by approvers).
+ */
 export function WhyVisible({ scope, instance }: { scope: string; instance?: string }) {
   const can = useCan(scope, instance);
   if (!can.reason) return null;
-  return (
+  const info = (
     <Tooltip content={can.reason}>
       <button
         type="button"
@@ -94,5 +98,12 @@ export function WhyVisible({ scope, instance }: { scope: string; instance?: stri
         <Info className="size-3.5" aria-hidden />
       </button>
     </Tooltip>
+  );
+  if (can.allowed !== false || isControlPlaneScope(scope)) return info;
+  return (
+    <span className="inline-flex items-center gap-1">
+      {info}
+      <RequestAccessButton instance={instance} scopes={[scope]} />
+    </span>
   );
 }

@@ -25,13 +25,16 @@ from agnostic_org.application.invitations import (
     RevokeInvitation,
 )
 from agnostic_org.application.members import (
+    BulkMembers,
     ChangeOrgRole,
+    ExportMembers,
     GetMember,
     ListMembers,
     OrgMembershipDirectory,
     RemoveMember,
 )
 from agnostic_org.application.ports import (
+    GroupDirectory,
     InitialBindingsApplier,
     InvitationRepository,
     MemberRepository,
@@ -58,6 +61,8 @@ class OrgProvider(Provider):
     get_member = provide(GetMember)
     change_role = provide(ChangeOrgRole)
     remove_member = provide(RemoveMember)
+    bulk_members = provide(BulkMembers)
+    export_members = provide(ExportMembers)
 
     @provide
     def bootstrap(
@@ -100,6 +105,7 @@ class OrgProvider(Provider):
         org: OrgRepository,
         identity: IdentityFacade,
         bindings: InitialBindingsApplier,
+        groups: GroupDirectory,
         authorizer: Authorizer,
         audit: AuditLog,
         mailer: Mailer,
@@ -112,6 +118,7 @@ class OrgProvider(Provider):
             org=org,
             identity=identity,
             bindings=bindings,
+            groups=groups,
             authorizer=authorizer,
             audit=audit,
             mailer=mailer,

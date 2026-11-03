@@ -46,6 +46,42 @@ EVENT_TYPES: tuple[EventType, ...] = (
         "Someone got admin-level access (Owners and Administrators).",
         ("in_app", "email"),
     ),
+    EventType(
+        "access.request_created",
+        "Access requested",
+        "Someone asked for temporary access you can approve.",
+        ("in_app", "email"),
+    ),
+    EventType(
+        "access.request_decided",
+        "Access request decided",
+        "Your temporary access request was approved or denied.",
+        ("in_app", "email"),
+    ),
+    EventType(
+        "service_accounts.privileged_created",
+        "Privileged service account",
+        "A service account with write, delete or admin scopes was created (Owners).",
+        ("in_app", "email"),
+    ),
+    EventType(
+        "identity.break_glass_used",
+        "Break-glass sign-in",
+        "The break-glass account signed in with a password while SSO is enforced (Owners).",
+        ("in_app", "email"),
+    ),
+    EventType(
+        "audit.archive_failed",
+        "Audit archive failed",
+        "A month of audit events couldn't be archived; it stays in the database (Owners and Administrators).",
+        ("in_app", "email"),
+    ),
+    EventType(
+        "audit.sink_failing",
+        "SIEM delivery failing",
+        "Audit events can't be delivered to a SIEM destination (Owners and Administrators).",
+        ("in_app", "email"),
+    ),
 )
 
 EVENTS_BY_NAME: Mapping[str, EventType] = {event.name: event for event in EVENT_TYPES}

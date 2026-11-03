@@ -10,24 +10,37 @@ from fastapi import Response
 from agnostic_identity.application.account import CreateLocalAccount
 from agnostic_identity.application.ports import (
     Admission,
+    BearerPrincipalResolver,
+    ExternalGroupsSync,
     Membership,
     MembershipDirectory,
     UserRepository,
 )
-from agnostic_identity.application.sessions import IssuedSession, Sessions
-from agnostic_identity.domain.users import CreatedVia, User, UserStatus, normalize_email
+from agnostic_identity.application.sessions import (
+    InteractiveSessionRequiredError,
+    IssuedSession,
+    ReauthRequiredError,
+    RecentAuth,
+    Sessions,
+)
+from agnostic_identity.domain.users import CreatedVia, User, UserStatus, clean_display_name, normalize_email
+from agnostic_kernel.auth import Principal
 
 __all__ = [
     "CSRF_COOKIE",
     "CSRF_HEADER",
     "SESSION_COOKIE",
     "Admission",
+    "BearerPrincipalResolver",
     "CreatedVia",
+    "ExternalGroupsSync",
     "IdentityFacade",
     "IdentityFacadeImpl",
+    "InteractiveSessionRequiredError",
     "IssuedSession",
     "Membership",
     "MembershipDirectory",
+    "ReauthRequiredError",
     "SessionCookies",
     "User",
     "UserStatus",
@@ -55,13 +68,32 @@ class IdentityFacade(Protocol):
 
     async def revoke_sessions(self, user_id: str) -> None: ...
     async def set_status(self, user_id: str, status: UserStatus) -> User: ...
+    async def provision_user(self, email: str, display_name: str | None, *, via: CreatedVia) -> User:
+        """An account without a password (SCIM, directory sync): it signs in through SSO. The caller commits."""
+        ...
+
+    async def update_user(self, user_id: str, *, display_name: str | None = None) -> User: ...
+    async def require_recent_auth(self, principal: Principal) -> None:
+        """Guard for sensitive changes: the person signed in or stepped up (``POST /auth/step-up``) < 10 min ago.
+
+        Raises a 403 problem with code ``reauth_required`` (the web app opens its re-authentication dialog and
+        retries), or ``interactive_session_required`` for service accounts and other principals without a web
+        session: those can't re-authenticate, so they can't make these changes at all.
+        """
+        ...
 
 
 class IdentityFacadeImpl:
-    def __init__(self, users: UserRepository, sessions: Sessions, create_account: CreateLocalAccount) -> None:
+    def __init__(
+        self, users: UserRepository, sessions: Sessions, create_account: CreateLocalAccount, recent: RecentAuth
+    ) -> None:
         self._users = users
         self._sessions = sessions
         self._create_account = create_account
+        self._recent = recent
+
+    async def require_recent_auth(self, principal: Principal) -> None:
+        await self._recent.require(principal)
 
     async def get_user(self, user_id: str) -> User | None:
         return await self._users.get(user_id)
@@ -84,6 +116,22 @@ class IdentityFacadeImpl:
     async def set_status(self, user_id: str, status: UserStatus) -> User:
         return await self._users.update(user_id, status=status)
 
+    async def provision_user(self, email: str, display_name: str | None, *, via: CreatedVia) -> User:
+        address = normalize_email(email)
+        existing = await self._users.find_by_email(address)
+        if existing is not None:
+            return existing
+        return await self._users.add(
+            email=address, display_name=clean_display_name(display_name, address), created_via=via
+        )
+
+    async def update_user(self, user_id: str, *, display_name: str | None = None) -> User:
+        user = await self._users.get(user_id)
+        if user is None:
+            raise LookupError(user_id)
+        name = clean_display_name(display_name, user.email) if display_name is not None else None
+        return await self._users.update(user_id, display_name=name)
+
 
 class SessionCookies:
     """Sets and clears the session + CSRF cookies with the installation's cookie policy."""
@@ -93,7 +141,7 @@ class SessionCookies:
         self.max_age = max_age
 
     def set(self, response: Response, issued: IssuedSession) -> None:
-        set_session_cookies(response, issued, secure=self.secure, max_age=self.max_age)
+        set_session_cookies(response, issued, secure=self.secure, max_age=issued.max_age or self.max_age)
 
     def clear(self, response: Response) -> None:
         clear_session_cookies(response, secure=self.secure)

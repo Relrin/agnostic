@@ -4,7 +4,7 @@ import { withQueryFn } from "@agnostic/core";
 import { Button } from "@agnostic/ui";
 import { useQuery } from "@tanstack/react-query";
 import { useRouterState } from "@tanstack/react-router";
-import { KeyRound } from "lucide-react";
+import { FileKey2, KeyRound } from "lucide-react";
 import type { ReactNode } from "react";
 
 export function PublicPage({
@@ -68,14 +68,17 @@ export function SsoButtons({ providers, next }: { providers: readonly SignInProv
   if (providers.length === 0) return null;
   return (
     <div className="flex flex-col gap-2">
-      {providers.map((provider) => (
-        <Button key={provider.id} asChild variant="secondary" size="36" className="w-full">
-          <a href={ssoStartUrl(provider, next)}>
-            <KeyRound aria-hidden />
-            Continue with {provider.display_name}
-          </a>
-        </Button>
-      ))}
+      {providers.map((provider) => {
+        const Icon = provider.preset === "saml" ? FileKey2 : KeyRound;
+        return (
+          <Button key={provider.id} asChild variant="secondary" size="36" className="w-full">
+            <a href={ssoStartUrl(provider, next)} data-preset={provider.preset}>
+              <Icon aria-hidden />
+              Continue with {provider.display_name}
+            </a>
+          </Button>
+        );
+      })}
     </div>
   );
 }
@@ -93,4 +96,13 @@ export const SSO_ERRORS: Record<string, string> = {
   provider_denied: "Sign-in was cancelled at the identity provider.",
   provider_error:
     "The identity provider returned an error. Try again, or ask an administrator to check the logs.",
+  saml_invalid:
+    "The identity provider's SAML response couldn't be read. Ask an administrator to check the setup.",
+  saml_signature:
+    "The SAML response wasn't signed with the identity provider's certificate. Ask an administrator to refresh its metadata.",
+  saml_audience:
+    "The SAML response was meant for a different app. Ask an administrator to check the SP entity ID in the identity provider.",
+  saml_expired: "The SAML response expired before it arrived. Check your device's clock and try again.",
+  saml_replayed: "That SAML response was already used. Start the sign-in again.",
+  sso_required: "Your org signs in with SSO. Continue with your identity provider.",
 };

@@ -80,6 +80,8 @@ class Invitation:
     expires_at: datetime
     status: InvitationStatus
     created_at: datetime
+    group_ids: tuple[str, ...] = ()
+    """Manual groups the person joins on acceptance."""
 
     def usable(self, now: datetime) -> bool:
         return self.status is InvitationStatus.PENDING and self.expires_at > now

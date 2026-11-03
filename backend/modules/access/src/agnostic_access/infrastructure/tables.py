@@ -51,6 +51,7 @@ class BindingRow(AccessBase):
     __table_args__ = (
         Index("ix_access_bindings_principal_kind_principal_id", "principal_kind", "principal_id"),
         Index("ix_access_bindings_instance_id", "instance_id"),
+        Index("ix_access_bindings_expires_at", "expires_at"),
     )
 
     id: Mapped[str] = mapped_column(String(40), primary_key=True)
@@ -62,4 +63,41 @@ class BindingRow(AccessBase):
     expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     reason: Mapped[str | None] = mapped_column(Text)
     created_by: Mapped[str] = mapped_column(String(200))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class RoleVersionRow(AccessBase):
+    """Every saved version of a role, for history and the audit diff."""
+
+    __tablename__ = "access_role_versions"
+
+    role_id: Mapped[str] = mapped_column(String(40), primary_key=True)
+    version: Mapped[int] = mapped_column(Integer, primary_key=True)
+    snapshot: Mapped[dict[str, Any]] = mapped_column(JsonDocument)
+    changed_by: Mapped[str] = mapped_column(String(200))
+    changed_by_name: Mapped[str] = mapped_column(String(200))
+    changed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class TempGrantRequestRow(AccessBase):
+    __tablename__ = "access_temp_grant_requests"
+    __table_args__ = (
+        Index("ix_access_temp_grant_requests_status", "status"),
+        Index("ix_access_temp_grant_requests_requester_id", "requester_id"),
+        Index("ix_access_temp_grant_requests_binding_id", "binding_id"),
+    )
+
+    id: Mapped[str] = mapped_column(String(40), primary_key=True)
+    requester_id: Mapped[str] = mapped_column(String(40))
+    instance_id: Mapped[str | None] = mapped_column(String(40))
+    role_id: Mapped[str | None] = mapped_column(String(40))
+    scopes: Mapped[list[str]] = mapped_column(JsonDocument)
+    reason: Mapped[str] = mapped_column(Text)
+    duration_hours: Mapped[int] = mapped_column(Integer)
+    status: Mapped[str] = mapped_column(String(20))
+    decided_by: Mapped[str | None] = mapped_column(String(40))
+    decided_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    note: Mapped[str | None] = mapped_column(Text)
+    binding_id: Mapped[str | None] = mapped_column(String(40))
+    expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

@@ -24,6 +24,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type SubmitEvent } from "react";
 
 import { NotificationPreferences } from "./notification-preferences";
+import { TwoStepVerification } from "./two-step";
 
 function ProfileForm({ me }: { me: MeOut }) {
   const queryClient = useQueryClient();
@@ -192,6 +193,12 @@ export function AccountPage() {
               {me.data.has_password ? "Password" : "No password"}
               {me.data.sso_providers.length > 0 ? ` · SSO: ${me.data.sso_providers.join(", ")}` : ""}
             </p>
+          </section>
+          <section aria-labelledby="two-step" className="flex flex-col gap-3">
+            <h2 id="two-step" className="text-[15px] font-semibold">
+              Two-step verification
+            </h2>
+            <TwoStepVerification />
           </section>
           <section aria-labelledby="preferences" className="flex flex-col gap-3">
             <h2 id="preferences" className="text-[15px] font-semibold">

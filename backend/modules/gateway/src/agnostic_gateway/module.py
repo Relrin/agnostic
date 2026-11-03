@@ -9,11 +9,12 @@ from dishka import Provider
 from pydantic_settings import BaseSettings
 from sqlalchemy import MetaData
 
+from agnostic_gateway import jobs
 from agnostic_gateway.api.router import policies_router, router
 from agnostic_gateway.infrastructure.upstream import GatewayBase
 from agnostic_gateway.providers import GatewayProvider
 from agnostic_gateway.settings import GatewaySettings
-from agnostic_kernel.modules import AuditActionDecl, BaseModule, RouterSpec
+from agnostic_kernel.modules import AuditActionDecl, BaseModule, JobSpec, RouterSpec
 
 
 class GatewayModule(BaseModule):
@@ -44,4 +45,21 @@ class GatewayModule(BaseModule):
             AuditActionDecl("gateway.request", "{actor} called {route} on {instance}"),
             AuditActionDecl("gateway.denied", "{actor} was denied {route} on {instance}: missing {scope}"),
             AuditActionDecl("gateway.elevated", "{actor} called {route} on {instance} as Instance admin ({scope})"),
+            AuditActionDecl("agentos.access", "{actor} called {route} on {instance}"),
+            AuditActionDecl("agentos.role.created", "{actor} created an AgentOS role on {instance}"),
+            AuditActionDecl("agentos.role.updated", "{actor} changed an AgentOS role on {instance}"),
+            AuditActionDecl("agentos.role.set_scopes", "{actor} changed an AgentOS role's scopes on {instance}"),
+            AuditActionDecl("agentos.role.removed", "{actor} removed an AgentOS role on {instance}"),
+            AuditActionDecl("agentos.user.assigned", "{actor} assigned an AgentOS role on {instance}"),
+            AuditActionDecl("agentos.user.unassigned", "{actor} removed an AgentOS role assignment on {instance}"),
+        )
+
+    def jobs(self) -> Iterable[JobSpec]:
+        return (
+            JobSpec(
+                name=jobs.INGEST_TASK,
+                func=jobs.ingest_authz,
+                queue="gateway",
+                periodic=GatewaySettings().ingest_cron,
+            ),
         )

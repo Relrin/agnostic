@@ -51,6 +51,12 @@ class NotificationsModule(BaseModule):
         return (
             EventHandlerSpec("access.privileged_grant", jobs.on_privileged_grant),
             EventHandlerSpec("evals.regression", jobs.on_eval_regression),
+            EventHandlerSpec("access.request_created", jobs.on_access_request_created),
+            EventHandlerSpec("access.request_decided", jobs.on_access_request_decided),
+            EventHandlerSpec("service_accounts.privileged_created", jobs.on_privileged_service_account),
+            EventHandlerSpec("identity.break_glass_used", jobs.on_break_glass_used),
+            EventHandlerSpec("audit.archive_failed", jobs.on_audit_archive_failed),
+            EventHandlerSpec("audit.sink_failing", jobs.on_audit_sink_failing),
         )
 
     def audit_actions(self) -> Iterable[AuditActionDecl]:

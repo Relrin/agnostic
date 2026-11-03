@@ -13,6 +13,9 @@ from dishka import AsyncContainer, Provider, Scope, provide
 from dishka.integrations.fastapi import FastapiProvider
 from fastapi import FastAPI
 
+from agnostic_audit.infrastructure.http import AuditHttp
+from agnostic_directory.application.ports import GoogleDirectory
+from agnostic_directory.infrastructure.google import HttpGoogleDirectory
 from agnostic_gateway.application.ports import Upstream
 from agnostic_gateway.infrastructure.upstream import UpstreamPool
 from agnostic_instances.application.ports import RuntimeClient
@@ -29,6 +32,7 @@ from agnostic_kernel.testing import make_settings
 from agnostic_notifications.application.ports import OutboundHttp
 from agnostic_server.app import create_app
 from tests.support.fake_agentos import FakeAgentOS
+from tests.support.fake_google import FakeGoogle
 from tests.support.fake_slack import FakeSlack
 
 PUBLIC_URL = "http://agnostic.test"
@@ -55,12 +59,17 @@ class Routes:
 
     def __init__(self) -> None:
         self.runtimes: dict[str, FakeAgentOS] = {}
+        self.services: dict[str, Any] = {}
+        """Other fake hosts (object storage, SIEM receivers): host → ASGI app."""
 
     def transport(self) -> httpx.AsyncBaseTransport:
         routes = self
 
         class _Transport(httpx.AsyncBaseTransport):
             async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
+                service = routes.services.get(request.url.host)
+                if service is not None:
+                    return await httpx.ASGITransport(app=service).handle_async_request(request)
                 runtime = routes.runtimes.get(request.url.host)
                 if runtime is None:
                     raise httpx.ConnectError(f"Connection refused: {request.url.host}", request=request)
@@ -77,12 +86,17 @@ class Stack:
     mailer: CapturingMailer
     settings: Settings
     slack: FakeSlack
+    google: FakeGoogle = field(default_factory=FakeGoogle)
     clients: list[httpx.AsyncClient] = field(default_factory=list[httpx.AsyncClient])
 
     def runtime(self, host: str, **kwargs: Any) -> FakeAgentOS:
         fake = FakeAgentOS(**kwargs)
         self.routes.runtimes[host] = fake
         return fake
+
+    def serve(self, host: str, app: Any) -> None:
+        """Answer HTTP(S) requests to ``host`` from the audit module (archive storage, SIEM sinks) with ``app``."""
+        self.routes.services[host] = app
 
     def client(self) -> httpx.AsyncClient:
         client = httpx.AsyncClient(transport=httpx.ASGITransport(app=self.app), base_url=PUBLIC_URL)
@@ -120,6 +134,7 @@ async def running_stack(database_url: str, **overrides: Any) -> AsyncGenerator[S
     routes = Routes()
     mailer = CapturingMailer()
     slack = FakeSlack()
+    google = FakeGoogle()
     transport = routes.transport()
 
     class TestAdapters(Provider):
@@ -141,13 +156,27 @@ async def running_stack(database_url: str, **overrides: Any) -> AsyncGenerator[S
         def outbound(self) -> OutboundHttp:
             return slack
 
+        @provide(scope=Scope.APP)
+        async def audit_http(self) -> AsyncIterator[AuditHttp]:
+            http = AuditHttp(transport)
+            yield http
+            await http.aclose()
+
+        @provide(scope=Scope.APP)
+        async def google_directory(self) -> AsyncIterator[GoogleDirectory]:
+            directory = HttpGoogleDirectory(google.transport())
+            yield directory
+            await directory.aclose()
+
     modules = load_modules(settings.modules.disabled)
     container = build_container(
         settings, modules, extra=(FastapiProvider(), HttpAuthProvider()), overrides=(TestAdapters(),)
     )
     app = create_app(settings, modules=modules, container=container)
     async with LifespanManager(app):
-        stack = Stack(app=app, container=container, routes=routes, mailer=mailer, settings=settings, slack=slack)
+        stack = Stack(
+            app=app, container=container, routes=routes, mailer=mailer, settings=settings, slack=slack, google=google
+        )
         try:
             yield stack
         finally:

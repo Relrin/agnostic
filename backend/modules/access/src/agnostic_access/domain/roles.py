@@ -2,17 +2,19 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Mapping, Sequence
-from dataclasses import dataclass, field
+import re
+from collections.abc import Callable, Iterable, Mapping, Sequence
+from dataclasses import dataclass, field, replace
 from datetime import datetime
 from typing import Literal
 
-from agnostic_access.domain.scopes import ADMIN_SCOPE
+from agnostic_access.domain.scopes import ADMIN_SCOPE, PER_COMPONENT
 
 ROLE_ID_PREFIX = "rol"
 BINDING_ID_PREFIX = "bnd"
 
 type RunScope = Literal["all"] | tuple[str, ...]
+type PrincipalKind = Literal["user", "group", "service_account"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -186,7 +188,7 @@ def implicit_full_access(org_role: str | None, require_explicit_bindings: bool) 
 @dataclass(frozen=True, slots=True)
 class Binding:
     id: str
-    principal_kind: Literal["user", "group", "service_account"]
+    principal_kind: PrincipalKind
     principal_id: str
     instance_id: str | None
     role_id: str | None
@@ -201,6 +203,153 @@ class Binding:
 
     def applies_to(self, instance_id: str | None) -> bool:
         return self.instance_id is None or self.instance_id == instance_id
+
+
+MAX_ROLE_NAME = 80
+_SLUG = re.compile(r"[^a-z0-9]+")
+
+
+class InvalidRoleError(ValueError):
+    pass
+
+
+@dataclass(frozen=True, slots=True)
+class RoleDraft:
+    """What the role editor saves; the server derives the scopes."""
+
+    name: str
+    description: str
+    color: str
+    permissions: Mapping[str, tuple[str, ...]]
+    run_scope: Mapping[str, RunScope] = field(default_factory=dict[str, RunScope])
+    bindable_instance_ids: tuple[str, ...] | None = None
+
+
+def role_slug(name: str) -> str:
+    slug = _SLUG.sub("-", name.lower()).strip("-")[:63]
+    if not slug:
+        raise InvalidRoleError("A role needs a name with at least one letter or digit.")
+    return slug
+
+
+def check_draft(draft: RoleDraft, *, catalogued: Callable[[str], bool]) -> RoleDraft:
+    """Normalise a draft and reject cells the scope catalog doesn't have (``catalogued("knowledge:write")``)."""
+    name = " ".join(draft.name.split())
+    if not name:
+        raise InvalidRoleError("A role needs a name.")
+    if len(name) > MAX_ROLE_NAME:
+        raise InvalidRoleError(f"Use at most {MAX_ROLE_NAME} characters for the role name.")
+    permissions: dict[str, tuple[str, ...]] = {}
+    unknown: list[str] = []
+    for resource, actions in draft.permissions.items():
+        kept = tuple(dict.fromkeys(action for action in actions if action))
+        unknown.extend(f"{resource}:{action}" for action in kept if not catalogued(f"{resource}:{action}"))
+        if kept:
+            permissions[resource] = kept
+    if unknown:
+        raise InvalidRoleError(f"Not in the scope catalog: {', '.join(sorted(unknown))}.")
+    if not permissions:
+        raise InvalidRoleError("A role needs at least one permission.")
+    run_scope = _check_run_scope(draft.run_scope, permissions)
+    bindable = tuple(dict.fromkeys(draft.bindable_instance_ids)) if draft.bindable_instance_ids is not None else None
+    if bindable is not None and not bindable:
+        raise InvalidRoleError("A role must be bindable on at least one instance.")
+    return replace(
+        draft,
+        name=name,
+        description=draft.description.strip(),
+        permissions=permissions,
+        run_scope=run_scope,
+        bindable_instance_ids=bindable,
+    )
+
+
+def _check_run_scope(
+    run_scope: Mapping[str, RunScope], permissions: Mapping[str, tuple[str, ...]]
+) -> dict[str, RunScope]:
+    checked: dict[str, RunScope] = {}
+    for resource, selected in run_scope.items():
+        if resource not in PER_COMPONENT:
+            raise InvalidRoleError(f"Run scope can only narrow {', '.join(sorted(PER_COMPONENT))}.")
+        if selected == "all":
+            continue
+        if "run" not in permissions.get(resource, ()):
+            raise InvalidRoleError(f"Selected {resource} only make sense when the role can run {resource}.")
+        ids = tuple(dict.fromkeys(item.strip() for item in selected if item.strip()))
+        if not ids:
+            raise InvalidRoleError(f"Pick at least one of the {resource}, or let the role run all of them.")
+        checked[resource] = ids
+    return checked
+
+
+def apply_draft(role: AccessRole, draft: RoleDraft) -> AccessRole:
+    return replace(
+        role,
+        name=draft.name,
+        description=draft.description,
+        color=draft.color,
+        permissions=draft.permissions,
+        run_scope=draft.run_scope,
+        bindable_instance_ids=draft.bindable_instance_ids,
+    )
+
+
+@dataclass(frozen=True, slots=True)
+class ScopeDiff:
+    added: tuple[str, ...]
+    removed: tuple[str, ...]
+
+    @property
+    def empty(self) -> bool:
+        return not self.added and not self.removed
+
+    def lines(self) -> list[dict[str, str]]:
+        return [{"op": "add", "text": scope} for scope in self.added] + [
+            {"op": "remove", "text": scope} for scope in self.removed
+        ]
+
+
+def scope_diff(before: Iterable[str], after: Iterable[str]) -> ScopeDiff:
+    old, new = frozenset(before), frozenset(after)
+    return ScopeDiff(added=tuple(sorted(new - old)), removed=tuple(sorted(old - new)))
+
+
+@dataclass(frozen=True, slots=True)
+class RoleVersion:
+    role_id: str
+    version: int
+    snapshot: Mapping[str, object]
+    changed_by: str
+    changed_by_name: str
+    changed_at: datetime
+
+
+def role_snapshot(role: AccessRole) -> dict[str, object]:
+    """What ``access_role_versions`` keeps for each saved version."""
+    return {
+        "name": role.name,
+        "description": role.description,
+        "color": role.color,
+        "permissions": {resource: list(actions) for resource, actions in role.permissions.items()},
+        "run_scope": {resource: value if value == "all" else list(value) for resource, value in role.run_scope.items()},
+        "bindable_instance_ids": list(role.bindable_instance_ids) if role.bindable_instance_ids is not None else None,
+        "scopes": sorted(role.scopes()),
+    }
+
+
+def compare_versions(installed: str | None, minimum: str | None) -> bool:
+    """Whether an AgentOS version (``"3.1.12"``) is at least ``minimum``; unknown versions pass."""
+    if not installed or not minimum:
+        return True
+
+    def parts(version: str) -> tuple[int, ...]:
+        numbers: list[int] = []
+        for piece in version.split("."):
+            digits = "".join(char for char in piece if char.isdigit())
+            numbers.append(int(digits) if digits else 0)
+        return tuple(numbers)
+
+    return parts(installed) >= parts(minimum)
 
 
 __all__ = ["ADMIN_SCOPE"]

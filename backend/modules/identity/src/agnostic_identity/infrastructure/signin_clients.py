@@ -4,12 +4,14 @@ from __future__ import annotations
 
 import time
 from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
 from typing import Any, cast
 from urllib.parse import urlencode
 
 import httpx
 import jwt
 
+from agnostic_identity.application.ports import LoginProviderRepository
 from agnostic_identity.domain.providers import ExternalProfile, ProviderConfig, SignInProtocol, SsoError
 from agnostic_kernel.logging import get_logger
 
@@ -236,18 +238,77 @@ class GitHubClient:
         )
 
 
-class SignInClientRegistry:
-    def __init__(self, configs: Sequence[ProviderConfig], http: httpx.AsyncClient) -> None:
-        self._configs = list(configs)
-        self._clients: dict[str, OidcClient | GitHubClient] = {
-            config.id: GitHubClient(config, http)
-            if config.protocol is SignInProtocol.GITHUB
-            else OidcClient(config, http)
-            for config in configs
-        }
+@dataclass(frozen=True, slots=True)
+class SsoHttp:
+    """The outbound HTTP client for identity providers (discovery, tokens, profiles, SAML metadata)."""
 
-    def get(self, provider_id: str) -> OidcClient | GitHubClient | None:
+    client: httpx.AsyncClient
+
+
+def _client_for(config: ProviderConfig, http: httpx.AsyncClient) -> OidcClient | GitHubClient | None:
+    if config.protocol is SignInProtocol.GITHUB:
+        return GitHubClient(config, http)
+    if config.protocol is SignInProtocol.OIDC:
+        return OidcClient(config, http)
+    return None
+
+
+class SignInClientRegistry:
+    """Clients of the settings-configured providers, plus clients of stored providers cached per version.
+
+    Discovery documents and signing keys are reused across requests.
+    """
+
+    def __init__(self, configs: Sequence[ProviderConfig], http: SsoHttp) -> None:
+        self._configs = list(configs)
+        self._http = http.client
+        self._clients: dict[str, OidcClient | GitHubClient | None] = {
+            config.id: _client_for(config, self._http) for config in configs
+        }
+        self._stored: dict[str, tuple[str, OidcClient | GitHubClient | None]] = {}
+
+    def configured(self) -> list[ProviderConfig]:
+        return list(self._configs)
+
+    def configured_client(self, provider_id: str) -> OidcClient | GitHubClient | None:
         return self._clients.get(provider_id)
 
-    def all(self) -> list[ProviderConfig]:
-        return list(self._configs)
+    def stored_client(self, config: ProviderConfig) -> OidcClient | GitHubClient | None:
+        cached = self._stored.get(config.id)
+        if cached is not None and cached[0] == config.version:
+            return cached[1]
+        client = _client_for(config, self._http)
+        self._stored[config.id] = (config.version, client)
+        return client
+
+
+class SignInDirectory:
+    """``SignInClients`` for one request: settings-configured providers first, then enabled stored ones."""
+
+    def __init__(self, registry: SignInClientRegistry, providers: LoginProviderRepository) -> None:
+        self._registry = registry
+        self._providers = providers
+
+    def configured(self) -> list[ProviderConfig]:
+        return self._registry.configured()
+
+    async def all(self) -> list[ProviderConfig]:
+        configured = self._registry.configured()
+        taken = {config.id for config in configured}
+        stored = [item.config for item in await self._providers.list() if item.enabled and item.config.id not in taken]
+        return sorted([*configured, *stored], key=lambda config: config.id)
+
+    async def config(self, provider_id: str) -> ProviderConfig | None:
+        for config in self._registry.configured():
+            if config.id == provider_id:
+                return config
+        stored = await self._providers.get(provider_id)
+        return stored.config if stored is not None and stored.enabled else None
+
+    async def get(self, provider_id: str) -> OidcClient | GitHubClient | None:
+        if provider_id in {config.id for config in self._registry.configured()}:
+            return self._registry.configured_client(provider_id)
+        stored = await self._providers.get(provider_id)
+        if stored is None or not stored.enabled:
+            return None
+        return self._registry.stored_client(stored.config)

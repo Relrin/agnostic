@@ -134,3 +134,13 @@ export {
   type TokenCounts,
 } from "./costs";
 export { useDebouncedCallback } from "./debounce";
+export { ReauthDialog, ReauthProvider, isReauthRequired, useReauth, withReauth, type Reauth } from "./reauth";
+export { RequestAccessButton, RequestAccessDialog, missingScopes } from "./request-access";
+export {
+  base64urlToBuffer,
+  bufferToBase64url,
+  webauthnAvailable,
+  webauthnCreate,
+  webauthnError,
+  webauthnGet,
+} from "./webauthn";

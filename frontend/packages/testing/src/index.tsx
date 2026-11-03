@@ -14,6 +14,11 @@ export * from "./approvals";
 export * from "./scheduler";
 export * from "./queue";
 export * from "./notifications";
+export * from "./people-groups";
+export * from "./roles";
+export * from "./service-accounts";
+export * from "./audit-governance";
+export * from "./org-settings";
 
 export function renderWithProviders(ui: ReactElement): RenderResult & { queryClient: QueryClient } {
   configureTestApi();

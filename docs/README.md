@@ -19,6 +19,7 @@
 | [Context](architecture/context.md) | memory duplicates, provenance and optimization, knowledge content and retrieval, learnings and data deletion, file provenance |
 | [Observe and evaluations](architecture/observe-and-evals.md) | trace comparison, span statistics, metrics and cost estimates, eval datasets, batches, version comparison, publish gates |
 | [Control](architecture/control.md) | approvals inbox, routing and expiry, notifications (inbox, Slack, email, webhooks), scheduler previews, the durable queue and checkpoint recovery |
+| [Access governance](architecture/access-governance.md) | groups and IdP sync (SCIM, claims, Google), editable roles, service accounts, temporary access, SAML and MFA, audit views, export, SIEM, archive |
 
 ## How-to guides
 
@@ -31,7 +32,9 @@
 | [Configuration and endpoints](how-to/configuration.md) | env vars, TOML, TLS, PostgreSQL vs SQLite |
 | [Regenerate API clients](how-to/api-clients.md) | OpenAPI → TypeScript, AgentOS OpenAPI → Python models |
 | [Run the reference runtimes](how-to/reference-runtimes.md) | two AgentOS instances for development, JWT trust, `just seed`, the bridge |
-| [Sign-in providers](how-to/sign-in-providers.md) | local accounts, GitHub, GitLab, Google, Okta, any OIDC provider |
+| [Sign-in providers](how-to/sign-in-providers.md) | local accounts, GitHub, GitLab, Google, Okta, any OIDC or SAML provider, enforcing SSO, MFA |
+| [Okta](how-to/idp/okta.md), [Entra ID](how-to/idp/entra-id.md), [Keycloak](how-to/idp/keycloak.md), [Google Workspace](how-to/idp/google-workspace.md) | SSO with each identity provider, SCIM provisioning, group sync |
+| [SIEM streaming and the audit archive](how-to/audit-siem-and-archive.md) | webhook, syslog and OTLP destinations, retention, the S3 archive, restore, the hash chain |
 | [Testing](how-to/testing.md) | unit, integration, contract, Storybook a11y, Playwright |
 | [Dependencies](how-to/dependencies.md) | exact pinning, upgrades, Renovate, license policy |
 | [Troubleshooting](how-to/troubleshooting.md) | Windows, ports, Docker, common errors |

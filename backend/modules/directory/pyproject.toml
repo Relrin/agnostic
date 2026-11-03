@@ -1,0 +1,35 @@
+[project]
+name = "agnostic-directory"
+version = "0.1.0"
+description = "Directory: groups (manual and synced from the IdP), SCIM 2.0 provisioning, Google Workspace sync and group claims at login"
+requires-python = "==3.15.*"
+license = "BSD-3-Clause"
+dependencies = [
+  "agnostic-audit",
+  "agnostic-identity",
+  "agnostic-kernel",
+  "agnostic-org",
+  "alembic==1.20.1",
+  "cryptography==50.0.2",
+  "dishka==1.10.1",
+  "fastapi==0.162.0",
+  "httpx==0.28.1",
+  "orjson==3.13.0",
+  "procrastinate==3.10.0",
+  "pydantic==2.14.2",
+  "pydantic-settings==2.16.2",
+  "sqlalchemy[asyncio]==2.1.6",
+]
+
+[project.entry-points."agnostic.modules"]
+directory = "agnostic_directory.module:DirectoryModule"
+
+[tool.uv.sources]
+agnostic-audit = { workspace = true }
+agnostic-identity = { workspace = true }
+agnostic-kernel = { workspace = true }
+agnostic-org = { workspace = true }
+
+[build-system]
+requires = ["uv_build==0.13.6"]
+build-backend = "uv_build"

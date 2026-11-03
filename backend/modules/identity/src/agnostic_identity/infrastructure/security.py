@@ -50,6 +50,7 @@ class EphemeralSessionStore:
             "ip": session.ip,
             "user_agent": session.user_agent,
             "method": session.method,
+            "authenticated_at": session.authenticated_at.isoformat() if session.authenticated_at else None,
         }
         await self._store.set(f"sess:{session.key}", orjson.dumps(payload), ttl=ttl)
 
@@ -69,6 +70,7 @@ class EphemeralSessionStore:
             ip=data.get("ip"),
             user_agent=data.get("user_agent"),
             method=data.get("method", "password"),
+            authenticated_at=datetime.fromisoformat(data["authenticated_at"]) if data.get("authenticated_at") else None,
         )
 
     async def delete(self, *keys: str) -> None:

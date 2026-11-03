@@ -5,6 +5,100 @@ export type ClientOptions = {
 };
 
 /**
+ * AccessRequestIn
+ */
+export type AccessRequestIn = {
+    /**
+     * Duration Hours
+     */
+    duration_hours?: number;
+    /**
+     * Instance
+     *
+     * Instance id or slug; null asks for all instances
+     */
+    instance?: string | null;
+    /**
+     * Reason
+     */
+    reason: string;
+    /**
+     * Role Id
+     */
+    role_id?: string | null;
+    /**
+     * Scopes
+     */
+    scopes?: Array<string>;
+};
+
+/**
+ * AccessRequestOut
+ */
+export type AccessRequestOut = {
+    /**
+     * Binding Id
+     */
+    binding_id: string | null;
+    /**
+     * Can Decide
+     */
+    can_decide?: boolean;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Decided At
+     */
+    decided_at: string | null;
+    /**
+     * Decided By
+     */
+    decided_by: string | null;
+    /**
+     * Duration Hours
+     */
+    duration_hours: number;
+    /**
+     * Expires At
+     */
+    expires_at: string | null;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Instance Id
+     */
+    instance_id: string | null;
+    /**
+     * Note
+     */
+    note: string | null;
+    /**
+     * Reason
+     */
+    reason: string;
+    /**
+     * Requester Id
+     */
+    requester_id: string;
+    /**
+     * Role Id
+     */
+    role_id: string | null;
+    /**
+     * Scopes
+     */
+    scopes: Array<string>;
+    /**
+     * Status
+     */
+    status: 'pending' | 'approved' | 'denied' | 'cancelled' | 'expired';
+};
+
+/**
  * ActionOut
  */
 export type ActionOut = {
@@ -75,6 +169,28 @@ export type ActivityOut = {
  * ActorOut
  */
 export type ActorOut = {
+    /**
+     * Display
+     */
+    display: string;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Kind
+     */
+    kind: 'user' | 'service_account' | 'system' | 'anonymous';
+};
+
+/**
+ * ActorSummaryOut
+ */
+export type ActorSummaryOut = {
+    /**
+     * Count
+     */
+    count: number;
     /**
      * Display
      */
@@ -436,6 +552,60 @@ export type ApprovalsPageOut = {
 };
 
 /**
+ * ArchiveOut
+ */
+export type ArchiveOut = {
+    /**
+     * Archived At
+     */
+    archived_at: string;
+    /**
+     * Bytes
+     */
+    bytes: number;
+    /**
+     * Chain Head
+     */
+    chain_head: string | null;
+    /**
+     * Event Count
+     */
+    event_count: number;
+    /**
+     * Manifest Key
+     */
+    manifest_key: string;
+    /**
+     * Month
+     */
+    month: string;
+    /**
+     * Object Key
+     */
+    object_key: string;
+    /**
+     * Purge After
+     */
+    purge_after: string | null;
+    /**
+     * Restore Expires At
+     */
+    restore_expires_at: string | null;
+    /**
+     * Restored
+     */
+    restored: boolean;
+    /**
+     * Restored At
+     */
+    restored_at: string | null;
+    /**
+     * Sha256
+     */
+    sha256: string;
+};
+
+/**
  * AttemptOut
  */
 export type AttemptOut = {
@@ -485,6 +655,42 @@ export type AttentionOut = {
 };
 
 /**
+ * AttributeMappingIn
+ */
+export type AttributeMappingIn = {
+    /**
+     * Email
+     */
+    email?: string | null;
+    /**
+     * Groups
+     */
+    groups?: string | null;
+    /**
+     * Name
+     */
+    name?: string | null;
+};
+
+/**
+ * AttributeMappingOut
+ */
+export type AttributeMappingOut = {
+    /**
+     * Email
+     */
+    email: string | null;
+    /**
+     * Groups
+     */
+    groups: string | null;
+    /**
+     * Name
+     */
+    name: string | null;
+};
+
+/**
  * AuditActionOut
  */
 export type AuditActionOut = {
@@ -508,6 +714,10 @@ export type AuditEventOut = {
     action: string;
     actor: ActorOut;
     /**
+     * Can Request Access
+     */
+    can_request_access?: boolean;
+    /**
      * Client
      */
     client: string | null;
@@ -516,11 +726,19 @@ export type AuditEventOut = {
      */
     decision: 'allowed' | 'denied' | 'n_a';
     /**
+     * Denial Reason
+     */
+    denial_reason?: string | null;
+    /**
      * Diff
      */
     diff: {
         [key: string]: unknown;
     } | null;
+    /**
+     * Hash
+     */
+    hash?: string | null;
     /**
      * Id
      */
@@ -576,6 +794,10 @@ export type AuditEventOut = {
      */
     source: 'control_plane' | 'agentos';
     /**
+     * Source Event Id
+     */
+    source_event_id?: string | null;
+    /**
      * Summary
      */
     summary: string;
@@ -583,6 +805,118 @@ export type AuditEventOut = {
      * Via
      */
     via: string;
+};
+
+/**
+ * AuditPolicyIn
+ *
+ * Only the fields sent change. ``secret_access_key``: a value replaces it, an empty string removes it.
+ */
+export type AuditPolicyIn = {
+    /**
+     * Access Key Id
+     */
+    access_key_id?: string | null;
+    /**
+     * Archive Enabled
+     */
+    archive_enabled?: boolean | null;
+    /**
+     * Archive Retention Days
+     */
+    archive_retention_days?: number | null;
+    /**
+     * Bucket
+     */
+    bucket?: string | null;
+    /**
+     * Endpoint
+     */
+    endpoint?: string | null;
+    /**
+     * Hash Chain
+     */
+    hash_chain?: boolean | null;
+    /**
+     * Hot Retention Days
+     */
+    hot_retention_days?: number | null;
+    object_lock_mode?: ObjectLockMode | null;
+    /**
+     * Prefix
+     */
+    prefix?: string | null;
+    /**
+     * Region
+     */
+    region?: string | null;
+    /**
+     * Secret Access Key
+     */
+    secret_access_key?: string | null;
+};
+
+/**
+ * AuditPolicyOut
+ */
+export type AuditPolicyOut = {
+    /**
+     * Access Key Id
+     */
+    access_key_id: string | null;
+    /**
+     * Archive Enabled
+     */
+    archive_enabled: boolean;
+    /**
+     * Archive Retention Days
+     */
+    archive_retention_days: number | null;
+    /**
+     * Bucket
+     */
+    bucket: string | null;
+    /**
+     * Endpoint
+     */
+    endpoint: string | null;
+    /**
+     * Has Secret
+     */
+    has_secret: boolean;
+    /**
+     * Hash Chain
+     */
+    hash_chain: boolean;
+    /**
+     * Hot Retention Days
+     */
+    hot_retention_days: number;
+    /**
+     * Last Archive At
+     */
+    last_archive_at: string | null;
+    /**
+     * Last Archive Error
+     */
+    last_archive_error: string | null;
+    object_lock_mode: ObjectLockMode;
+    /**
+     * Prefix
+     */
+    prefix: string;
+    /**
+     * Region
+     */
+    region: string;
+    /**
+     * Updated At
+     */
+    updated_at: string | null;
+    /**
+     * Updated By
+     */
+    updated_by: string | null;
 };
 
 /**
@@ -597,6 +931,79 @@ export type AuthOptions = {
      * Providers
      */
     providers: Array<SignInProviderOut>;
+    /**
+     * Sso Enforced
+     */
+    sso_enforced?: boolean;
+};
+
+/**
+ * AuthPolicyOut
+ */
+export type AuthPolicyOut = {
+    break_glass_user: BreakGlassUserOut | null;
+    /**
+     * Break Glass User Id
+     */
+    break_glass_user_id: string | null;
+    /**
+     * Default Session Absolute Hours
+     */
+    default_session_absolute_hours: number;
+    /**
+     * Default Session Idle Minutes
+     */
+    default_session_idle_minutes: number;
+    /**
+     * Enforce Sso
+     */
+    enforce_sso: boolean;
+    /**
+     * Mfa Policy
+     */
+    mfa_policy: 'off' | 'optional' | 'required_local' | 'required_admins';
+    /**
+     * Session Absolute Hours
+     */
+    session_absolute_hours: number | null;
+    /**
+     * Session Idle Minutes
+     */
+    session_idle_minutes: number | null;
+    /**
+     * Updated At
+     */
+    updated_at: string | null;
+    /**
+     * Updated By
+     */
+    updated_by: string | null;
+};
+
+/**
+ * AuthPolicyUpdate
+ */
+export type AuthPolicyUpdate = {
+    /**
+     * Break Glass User Id
+     */
+    break_glass_user_id?: string | null;
+    /**
+     * Enforce Sso
+     */
+    enforce_sso?: boolean;
+    /**
+     * Mfa Policy
+     */
+    mfa_policy?: 'off' | 'optional' | 'required_local' | 'required_admins';
+    /**
+     * Session Absolute Hours
+     */
+    session_absolute_hours?: number | null;
+    /**
+     * Session Idle Minutes
+     */
+    session_idle_minutes?: number | null;
 };
 
 /**
@@ -814,6 +1221,16 @@ export type BindingCreate = {
      */
     instance?: string | null;
     /**
+     * Principal Id
+     *
+     * usr_… or grp_…
+     */
+    principal_id?: string | null;
+    /**
+     * Principal Kind
+     */
+    principal_kind?: 'user' | 'group';
+    /**
      * Reason
      */
     reason?: string | null;
@@ -827,8 +1244,10 @@ export type BindingCreate = {
     scopes?: Array<string>;
     /**
      * User Id
+     *
+     * A person (usr_…); the same as principal_id for kind user
      */
-    user_id: string;
+    user_id?: string | null;
 };
 
 /**
@@ -875,6 +1294,42 @@ export type BindingOut = {
      * Scopes
      */
     scopes: Array<string>;
+};
+
+/**
+ * BreakGlassUserOut
+ */
+export type BreakGlassUserOut = {
+    /**
+     * Display Name
+     */
+    display_name: string;
+    /**
+     * Email
+     */
+    email: string;
+    /**
+     * Id
+     */
+    id: string;
+};
+
+/**
+ * BulkOutcomeOut
+ */
+export type BulkOutcomeOut = {
+    /**
+     * Error
+     */
+    error: string | null;
+    /**
+     * Ok
+     */
+    ok: boolean;
+    /**
+     * User Id
+     */
+    user_id: string;
 };
 
 /**
@@ -1021,6 +1476,24 @@ export type CasesIn = {
      * Cases
      */
     cases: Array<CaseIn>;
+};
+
+/**
+ * CertificateOut
+ */
+export type CertificateOut = {
+    /**
+     * Fingerprint Sha256
+     */
+    fingerprint_sha256: string;
+    /**
+     * Not After
+     */
+    not_after: string;
+    /**
+     * Subject
+     */
+    subject: string;
 };
 
 /**
@@ -1535,6 +2008,31 @@ export type CountsOut = {
 };
 
 /**
+ * CreatedOut
+ */
+export type CreatedOut = {
+    account: ServiceAccountDetailOut;
+    /**
+     * Tokens
+     */
+    tokens: Array<IssuedTokenOut>;
+};
+
+/**
+ * CreatorOut
+ */
+export type CreatorOut = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Name
+     */
+    name: string;
+};
+
+/**
  * DataSubjectIn
  */
 export type DataSubjectIn = {
@@ -1798,6 +2296,16 @@ export type DecideOut = {
 };
 
 /**
+ * DecisionIn
+ */
+export type DecisionIn = {
+    /**
+     * Note
+     */
+    note?: string | null;
+};
+
+/**
  * DefaultsBody
  */
 export type DefaultsBody = {
@@ -1901,6 +2409,42 @@ export type DeliveryOut = {
      * Target
      */
     target: string;
+};
+
+/**
+ * DiffLineOut
+ */
+export type DiffLineOut = {
+    /**
+     * Op
+     */
+    op: 'add' | 'remove';
+    /**
+     * Text
+     */
+    text: string;
+};
+
+/**
+ * DirectorySettingsIn
+ */
+export type DirectorySettingsIn = {
+    /**
+     * Deprovision
+     */
+    deprovision: 'disable' | 'remove';
+};
+
+/**
+ * DirectorySettingsOut
+ */
+export type DirectorySettingsOut = {
+    /**
+     * Deprovision
+     *
+     * disable: deprovision the account and keep the org membership; remove: also leave the org
+     */
+    deprovision: 'disable' | 'remove';
 };
 
 /**
@@ -2064,6 +2608,17 @@ export type EndpointCheckOut = {
     target_kind: TargetKindName;
 };
 
+/**
+ * EnrolledOut
+ */
+export type EnrolledOut = {
+    factor: FactorOut;
+    /**
+     * Recovery Codes
+     */
+    recovery_codes: Array<string>;
+};
+
 export type EnvTagName = 'production' | 'staging' | 'development';
 
 /**
@@ -2176,6 +2731,54 @@ export type EvaluationsOut = {
 };
 
 /**
+ * EventFilters
+ *
+ * The event list's filters, as stored in saved views and exports (all optional).
+ */
+export type EventFilters = {
+    /**
+     * Action
+     */
+    action?: string | null;
+    /**
+     * Actor
+     */
+    actor?: string | null;
+    /**
+     * Actor Kind
+     */
+    actor_kind?: 'user' | 'service_account' | 'system' | 'anonymous' | null;
+    /**
+     * Decision
+     */
+    decision?: 'allowed' | 'denied' | 'n_a' | null;
+    /**
+     * Instance
+     */
+    instance?: string | null;
+    /**
+     * Q
+     */
+    q?: string | null;
+    /**
+     * Resource
+     */
+    resource?: string | null;
+    /**
+     * Since
+     */
+    since?: string | null;
+    /**
+     * Source
+     */
+    source?: 'control_plane' | 'agentos' | null;
+    /**
+     * Until
+     */
+    until?: string | null;
+};
+
+/**
  * EventPreferenceOut
  */
 export type EventPreferenceOut = {
@@ -2223,21 +2826,47 @@ export type ExplainIn = {
      */
     action?: string | null;
     /**
+     * Component
+     *
+     * agents, teams, workflows
+     */
+    component?: string | null;
+    /**
+     * Display Name
+     *
+     * How to call a service account ("sa:zendesk-bridge")
+     */
+    display_name?: string | null;
+    /**
      * Instance
      *
      * Instance id or slug (runtime scopes)
      */
     instance?: string | null;
     /**
-     * Scope
+     * Principal Kind
      */
-    scope: string;
+    principal_kind?: 'user' | 'service_account';
+    /**
+     * Resource
+     */
+    resource?: string | null;
+    /**
+     * Scope
+     *
+     * Or resource + verb
+     */
+    scope?: string | null;
     /**
      * User Id
      *
-     * Whose access to explain (usr_…)
+     * Whose access to explain: usr_…, or sac_… with principal_kind service_account
      */
     user_id: string;
+    /**
+     * Verb
+     */
+    verb?: string | null;
 };
 
 /**
@@ -2252,6 +2881,12 @@ export type ExplanationOut = {
      * Alternatives
      */
     alternatives: Array<AlternativeOut>;
+    /**
+     * Can Request
+     *
+     * Denied, and temporary access can be requested
+     */
+    can_request?: boolean;
     /**
      * Explanation
      */
@@ -2272,6 +2907,97 @@ export type ExplanationOut = {
      * Scope
      */
     scope: string;
+    /**
+     * Via Group
+     *
+     * The group whose binding decided it
+     */
+    via_group?: string | null;
+};
+
+/**
+ * ExportIn
+ */
+export type ExportIn = {
+    filters?: EventFilters;
+    /**
+     * Format
+     */
+    format?: 'csv' | 'jsonl';
+};
+
+/**
+ * ExportOut
+ */
+export type ExportOut = {
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Download Url
+     */
+    download_url: string | null;
+    /**
+     * Error
+     */
+    error: string | null;
+    /**
+     * Expires At
+     */
+    expires_at: string;
+    /**
+     * Filters
+     */
+    filters: {
+        [key: string]: string;
+    };
+    /**
+     * Format
+     */
+    format: 'csv' | 'jsonl';
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Row Count
+     */
+    row_count: number | null;
+    /**
+     * Size Bytes
+     */
+    size_bytes: number | null;
+    /**
+     * Status
+     */
+    status: 'queued' | 'running' | 'done' | 'failed';
+};
+
+/**
+ * FactorOut
+ */
+export type FactorOut = {
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Kind
+     */
+    kind: 'totp' | 'webauthn';
+    /**
+     * Label
+     */
+    label: string;
+    /**
+     * Last Used At
+     */
+    last_used_at: string | null;
 };
 
 /**
@@ -2506,6 +3232,52 @@ export type GateResultOut = {
 };
 
 /**
+ * GatewayTokenOut
+ */
+export type GatewayTokenOut = {
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Grace Until
+     */
+    grace_until: string | null;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Kind
+     */
+    kind?: 'gateway';
+    /**
+     * Last Used At
+     */
+    last_used_at: string | null;
+    /**
+     * Last Used Ip
+     */
+    last_used_ip: string | null;
+    /**
+     * Prefix
+     */
+    prefix: string;
+    /**
+     * Revoke Reason
+     */
+    revoke_reason: string | null;
+    /**
+     * Revoked At
+     */
+    revoked_at: string | null;
+    /**
+     * Status
+     */
+    status: 'active' | 'revoked' | 'expired';
+};
+
+/**
  * GhostOut
  */
 export type GhostOut = {
@@ -2523,6 +3295,100 @@ export type GhostOut = {
      * Start Ms
      */
     start_ms: number;
+};
+
+/**
+ * GoogleSyncIn
+ */
+export type GoogleSyncIn = {
+    /**
+     * Admin Subject
+     *
+     * A Workspace admin's email
+     */
+    admin_subject?: string | null;
+    /**
+     * Customer Id
+     *
+     * Default "my_customer"
+     */
+    customer_id?: string | null;
+    /**
+     * Enabled
+     */
+    enabled?: boolean | null;
+    /**
+     * Group Filter
+     *
+     * Group email prefixes ending in "*" or text the group email or name contains; empty syncs all
+     */
+    group_filter?: Array<string> | null;
+    /**
+     * Service Account Json
+     *
+     * The JSON key file of the service account (write-only)
+     */
+    service_account_json?: string | null;
+};
+
+/**
+ * GoogleSyncOut
+ */
+export type GoogleSyncOut = {
+    /**
+     * Admin Subject
+     */
+    admin_subject: string | null;
+    /**
+     * Client Email
+     *
+     * The service account (its key is never returned)
+     */
+    client_email: string | null;
+    /**
+     * Configured
+     */
+    configured: boolean;
+    /**
+     * Counts
+     */
+    counts: {
+        [key: string]: number;
+    };
+    /**
+     * Customer Id
+     */
+    customer_id: string | null;
+    /**
+     * Enabled
+     */
+    enabled: boolean;
+    /**
+     * Group Filter
+     */
+    group_filter: Array<string>;
+    /**
+     * Last Error
+     */
+    last_error: string | null;
+    /**
+     * Last Run At
+     */
+    last_run_at: string | null;
+};
+
+/**
+ * GoogleTestOut
+ */
+export type GoogleTestOut = {
+    /**
+     * Detail
+     */
+    detail: string;
+    /**
+     * Ok
+     */
+    ok: boolean;
 };
 
 /**
@@ -2557,6 +3423,201 @@ export type GrantOut = {
      * Source
      */
     source: 'org_role' | 'implicit' | 'binding';
+    /**
+     * Via Group Id
+     */
+    via_group_id?: string | null;
+    /**
+     * Via Group Name
+     */
+    via_group_name?: string | null;
+};
+
+/**
+ * GroupCreate
+ */
+export type GroupCreate = {
+    /**
+     * Description
+     */
+    description?: string;
+    /**
+     * Member Ids
+     */
+    member_ids?: Array<string>;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Owner Ids
+     */
+    owner_ids?: Array<string>;
+};
+
+/**
+ * GroupDetailOut
+ */
+export type GroupDetailOut = {
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Description
+     */
+    description: string;
+    /**
+     * External Id
+     */
+    external_id: string | null;
+    /**
+     * External Name
+     */
+    external_name: string | null;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Member Count
+     */
+    member_count: number;
+    /**
+     * Members
+     */
+    members: Array<GroupMemberOut>;
+    /**
+     * Name
+     */
+    name: string;
+    source: GroupSourceOut;
+    /**
+     * Sync Label
+     *
+     * "Manual" or where the members come from, e.g. "SCIM · support-ai"
+     */
+    sync_label: string;
+    /**
+     * Synced
+     */
+    synced: boolean;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
+ * GroupMemberIn
+ */
+export type GroupMemberIn = {
+    /**
+     * Role
+     */
+    role?: 'member' | 'owner';
+};
+
+/**
+ * GroupMemberOut
+ */
+export type GroupMemberOut = {
+    /**
+     * Display Name
+     */
+    display_name: string;
+    /**
+     * Email
+     */
+    email: string;
+    /**
+     * Role
+     */
+    role: 'member' | 'owner';
+    source: GroupSourceOut;
+    /**
+     * User Id
+     */
+    user_id: string;
+};
+
+/**
+ * GroupOut
+ */
+export type GroupOut = {
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Description
+     */
+    description: string;
+    /**
+     * External Id
+     */
+    external_id: string | null;
+    /**
+     * External Name
+     */
+    external_name: string | null;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Member Count
+     */
+    member_count: number;
+    /**
+     * Name
+     */
+    name: string;
+    source: GroupSourceOut;
+    /**
+     * Sync Label
+     *
+     * "Manual" or where the members come from, e.g. "SCIM · support-ai"
+     */
+    sync_label: string;
+    /**
+     * Synced
+     */
+    synced: boolean;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
+ * GroupRefOut
+ */
+export type GroupRefOut = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Name
+     */
+    name: string;
+};
+
+export type GroupSourceOut = 'manual' | 'scim' | 'oidc_claim' | 'google_directory';
+
+/**
+ * GroupUpdate
+ */
+export type GroupUpdate = {
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Name
+     */
+    name?: string | null;
 };
 
 /**
@@ -2789,6 +3850,24 @@ export type InstanceOutcomeOut = {
 };
 
 /**
+ * InstanceRefOut
+ */
+export type InstanceRefOut = {
+    /**
+     * Display Name
+     */
+    display_name: string;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Slug
+     */
+    slug: string;
+};
+
+/**
  * InstanceUpdate
  */
 export type InstanceUpdate = {
@@ -2871,6 +3950,12 @@ export type InvitationCreate = {
      * Email
      */
     email: string;
+    /**
+     * Group Ids
+     *
+     * Manual groups to join
+     */
+    group_ids?: Array<string>;
     org_role?: OrgRoleName;
 };
 
@@ -2898,6 +3983,10 @@ export type InvitationOut = {
      * Expires At
      */
     expires_at: string;
+    /**
+     * Group Ids
+     */
+    group_ids?: Array<string>;
     /**
      * Id
      */
@@ -2951,6 +4040,52 @@ export type IssuedInvitationOut = {
      */
     accept_url: string;
     invitation: InvitationOut;
+};
+
+/**
+ * IssuedScimTokenOut
+ */
+export type IssuedScimTokenOut = {
+    /**
+     * Secret
+     *
+     * The bearer token for the IdP; shown only now
+     */
+    secret: string;
+    token: ScimTokenOut;
+};
+
+/**
+ * IssuedTokenOut
+ *
+ * Shown once. Afterwards only ``prefix`` is visible; the token is stored as a hash.
+ */
+export type IssuedTokenOut = {
+    /**
+     * Curl
+     */
+    curl: string;
+    /**
+     * Expires At
+     */
+    expires_at: string | null;
+    /**
+     * Id
+     */
+    id: string;
+    instance: InstanceRefOut | null;
+    /**
+     * Kind
+     */
+    kind: 'native' | 'gateway';
+    /**
+     * Prefix
+     */
+    prefix: string;
+    /**
+     * Token
+     */
+    token: string;
 };
 
 /**
@@ -3260,6 +4395,50 @@ export type Liveness = {
 };
 
 /**
+ * LoginChallengeRequest
+ */
+export type LoginChallengeRequest = {
+    /**
+     * Challenge
+     */
+    challenge: string;
+};
+
+/**
+ * LoginMfaRequest
+ */
+export type LoginMfaRequest = {
+    /**
+     * Challenge
+     */
+    challenge: string;
+    /**
+     * Code
+     *
+     * Authenticator app code
+     */
+    code?: string | null;
+    /**
+     * Label
+     *
+     * When enrolling: the factor's name
+     */
+    label?: string | null;
+    /**
+     * Recovery Code
+     */
+    recovery_code?: string | null;
+    /**
+     * Webauthn
+     *
+     * The PublicKeyCredential as JSON (assertion, or attestation when enrolling)
+     */
+    webauthn?: {
+        [key: string]: unknown;
+    } | null;
+};
+
+/**
  * LoginRequest
  */
 export type LoginRequest = {
@@ -3271,6 +4450,66 @@ export type LoginRequest = {
      * Password
      */
     password: string;
+};
+
+/**
+ * MappingRuleCreate
+ */
+export type MappingRuleCreate = {
+    /**
+     * Group Id
+     *
+     * The manual group its members are added to
+     */
+    group_id: string;
+    /**
+     * Idp Group
+     *
+     * The IdP group's name or id
+     */
+    idp_group: string;
+    /**
+     * Provider Id
+     *
+     * Claim rules only: the sign-in provider
+     */
+    provider_id?: string | null;
+    source: RuleSourceOut;
+};
+
+/**
+ * MappingRuleOut
+ */
+export type MappingRuleOut = {
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Created By
+     */
+    created_by: string;
+    /**
+     * Group Id
+     */
+    group_id: string;
+    /**
+     * Group Name
+     */
+    group_name: string;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Idp Group
+     */
+    idp_group: string;
+    /**
+     * Provider Id
+     */
+    provider_id: string | null;
+    source: RuleSourceOut;
 };
 
 /**
@@ -3384,6 +4623,20 @@ export type MeUpdate = {
 };
 
 /**
+ * MemberGroupOut
+ */
+export type MemberGroupOut = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Name
+     */
+    name: string;
+};
+
+/**
  * MemberOut
  */
 export type MemberOut = {
@@ -3399,6 +4652,10 @@ export type MemberOut = {
      * Email
      */
     email: string;
+    /**
+     * Groups
+     */
+    groups?: Array<MemberGroupOut>;
     /**
      * Joined At
      */
@@ -3423,6 +4680,25 @@ export type MemberOut = {
  */
 export type MemberUpdate = {
     org_role: OrgRoleName;
+};
+
+/**
+ * MembersBulk
+ */
+export type MembersBulk = {
+    /**
+     * Group Id
+     */
+    group_id?: string | null;
+    /**
+     * Operation
+     */
+    operation: 'change_role' | 'add_to_group' | 'remove';
+    org_role?: OrgRoleName | null;
+    /**
+     * User Ids
+     */
+    user_ids: Array<string>;
 };
 
 /**
@@ -3543,6 +4819,67 @@ export type MetricsSummaryOut = {
     };
 };
 
+/**
+ * MfaOut
+ */
+export type MfaOut = {
+    /**
+     * Factors
+     */
+    factors: Array<FactorOut>;
+    /**
+     * Policy
+     */
+    policy: 'off' | 'optional' | 'required_local' | 'required_admins';
+    /**
+     * Recovery Codes Left
+     */
+    recovery_codes_left: number;
+    /**
+     * Required
+     */
+    required: boolean;
+};
+
+/**
+ * MfaRequired
+ *
+ * ``POST /auth/login`` when a second factor is needed: no session yet, answer at ``POST /auth/login/mfa``.
+ */
+export type MfaRequired = {
+    /**
+     * Challenge
+     */
+    challenge: string;
+    /**
+     * Enroll
+     */
+    enroll: boolean;
+    /**
+     * Methods
+     */
+    methods: Array<'totp' | 'webauthn' | 'recovery_code'>;
+    /**
+     * Mfa Required
+     */
+    mfa_required?: true;
+};
+
+/**
+ * MfaSignedIn
+ */
+export type MfaSignedIn = {
+    /**
+     * Csrf Token
+     */
+    csrf_token: string;
+    /**
+     * Recovery Codes
+     */
+    recovery_codes?: Array<string>;
+    user: MeOut;
+};
+
 export type ModeName = 'elevated' | 'admin';
 
 /**
@@ -3647,6 +4984,49 @@ export type NamedRef = {
 };
 
 /**
+ * NativeTokenOut
+ */
+export type NativeTokenOut = {
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Expires At
+     */
+    expires_at: string | null;
+    /**
+     * Id
+     */
+    id: string;
+    instance: InstanceRefOut | null;
+    /**
+     * Kind
+     */
+    kind?: 'native';
+    /**
+     * Last Used At
+     */
+    last_used_at: string | null;
+    /**
+     * Prefix
+     */
+    prefix: string;
+    /**
+     * Revoked At
+     */
+    revoked_at: string | null;
+    /**
+     * Scopes
+     */
+    scopes: Array<string>;
+    /**
+     * Status
+     */
+    status: 'active' | 'revoked' | 'expired';
+};
+
+/**
  * NotificationOut
  */
 export type NotificationOut = {
@@ -3688,6 +5068,38 @@ export type NotificationOut = {
      * Title
      */
     title: string;
+};
+
+export type ObjectLockMode = 'off' | 'governance' | 'compliance';
+
+/**
+ * OidcSettingsOut
+ */
+export type OidcSettingsOut = {
+    /**
+     * Base Url
+     */
+    base_url: string | null;
+    /**
+     * Callback Url
+     */
+    callback_url: string;
+    /**
+     * Client Id
+     */
+    client_id: string;
+    /**
+     * Has Client Secret
+     */
+    has_client_secret: boolean;
+    /**
+     * Issuer
+     */
+    issuer: string | null;
+    /**
+     * Scopes
+     */
+    scopes: Array<string>;
 };
 
 /**
@@ -3880,6 +5292,12 @@ export type OrgSettingsOut = {
      * Require Explicit Bindings
      */
     require_explicit_bindings: boolean;
+    /**
+     * Temporary Access Max Hours
+     *
+     * The longest temporary access may last
+     */
+    temporary_access_max_hours?: number;
 };
 
 /**
@@ -3898,6 +5316,10 @@ export type OrgSettingsUpdate = {
      * Require Explicit Bindings
      */
     require_explicit_bindings?: boolean | null;
+    /**
+     * Temporary Access Max Hours
+     */
+    temporary_access_max_hours?: number | null;
 };
 
 /**
@@ -4413,6 +5835,256 @@ export type Problem = {
 };
 
 /**
+ * ProviderCreate
+ */
+export type ProviderCreate = {
+    /**
+     * Allowed Email Domains
+     */
+    allowed_email_domains?: Array<string> | null;
+    attribute_mapping?: AttributeMappingIn | null;
+    /**
+     * Base Url
+     *
+     * GitHub Enterprise Server URL
+     */
+    base_url?: string | null;
+    /**
+     * Certificates
+     *
+     * IdP signing certificates (PEM)
+     */
+    certificates?: Array<string> | null;
+    /**
+     * Client Id
+     */
+    client_id?: string | null;
+    /**
+     * Client Secret
+     *
+     * Write-only; omit to keep the current one, null to remove it
+     */
+    client_secret?: string | null;
+    /**
+     * Display Name
+     */
+    display_name?: string | null;
+    /**
+     * Enabled
+     */
+    enabled?: boolean | null;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Idp Entity Id
+     */
+    idp_entity_id?: string | null;
+    /**
+     * Issuer
+     *
+     * OIDC issuer (discovery) URL
+     */
+    issuer?: string | null;
+    /**
+     * Jit Provisioning
+     */
+    jit_provisioning?: boolean | null;
+    /**
+     * Kind
+     */
+    kind: 'oidc' | 'saml';
+    /**
+     * Metadata Url
+     *
+     * IdP metadata URL (fetched now)
+     */
+    metadata_url?: string | null;
+    /**
+     * Metadata Xml
+     *
+     * IdP metadata XML (not kept)
+     */
+    metadata_xml?: string | null;
+    /**
+     * Name Id Format
+     */
+    name_id_format?: string | null;
+    /**
+     * Preset
+     *
+     * Defaults to 'oidc' or 'saml' by kind
+     */
+    preset?: 'github' | 'gitlab' | 'google' | 'okta' | 'oidc' | 'saml' | null;
+    /**
+     * Scopes
+     */
+    scopes?: Array<string> | null;
+    /**
+     * Sso Url
+     *
+     * IdP SSO URL (HTTP-Redirect binding)
+     */
+    sso_url?: string | null;
+    /**
+     * Trust Unverified Email
+     */
+    trust_unverified_email?: boolean | null;
+};
+
+/**
+ * ProviderOut
+ */
+export type ProviderOut = {
+    /**
+     * Allowed Email Domains
+     */
+    allowed_email_domains: Array<string>;
+    /**
+     * Created At
+     */
+    created_at: string | null;
+    /**
+     * Created By
+     */
+    created_by: string | null;
+    /**
+     * Display Name
+     */
+    display_name: string;
+    /**
+     * Enabled
+     */
+    enabled: boolean;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Jit Provisioning
+     */
+    jit_provisioning: boolean;
+    /**
+     * Kind
+     */
+    kind: 'oidc' | 'saml';
+    /**
+     * Managed By
+     */
+    managed_by: 'config' | 'database';
+    oidc: OidcSettingsOut | null;
+    /**
+     * Preset
+     */
+    preset: 'github' | 'gitlab' | 'google' | 'okta' | 'oidc' | 'saml';
+    saml: SamlSettingsOut | null;
+    /**
+     * Trust Unverified Email
+     */
+    trust_unverified_email: boolean;
+    /**
+     * Updated At
+     */
+    updated_at: string | null;
+};
+
+/**
+ * ProviderUpdate
+ */
+export type ProviderUpdate = {
+    /**
+     * Allowed Email Domains
+     */
+    allowed_email_domains?: Array<string> | null;
+    attribute_mapping?: AttributeMappingIn | null;
+    /**
+     * Base Url
+     *
+     * GitHub Enterprise Server URL
+     */
+    base_url?: string | null;
+    /**
+     * Certificates
+     *
+     * IdP signing certificates (PEM)
+     */
+    certificates?: Array<string> | null;
+    /**
+     * Client Id
+     */
+    client_id?: string | null;
+    /**
+     * Client Secret
+     *
+     * Write-only; omit to keep the current one, null to remove it
+     */
+    client_secret?: string | null;
+    /**
+     * Display Name
+     */
+    display_name?: string | null;
+    /**
+     * Enabled
+     */
+    enabled?: boolean | null;
+    /**
+     * Idp Entity Id
+     */
+    idp_entity_id?: string | null;
+    /**
+     * Issuer
+     *
+     * OIDC issuer (discovery) URL
+     */
+    issuer?: string | null;
+    /**
+     * Jit Provisioning
+     */
+    jit_provisioning?: boolean | null;
+    /**
+     * Metadata Url
+     *
+     * IdP metadata URL (fetched now)
+     */
+    metadata_url?: string | null;
+    /**
+     * Metadata Xml
+     *
+     * IdP metadata XML (not kept)
+     */
+    metadata_xml?: string | null;
+    /**
+     * Name Id Format
+     */
+    name_id_format?: string | null;
+    /**
+     * Preset
+     */
+    preset?: 'github' | 'gitlab' | 'google' | 'okta' | 'oidc' | 'saml' | null;
+    /**
+     * Refresh Metadata
+     *
+     * SAML: fetch the metadata URL again
+     */
+    refresh_metadata?: boolean;
+    /**
+     * Scopes
+     */
+    scopes?: Array<string> | null;
+    /**
+     * Sso Url
+     *
+     * IdP SSO URL (HTTP-Redirect binding)
+     */
+    sso_url?: string | null;
+    /**
+     * Trust Unverified Email
+     */
+    trust_unverified_email?: boolean | null;
+};
+
+/**
  * QueueJobDetailOut
  */
 export type QueueJobDetailOut = {
@@ -4714,6 +6386,34 @@ export type QuietHoursBody = {
 };
 
 /**
+ * ReachOut
+ */
+export type ReachOut = {
+    /**
+     * Direct People
+     */
+    direct_people: Array<string>;
+    /**
+     * Groups
+     */
+    groups: Array<GroupRefOut>;
+    /**
+     * People
+     */
+    people: number;
+    /**
+     * Sentence
+     *
+     * "9 people and 2 groups (Support AI, Billing ops)"
+     */
+    sentence: string;
+    /**
+     * Service Accounts
+     */
+    service_accounts: Array<string>;
+};
+
+/**
  * Readiness
  */
 export type Readiness = {
@@ -4746,6 +6446,16 @@ export type ReadinessCheck = {
 };
 
 /**
+ * RecoveryCodesOut
+ */
+export type RecoveryCodesOut = {
+    /**
+     * Recovery Codes
+     */
+    recovery_codes: Array<string>;
+};
+
+/**
  * RequeueIn
  */
 export type RequeueIn = {
@@ -4758,6 +6468,20 @@ export type RequeueIn = {
 };
 
 /**
+ * RestoreOut
+ */
+export type RestoreOut = {
+    /**
+     * Month
+     */
+    month: string;
+    /**
+     * Status
+     */
+    status: 'queued' | 'restored';
+};
+
+/**
  * ResumeIn
  */
 export type ResumeIn = {
@@ -4767,6 +6491,65 @@ export type ResumeIn = {
      * The checkpoint's message_index (AgentOS continue_from)
      */
     message_index: number;
+};
+
+/**
+ * RoleDuplicate
+ */
+export type RoleDuplicate = {
+    /**
+     * Name
+     */
+    name?: string | null;
+};
+
+/**
+ * RoleHoldersOut
+ */
+export type RoleHoldersOut = {
+    /**
+     * Bindings
+     */
+    bindings: Array<BindingOut>;
+    reach: ReachOut;
+};
+
+/**
+ * RoleIn
+ *
+ * The role editor's draft; the server derives the token scopes.
+ */
+export type RoleIn = {
+    /**
+     * Bindable Instance Ids
+     *
+     * null: bindable on every instance
+     */
+    bindable_instance_ids?: Array<string> | null;
+    /**
+     * Color
+     */
+    color?: string;
+    /**
+     * Description
+     */
+    description?: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Permissions
+     */
+    permissions: {
+        [key: string]: Array<string>;
+    };
+    /**
+     * Run Scope
+     */
+    run_scope?: {
+        [key: string]: Array<string> | 'all';
+    };
 };
 
 /**
@@ -4786,6 +6569,10 @@ export type RoleOut = {
      */
     description: string;
     /**
+     * Groups
+     */
+    groups?: number;
+    /**
      * Id
      */
     id: string;
@@ -4799,6 +6586,8 @@ export type RoleOut = {
     name: string;
     /**
      * People
+     *
+     * People who hold the role, directly or through a group
      */
     people: number;
     /**
@@ -4818,9 +6607,115 @@ export type RoleOut = {
      */
     scopes: Array<string>;
     /**
+     * Service Accounts
+     */
+    service_accounts?: number;
+    /**
      * Slug
      */
     slug: string;
+    /**
+     * Version
+     */
+    version: number;
+};
+
+/**
+ * RolePreviewOut
+ */
+export type RolePreviewOut = {
+    /**
+     * Added
+     */
+    added: Array<string>;
+    /**
+     * Lines
+     */
+    lines: Array<DiffLineOut>;
+    reach: ReachOut;
+    /**
+     * Redeploy
+     *
+     * Always false: new scopes apply on the next request
+     */
+    redeploy?: boolean;
+    /**
+     * Removed
+     */
+    removed: Array<string>;
+    role: RoleOut;
+    /**
+     * Warnings
+     */
+    warnings: Array<string>;
+};
+
+/**
+ * RoleUpdate
+ */
+export type RoleUpdate = {
+    /**
+     * Bindable Instance Ids
+     *
+     * null: bindable on every instance
+     */
+    bindable_instance_ids?: Array<string> | null;
+    /**
+     * Color
+     */
+    color?: string;
+    /**
+     * Description
+     */
+    description?: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Permissions
+     */
+    permissions: {
+        [key: string]: Array<string>;
+    };
+    /**
+     * Run Scope
+     */
+    run_scope?: {
+        [key: string]: Array<string> | 'all';
+    };
+    /**
+     * Version
+     *
+     * The version you edited; a newer saved version is a conflict
+     */
+    version: number;
+};
+
+/**
+ * RoleVersionOut
+ */
+export type RoleVersionOut = {
+    /**
+     * Changed At
+     */
+    changed_at: string;
+    /**
+     * Changed By
+     */
+    changed_by: string;
+    /**
+     * Changed By Name
+     */
+    changed_by_name: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Scopes
+     */
+    scopes: Array<string>;
     /**
      * Version
      */
@@ -4859,6 +6754,10 @@ export type RouteIn = {
      * Component Kind
      */
     component_kind?: 'agent' | 'team' | 'workflow' | null;
+    /**
+     * Group Ids
+     */
+    group_ids?: Array<string>;
     /**
      * Member Ids
      */
@@ -4903,6 +6802,10 @@ export type RouteOut = {
      * Created By
      */
     created_by: string | null;
+    /**
+     * Groups
+     */
+    groups?: Array<NamedRef>;
     /**
      * Id
      */
@@ -4971,6 +6874,8 @@ export type RoutePolicyOut = {
     source: string;
 };
 
+export type RuleSourceOut = 'scim' | 'oidc_claim' | 'google_directory';
+
 /**
  * RunsOut
  */
@@ -5013,6 +6918,127 @@ export type RunsPageOut = {
      * Total
      */
     total: number | null;
+};
+
+/**
+ * SamlSettingsOut
+ */
+export type SamlSettingsOut = {
+    /**
+     * Acs Url
+     */
+    acs_url: string;
+    attribute_mapping: AttributeMappingOut;
+    /**
+     * Certificates
+     */
+    certificates: Array<CertificateOut>;
+    /**
+     * Idp Entity Id
+     */
+    idp_entity_id: string;
+    /**
+     * Metadata Url
+     */
+    metadata_url: string | null;
+    /**
+     * Name Id Format
+     */
+    name_id_format: string;
+    /**
+     * Sp Entity Id
+     */
+    sp_entity_id: string;
+    /**
+     * Sso Url
+     */
+    sso_url: string;
+};
+
+/**
+ * SavedViewIn
+ */
+export type SavedViewIn = {
+    filters?: EventFilters;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Position
+     */
+    position?: number | null;
+    /**
+     * Shared
+     */
+    shared?: boolean;
+};
+
+/**
+ * SavedViewOut
+ */
+export type SavedViewOut = {
+    /**
+     * Count
+     */
+    count: number;
+    /**
+     * Count Capped
+     */
+    count_capped: boolean;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Editable
+     */
+    editable: boolean;
+    /**
+     * Filters
+     */
+    filters: {
+        [key: string]: string;
+    };
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Owner Id
+     */
+    owner_id: string | null;
+    /**
+     * Position
+     */
+    position: number;
+    /**
+     * Shared
+     */
+    shared: boolean;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
+ * SavedViewPatch
+ */
+export type SavedViewPatch = {
+    filters?: EventFilters | null;
+    /**
+     * Name
+     */
+    name?: string | null;
+    /**
+     * Position
+     */
+    position?: number | null;
 };
 
 /**
@@ -5329,6 +7355,120 @@ export type SchedulesPageOut = {
 };
 
 /**
+ * ScimStatusOut
+ */
+export type ScimStatusOut = {
+    /**
+     * Counts
+     */
+    counts: {
+        [key: string]: number;
+    };
+    /**
+     * Endpoint Url
+     *
+     * The SCIM base URL to configure at the IdP
+     */
+    endpoint_url: string;
+    /**
+     * Healthy
+     */
+    healthy: boolean;
+    /**
+     * Last Error
+     */
+    last_error: string | null;
+    /**
+     * Last Error At
+     */
+    last_error_at: string | null;
+    /**
+     * Last Request At
+     */
+    last_request_at: string | null;
+    /**
+     * Tokens
+     */
+    tokens: Array<ScimTokenOut>;
+};
+
+/**
+ * ScimTokenCreate
+ */
+export type ScimTokenCreate = {
+    /**
+     * Label
+     */
+    label: string;
+};
+
+/**
+ * ScimTokenOut
+ */
+export type ScimTokenOut = {
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Created By
+     */
+    created_by: string;
+    /**
+     * Expires At
+     *
+     * When a token being rotated stops working
+     */
+    expires_at: string | null;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Label
+     *
+     * Shown as the actor of what the IdP does, e.g. "Okta SCIM"
+     */
+    label: string;
+    /**
+     * Last Used At
+     */
+    last_used_at: string | null;
+    /**
+     * Prefix
+     *
+     * The first characters of the token, to tell tokens apart
+     */
+    prefix: string;
+    /**
+     * Rotated From
+     */
+    rotated_from: string | null;
+    /**
+     * State
+     */
+    state: 'active' | 'rotating' | 'expired' | 'revoked';
+};
+
+/**
+ * ScopeItemOut
+ */
+export type ScopeItemOut = {
+    /**
+     * Privileged
+     */
+    privileged: boolean;
+    /**
+     * Scope
+     */
+    scope: string;
+    /**
+     * Source
+     */
+    source: string;
+};
+
+/**
  * ScopeOut
  */
 export type ScopeOut = {
@@ -5336,6 +7476,10 @@ export type ScopeOut = {
      * Action
      */
     action: string;
+    /**
+     * Agentos Min Version
+     */
+    agentos_min_version?: string | null;
     /**
      * Description
      */
@@ -5413,6 +7557,292 @@ export type SearchOut = {
 };
 
 /**
+ * ServiceAccountDetailOut
+ */
+export type ServiceAccountDetailOut = {
+    /**
+     * Active Tokens
+     */
+    active_tokens: number;
+    /**
+     * Cli Command
+     */
+    cli_command: string;
+    /**
+     * Created At
+     */
+    created_at: string;
+    created_by: CreatorOut;
+    /**
+     * Description
+     */
+    description: string;
+    /**
+     * Expired
+     */
+    expired: boolean;
+    /**
+     * Expires At
+     */
+    expires_at: string | null;
+    /**
+     * Expiry Warning
+     */
+    expiry_warning: boolean;
+    /**
+     * Extra Scopes
+     */
+    extra_scopes: Array<string>;
+    /**
+     * Forwards User Id
+     */
+    forwards_user_id: boolean;
+    /**
+     * Gateway Tokens
+     */
+    gateway_tokens: Array<GatewayTokenOut>;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Instances
+     */
+    instances: Array<InstanceRefOut>;
+    /**
+     * Isolation Note
+     */
+    isolation_note: string;
+    /**
+     * Kinds
+     */
+    kinds: Array<'native' | 'gateway'>;
+    /**
+     * Last Used At
+     */
+    last_used_at: string | null;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Native Tokens
+     */
+    native_tokens: Array<NativeTokenOut>;
+    /**
+     * Principal
+     */
+    principal: string;
+    /**
+     * Privileged
+     */
+    privileged: boolean;
+    /**
+     * Role Id
+     */
+    role_id: string | null;
+    /**
+     * Role Name
+     */
+    role_name: string | null;
+    /**
+     * Rotation Note
+     */
+    rotation_note: string;
+    /**
+     * Scope Count
+     */
+    scope_count: number;
+    /**
+     * Scope Items
+     */
+    scope_items: Array<ScopeItemOut>;
+    /**
+     * Scope Source
+     */
+    scope_source: 'role' | 'custom';
+    /**
+     * Scopes
+     */
+    scopes: Array<string>;
+    /**
+     * Source Label
+     */
+    source_label: string;
+};
+
+/**
+ * ServiceAccountIn
+ */
+export type ServiceAccountIn = {
+    /**
+     * Confirm Privileged
+     */
+    confirm_privileged?: boolean;
+    /**
+     * Description
+     */
+    description?: string;
+    /**
+     * Expires In
+     */
+    expires_in?: '30d' | '90d' | '365d' | 'never';
+    /**
+     * Forwards User Id
+     */
+    forwards_user_id?: boolean;
+    /**
+     * Instances
+     *
+     * Instance ids or slugs
+     */
+    instances: Array<string>;
+    /**
+     * Kinds
+     */
+    kinds?: Array<'native' | 'gateway'>;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Role Id
+     *
+     * An access role (id or slug); scopes are then extras
+     */
+    role_id?: string | null;
+    /**
+     * Scopes
+     */
+    scopes?: Array<string>;
+};
+
+/**
+ * ServiceAccountOut
+ *
+ * A row of the list.
+ */
+export type ServiceAccountOut = {
+    /**
+     * Active Tokens
+     */
+    active_tokens: number;
+    /**
+     * Created At
+     */
+    created_at: string;
+    created_by: CreatorOut;
+    /**
+     * Description
+     */
+    description: string;
+    /**
+     * Expired
+     */
+    expired: boolean;
+    /**
+     * Expires At
+     */
+    expires_at: string | null;
+    /**
+     * Expiry Warning
+     */
+    expiry_warning: boolean;
+    /**
+     * Extra Scopes
+     */
+    extra_scopes: Array<string>;
+    /**
+     * Forwards User Id
+     */
+    forwards_user_id: boolean;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Instances
+     */
+    instances: Array<InstanceRefOut>;
+    /**
+     * Kinds
+     */
+    kinds: Array<'native' | 'gateway'>;
+    /**
+     * Last Used At
+     */
+    last_used_at: string | null;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Principal
+     */
+    principal: string;
+    /**
+     * Privileged
+     */
+    privileged: boolean;
+    /**
+     * Role Id
+     */
+    role_id: string | null;
+    /**
+     * Role Name
+     */
+    role_name: string | null;
+    /**
+     * Scope Count
+     */
+    scope_count: number;
+    /**
+     * Scope Source
+     */
+    scope_source: 'role' | 'custom';
+    /**
+     * Scopes
+     */
+    scopes: Array<string>;
+    /**
+     * Source Label
+     */
+    source_label: string;
+};
+
+/**
+ * ServiceAccountPreviewOut
+ */
+export type ServiceAccountPreviewOut = {
+    /**
+     * Cli Command
+     */
+    cli_command: string;
+    /**
+     * Expires At
+     */
+    expires_at: string | null;
+    /**
+     * Principal
+     */
+    principal: string;
+    /**
+     * Privileged Scopes
+     */
+    privileged_scopes: Array<string>;
+    /**
+     * Problems
+     */
+    problems: Array<string>;
+    /**
+     * Token Prefixes
+     */
+    token_prefixes?: {
+        [key: string]: string;
+    };
+};
+
+/**
  * SessionOut
  */
 export type SessionOut = {
@@ -5457,7 +7887,7 @@ export type SignInProviderOut = {
     /**
      * Preset
      */
-    preset: 'github' | 'gitlab' | 'google' | 'okta' | 'oidc';
+    preset: 'github' | 'gitlab' | 'google' | 'okta' | 'oidc' | 'saml';
 };
 
 /**
@@ -5469,6 +7899,129 @@ export type SignedIn = {
      */
     csrf_token: string;
     user: MeOut;
+};
+
+export type SinkFormatName = 'json' | 'ocsf' | 'cef';
+
+/**
+ * SinkIn
+ */
+export type SinkIn = {
+    /**
+     * Config
+     */
+    config: {
+        [key: string]: unknown;
+    };
+    /**
+     * Enabled
+     */
+    enabled?: boolean;
+    format?: SinkFormatName;
+    kind: SinkKindName;
+    /**
+     * Name
+     */
+    name: string;
+};
+
+export type SinkKindName = 'https_webhook' | 'syslog' | 'otlp_logs';
+
+/**
+ * SinkOut
+ */
+export type SinkOut = {
+    /**
+     * Config
+     */
+    config: {
+        [key: string]: unknown;
+    };
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Created By
+     */
+    created_by: string;
+    /**
+     * Enabled
+     */
+    enabled: boolean;
+    /**
+     * Failure Count
+     */
+    failure_count: number;
+    format: SinkFormatName;
+    /**
+     * Has Secret
+     */
+    has_secret: boolean;
+    /**
+     * Id
+     */
+    id: string;
+    kind: SinkKindName;
+    /**
+     * Last Error
+     */
+    last_error: string | null;
+    /**
+     * Last Event At
+     */
+    last_event_at: string | null;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Status
+     */
+    status: 'ok' | 'failing' | 'paused';
+};
+
+/**
+ * SinkPatch
+ */
+export type SinkPatch = {
+    /**
+     * Config
+     */
+    config?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Enabled
+     */
+    enabled?: boolean | null;
+    format?: SinkFormatName | null;
+    /**
+     * Name
+     */
+    name?: string | null;
+};
+
+/**
+ * SinkTestOut
+ */
+export type SinkTestOut = {
+    /**
+     * Error
+     */
+    error: string | null;
+    /**
+     * Latency Ms
+     */
+    latency_ms: number | null;
+    /**
+     * Ok
+     */
+    ok: boolean;
+    /**
+     * Status Code
+     */
+    status_code: number | null;
 };
 
 /**
@@ -5585,6 +8138,101 @@ export type StepOut = {
 };
 
 /**
+ * StepUpOut
+ */
+export type StepUpOut = {
+    /**
+     * Authenticated At
+     */
+    authenticated_at: string | null;
+    /**
+     * Expires At
+     */
+    expires_at: string | null;
+    /**
+     * Methods
+     */
+    methods: Array<string>;
+    /**
+     * Recent
+     */
+    recent: boolean;
+    /**
+     * Sso Providers
+     */
+    sso_providers: Array<string>;
+};
+
+/**
+ * StepUpRequest
+ */
+export type StepUpRequest = {
+    /**
+     * Code
+     */
+    code?: string | null;
+    /**
+     * Password
+     */
+    password?: string | null;
+    /**
+     * Webauthn
+     */
+    webauthn?: {
+        [key: string]: unknown;
+    } | null;
+};
+
+/**
+ * StreamSinkOut
+ */
+export type StreamSinkOut = {
+    /**
+     * Enabled
+     */
+    enabled: boolean;
+    /**
+     * Id
+     */
+    id: string;
+    kind: SinkKindName;
+    /**
+     * Last Error
+     */
+    last_error: string | null;
+    /**
+     * Last Event At
+     */
+    last_event_at: string | null;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Status
+     */
+    status: 'ok' | 'failing' | 'paused';
+};
+
+/**
+ * StreamStatusOut
+ */
+export type StreamStatusOut = {
+    /**
+     * Last Event At
+     */
+    last_event_at: string | null;
+    /**
+     * Sinks
+     */
+    sinks: Array<StreamSinkOut>;
+    /**
+     * Streaming
+     */
+    streaming: boolean;
+};
+
+/**
  * SummaryOut
  */
 export type SummaryOut = {
@@ -5663,6 +8311,40 @@ export type SystemModules = {
 export type TargetKindName = 'agent' | 'team' | 'workflow' | 'custom';
 
 /**
+ * TemporaryGrantIn
+ */
+export type TemporaryGrantIn = {
+    /**
+     * Duration Hours
+     */
+    duration_hours: number;
+    /**
+     * Instance
+     */
+    instance?: string | null;
+    /**
+     * Principal Id
+     */
+    principal_id: string;
+    /**
+     * Principal Kind
+     */
+    principal_kind?: 'user' | 'group';
+    /**
+     * Reason
+     */
+    reason: string;
+    /**
+     * Role Id
+     */
+    role_id?: string | null;
+    /**
+     * Scopes
+     */
+    scopes?: Array<string>;
+};
+
+/**
  * TestReportOut
  */
 export type TestReportOut = {
@@ -5732,6 +8414,38 @@ export type TokenCheckOut = {
 };
 
 /**
+ * TokenIn
+ */
+export type TokenIn = {
+    /**
+     * Instance
+     *
+     * For a native token: the instance (id or slug)
+     */
+    instance?: string | null;
+    /**
+     * Kind
+     */
+    kind: 'native' | 'gateway';
+};
+
+/**
+ * TokenIssuedOut
+ */
+export type TokenIssuedOut = {
+    account: ServiceAccountDetailOut;
+    /**
+     * Grace Until
+     */
+    grace_until: string | null;
+    /**
+     * Replaced Id
+     */
+    replaced_id: string | null;
+    token: IssuedTokenOut;
+};
+
+/**
  * TokensOut
  */
 export type TokensOut = {
@@ -5779,6 +8493,34 @@ export type TotalsOut = {
      */
     sessions: number;
     tokens: TokensOut;
+};
+
+/**
+ * TotpConfirm
+ */
+export type TotpConfirm = {
+    /**
+     * Code
+     */
+    code: string;
+    /**
+     * Label
+     */
+    label?: string | null;
+};
+
+/**
+ * TotpSetupOut
+ */
+export type TotpSetupOut = {
+    /**
+     * Otpauth Uri
+     */
+    otpauth_uri: string;
+    /**
+     * Secret
+     */
+    secret: string;
 };
 
 /**
@@ -5889,6 +8631,38 @@ export type VectorDbOut = {
 };
 
 /**
+ * VerifyIn
+ */
+export type VerifyIn = {
+    /**
+     * Since
+     */
+    since?: string | null;
+    /**
+     * Until
+     */
+    until?: string | null;
+};
+
+/**
+ * VerifyOut
+ */
+export type VerifyOut = {
+    /**
+     * Checked
+     */
+    checked: number;
+    /**
+     * First Broken Event Id
+     */
+    first_broken_event_id: string | null;
+    /**
+     * Ok
+     */
+    ok: boolean;
+};
+
+/**
  * VerifyTokenIn
  */
 export type VerifyTokenIn = {
@@ -5914,6 +8688,42 @@ export type ViewOut = {
      * User Id
      */
     user_id: string;
+};
+
+/**
+ * WebAuthnVerify
+ */
+export type WebAuthnVerify = {
+    /**
+     * Credential
+     *
+     * The PublicKeyCredential from navigator.credentials.create()
+     */
+    credential: {
+        [key: string]: unknown;
+    };
+    /**
+     * Label
+     */
+    label?: string | null;
+};
+
+/**
+ * WriteCheckOut
+ */
+export type WriteCheckOut = {
+    /**
+     * Error
+     */
+    error?: string | null;
+    /**
+     * Latency Ms
+     */
+    latency_ms?: number | null;
+    /**
+     * Ok
+     */
+    ok: boolean;
 };
 
 /**
@@ -5999,9 +8809,19 @@ export type AccessListBindingsData = {
         /**
          * Principal
          *
-         * usr_…
+         * usr_…, grp_… or sac_…
          */
         principal?: string | null;
+        /**
+         * Principal Kind
+         */
+        principal_kind?: 'user' | 'group' | 'service_account' | null;
+        /**
+         * Role
+         *
+         * Access role id
+         */
+        role?: string | null;
         /**
          * Instance
          *
@@ -6128,6 +8948,177 @@ export type AccessExplainResponses = {
 
 export type AccessExplainResponse = AccessExplainResponses[keyof AccessExplainResponses];
 
+export type AccessListRequestsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Status
+         */
+        status?: 'pending' | 'approved' | 'denied' | 'cancelled' | 'expired' | null;
+        /**
+         * Mine
+         */
+        mine?: boolean;
+    };
+    url: '/api/v1/access/requests';
+};
+
+export type AccessListRequestsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AccessListRequestsError = AccessListRequestsErrors[keyof AccessListRequestsErrors];
+
+export type AccessListRequestsResponses = {
+    /**
+     * Response Access List Requests
+     *
+     * Successful Response
+     */
+    200: Array<AccessRequestOut>;
+};
+
+export type AccessListRequestsResponse = AccessListRequestsResponses[keyof AccessListRequestsResponses];
+
+export type AccessCreateRequestData = {
+    body: AccessRequestIn;
+    path?: never;
+    query?: never;
+    url: '/api/v1/access/requests';
+};
+
+export type AccessCreateRequestErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AccessCreateRequestError = AccessCreateRequestErrors[keyof AccessCreateRequestErrors];
+
+export type AccessCreateRequestResponses = {
+    /**
+     * Successful Response
+     */
+    201: AccessRequestOut;
+};
+
+export type AccessCreateRequestResponse = AccessCreateRequestResponses[keyof AccessCreateRequestResponses];
+
+export type AccessApproveRequestData = {
+    body: DecisionIn;
+    path: {
+        /**
+         * Request Id
+         */
+        request_id: string;
+    };
+    query?: never;
+    url: '/api/v1/access/requests/{request_id}/approve';
+};
+
+export type AccessApproveRequestErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AccessApproveRequestError = AccessApproveRequestErrors[keyof AccessApproveRequestErrors];
+
+export type AccessApproveRequestResponses = {
+    /**
+     * Successful Response
+     */
+    200: AccessRequestOut;
+};
+
+export type AccessApproveRequestResponse = AccessApproveRequestResponses[keyof AccessApproveRequestResponses];
+
+export type AccessCancelRequestData = {
+    body?: never;
+    path: {
+        /**
+         * Request Id
+         */
+        request_id: string;
+    };
+    query?: never;
+    url: '/api/v1/access/requests/{request_id}/cancel';
+};
+
+export type AccessCancelRequestErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AccessCancelRequestError = AccessCancelRequestErrors[keyof AccessCancelRequestErrors];
+
+export type AccessCancelRequestResponses = {
+    /**
+     * Successful Response
+     */
+    200: AccessRequestOut;
+};
+
+export type AccessCancelRequestResponse = AccessCancelRequestResponses[keyof AccessCancelRequestResponses];
+
+export type AccessDenyRequestData = {
+    body: DecisionIn;
+    path: {
+        /**
+         * Request Id
+         */
+        request_id: string;
+    };
+    query?: never;
+    url: '/api/v1/access/requests/{request_id}/deny';
+};
+
+export type AccessDenyRequestErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AccessDenyRequestError = AccessDenyRequestErrors[keyof AccessDenyRequestErrors];
+
+export type AccessDenyRequestResponses = {
+    /**
+     * Successful Response
+     */
+    200: AccessRequestOut;
+};
+
+export type AccessDenyRequestResponse = AccessDenyRequestResponses[keyof AccessDenyRequestResponses];
+
 export type AccessListRolesData = {
     body?: never;
     path?: never;
@@ -6159,6 +9150,309 @@ export type AccessListRolesResponses = {
 
 export type AccessListRolesResponse = AccessListRolesResponses[keyof AccessListRolesResponses];
 
+export type AccessCreateRoleData = {
+    body: RoleIn;
+    path?: never;
+    query?: never;
+    url: '/api/v1/access/roles';
+};
+
+export type AccessCreateRoleErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AccessCreateRoleError = AccessCreateRoleErrors[keyof AccessCreateRoleErrors];
+
+export type AccessCreateRoleResponses = {
+    /**
+     * Successful Response
+     */
+    201: RoleOut;
+};
+
+export type AccessCreateRoleResponse = AccessCreateRoleResponses[keyof AccessCreateRoleResponses];
+
+export type AccessDeleteRoleData = {
+    body?: never;
+    path: {
+        /**
+         * Role Id
+         */
+        role_id: string;
+    };
+    query?: never;
+    url: '/api/v1/access/roles/{role_id}';
+};
+
+export type AccessDeleteRoleErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AccessDeleteRoleError = AccessDeleteRoleErrors[keyof AccessDeleteRoleErrors];
+
+export type AccessDeleteRoleResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type AccessDeleteRoleResponse = AccessDeleteRoleResponses[keyof AccessDeleteRoleResponses];
+
+export type AccessGetRoleData = {
+    body?: never;
+    path: {
+        /**
+         * Role Id
+         */
+        role_id: string;
+    };
+    query?: never;
+    url: '/api/v1/access/roles/{role_id}';
+};
+
+export type AccessGetRoleErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AccessGetRoleError = AccessGetRoleErrors[keyof AccessGetRoleErrors];
+
+export type AccessGetRoleResponses = {
+    /**
+     * Successful Response
+     */
+    200: RoleOut;
+};
+
+export type AccessGetRoleResponse = AccessGetRoleResponses[keyof AccessGetRoleResponses];
+
+export type AccessUpdateRoleData = {
+    body: RoleUpdate;
+    path: {
+        /**
+         * Role Id
+         */
+        role_id: string;
+    };
+    query?: never;
+    url: '/api/v1/access/roles/{role_id}';
+};
+
+export type AccessUpdateRoleErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AccessUpdateRoleError = AccessUpdateRoleErrors[keyof AccessUpdateRoleErrors];
+
+export type AccessUpdateRoleResponses = {
+    /**
+     * Successful Response
+     */
+    200: RolePreviewOut;
+};
+
+export type AccessUpdateRoleResponse = AccessUpdateRoleResponses[keyof AccessUpdateRoleResponses];
+
+export type AccessDuplicateRoleData = {
+    body: RoleDuplicate;
+    path: {
+        /**
+         * Role Id
+         */
+        role_id: string;
+    };
+    query?: never;
+    url: '/api/v1/access/roles/{role_id}/duplicate';
+};
+
+export type AccessDuplicateRoleErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AccessDuplicateRoleError = AccessDuplicateRoleErrors[keyof AccessDuplicateRoleErrors];
+
+export type AccessDuplicateRoleResponses = {
+    /**
+     * Successful Response
+     */
+    201: RoleOut;
+};
+
+export type AccessDuplicateRoleResponse = AccessDuplicateRoleResponses[keyof AccessDuplicateRoleResponses];
+
+export type AccessRoleHoldersData = {
+    body?: never;
+    path: {
+        /**
+         * Role Id
+         */
+        role_id: string;
+    };
+    query?: never;
+    url: '/api/v1/access/roles/{role_id}/holders';
+};
+
+export type AccessRoleHoldersErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AccessRoleHoldersError = AccessRoleHoldersErrors[keyof AccessRoleHoldersErrors];
+
+export type AccessRoleHoldersResponses = {
+    /**
+     * Successful Response
+     */
+    200: RoleHoldersOut;
+};
+
+export type AccessRoleHoldersResponse = AccessRoleHoldersResponses[keyof AccessRoleHoldersResponses];
+
+export type AccessPreviewRoleData = {
+    body: RoleIn;
+    path: {
+        /**
+         * Role Id
+         */
+        role_id: string;
+    };
+    query?: never;
+    url: '/api/v1/access/roles/{role_id}/preview';
+};
+
+export type AccessPreviewRoleErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AccessPreviewRoleError = AccessPreviewRoleErrors[keyof AccessPreviewRoleErrors];
+
+export type AccessPreviewRoleResponses = {
+    /**
+     * Successful Response
+     */
+    200: RolePreviewOut;
+};
+
+export type AccessPreviewRoleResponse = AccessPreviewRoleResponses[keyof AccessPreviewRoleResponses];
+
+export type AccessResetRoleData = {
+    body?: never;
+    path: {
+        /**
+         * Role Id
+         */
+        role_id: string;
+    };
+    query?: never;
+    url: '/api/v1/access/roles/{role_id}/reset';
+};
+
+export type AccessResetRoleErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AccessResetRoleError = AccessResetRoleErrors[keyof AccessResetRoleErrors];
+
+export type AccessResetRoleResponses = {
+    /**
+     * Successful Response
+     */
+    200: RolePreviewOut;
+};
+
+export type AccessResetRoleResponse = AccessResetRoleResponses[keyof AccessResetRoleResponses];
+
+export type AccessRoleVersionsData = {
+    body?: never;
+    path: {
+        /**
+         * Role Id
+         */
+        role_id: string;
+    };
+    query?: never;
+    url: '/api/v1/access/roles/{role_id}/versions';
+};
+
+export type AccessRoleVersionsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AccessRoleVersionsError = AccessRoleVersionsErrors[keyof AccessRoleVersionsErrors];
+
+export type AccessRoleVersionsResponses = {
+    /**
+     * Response Access Role Versions
+     *
+     * Successful Response
+     */
+    200: Array<RoleVersionOut>;
+};
+
+export type AccessRoleVersionsResponse = AccessRoleVersionsResponses[keyof AccessRoleVersionsResponses];
+
 export type AccessListScopesData = {
     body?: never;
     path?: never;
@@ -6189,6 +9483,35 @@ export type AccessListScopesResponses = {
 };
 
 export type AccessListScopesResponse = AccessListScopesResponses[keyof AccessListScopesResponses];
+
+export type AccessGrantTemporaryData = {
+    body: TemporaryGrantIn;
+    path?: never;
+    query?: never;
+    url: '/api/v1/access/temporary';
+};
+
+export type AccessGrantTemporaryErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AccessGrantTemporaryError = AccessGrantTemporaryErrors[keyof AccessGrantTemporaryErrors];
+
+export type AccessGrantTemporaryResponses = {
+    /**
+     * Successful Response
+     */
+    201: BindingOut;
+};
+
+export type AccessGrantTemporaryResponse = AccessGrantTemporaryResponses[keyof AccessGrantTemporaryResponses];
 
 export type ApprovalsListOrgRoutesData = {
     body?: never;
@@ -6249,6 +9572,42 @@ export type ApprovalsCreateOrgRouteResponses = {
 };
 
 export type ApprovalsCreateOrgRouteResponse = ApprovalsCreateOrgRouteResponses[keyof ApprovalsCreateOrgRouteResponses];
+
+export type ApprovalsListGroupRoutesData = {
+    body?: never;
+    path: {
+        /**
+         * Group Id
+         */
+        group_id: string;
+    };
+    query?: never;
+    url: '/api/v1/approvals/routes/by-group/{group_id}';
+};
+
+export type ApprovalsListGroupRoutesErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ApprovalsListGroupRoutesError = ApprovalsListGroupRoutesErrors[keyof ApprovalsListGroupRoutesErrors];
+
+export type ApprovalsListGroupRoutesResponses = {
+    /**
+     * Response Approvals List Group Routes
+     *
+     * Successful Response
+     */
+    200: Array<RouteOut>;
+};
+
+export type ApprovalsListGroupRoutesResponse = ApprovalsListGroupRoutesResponses[keyof ApprovalsListGroupRoutesResponses];
 
 export type ApprovalsDeleteRouteData = {
     body?: never;
@@ -6349,16 +9708,127 @@ export type AuditListActionsResponses = {
 
 export type AuditListActionsResponse = AuditListActionsResponses[keyof AuditListActionsResponses];
 
+export type AuditListActorsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/api/v1/audit/actors';
+};
+
+export type AuditListActorsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuditListActorsError = AuditListActorsErrors[keyof AuditListActorsErrors];
+
+export type AuditListActorsResponses = {
+    /**
+     * Response Audit List Actors
+     *
+     * Successful Response
+     */
+    200: Array<ActorSummaryOut>;
+};
+
+export type AuditListActorsResponse = AuditListActorsResponses[keyof AuditListActorsResponses];
+
+export type AuditListArchivesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/audit/archives';
+};
+
+export type AuditListArchivesErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuditListArchivesError = AuditListArchivesErrors[keyof AuditListArchivesErrors];
+
+export type AuditListArchivesResponses = {
+    /**
+     * Response Audit List Archives
+     *
+     * Successful Response
+     */
+    200: Array<ArchiveOut>;
+};
+
+export type AuditListArchivesResponse = AuditListArchivesResponses[keyof AuditListArchivesResponses];
+
+export type AuditRestoreArchiveData = {
+    body?: never;
+    path: {
+        /**
+         * Month
+         */
+        month: string;
+    };
+    query?: never;
+    url: '/api/v1/audit/archives/{month}/restore';
+};
+
+export type AuditRestoreArchiveErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuditRestoreArchiveError = AuditRestoreArchiveErrors[keyof AuditRestoreArchiveErrors];
+
+export type AuditRestoreArchiveResponses = {
+    /**
+     * Successful Response
+     */
+    202: RestoreOut;
+};
+
+export type AuditRestoreArchiveResponse = AuditRestoreArchiveResponses[keyof AuditRestoreArchiveResponses];
+
 export type AuditListEventsData = {
     body?: never;
     path?: never;
     query?: {
+        /**
+         * Q
+         *
+         * Text in the resource id or name, request id, IP or actor name
+         */
+        q?: string | null;
         /**
          * Actor
          *
          * Actor id (usr_…, sa:…, system)
          */
         actor?: string | null;
+        /**
+         * Actor Kind
+         */
+        actor_kind?: 'user' | 'service_account' | 'system' | 'anonymous' | null;
         /**
          * Action
          *
@@ -6381,6 +9851,10 @@ export type AuditListEventsData = {
          * Resource id
          */
         resource?: string | null;
+        /**
+         * Source
+         */
+        source?: 'control_plane' | 'agentos' | null;
         /**
          * Since
          */
@@ -6461,6 +9935,894 @@ export type AuditGetEventResponses = {
 
 export type AuditGetEventResponse = AuditGetEventResponses[keyof AuditGetEventResponses];
 
+export type AuditExportEventsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Format
+         */
+        format?: 'csv' | 'jsonl';
+        /**
+         * Q
+         */
+        q?: string | null;
+        /**
+         * Actor
+         */
+        actor?: string | null;
+        /**
+         * Actor Kind
+         */
+        actor_kind?: 'user' | 'service_account' | 'system' | 'anonymous' | null;
+        /**
+         * Action
+         */
+        action?: string | null;
+        /**
+         * Decision
+         */
+        decision?: 'allowed' | 'denied' | 'n_a' | null;
+        /**
+         * Instance
+         */
+        instance?: string | null;
+        /**
+         * Resource
+         */
+        resource?: string | null;
+        /**
+         * Source
+         */
+        source?: 'control_plane' | 'agentos' | null;
+        /**
+         * Since
+         */
+        since?: string | null;
+        /**
+         * Until
+         */
+        until?: string | null;
+    };
+    url: '/api/v1/audit/export';
+};
+
+export type AuditExportEventsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuditExportEventsError = AuditExportEventsErrors[keyof AuditExportEventsErrors];
+
+export type AuditExportEventsResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
+
+export type AuditListExportsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/audit/exports';
+};
+
+export type AuditListExportsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuditListExportsError = AuditListExportsErrors[keyof AuditListExportsErrors];
+
+export type AuditListExportsResponses = {
+    /**
+     * Response Audit List Exports
+     *
+     * Successful Response
+     */
+    200: Array<ExportOut>;
+};
+
+export type AuditListExportsResponse = AuditListExportsResponses[keyof AuditListExportsResponses];
+
+export type AuditRequestExportData = {
+    body: ExportIn;
+    path?: never;
+    query?: never;
+    url: '/api/v1/audit/exports';
+};
+
+export type AuditRequestExportErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuditRequestExportError = AuditRequestExportErrors[keyof AuditRequestExportErrors];
+
+export type AuditRequestExportResponses = {
+    /**
+     * Successful Response
+     */
+    202: ExportOut;
+};
+
+export type AuditRequestExportResponse = AuditRequestExportResponses[keyof AuditRequestExportResponses];
+
+export type AuditGetExportData = {
+    body?: never;
+    path: {
+        /**
+         * Export Id
+         */
+        export_id: string;
+    };
+    query?: never;
+    url: '/api/v1/audit/exports/{export_id}';
+};
+
+export type AuditGetExportErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuditGetExportError = AuditGetExportErrors[keyof AuditGetExportErrors];
+
+export type AuditGetExportResponses = {
+    /**
+     * Successful Response
+     */
+    200: ExportOut;
+};
+
+export type AuditGetExportResponse = AuditGetExportResponses[keyof AuditGetExportResponses];
+
+export type AuditDownloadExportData = {
+    body?: never;
+    path: {
+        /**
+         * Export Id
+         */
+        export_id: string;
+    };
+    query?: never;
+    url: '/api/v1/audit/exports/{export_id}/download';
+};
+
+export type AuditDownloadExportErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuditDownloadExportError = AuditDownloadExportErrors[keyof AuditDownloadExportErrors];
+
+export type AuditDownloadExportResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
+
+export type AuditGetPolicyData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/audit/policy';
+};
+
+export type AuditGetPolicyErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuditGetPolicyError = AuditGetPolicyErrors[keyof AuditGetPolicyErrors];
+
+export type AuditGetPolicyResponses = {
+    /**
+     * Successful Response
+     */
+    200: AuditPolicyOut;
+};
+
+export type AuditGetPolicyResponse = AuditGetPolicyResponses[keyof AuditGetPolicyResponses];
+
+export type AuditUpdatePolicyData = {
+    body: AuditPolicyIn;
+    path?: never;
+    query?: never;
+    url: '/api/v1/audit/policy';
+};
+
+export type AuditUpdatePolicyErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuditUpdatePolicyError = AuditUpdatePolicyErrors[keyof AuditUpdatePolicyErrors];
+
+export type AuditUpdatePolicyResponses = {
+    /**
+     * Successful Response
+     */
+    200: AuditPolicyOut;
+};
+
+export type AuditUpdatePolicyResponse = AuditUpdatePolicyResponses[keyof AuditUpdatePolicyResponses];
+
+export type AuditCheckPolicyWriteData = {
+    /**
+     * Body
+     */
+    body?: AuditPolicyIn | null;
+    path?: never;
+    query?: never;
+    url: '/api/v1/audit/policy/test-write';
+};
+
+export type AuditCheckPolicyWriteErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuditCheckPolicyWriteError = AuditCheckPolicyWriteErrors[keyof AuditCheckPolicyWriteErrors];
+
+export type AuditCheckPolicyWriteResponses = {
+    /**
+     * Successful Response
+     */
+    200: WriteCheckOut;
+};
+
+export type AuditCheckPolicyWriteResponse = AuditCheckPolicyWriteResponses[keyof AuditCheckPolicyWriteResponses];
+
+export type AuditListSinksData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/audit/sinks';
+};
+
+export type AuditListSinksErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuditListSinksError = AuditListSinksErrors[keyof AuditListSinksErrors];
+
+export type AuditListSinksResponses = {
+    /**
+     * Response Audit List Sinks
+     *
+     * Successful Response
+     */
+    200: Array<SinkOut>;
+};
+
+export type AuditListSinksResponse = AuditListSinksResponses[keyof AuditListSinksResponses];
+
+export type AuditCreateSinkData = {
+    body: SinkIn;
+    path?: never;
+    query?: never;
+    url: '/api/v1/audit/sinks';
+};
+
+export type AuditCreateSinkErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuditCreateSinkError = AuditCreateSinkErrors[keyof AuditCreateSinkErrors];
+
+export type AuditCreateSinkResponses = {
+    /**
+     * Successful Response
+     */
+    201: SinkOut;
+};
+
+export type AuditCreateSinkResponse = AuditCreateSinkResponses[keyof AuditCreateSinkResponses];
+
+export type AuditDeleteSinkData = {
+    body?: never;
+    path: {
+        /**
+         * Sink Id
+         */
+        sink_id: string;
+    };
+    query?: never;
+    url: '/api/v1/audit/sinks/{sink_id}';
+};
+
+export type AuditDeleteSinkErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuditDeleteSinkError = AuditDeleteSinkErrors[keyof AuditDeleteSinkErrors];
+
+export type AuditDeleteSinkResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type AuditDeleteSinkResponse = AuditDeleteSinkResponses[keyof AuditDeleteSinkResponses];
+
+export type AuditUpdateSinkData = {
+    body: SinkPatch;
+    path: {
+        /**
+         * Sink Id
+         */
+        sink_id: string;
+    };
+    query?: never;
+    url: '/api/v1/audit/sinks/{sink_id}';
+};
+
+export type AuditUpdateSinkErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuditUpdateSinkError = AuditUpdateSinkErrors[keyof AuditUpdateSinkErrors];
+
+export type AuditUpdateSinkResponses = {
+    /**
+     * Successful Response
+     */
+    200: SinkOut;
+};
+
+export type AuditUpdateSinkResponse = AuditUpdateSinkResponses[keyof AuditUpdateSinkResponses];
+
+export type AuditTestSinkData = {
+    body?: never;
+    path: {
+        /**
+         * Sink Id
+         */
+        sink_id: string;
+    };
+    query?: never;
+    url: '/api/v1/audit/sinks/{sink_id}/test';
+};
+
+export type AuditTestSinkErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuditTestSinkError = AuditTestSinkErrors[keyof AuditTestSinkErrors];
+
+export type AuditTestSinkResponses = {
+    /**
+     * Successful Response
+     */
+    200: SinkTestOut;
+};
+
+export type AuditTestSinkResponse = AuditTestSinkResponses[keyof AuditTestSinkResponses];
+
+export type AuditStreamStatusData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/audit/stream-status';
+};
+
+export type AuditStreamStatusErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuditStreamStatusError = AuditStreamStatusErrors[keyof AuditStreamStatusErrors];
+
+export type AuditStreamStatusResponses = {
+    /**
+     * Successful Response
+     */
+    200: StreamStatusOut;
+};
+
+export type AuditStreamStatusResponse = AuditStreamStatusResponses[keyof AuditStreamStatusResponses];
+
+export type AuditVerifyChainData = {
+    body: VerifyIn;
+    path?: never;
+    query?: never;
+    url: '/api/v1/audit/verify';
+};
+
+export type AuditVerifyChainErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuditVerifyChainError = AuditVerifyChainErrors[keyof AuditVerifyChainErrors];
+
+export type AuditVerifyChainResponses = {
+    /**
+     * Successful Response
+     */
+    200: VerifyOut;
+};
+
+export type AuditVerifyChainResponse = AuditVerifyChainResponses[keyof AuditVerifyChainResponses];
+
+export type AuditListViewsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/audit/views';
+};
+
+export type AuditListViewsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuditListViewsError = AuditListViewsErrors[keyof AuditListViewsErrors];
+
+export type AuditListViewsResponses = {
+    /**
+     * Response Audit List Views
+     *
+     * Successful Response
+     */
+    200: Array<SavedViewOut>;
+};
+
+export type AuditListViewsResponse = AuditListViewsResponses[keyof AuditListViewsResponses];
+
+export type AuditCreateViewData = {
+    body: SavedViewIn;
+    path?: never;
+    query?: never;
+    url: '/api/v1/audit/views';
+};
+
+export type AuditCreateViewErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuditCreateViewError = AuditCreateViewErrors[keyof AuditCreateViewErrors];
+
+export type AuditCreateViewResponses = {
+    /**
+     * Successful Response
+     */
+    201: SavedViewOut;
+};
+
+export type AuditCreateViewResponse = AuditCreateViewResponses[keyof AuditCreateViewResponses];
+
+export type AuditDeleteViewData = {
+    body?: never;
+    path: {
+        /**
+         * View Id
+         */
+        view_id: string;
+    };
+    query?: never;
+    url: '/api/v1/audit/views/{view_id}';
+};
+
+export type AuditDeleteViewErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuditDeleteViewError = AuditDeleteViewErrors[keyof AuditDeleteViewErrors];
+
+export type AuditDeleteViewResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type AuditDeleteViewResponse = AuditDeleteViewResponses[keyof AuditDeleteViewResponses];
+
+export type AuditUpdateViewData = {
+    body: SavedViewPatch;
+    path: {
+        /**
+         * View Id
+         */
+        view_id: string;
+    };
+    query?: never;
+    url: '/api/v1/audit/views/{view_id}';
+};
+
+export type AuditUpdateViewErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuditUpdateViewError = AuditUpdateViewErrors[keyof AuditUpdateViewErrors];
+
+export type AuditUpdateViewResponses = {
+    /**
+     * Successful Response
+     */
+    200: SavedViewOut;
+};
+
+export type AuditUpdateViewResponse = AuditUpdateViewResponses[keyof AuditUpdateViewResponses];
+
+export type AuthGetPolicyData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/auth/admin/policy';
+};
+
+export type AuthGetPolicyErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuthGetPolicyError = AuthGetPolicyErrors[keyof AuthGetPolicyErrors];
+
+export type AuthGetPolicyResponses = {
+    /**
+     * Successful Response
+     */
+    200: AuthPolicyOut;
+};
+
+export type AuthGetPolicyResponse = AuthGetPolicyResponses[keyof AuthGetPolicyResponses];
+
+export type AuthUpdatePolicyData = {
+    body: AuthPolicyUpdate;
+    path?: never;
+    query?: never;
+    url: '/api/v1/auth/admin/policy';
+};
+
+export type AuthUpdatePolicyErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuthUpdatePolicyError = AuthUpdatePolicyErrors[keyof AuthUpdatePolicyErrors];
+
+export type AuthUpdatePolicyResponses = {
+    /**
+     * Successful Response
+     */
+    200: AuthPolicyOut;
+};
+
+export type AuthUpdatePolicyResponse = AuthUpdatePolicyResponses[keyof AuthUpdatePolicyResponses];
+
+export type AuthListProvidersData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/auth/admin/providers';
+};
+
+export type AuthListProvidersErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuthListProvidersError = AuthListProvidersErrors[keyof AuthListProvidersErrors];
+
+export type AuthListProvidersResponses = {
+    /**
+     * Response Auth List Providers
+     *
+     * Successful Response
+     */
+    200: Array<ProviderOut>;
+};
+
+export type AuthListProvidersResponse = AuthListProvidersResponses[keyof AuthListProvidersResponses];
+
+export type AuthCreateProviderData = {
+    body: ProviderCreate;
+    path?: never;
+    query?: never;
+    url: '/api/v1/auth/admin/providers';
+};
+
+export type AuthCreateProviderErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuthCreateProviderError = AuthCreateProviderErrors[keyof AuthCreateProviderErrors];
+
+export type AuthCreateProviderResponses = {
+    /**
+     * Successful Response
+     */
+    201: ProviderOut;
+};
+
+export type AuthCreateProviderResponse = AuthCreateProviderResponses[keyof AuthCreateProviderResponses];
+
+export type AuthDeleteProviderData = {
+    body?: never;
+    path: {
+        /**
+         * Provider Id
+         */
+        provider_id: string;
+    };
+    query?: never;
+    url: '/api/v1/auth/admin/providers/{provider_id}';
+};
+
+export type AuthDeleteProviderErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuthDeleteProviderError = AuthDeleteProviderErrors[keyof AuthDeleteProviderErrors];
+
+export type AuthDeleteProviderResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type AuthDeleteProviderResponse = AuthDeleteProviderResponses[keyof AuthDeleteProviderResponses];
+
+export type AuthGetProviderData = {
+    body?: never;
+    path: {
+        /**
+         * Provider Id
+         */
+        provider_id: string;
+    };
+    query?: never;
+    url: '/api/v1/auth/admin/providers/{provider_id}';
+};
+
+export type AuthGetProviderErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuthGetProviderError = AuthGetProviderErrors[keyof AuthGetProviderErrors];
+
+export type AuthGetProviderResponses = {
+    /**
+     * Successful Response
+     */
+    200: ProviderOut;
+};
+
+export type AuthGetProviderResponse = AuthGetProviderResponses[keyof AuthGetProviderResponses];
+
+export type AuthUpdateProviderData = {
+    body: ProviderUpdate;
+    path: {
+        /**
+         * Provider Id
+         */
+        provider_id: string;
+    };
+    query?: never;
+    url: '/api/v1/auth/admin/providers/{provider_id}';
+};
+
+export type AuthUpdateProviderErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuthUpdateProviderError = AuthUpdateProviderErrors[keyof AuthUpdateProviderErrors];
+
+export type AuthUpdateProviderResponses = {
+    /**
+     * Successful Response
+     */
+    200: ProviderOut;
+};
+
+export type AuthUpdateProviderResponse = AuthUpdateProviderResponses[keyof AuthUpdateProviderResponses];
+
+export type AuthProviderSamlMetadataData = {
+    body?: never;
+    path: {
+        /**
+         * Provider Id
+         */
+        provider_id: string;
+    };
+    query?: never;
+    url: '/api/v1/auth/admin/providers/{provider_id}/saml-metadata';
+};
+
+export type AuthProviderSamlMetadataErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuthProviderSamlMetadataError = AuthProviderSamlMetadataErrors[keyof AuthProviderSamlMetadataErrors];
+
+export type AuthProviderSamlMetadataResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
+
 export type AuthLoginData = {
     body: LoginRequest;
     path?: never;
@@ -6483,12 +10845,105 @@ export type AuthLoginError = AuthLoginErrors[keyof AuthLoginErrors];
 
 export type AuthLoginResponses = {
     /**
+     * Response Auth Login
+     *
      * Successful Response
      */
-    200: SignedIn;
+    200: SignedIn | MfaRequired;
 };
 
 export type AuthLoginResponse = AuthLoginResponses[keyof AuthLoginResponses];
+
+export type AuthLoginMfaData = {
+    body: LoginMfaRequest;
+    path?: never;
+    query?: never;
+    url: '/api/v1/auth/login/mfa';
+};
+
+export type AuthLoginMfaErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuthLoginMfaError = AuthLoginMfaErrors[keyof AuthLoginMfaErrors];
+
+export type AuthLoginMfaResponses = {
+    /**
+     * Successful Response
+     */
+    200: MfaSignedIn;
+};
+
+export type AuthLoginMfaResponse = AuthLoginMfaResponses[keyof AuthLoginMfaResponses];
+
+export type AuthLoginTotpSetupData = {
+    body: LoginChallengeRequest;
+    path?: never;
+    query?: never;
+    url: '/api/v1/auth/login/mfa/totp/setup';
+};
+
+export type AuthLoginTotpSetupErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuthLoginTotpSetupError = AuthLoginTotpSetupErrors[keyof AuthLoginTotpSetupErrors];
+
+export type AuthLoginTotpSetupResponses = {
+    /**
+     * Successful Response
+     */
+    200: TotpSetupOut;
+};
+
+export type AuthLoginTotpSetupResponse = AuthLoginTotpSetupResponses[keyof AuthLoginTotpSetupResponses];
+
+export type AuthLoginWebauthnOptionsData = {
+    body: LoginChallengeRequest;
+    path?: never;
+    query?: never;
+    url: '/api/v1/auth/login/mfa/webauthn/options';
+};
+
+export type AuthLoginWebauthnOptionsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuthLoginWebauthnOptionsError = AuthLoginWebauthnOptionsErrors[keyof AuthLoginWebauthnOptionsErrors];
+
+export type AuthLoginWebauthnOptionsResponses = {
+    /**
+     * Response Auth Login Webauthn Options
+     *
+     * Successful Response
+     */
+    200: {
+        [key: string]: unknown;
+    };
+};
+
+export type AuthLoginWebauthnOptionsResponse = AuthLoginWebauthnOptionsResponses[keyof AuthLoginWebauthnOptionsResponses];
 
 export type AuthLogoutData = {
     body?: never;
@@ -6604,6 +11059,31 @@ export type AuthSignInOptionsResponses = {
 
 export type AuthSignInOptionsResponse = AuthSignInOptionsResponses[keyof AuthSignInOptionsResponses];
 
+export type AuthSsoAcsData = {
+    body?: never;
+    path: {
+        /**
+         * Provider
+         */
+        provider: string;
+    };
+    query?: never;
+    url: '/api/v1/auth/sso/{provider}/acs';
+};
+
+export type AuthSsoAcsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuthSsoAcsError = AuthSsoAcsErrors[keyof AuthSsoAcsErrors];
+
 export type AuthSsoCallbackData = {
     body?: never;
     path: {
@@ -6642,6 +11122,38 @@ export type AuthSsoCallbackErrors = {
 
 export type AuthSsoCallbackError = AuthSsoCallbackErrors[keyof AuthSsoCallbackErrors];
 
+export type AuthSsoMetadataData = {
+    body?: never;
+    path: {
+        /**
+         * Provider
+         */
+        provider: string;
+    };
+    query?: never;
+    url: '/api/v1/auth/sso/{provider}/metadata';
+};
+
+export type AuthSsoMetadataErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuthSsoMetadataError = AuthSsoMetadataErrors[keyof AuthSsoMetadataErrors];
+
+export type AuthSsoMetadataResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
+
 export type AuthSsoStartData = {
     body?: never;
     path: {
@@ -6674,6 +11186,97 @@ export type AuthSsoStartErrors = {
 
 export type AuthSsoStartError = AuthSsoStartErrors[keyof AuthSsoStartErrors];
 
+export type AuthStepUpStatusData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/auth/step-up';
+};
+
+export type AuthStepUpStatusErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuthStepUpStatusError = AuthStepUpStatusErrors[keyof AuthStepUpStatusErrors];
+
+export type AuthStepUpStatusResponses = {
+    /**
+     * Successful Response
+     */
+    200: StepUpOut;
+};
+
+export type AuthStepUpStatusResponse = AuthStepUpStatusResponses[keyof AuthStepUpStatusResponses];
+
+export type AuthStepUpData = {
+    body: StepUpRequest;
+    path?: never;
+    query?: never;
+    url: '/api/v1/auth/step-up';
+};
+
+export type AuthStepUpErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuthStepUpError = AuthStepUpErrors[keyof AuthStepUpErrors];
+
+export type AuthStepUpResponses = {
+    /**
+     * Successful Response
+     */
+    200: StepUpOut;
+};
+
+export type AuthStepUpResponse = AuthStepUpResponses[keyof AuthStepUpResponses];
+
+export type AuthStepUpWebauthnOptionsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/auth/step-up/webauthn/options';
+};
+
+export type AuthStepUpWebauthnOptionsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AuthStepUpWebauthnOptionsError = AuthStepUpWebauthnOptionsErrors[keyof AuthStepUpWebauthnOptionsErrors];
+
+export type AuthStepUpWebauthnOptionsResponses = {
+    /**
+     * Response Auth Step Up Webauthn Options
+     *
+     * Successful Response
+     */
+    200: {
+        [key: string]: unknown;
+    };
+};
+
+export type AuthStepUpWebauthnOptionsResponse = AuthStepUpWebauthnOptionsResponses[keyof AuthStepUpWebauthnOptionsResponses];
+
 export type ContextDataSubjectRequestData = {
     body: DataSubjectIn;
     path?: never;
@@ -6702,6 +11305,638 @@ export type ContextDataSubjectRequestResponses = {
 };
 
 export type ContextDataSubjectRequestResponse = ContextDataSubjectRequestResponses[keyof ContextDataSubjectRequestResponses];
+
+export type DirectoryGetGoogleSyncData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/directory/google';
+};
+
+export type DirectoryGetGoogleSyncErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type DirectoryGetGoogleSyncError = DirectoryGetGoogleSyncErrors[keyof DirectoryGetGoogleSyncErrors];
+
+export type DirectoryGetGoogleSyncResponses = {
+    /**
+     * Successful Response
+     */
+    200: GoogleSyncOut;
+};
+
+export type DirectoryGetGoogleSyncResponse = DirectoryGetGoogleSyncResponses[keyof DirectoryGetGoogleSyncResponses];
+
+export type DirectoryUpdateGoogleSyncData = {
+    body: GoogleSyncIn;
+    path?: never;
+    query?: never;
+    url: '/api/v1/directory/google';
+};
+
+export type DirectoryUpdateGoogleSyncErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type DirectoryUpdateGoogleSyncError = DirectoryUpdateGoogleSyncErrors[keyof DirectoryUpdateGoogleSyncErrors];
+
+export type DirectoryUpdateGoogleSyncResponses = {
+    /**
+     * Successful Response
+     */
+    200: GoogleSyncOut;
+};
+
+export type DirectoryUpdateGoogleSyncResponse = DirectoryUpdateGoogleSyncResponses[keyof DirectoryUpdateGoogleSyncResponses];
+
+export type DirectoryRunGoogleSyncData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/directory/google/sync';
+};
+
+export type DirectoryRunGoogleSyncErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type DirectoryRunGoogleSyncError = DirectoryRunGoogleSyncErrors[keyof DirectoryRunGoogleSyncErrors];
+
+export type DirectoryRunGoogleSyncResponses = {
+    /**
+     * Successful Response
+     */
+    200: GoogleSyncOut;
+};
+
+export type DirectoryRunGoogleSyncResponse = DirectoryRunGoogleSyncResponses[keyof DirectoryRunGoogleSyncResponses];
+
+export type DirectoryTestGoogleSyncData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/directory/google/test';
+};
+
+export type DirectoryTestGoogleSyncErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type DirectoryTestGoogleSyncError = DirectoryTestGoogleSyncErrors[keyof DirectoryTestGoogleSyncErrors];
+
+export type DirectoryTestGoogleSyncResponses = {
+    /**
+     * Successful Response
+     */
+    200: GoogleTestOut;
+};
+
+export type DirectoryTestGoogleSyncResponse = DirectoryTestGoogleSyncResponses[keyof DirectoryTestGoogleSyncResponses];
+
+export type DirectoryListGroupsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/directory/groups';
+};
+
+export type DirectoryListGroupsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type DirectoryListGroupsError = DirectoryListGroupsErrors[keyof DirectoryListGroupsErrors];
+
+export type DirectoryListGroupsResponses = {
+    /**
+     * Response Directory List Groups
+     *
+     * Successful Response
+     */
+    200: Array<GroupOut>;
+};
+
+export type DirectoryListGroupsResponse = DirectoryListGroupsResponses[keyof DirectoryListGroupsResponses];
+
+export type DirectoryCreateGroupData = {
+    body: GroupCreate;
+    path?: never;
+    query?: never;
+    url: '/api/v1/directory/groups';
+};
+
+export type DirectoryCreateGroupErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type DirectoryCreateGroupError = DirectoryCreateGroupErrors[keyof DirectoryCreateGroupErrors];
+
+export type DirectoryCreateGroupResponses = {
+    /**
+     * Successful Response
+     */
+    201: GroupDetailOut;
+};
+
+export type DirectoryCreateGroupResponse = DirectoryCreateGroupResponses[keyof DirectoryCreateGroupResponses];
+
+export type DirectoryDeleteGroupData = {
+    body?: never;
+    path: {
+        /**
+         * Group Id
+         */
+        group_id: string;
+    };
+    query?: never;
+    url: '/api/v1/directory/groups/{group_id}';
+};
+
+export type DirectoryDeleteGroupErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type DirectoryDeleteGroupError = DirectoryDeleteGroupErrors[keyof DirectoryDeleteGroupErrors];
+
+export type DirectoryDeleteGroupResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type DirectoryDeleteGroupResponse = DirectoryDeleteGroupResponses[keyof DirectoryDeleteGroupResponses];
+
+export type DirectoryGetGroupData = {
+    body?: never;
+    path: {
+        /**
+         * Group Id
+         */
+        group_id: string;
+    };
+    query?: never;
+    url: '/api/v1/directory/groups/{group_id}';
+};
+
+export type DirectoryGetGroupErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type DirectoryGetGroupError = DirectoryGetGroupErrors[keyof DirectoryGetGroupErrors];
+
+export type DirectoryGetGroupResponses = {
+    /**
+     * Successful Response
+     */
+    200: GroupDetailOut;
+};
+
+export type DirectoryGetGroupResponse = DirectoryGetGroupResponses[keyof DirectoryGetGroupResponses];
+
+export type DirectoryUpdateGroupData = {
+    body: GroupUpdate;
+    path: {
+        /**
+         * Group Id
+         */
+        group_id: string;
+    };
+    query?: never;
+    url: '/api/v1/directory/groups/{group_id}';
+};
+
+export type DirectoryUpdateGroupErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type DirectoryUpdateGroupError = DirectoryUpdateGroupErrors[keyof DirectoryUpdateGroupErrors];
+
+export type DirectoryUpdateGroupResponses = {
+    /**
+     * Successful Response
+     */
+    200: GroupDetailOut;
+};
+
+export type DirectoryUpdateGroupResponse = DirectoryUpdateGroupResponses[keyof DirectoryUpdateGroupResponses];
+
+export type DirectoryRemoveGroupMemberData = {
+    body?: never;
+    path: {
+        /**
+         * Group Id
+         */
+        group_id: string;
+        /**
+         * User Id
+         */
+        user_id: string;
+    };
+    query?: never;
+    url: '/api/v1/directory/groups/{group_id}/members/{user_id}';
+};
+
+export type DirectoryRemoveGroupMemberErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type DirectoryRemoveGroupMemberError = DirectoryRemoveGroupMemberErrors[keyof DirectoryRemoveGroupMemberErrors];
+
+export type DirectoryRemoveGroupMemberResponses = {
+    /**
+     * Successful Response
+     */
+    200: GroupDetailOut;
+};
+
+export type DirectoryRemoveGroupMemberResponse = DirectoryRemoveGroupMemberResponses[keyof DirectoryRemoveGroupMemberResponses];
+
+export type DirectoryAddGroupMemberData = {
+    body: GroupMemberIn;
+    path: {
+        /**
+         * Group Id
+         */
+        group_id: string;
+        /**
+         * User Id
+         */
+        user_id: string;
+    };
+    query?: never;
+    url: '/api/v1/directory/groups/{group_id}/members/{user_id}';
+};
+
+export type DirectoryAddGroupMemberErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type DirectoryAddGroupMemberError = DirectoryAddGroupMemberErrors[keyof DirectoryAddGroupMemberErrors];
+
+export type DirectoryAddGroupMemberResponses = {
+    /**
+     * Successful Response
+     */
+    200: GroupDetailOut;
+};
+
+export type DirectoryAddGroupMemberResponse = DirectoryAddGroupMemberResponses[keyof DirectoryAddGroupMemberResponses];
+
+export type DirectoryListMappingRulesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/directory/mapping-rules';
+};
+
+export type DirectoryListMappingRulesErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type DirectoryListMappingRulesError = DirectoryListMappingRulesErrors[keyof DirectoryListMappingRulesErrors];
+
+export type DirectoryListMappingRulesResponses = {
+    /**
+     * Response Directory List Mapping Rules
+     *
+     * Successful Response
+     */
+    200: Array<MappingRuleOut>;
+};
+
+export type DirectoryListMappingRulesResponse = DirectoryListMappingRulesResponses[keyof DirectoryListMappingRulesResponses];
+
+export type DirectoryCreateMappingRuleData = {
+    body: MappingRuleCreate;
+    path?: never;
+    query?: never;
+    url: '/api/v1/directory/mapping-rules';
+};
+
+export type DirectoryCreateMappingRuleErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type DirectoryCreateMappingRuleError = DirectoryCreateMappingRuleErrors[keyof DirectoryCreateMappingRuleErrors];
+
+export type DirectoryCreateMappingRuleResponses = {
+    /**
+     * Successful Response
+     */
+    201: MappingRuleOut;
+};
+
+export type DirectoryCreateMappingRuleResponse = DirectoryCreateMappingRuleResponses[keyof DirectoryCreateMappingRuleResponses];
+
+export type DirectoryDeleteMappingRuleData = {
+    body?: never;
+    path: {
+        /**
+         * Rule Id
+         */
+        rule_id: string;
+    };
+    query?: never;
+    url: '/api/v1/directory/mapping-rules/{rule_id}';
+};
+
+export type DirectoryDeleteMappingRuleErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type DirectoryDeleteMappingRuleError = DirectoryDeleteMappingRuleErrors[keyof DirectoryDeleteMappingRuleErrors];
+
+export type DirectoryDeleteMappingRuleResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type DirectoryDeleteMappingRuleResponse = DirectoryDeleteMappingRuleResponses[keyof DirectoryDeleteMappingRuleResponses];
+
+export type DirectoryScimStatusData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/directory/scim';
+};
+
+export type DirectoryScimStatusErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type DirectoryScimStatusError = DirectoryScimStatusErrors[keyof DirectoryScimStatusErrors];
+
+export type DirectoryScimStatusResponses = {
+    /**
+     * Successful Response
+     */
+    200: ScimStatusOut;
+};
+
+export type DirectoryScimStatusResponse = DirectoryScimStatusResponses[keyof DirectoryScimStatusResponses];
+
+export type DirectoryCreateScimTokenData = {
+    body: ScimTokenCreate;
+    path?: never;
+    query?: never;
+    url: '/api/v1/directory/scim/tokens';
+};
+
+export type DirectoryCreateScimTokenErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type DirectoryCreateScimTokenError = DirectoryCreateScimTokenErrors[keyof DirectoryCreateScimTokenErrors];
+
+export type DirectoryCreateScimTokenResponses = {
+    /**
+     * Successful Response
+     */
+    201: IssuedScimTokenOut;
+};
+
+export type DirectoryCreateScimTokenResponse = DirectoryCreateScimTokenResponses[keyof DirectoryCreateScimTokenResponses];
+
+export type DirectoryRevokeScimTokenData = {
+    body?: never;
+    path: {
+        /**
+         * Token Id
+         */
+        token_id: string;
+    };
+    query?: never;
+    url: '/api/v1/directory/scim/tokens/{token_id}';
+};
+
+export type DirectoryRevokeScimTokenErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type DirectoryRevokeScimTokenError = DirectoryRevokeScimTokenErrors[keyof DirectoryRevokeScimTokenErrors];
+
+export type DirectoryRevokeScimTokenResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type DirectoryRevokeScimTokenResponse = DirectoryRevokeScimTokenResponses[keyof DirectoryRevokeScimTokenResponses];
+
+export type DirectoryRotateScimTokenData = {
+    body?: never;
+    path: {
+        /**
+         * Token Id
+         */
+        token_id: string;
+    };
+    query?: never;
+    url: '/api/v1/directory/scim/tokens/{token_id}/rotate';
+};
+
+export type DirectoryRotateScimTokenErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type DirectoryRotateScimTokenError = DirectoryRotateScimTokenErrors[keyof DirectoryRotateScimTokenErrors];
+
+export type DirectoryRotateScimTokenResponses = {
+    /**
+     * Successful Response
+     */
+    201: IssuedScimTokenOut;
+};
+
+export type DirectoryRotateScimTokenResponse = DirectoryRotateScimTokenResponses[keyof DirectoryRotateScimTokenResponses];
+
+export type DirectoryGetDirectorySettingsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/directory/settings';
+};
+
+export type DirectoryGetDirectorySettingsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type DirectoryGetDirectorySettingsError = DirectoryGetDirectorySettingsErrors[keyof DirectoryGetDirectorySettingsErrors];
+
+export type DirectoryGetDirectorySettingsResponses = {
+    /**
+     * Successful Response
+     */
+    200: DirectorySettingsOut;
+};
+
+export type DirectoryGetDirectorySettingsResponse = DirectoryGetDirectorySettingsResponses[keyof DirectoryGetDirectorySettingsResponses];
+
+export type DirectoryUpdateDirectorySettingsData = {
+    body: DirectorySettingsIn;
+    path?: never;
+    query?: never;
+    url: '/api/v1/directory/settings';
+};
+
+export type DirectoryUpdateDirectorySettingsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type DirectoryUpdateDirectorySettingsError = DirectoryUpdateDirectorySettingsErrors[keyof DirectoryUpdateDirectorySettingsErrors];
+
+export type DirectoryUpdateDirectorySettingsResponses = {
+    /**
+     * Successful Response
+     */
+    200: DirectorySettingsOut;
+};
+
+export type DirectoryUpdateDirectorySettingsResponse = DirectoryUpdateDirectorySettingsResponses[keyof DirectoryUpdateDirectorySettingsResponses];
 
 export type NotificationsEventsData = {
     body?: never;
@@ -10047,6 +15282,218 @@ export type MeMyAccessResponses = {
 
 export type MeMyAccessResponse = MeMyAccessResponses[keyof MeMyAccessResponses];
 
+export type MeGetMyMfaData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/me/mfa';
+};
+
+export type MeGetMyMfaErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type MeGetMyMfaError = MeGetMyMfaErrors[keyof MeGetMyMfaErrors];
+
+export type MeGetMyMfaResponses = {
+    /**
+     * Successful Response
+     */
+    200: MfaOut;
+};
+
+export type MeGetMyMfaResponse = MeGetMyMfaResponses[keyof MeGetMyMfaResponses];
+
+export type MeRegenerateRecoveryCodesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/me/mfa/recovery-codes';
+};
+
+export type MeRegenerateRecoveryCodesErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type MeRegenerateRecoveryCodesError = MeRegenerateRecoveryCodesErrors[keyof MeRegenerateRecoveryCodesErrors];
+
+export type MeRegenerateRecoveryCodesResponses = {
+    /**
+     * Successful Response
+     */
+    200: RecoveryCodesOut;
+};
+
+export type MeRegenerateRecoveryCodesResponse = MeRegenerateRecoveryCodesResponses[keyof MeRegenerateRecoveryCodesResponses];
+
+export type MeConfirmTotpData = {
+    body: TotpConfirm;
+    path?: never;
+    query?: never;
+    url: '/api/v1/me/mfa/totp/confirm';
+};
+
+export type MeConfirmTotpErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type MeConfirmTotpError = MeConfirmTotpErrors[keyof MeConfirmTotpErrors];
+
+export type MeConfirmTotpResponses = {
+    /**
+     * Successful Response
+     */
+    200: EnrolledOut;
+};
+
+export type MeConfirmTotpResponse = MeConfirmTotpResponses[keyof MeConfirmTotpResponses];
+
+export type MeSetupTotpData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/me/mfa/totp/setup';
+};
+
+export type MeSetupTotpErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type MeSetupTotpError = MeSetupTotpErrors[keyof MeSetupTotpErrors];
+
+export type MeSetupTotpResponses = {
+    /**
+     * Successful Response
+     */
+    200: TotpSetupOut;
+};
+
+export type MeSetupTotpResponse = MeSetupTotpResponses[keyof MeSetupTotpResponses];
+
+export type MeWebauthnOptionsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/me/mfa/webauthn/options';
+};
+
+export type MeWebauthnOptionsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type MeWebauthnOptionsError = MeWebauthnOptionsErrors[keyof MeWebauthnOptionsErrors];
+
+export type MeWebauthnOptionsResponses = {
+    /**
+     * Response Me Webauthn Options
+     *
+     * Successful Response
+     */
+    200: {
+        [key: string]: unknown;
+    };
+};
+
+export type MeWebauthnOptionsResponse = MeWebauthnOptionsResponses[keyof MeWebauthnOptionsResponses];
+
+export type MeWebauthnVerifyData = {
+    body: WebAuthnVerify;
+    path?: never;
+    query?: never;
+    url: '/api/v1/me/mfa/webauthn/verify';
+};
+
+export type MeWebauthnVerifyErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type MeWebauthnVerifyError = MeWebauthnVerifyErrors[keyof MeWebauthnVerifyErrors];
+
+export type MeWebauthnVerifyResponses = {
+    /**
+     * Successful Response
+     */
+    200: EnrolledOut;
+};
+
+export type MeWebauthnVerifyResponse = MeWebauthnVerifyResponses[keyof MeWebauthnVerifyResponses];
+
+export type MeRemoveFactorData = {
+    body?: never;
+    path: {
+        /**
+         * Factor Id
+         */
+        factor_id: string;
+    };
+    query?: never;
+    url: '/api/v1/me/mfa/{factor_id}';
+};
+
+export type MeRemoveFactorErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type MeRemoveFactorError = MeRemoveFactorErrors[keyof MeRemoveFactorErrors];
+
+export type MeRemoveFactorResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type MeRemoveFactorResponse = MeRemoveFactorResponses[keyof MeRemoveFactorResponses];
+
 export type NotificationsMyPreferencesData = {
     body?: never;
     path?: never;
@@ -10200,6 +15647,64 @@ export type MembersListMembersResponses = {
 };
 
 export type MembersListMembersResponse = MembersListMembersResponses[keyof MembersListMembersResponses];
+
+export type MembersBulkMembersData = {
+    body: MembersBulk;
+    path?: never;
+    query?: never;
+    url: '/api/v1/members/bulk';
+};
+
+export type MembersBulkMembersErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type MembersBulkMembersError = MembersBulkMembersErrors[keyof MembersBulkMembersErrors];
+
+export type MembersBulkMembersResponses = {
+    /**
+     * Response Members Bulk Members
+     *
+     * Successful Response
+     */
+    200: Array<BulkOutcomeOut>;
+};
+
+export type MembersBulkMembersResponse = MembersBulkMembersResponses[keyof MembersBulkMembersResponses];
+
+export type MembersExportMembersData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/members/export.csv';
+};
+
+export type MembersExportMembersErrors = {
+    /**
+     * Client error
+     */
+    '4XX': unknown;
+    /**
+     * Server error
+     */
+    '5XX': unknown;
+};
+
+export type MembersExportMembersResponses = {
+    /**
+     * Successful Response
+     */
+    200: string;
+};
+
+export type MembersExportMembersResponse = MembersExportMembersResponses[keyof MembersExportMembersResponses];
 
 export type MembersRemoveMemberData = {
     body?: never;
@@ -10911,6 +16416,235 @@ export type SearchSearchResponses = {
 };
 
 export type SearchSearchResponse = SearchSearchResponses[keyof SearchSearchResponses];
+
+export type ServiceAccountsListAccountsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/service-accounts';
+};
+
+export type ServiceAccountsListAccountsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ServiceAccountsListAccountsError = ServiceAccountsListAccountsErrors[keyof ServiceAccountsListAccountsErrors];
+
+export type ServiceAccountsListAccountsResponses = {
+    /**
+     * Response Service-Accounts List Accounts
+     *
+     * Successful Response
+     */
+    200: Array<ServiceAccountOut>;
+};
+
+export type ServiceAccountsListAccountsResponse = ServiceAccountsListAccountsResponses[keyof ServiceAccountsListAccountsResponses];
+
+export type ServiceAccountsCreateAccountData = {
+    body: ServiceAccountIn;
+    path?: never;
+    query?: never;
+    url: '/api/v1/service-accounts';
+};
+
+export type ServiceAccountsCreateAccountErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ServiceAccountsCreateAccountError = ServiceAccountsCreateAccountErrors[keyof ServiceAccountsCreateAccountErrors];
+
+export type ServiceAccountsCreateAccountResponses = {
+    /**
+     * Successful Response
+     */
+    201: CreatedOut;
+};
+
+export type ServiceAccountsCreateAccountResponse = ServiceAccountsCreateAccountResponses[keyof ServiceAccountsCreateAccountResponses];
+
+export type ServiceAccountsPreviewAccountData = {
+    body: ServiceAccountIn;
+    path?: never;
+    query?: never;
+    url: '/api/v1/service-accounts/preview';
+};
+
+export type ServiceAccountsPreviewAccountErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ServiceAccountsPreviewAccountError = ServiceAccountsPreviewAccountErrors[keyof ServiceAccountsPreviewAccountErrors];
+
+export type ServiceAccountsPreviewAccountResponses = {
+    /**
+     * Successful Response
+     */
+    200: ServiceAccountPreviewOut;
+};
+
+export type ServiceAccountsPreviewAccountResponse = ServiceAccountsPreviewAccountResponses[keyof ServiceAccountsPreviewAccountResponses];
+
+export type ServiceAccountsDeleteAccountData = {
+    body?: never;
+    path: {
+        /**
+         * Account
+         */
+        account: string;
+    };
+    query?: never;
+    url: '/api/v1/service-accounts/{account}';
+};
+
+export type ServiceAccountsDeleteAccountErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ServiceAccountsDeleteAccountError = ServiceAccountsDeleteAccountErrors[keyof ServiceAccountsDeleteAccountErrors];
+
+export type ServiceAccountsDeleteAccountResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type ServiceAccountsDeleteAccountResponse = ServiceAccountsDeleteAccountResponses[keyof ServiceAccountsDeleteAccountResponses];
+
+export type ServiceAccountsGetAccountData = {
+    body?: never;
+    path: {
+        /**
+         * Account
+         */
+        account: string;
+    };
+    query?: never;
+    url: '/api/v1/service-accounts/{account}';
+};
+
+export type ServiceAccountsGetAccountErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ServiceAccountsGetAccountError = ServiceAccountsGetAccountErrors[keyof ServiceAccountsGetAccountErrors];
+
+export type ServiceAccountsGetAccountResponses = {
+    /**
+     * Successful Response
+     */
+    200: ServiceAccountDetailOut;
+};
+
+export type ServiceAccountsGetAccountResponse = ServiceAccountsGetAccountResponses[keyof ServiceAccountsGetAccountResponses];
+
+export type ServiceAccountsIssueTokenData = {
+    body: TokenIn;
+    path: {
+        /**
+         * Account
+         */
+        account: string;
+    };
+    query?: never;
+    url: '/api/v1/service-accounts/{account}/tokens';
+};
+
+export type ServiceAccountsIssueTokenErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ServiceAccountsIssueTokenError = ServiceAccountsIssueTokenErrors[keyof ServiceAccountsIssueTokenErrors];
+
+export type ServiceAccountsIssueTokenResponses = {
+    /**
+     * Successful Response
+     */
+    201: TokenIssuedOut;
+};
+
+export type ServiceAccountsIssueTokenResponse = ServiceAccountsIssueTokenResponses[keyof ServiceAccountsIssueTokenResponses];
+
+export type ServiceAccountsRevokeTokenData = {
+    body?: never;
+    path: {
+        /**
+         * Account
+         */
+        account: string;
+        /**
+         * Token
+         */
+        token: string;
+    };
+    query?: never;
+    url: '/api/v1/service-accounts/{account}/tokens/{token}';
+};
+
+export type ServiceAccountsRevokeTokenErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ServiceAccountsRevokeTokenError = ServiceAccountsRevokeTokenErrors[keyof ServiceAccountsRevokeTokenErrors];
+
+export type ServiceAccountsRevokeTokenResponses = {
+    /**
+     * Successful Response
+     */
+    200: ServiceAccountDetailOut;
+};
+
+export type ServiceAccountsRevokeTokenResponse = ServiceAccountsRevokeTokenResponses[keyof ServiceAccountsRevokeTokenResponses];
 
 export type SystemListModulesData = {
     body?: never;

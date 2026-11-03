@@ -15,8 +15,9 @@ that works without an identity provider.
 - Invitations and password resets are sent by email: set `AGNOSTIC_SMTP__URL`, or read the links from the API log.
 - Failed sign-ins lock the account for a while (`AGNOSTIC_IDENTITY__LOCKOUT_THRESHOLD` / `__LOCKOUT_MINUTES`);
   passwords need `AGNOSTIC_IDENTITY__PASSWORD_MIN_LENGTH` characters (12).
-- To require SSO, set `AGNOSTIC_IDENTITY__LOCAL_LOGIN=false`, but only after an Owner has signed in through a
-  provider at least once, so someone can still administer the org.
+- To require SSO, turn on *Enforce SSO* in *Organization › Authentication* (see
+  [enforcing SSO](#enforcing-sso-and-mfa) below), or set `AGNOSTIC_IDENTITY__LOCAL_LOGIN=false`, but only after an
+  Owner has signed in through a provider at least once, so someone can still administer the org.
 
 ## How SSO works
 
@@ -171,3 +172,37 @@ Use one id per provider (`entra`, `authentik`, …) to offer several at once.
   allowed. `seats_full`: JIT would exceed the org's seat limit. `email_unverified`: the provider says the address
   isn't verified. `provider_denied`: the person cancelled, or the provider refused them (Okta assignments,
   Authentik bindings).
+
+## Providers in the app, and SAML
+
+Owners and Administrators can also add providers in *Organization › Authentication*, without restarting anything:
+OIDC (every preset above) and **SAML 2.0**. Providers from settings appear there read-only. Changing sign-in settings
+asks you to confirm it's you (a recent sign-in, or your password or second factor).
+
+For SAML, add the provider first, then copy its **SP entity ID** (`{PUBLIC_URL}/api/v1/auth/sso/<id>/metadata`, which
+also serves the SP metadata) and **ACS URL** (`{PUBLIC_URL}/api/v1/auth/sso/<id>/acs`) into the IdP, and give
+Agnostic the IdP's metadata URL (or paste the metadata XML, or enter its entity ID, SSO URL and signing
+certificate). Map the attributes that carry the email, the name and the groups. Responses or assertions must be
+signed (SHA-256 or stronger); encrypted assertions and IdP-initiated sign-in are not supported.
+
+Groups asserted at sign-in (an OIDC `groups` claim or the SAML groups attribute) keep the person's IdP groups in
+sync. Per-IdP walkthroughs: [Okta](idp/okta.md), [Entra ID](idp/entra-id.md), [Keycloak](idp/keycloak.md),
+[Google Workspace](idp/google-workspace.md).
+
+## Enforcing SSO and MFA
+
+- **Enforce SSO** turns off passwords for everyone except one **break-glass** Owner, kept for when the IdP is down.
+  Every break-glass sign-in is audited (`auth.break_glass`) and Owners are notified. Enforcing needs an enabled SSO
+  provider and a break-glass Owner with a password.
+- **Session lifetime**: idle and absolute limits for everyone, instead of the settings defaults.
+- **MFA policy** (password sign-ins only; the IdP handles MFA for SSO):
+
+  | Policy | Effect |
+  |---|---|
+  | Off | nobody can add a second factor (existing ones are still asked for) |
+  | Optional (default) | anyone may add an authenticator app or a security key in *Account*, and is then asked for it |
+  | Required for local accounts | every password sign-in needs a second factor; people without one set it up while signing in |
+  | Required for admins | the same, for Owners and Administrators |
+
+  Authenticator apps use TOTP (RFC 6238); security keys and passkeys use WebAuthn. Ten single-use recovery codes are
+  issued with the first factor.

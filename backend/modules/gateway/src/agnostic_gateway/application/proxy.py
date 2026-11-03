@@ -1,9 +1,16 @@
-"""The gateway: ``ANY /api/v1/instances/{instance}/os/{path}`` → the instance's AgentOS, as the signed-in person.
+"""The gateway: ``ANY /api/v1/instances/{instance}/os/{path}`` → the instance's AgentOS, as the caller.
+
+The caller is the signed-in person, or the service account behind a gateway token.
 
 For each call: match the route policy → pre-check the person's effective scopes (403 with an explanation, audited) →
 rate limit → circuit breaker → JWT for (person, instance, scopes) from cache or freshly minted → stream the request
 to AgentOS → map AgentOS errors that need context (503, 401) → stream the response back (SSE with heartbeats; small
 GETs cached per scope set) → audit (writes and denials always, reads sampled).
+
+Service accounts (``Authorization: Bearer agn_pat_…``) get their scopes from their own bindings. AgentOS rejects JWT
+subjects starting with ``sa:``, so their token says ``sub = svc_<name>`` with ``agnostic.principal = sa:<name>``.
+Unless the account forwards ``user_id``, a ``user_id`` the caller sends (query string, form or JSON body) is dropped
+so runs stay attributed to the account. They can't resolve approvals, even with ``approvals:write``.
 """
 
 from __future__ import annotations
@@ -11,15 +18,25 @@ from __future__ import annotations
 import base64
 import hashlib
 import random
+import re
 import time
 from collections.abc import AsyncIterator, Awaitable, Callable, Mapping, Sequence
-from dataclasses import dataclass
-from typing import Any
+from dataclasses import dataclass, replace
+from typing import Any, cast
+from urllib.parse import parse_qsl, urlencode
 
 import httpx
 import orjson
 
-from agnostic_access.facade import ADMIN_SCOPE, AccessFacade, EffectiveAccess, compress, satisfies, split
+from agnostic_access.facade import (
+    ADMIN_SCOPE,
+    AccessFacade,
+    EffectiveAccess,
+    PrincipalKind,
+    compress,
+    satisfies,
+    split,
+)
 from agnostic_agentos_client import InstanceUnreachableError
 from agnostic_audit.facade import AuditEntry, AuditLog, Decision, actor_of
 from agnostic_gateway.application.ports import RoutePolicyRepository, Upstream
@@ -38,7 +55,14 @@ from agnostic_kernel.auth import Principal
 from agnostic_kernel.context import current_client, current_request_id
 from agnostic_kernel.db import utcnow
 from agnostic_kernel.ephemeral import EphemeralStore, access_generation
-from agnostic_kernel.errors import AppError, ConflictError, NotFoundError, RateLimitedError, ScopeMissingError
+from agnostic_kernel.errors import (
+    AppError,
+    ConflictError,
+    ForbiddenError,
+    NotFoundError,
+    RateLimitedError,
+    ScopeMissingError,
+)
 from agnostic_kernel.logging import get_logger
 from agnostic_settings.facade import OrgSettingsReader
 
@@ -48,6 +72,16 @@ TABLE_TTL = 60.0
 INSTANCE_TTL = 15.0
 MAX_CACHED_BODY = 1024 * 1024
 TOKEN_REFRESH_MARGIN = 30
+SERVICE_ACCOUNT_VIA = "gateway-pat"
+SERVICE_ACCOUNT_SUBJECT_PREFIX = "svc_"
+USER_ID_FIELD = "user_id"
+SERVICE_ACCOUNT_APPROVALS = (
+    "Scoped service accounts can't resolve approvals, even with approvals:write: AgentOS hides other callers' "
+    "approvals from them (404 under user isolation) and delegated elevation never applies to service accounts. "
+    "Someone with approvals:write decides it in the approvals inbox."
+)
+SERVICE_ACCOUNT_DENIED_ROUTES = frozenset({("POST", "/approvals/{approval_id}/resolve")})
+_MULTIPART_USER_ID = re.compile(rb'(?im)^content-disposition:[^\r\n]*[;\s]name="?user_id"?\s*(?:;|$)')
 
 
 class CapabilityDisabledError(AppError):
@@ -75,6 +109,11 @@ class InstanceDisabledError(ConflictError):
 
 class GatewayScopeMissingError(ScopeMissingError):
     pass
+
+
+class ServiceAccountDeniedError(ForbiddenError):
+    code = "service_account_denied"
+    title = "Service accounts can't do this"
 
 
 @dataclass(frozen=True, slots=True)
@@ -180,7 +219,7 @@ class Gateway:
         self._instance_cache = instance_cache
         self._config = config
 
-    async def handle(  # noqa: C901, PLR0912  (one linear pipeline; each step is a guard clause)
+    async def handle(  # noqa: C901, PLR0912, PLR0915  (one linear pipeline; each step is a guard clause)
         self, principal: Principal, instance_ref: str, request: ProxyRequest
     ) -> ProxyResponse:
         instance = await self._instance_cache.get(instance_ref, self._instances)
@@ -199,12 +238,19 @@ class Gateway:
             # No per-user permissions on such runtimes: only Instance admins (06 §4).
             required = [ADMIN_SCOPE]
 
-        access = await self._access.access(principal.id, instance.id)
+        kind: PrincipalKind = "service_account" if principal.kind == "service_account" else "user"
+        access = await self._access.access_for(kind, principal.id, instance.id)
         runtime = access.runtime_scopes()
         missing = [scope for scope in required if not _holds(runtime, scope, list_filter=policy.list_filter)]
         route = f"{request.method} {policy.pattern}"
+        if principal.kind == "service_account" and (policy.method, policy.pattern) in SERVICE_ACCOUNT_DENIED_ROUTES:
+            await deny_service_account(
+                self._audit, principal, instance, method=request.method, path=path, route=route, required=required
+            )
         if missing:
             await self._deny(principal, instance, policy, route, path, required, missing)
+        if principal.kind == "service_account" and not principal.forwards_user_id:
+            request = await without_user_id(request)
 
         await self._rate_limit(principal, instance, policy)
         retry_after = self._breaker.retry_after(instance.id)
@@ -266,7 +312,7 @@ class Gateway:
                 f"{instance.display_name} has no per-user permissions ({instance.auth_mode.value}); "
                 "only Instance admins can use it through the gateway. " + text
             )
-        await self._record(principal, instance, policy, path, required, 403, "denied", missing)
+        await self._record(principal, instance, policy, path, required, 403, "denied", missing, reason=text)
         raise GatewayScopeMissingError(
             text,
             extra={
@@ -306,14 +352,33 @@ class Gateway:
         scopes, trimmed = scopes_for_token(compress(access.runtime_scopes()), policy.family)
         if trimmed:
             log.warning("gateway.scopes_trimmed", user=principal.id, instance=instance.id, family=policy.family)
-        subject = principal.email if instance.sub_claim_mode is SubClaimMode.EMAIL and principal.email else principal.id
+        via = "gateway"
+        extra: dict[str, Any] | None = None
+        if principal.kind == "service_account":
+            # AgentOS reserves ``sa:`` subjects: the run's user is ``svc_<name>``, the claim names the account.
+            subject = SERVICE_ACCOUNT_SUBJECT_PREFIX + principal.display_name.removeprefix("sa:")
+            via = SERVICE_ACCOUNT_VIA
+            extra = {
+                "agnostic": {
+                    "via": via,
+                    "instance": instance.id,
+                    "name": principal.display_name,
+                    "principal": principal.display_name,
+                }
+            }
+        elif instance.sub_claim_mode is SubClaimMode.EMAIL and principal.email:
+            subject = principal.email
+        else:
+            subject = principal.id
         generation = await access_generation(self._store)
         scope_key = _digest(scopes)
         key = f"jwt:{generation}:{principal.id}:{instance.id}:{_digest([subject, *scopes])}"
         cached = await self._store.get(key)
         if cached is not None:
             return {"Authorization": f"Bearer {cached.decode()}"}, scope_key
-        minted = await self._instances.mint(instance, subject=subject, scopes=scopes, name=principal.display_name)
+        minted = await self._instances.mint(
+            instance, subject=subject, scopes=scopes, name=principal.display_name, via=via, extra=extra
+        )
         ttl = (minted.expires_at - utcnow()).total_seconds() - TOKEN_REFRESH_MARGIN
         if ttl > 0:
             await self._store.set(key, minted.token.encode(), ttl=ttl)
@@ -378,6 +443,8 @@ class Gateway:
         status: int,
         decision: Decision,
         missing: list[str],
+        *,
+        reason: str | None = None,
     ) -> None:
         method = policy.method
         _ = await self._audit.record_now(
@@ -391,6 +458,7 @@ class Gateway:
                 decision=decision,
                 scope_checked=required[0] if required else None,
                 missing_scopes=tuple(missing),
+                denial_reason=reason,
                 response_status=status,
                 via="gateway",
                 fields={"route": f"{method} {path}", "instance": instance.display_name, "scope": ", ".join(missing)},
@@ -426,6 +494,100 @@ class Gateway:
 
 async def _once(content: bytes) -> AsyncIterator[bytes]:
     yield content
+
+
+async def deny_service_account(
+    audit: AuditLog,
+    principal: Principal,
+    instance: Instance,
+    *,
+    method: str,
+    path: str,
+    route: str,
+    required: Sequence[str],
+) -> None:
+    """Record and refuse an approval resolution by a service account (passthrough or typed decision)."""
+    text = SERVICE_ACCOUNT_APPROVALS
+    _ = await audit.record_now(
+        AuditEntry(
+            action="gateway.denied",
+            actor=actor_of(principal),
+            resource_kind="route",
+            resource_id=route,
+            resource_display=f"{method} {path}",
+            instance_id=instance.id,
+            decision="denied",
+            scope_checked=required[0] if required else None,
+            response_status=403,
+            via="gateway",
+            fields={"route": f"{method} {path}", "instance": instance.display_name, "scope": "", "reason": text},
+            summary=f"{principal.display_name} was denied {method} {path} on {instance.display_name}: {text}",
+            denial_reason=text,
+        )
+    )
+    raise ServiceAccountDeniedError(
+        text,
+        extra={
+            "required_scopes": list(required),
+            "missing_scopes": [],
+            "explanation": text,
+            "instance_id": instance.id,
+            "route": route,
+            "alternatives": [],
+        },
+    )
+
+
+async def without_user_id(request: ProxyRequest) -> ProxyRequest:
+    """Drop ``user_id`` from the query string and from form, multipart or JSON bodies (buffered)."""
+    params = [(key, value) for key, value in request.params if key != USER_ID_FIELD]
+    if request.body is None or request.method in {"GET", "HEAD", "OPTIONS"}:
+        return replace(request, params=params)
+    content_type = next((value for name, value in request.headers if name.lower() == "content-type"), "")
+    media = content_type.split(";", 1)[0].strip().lower()
+    if media not in {"application/x-www-form-urlencoded", "application/json", "multipart/form-data"}:
+        return replace(request, params=params)
+    raw = b"".join([chunk async for chunk in request.body])
+    stripped = _strip_user_id(media, content_type, raw)
+    headers = [(name, value) for name, value in request.headers if name.lower() != "content-length"]
+    headers.append(("content-length", str(len(stripped))))
+    return replace(request, params=params, headers=headers, body=_once(stripped))
+
+
+def _strip_user_id(media: str, content_type: str, raw: bytes) -> bytes:
+    if media == "application/x-www-form-urlencoded":
+        return _strip_form(raw)
+    if media == "application/json":
+        return _strip_json(raw)
+    return _strip_multipart(content_type, raw)
+
+
+def _strip_form(raw: bytes) -> bytes:
+    pairs = parse_qsl(raw.decode(errors="replace"), keep_blank_values=True)
+    if all(key != USER_ID_FIELD for key, _ in pairs):
+        return raw
+    return urlencode([(key, value) for key, value in pairs if key != USER_ID_FIELD]).encode()
+
+
+def _strip_json(raw: bytes) -> bytes:
+    try:
+        parsed: Any = orjson.loads(raw)
+    except orjson.JSONDecodeError:
+        return raw
+    if isinstance(parsed, dict) and USER_ID_FIELD in parsed:
+        fields = cast("dict[str, Any]", parsed)
+        return orjson.dumps({key: value for key, value in fields.items() if key != USER_ID_FIELD})
+    return raw
+
+
+def _strip_multipart(content_type: str, raw: bytes) -> bytes:
+    match = re.search(r'boundary="?([^";]+)"?', content_type)
+    if match is None:
+        return raw
+    delimiter = b"--" + match.group(1).encode()
+    pieces = raw.split(delimiter)
+    kept = [pieces[0]] + [p for p in pieces[1:] if not _MULTIPART_USER_ID.search(p.split(b"\r\n\r\n", 1)[0])]
+    return delimiter.join(kept) if len(kept) != len(pieces) else raw
 
 
 async def _noop() -> None:

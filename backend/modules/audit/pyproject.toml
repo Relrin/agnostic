@@ -1,7 +1,7 @@
 [project]
 name = "agnostic-audit"
 version = "0.1.0"
-description = "Append-only audit log: action vocabulary, write API for modules, gateway decisions, retention"
+description = "Append-only audit log: action vocabulary, write API, saved views, export, hash chain, SIEM streaming, retention and archive"
 requires-python = "==3.15.*"
 license = "BSD-3-Clause"
 dependencies = [
@@ -9,6 +9,8 @@ dependencies = [
   "alembic==1.20.1",
   "dishka==1.10.1",
   "fastapi==0.162.0",
+  "httpx==0.28.1",
+  "orjson==3.13.0",
   "procrastinate==3.10.0",
   "pydantic==2.14.2",
   "pydantic-settings==2.16.2",

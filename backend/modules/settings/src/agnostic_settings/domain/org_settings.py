@@ -21,6 +21,8 @@ class OrgSettings:
     approval_ttl_hours: int = 0
     """Approvals without their own expiry (AgentOS sets none for agents and teams) expire this many hours after they
     were requested; 0 means they never expire. Instances decide separately whether expiry cancels the run."""
+    temporary_access_max_hours: int = 168
+    """The longest temporary access (requested or granted directly) may last."""
 
     @classmethod
     def keys(cls) -> tuple[str, ...]:
@@ -42,6 +44,9 @@ class OrgSettings:
         ttl = changes.get("approval_ttl_hours")
         if isinstance(ttl, int) and not 0 <= ttl <= MAX_APPROVAL_TTL_HOURS:
             raise InvalidSettingError(f"approval_ttl_hours must be between 0 and {MAX_APPROVAL_TTL_HOURS}.")
+        temporary = changes.get("temporary_access_max_hours")
+        if isinstance(temporary, int) and not 1 <= temporary <= MAX_TEMPORARY_ACCESS_HOURS:
+            raise InvalidSettingError(f"temporary_access_max_hours must be between 1 and {MAX_TEMPORARY_ACCESS_HOURS}.")
         return replace(self, **dict(changes))
 
     def diff(self, other: OrgSettings) -> dict[str, dict[str, Any]]:
@@ -53,5 +58,6 @@ class OrgSettings:
 
 
 MAX_APPROVAL_TTL_HOURS = 24 * 30
+MAX_TEMPORARY_ACCESS_HOURS = 24 * 90
 
 ACCESS_RELEVANT = frozenset({"require_explicit_bindings"})

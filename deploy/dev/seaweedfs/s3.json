@@ -1,0 +1,9 @@
+{
+  "identities": [
+    {
+      "name": "agnostic",
+      "credentials": [{ "accessKey": "agnostic", "secretKey": "agnostic-dev-only" }],
+      "actions": ["Admin", "Read", "Write", "List", "Tagging"]
+    }
+  ]
+}

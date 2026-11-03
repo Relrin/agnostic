@@ -6,15 +6,18 @@ from collections.abc import Iterable
 from pathlib import Path
 
 from dishka import AsyncContainer, Provider
+from pydantic_settings import BaseSettings
 from sqlalchemy import MetaData
 from sqlalchemy.exc import SQLAlchemyError
 
+from agnostic_access import jobs
 from agnostic_access.api.router import me_router, router
 from agnostic_access.application.use_cases import SyncCatalog
 from agnostic_access.infrastructure.tables import AccessBase
 from agnostic_access.providers import AccessProvider
+from agnostic_access.settings import AccessSettings
 from agnostic_kernel.logging import get_logger
-from agnostic_kernel.modules import AuditActionDecl, BaseModule, RouterSpec
+from agnostic_kernel.modules import AuditActionDecl, BaseModule, JobSpec, RouterSpec
 
 log = get_logger(__name__)
 
@@ -22,7 +25,10 @@ log = get_logger(__name__)
 class AccessModule(BaseModule):
     name = "access"
     version = "0.1.0"
-    depends_on = ("identity", "org", "instances", "settings", "audit")
+    depends_on = ("identity", "org", "instances", "settings", "audit", "directory")
+
+    def settings_model(self) -> type[BaseSettings] | None:
+        return AccessSettings
 
     def provide(self) -> Iterable[Provider]:
         return (AccessProvider(),)
@@ -39,10 +45,22 @@ class AccessModule(BaseModule):
     def migrations(self) -> Path | None:
         return Path(__file__).with_name("migrations") / "versions"
 
+    def jobs(self) -> Iterable[JobSpec]:
+        cron = AccessSettings().expiry_cron
+        return (JobSpec(name=jobs.EXPIRE_TASK, func=jobs.expire_bindings, periodic=cron),) if cron else ()
+
     def audit_actions(self) -> Iterable[AuditActionDecl]:
         return (
             AuditActionDecl("bindings.create", "{actor} gave {person} {grant} on {where}"),
             AuditActionDecl("bindings.delete", "{actor} removed {grant} on {where} from {person}"),
+            AuditActionDecl("bindings.expire", "{grant} on {where} expired for {person}"),
+            AuditActionDecl("roles.create", "{actor} created the role {role}"),
+            AuditActionDecl("roles.update", "{actor} changed the role {role}: {change}"),
+            AuditActionDecl("roles.delete", "{actor} deleted the role {role}"),
+            AuditActionDecl("access.requests.create", "{actor} asked for {grant} on {where} for {hours} h"),
+            AuditActionDecl("access.requests.approve", "{actor} approved {grant} on {where} for {person} ({hours} h)"),
+            AuditActionDecl("access.requests.deny", "{actor} denied {person} {grant} on {where}"),
+            AuditActionDecl("access.requests.cancel", "{actor} withdrew the request for {grant} on {where}"),
         )
 
     async def on_startup(self, container: AsyncContainer) -> None:

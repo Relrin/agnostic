@@ -1,16 +1,21 @@
-"""Members and their org roles; the membership directory identity asks during sign-in."""
+"""Members and their org roles, bulk changes, the CSV export; the membership directory identity asks at sign-in."""
 
 from __future__ import annotations
 
+import csv
+import io
+from collections.abc import Sequence
 from dataclasses import dataclass
+from typing import Literal
 
 from agnostic_audit.facade import AuditEntry, AuditLog, actor_of
 from agnostic_identity.facade import Admission, IdentityFacade, Membership, User
 from agnostic_kernel.auth import Authorizer, Principal
 from agnostic_kernel.db import utcnow
 from agnostic_kernel.ephemeral import EphemeralStore, bump_access_generation
-from agnostic_kernel.errors import ConflictError, NotFoundError
+from agnostic_kernel.errors import AppError, ConflictError, NotFoundError, ValidationFailedError
 from agnostic_org.application.ports import (
+    GroupDirectory,
     InitialBindingsApplier,
     InvitationRepository,
     MemberRepository,
@@ -34,6 +39,8 @@ WRITE_SCOPE = "org:members:write"
 class MemberView:
     member: Member
     user: User
+    groups: tuple[tuple[str, str], ...] = ()
+    """``(group id, name)`` of the groups they are in."""
 
 
 async def actor_role(members: MemberRepository, principal: Principal) -> OrgRole:
@@ -44,18 +51,134 @@ async def actor_role(members: MemberRepository, principal: Principal) -> OrgRole
 
 
 class ListMembers:
-    def __init__(self, members: MemberRepository, identity: IdentityFacade, authorizer: Authorizer) -> None:
+    def __init__(
+        self, members: MemberRepository, identity: IdentityFacade, authorizer: Authorizer, groups: GroupDirectory
+    ) -> None:
         self._members = members
         self._identity = identity
         self._authorizer = authorizer
+        self._groups = groups
 
     async def __call__(self, principal: Principal) -> list[MemberView]:
         _ = await self._authorizer.require(principal, READ_SCOPE)
         members = await self._members.list()
         users = {user.id: user for user in await self._identity.get_users([m.user_id for m in members])}
-        views = [MemberView(m, users[m.user_id]) for m in members if m.user_id in users]
+        groups = await self._groups.memberships([m.user_id for m in members])
+        views = [
+            MemberView(m, users[m.user_id], tuple(sorted(groups.get(m.user_id, []), key=lambda g: g[1].lower())))
+            for m in members
+            if m.user_id in users
+        ]
         rank = {OrgRole.OWNER: 0, OrgRole.ADMINISTRATOR: 1, OrgRole.MEMBER: 2}
         return sorted(views, key=lambda view: (rank[view.member.org_role], view.user.display_name.lower()))
+
+
+class ExportMembers:
+    """``members.csv``: who is in the org, with their org role, groups and when they were last active."""
+
+    def __init__(self, list_members: ListMembers) -> None:
+        self._list = list_members
+
+    async def __call__(self, principal: Principal) -> str:
+        buffer = io.StringIO()
+        writer = csv.writer(buffer)
+        writer.writerow(["email", "name", "org_role", "groups", "joined_at", "joined_via", "last_active_at"])
+        for view in await self._list(principal):
+            writer.writerow(
+                [
+                    view.user.email,
+                    view.user.display_name,
+                    view.member.org_role.value,
+                    "; ".join(name for _, name in view.groups),
+                    view.member.joined_at.isoformat(),
+                    view.member.joined_via,
+                    view.user.last_active_at.isoformat() if view.user.last_active_at else "",
+                ]
+            )
+        return buffer.getvalue()
+
+
+type BulkOperation = Literal["change_role", "add_to_group", "remove"]
+
+
+@dataclass(frozen=True, slots=True)
+class BulkOutcome:
+    user_id: str
+    ok: bool
+    error: str | None = None
+
+
+class BulkMembers:
+    """Members table bulk actions: each person is changed on their own, so one refusal doesn't stop the rest."""
+
+    def __init__(
+        self,
+        change_role: ChangeOrgRole,
+        remove: RemoveMember,
+        groups: GroupDirectory,
+        members: MemberRepository,
+        org: OrgRepository,
+        authorizer: Authorizer,
+        audit: AuditLog,
+        store: EphemeralStore,
+    ) -> None:
+        self._change_role = change_role
+        self._remove = remove
+        self._groups = groups
+        self._members = members
+        self._org = org
+        self._authorizer = authorizer
+        self._audit = audit
+        self._store = store
+
+    async def __call__(
+        self,
+        principal: Principal,
+        user_ids: Sequence[str],
+        operation: BulkOperation,
+        *,
+        org_role: OrgRole | None = None,
+        group_id: str | None = None,
+    ) -> list[BulkOutcome]:
+        _ = await self._authorizer.require(principal, WRITE_SCOPE)
+        if operation == "change_role" and org_role is None:
+            raise ValidationFailedError("Pick the org role to give them.")
+        if operation == "add_to_group":
+            if group_id is None:
+                raise ValidationFailedError("Pick the group to add them to.")
+            await self._groups.validate([group_id])
+        outcomes: list[BulkOutcome] = []
+        for user_id in dict.fromkeys(user_ids):
+            try:
+                if operation == "change_role":
+                    assert org_role is not None
+                    _ = await self._change_role(principal, user_id, org_role)
+                elif operation == "remove":
+                    await self._remove(principal, user_id)
+                else:
+                    assert group_id is not None
+                    if await self._members.get(user_id) is None:
+                        raise NotFoundError(f"{user_id} isn't a member of this org.")
+                    _ = await self._groups.add(user_id, [group_id])
+                outcomes.append(BulkOutcome(user_id, ok=True))
+            except AppError as exc:
+                outcomes.append(BulkOutcome(user_id, ok=False, error=exc.detail or exc.title))
+        if operation == "add_to_group":
+            added = [outcome.user_id for outcome in outcomes if outcome.ok]
+            _ = await self._audit.record(
+                AuditEntry(
+                    action="members.bulk_add_to_group",
+                    actor=actor_of(principal),
+                    resource_kind="group",
+                    resource_id=group_id,
+                    resource_display=group_id,
+                    fields={"count": str(len(added))},
+                    diff={"title": "Members", "lines": [{"op": "add", "text": user_id} for user_id in added]},
+                )
+            )
+            await self._org.commit()
+            await bump_access_generation(self._store)
+        return outcomes
 
 
 class GetMember:
@@ -182,12 +305,14 @@ class OrgMembershipDirectory:
         org: OrgRepository,
         bindings: InitialBindingsApplier,
         audit: AuditLog,
+        groups: GroupDirectory,
     ) -> None:
         self._members = members
         self._invitations = invitations
         self._org = org
         self._bindings = bindings
         self._audit = audit
+        self._groups = groups
 
     async def membership(self, user_id: str) -> Membership | None:
         member = await self._members.get(user_id)
@@ -215,6 +340,7 @@ class OrgMembershipDirectory:
                 expires_at=invitation.access_ends_at,
                 granted_by=invitation.invited_by,
             )
+            _ = await self._groups.add(user.id, invitation.group_ids)
             await self._invitations.set_status(invitation.id, InvitationStatus.ACCEPTED)
             action, fields = "invitations.accept", {"role": invitation.org_role.value}
         else:

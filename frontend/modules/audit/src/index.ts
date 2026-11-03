@@ -3,7 +3,10 @@ import { ScrollText } from "lucide-react";
 
 import { AuditPage } from "./audit-page";
 
-/** Audit log (basic, P01): table and detail aside. Saved views and SIEM streaming arrive in P06. */
+/**
+ * Audit log: every action and access decision with saved views, filters in the URL, an event aside (diff, why it
+ * was denied, temporary access), CSV/JSONL export and the SIEM streaming status.
+ */
 export const auditModule = defineModule({
   id: "audit",
   scope: "org",

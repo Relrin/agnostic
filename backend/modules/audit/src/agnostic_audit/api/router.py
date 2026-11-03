@@ -6,9 +6,9 @@ from typing import Annotated, Literal
 from dishka.integrations.fastapi import DishkaRoute, FromDishka
 from fastapi import APIRouter, Depends, Query
 
-from agnostic_audit.api.schemas import AuditActionOut, AuditEventOut
+from agnostic_audit.api.schemas import ActorSummaryOut, AuditActionOut, AuditEventOut
 from agnostic_audit.application.ports import EventQuery
-from agnostic_audit.application.use_cases import AuditVocabulary, GetEvent, ListEvents
+from agnostic_audit.application.use_cases import AuditVocabulary, GetEvent, ListActors, ListEvents
 from agnostic_kernel.auth import Authorizer, Principal
 from agnostic_kernel.pagination import Page, PageParams, encode_cursor, page_params
 
@@ -23,11 +23,16 @@ async def list_events(
     principal: FromDishka[Principal],
     authorizer: FromDishka[Authorizer],
     use_case: FromDishka[ListEvents],
+    q: Annotated[
+        str | None, Query(description="Text in the resource id or name, request id, IP or actor name", max_length=200)
+    ] = None,
     actor: Annotated[str | None, Query(description="Actor id (usr_…, sa:…, system)")] = None,
+    actor_kind: Literal["user", "service_account", "system", "anonymous"] | None = None,
     action: Annotated[str | None, Query(description="Action, or a prefix ending in * (gateway.*)")] = None,
     decision: Literal["allowed", "denied", "n_a"] | None = None,
     instance: Annotated[str | None, Query(description="Instance id")] = None,
     resource: Annotated[str | None, Query(description="Resource id")] = None,
+    source: Literal["control_plane", "agentos"] | None = None,
     since: datetime | None = None,
     until: datetime | None = None,
 ) -> Page[AuditEventOut]:
@@ -38,10 +43,13 @@ async def list_events(
         after = (str(position["t"]), str(position["id"]))
     query = EventQuery(
         actor_id=actor,
+        actor_kind=actor_kind,
         action=action,
         decision=decision,
         instance_id=instance,
         resource_id=resource,
+        source=source,
+        q=q,
         since=since,
         until=until,
     )
@@ -78,3 +86,14 @@ async def list_actions(
         AuditActionOut(action=action, summary_template=template)
         for action, template in sorted(vocabulary.actions().items())
     ]
+
+
+@router.get("/actors", summary="People and machines in the log over the last 90 days, most active first")
+async def list_actors(
+    principal: FromDishka[Principal],
+    authorizer: FromDishka[Authorizer],
+    use_case: FromDishka[ListActors],
+    limit: Annotated[int, Query(ge=1, le=500)] = 100,
+) -> list[ActorSummaryOut]:
+    _ = await authorizer.require(principal, READ_SCOPE)
+    return [ActorSummaryOut.from_domain(actor) for actor in await use_case(limit=limit)]

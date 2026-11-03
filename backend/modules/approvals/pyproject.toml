@@ -8,6 +8,7 @@ dependencies = [
   "agnostic-access",
   "agnostic-agentos-client",
   "agnostic-audit",
+  "agnostic-directory",
   "agnostic-gateway",
   "agnostic-identity",
   "agnostic-instances",
@@ -31,6 +32,7 @@ approvals = "agnostic_approvals.module:ApprovalsModule"
 agnostic-access = { workspace = true }
 agnostic-agentos-client = { workspace = true }
 agnostic-audit = { workspace = true }
+agnostic-directory = { workspace = true }
 agnostic-gateway = { workspace = true }
 agnostic-identity = { workspace = true }
 agnostic-instances = { workspace = true }

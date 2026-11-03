@@ -4,10 +4,12 @@
 
 from dishka.integrations.fastapi import DishkaRoute, FromDishka
 from fastapi import APIRouter, Response, status
+from fastapi.responses import PlainTextResponse
 
 from agnostic_identity.facade import SessionCookies
 from agnostic_kernel.auth import Principal
 from agnostic_org.api.schemas import (
+    BulkOutcomeOut,
     InvitationAccept,
     InvitationCreate,
     InvitationOut,
@@ -15,6 +17,7 @@ from agnostic_org.api.schemas import (
     IssuedInvitationOut,
     Joined,
     MemberOut,
+    MembersBulk,
     MemberUpdate,
     OnboardingComplete,
     OnboardingStatusOut,
@@ -29,7 +32,14 @@ from agnostic_org.application.invitations import (
     ResendInvitation,
     RevokeInvitation,
 )
-from agnostic_org.application.members import ChangeOrgRole, GetMember, ListMembers, RemoveMember
+from agnostic_org.application.members import (
+    BulkMembers,
+    ChangeOrgRole,
+    ExportMembers,
+    GetMember,
+    ListMembers,
+    RemoveMember,
+)
 from agnostic_org.application.profile import (
     CompleteOnboarding,
     GetOrg,
@@ -65,6 +75,33 @@ async def update_org(body: OrgUpdate, principal: FromDishka[Principal], use_case
 @members_router.get("", summary="Members of the org with their org roles")
 async def list_members(principal: FromDishka[Principal], use_case: FromDishka[ListMembers]) -> list[MemberOut]:
     return [MemberOut.from_view(view) for view in await use_case(principal)]
+
+
+@members_router.get(
+    "/export.csv",
+    response_class=PlainTextResponse,
+    summary="Members as CSV: email, name, org role, groups, joined, last active",
+)
+async def export_members(principal: FromDishka[Principal], use_case: FromDishka[ExportMembers]) -> PlainTextResponse:
+    return PlainTextResponse(
+        await use_case(principal),
+        media_type="text/csv",
+        headers={"Content-Disposition": 'attachment; filename="members.csv"'},
+    )
+
+
+@members_router.post("/bulk", summary="Change the org role of, add to a group, or remove several members")
+async def bulk_members(
+    body: MembersBulk, principal: FromDishka[Principal], use_case: FromDishka[BulkMembers]
+) -> list[BulkOutcomeOut]:
+    outcomes = await use_case(
+        principal,
+        body.user_ids,
+        body.operation,
+        org_role=OrgRole(body.org_role) if body.org_role else None,
+        group_id=body.group_id,
+    )
+    return [BulkOutcomeOut(user_id=item.user_id, ok=item.ok, error=item.error) for item in outcomes]
 
 
 @members_router.get("/{user_id}", summary="One member")
@@ -103,6 +140,7 @@ async def create_invitation(
         OrgRole(body.org_role),
         [InitialBinding(role_id=b.role_id, instance_id=b.instance_id) for b in body.bindings],
         body.access_ends_at,
+        body.group_ids,
     )
     return IssuedInvitationOut.from_issued(issued)
 

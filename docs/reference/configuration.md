@@ -156,6 +156,27 @@ See [sign-in providers](../how-to/sign-in-providers.md) for setup per identity p
 Org settings (changed in the app, stored by the `settings` module): `approval_ttl_hours` (default `0`, never) gives
 approvals without their own expiry one. Whether expiry stops runs is decided per instance, in Settings › Approvals.
 
+## Access governance: directory, service accounts, audit
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `AGNOSTIC_ACCESS__EXPIRY_CRON` | `*/5 * * * *` | when expired bindings (temporary access, invitations with an end date) are removed; empty turns it off |
+| `AGNOSTIC_DIRECTORY__GOOGLE_SYNC_CRON` | `*/15 * * * *` | Google Workspace group sync (only while it is turned on in the app) |
+| `AGNOSTIC_DIRECTORY__RECONCILE_CRON` | `17 * * * *` | group memberships reconciled with deprovisioned accounts and mapping rules |
+| `AGNOSTIC_SERVICE_ACCOUNTS__TOKEN_PEPPER` | derived from the master key | mixed into gateway token hashes; changing it invalidates every gateway token |
+| `AGNOSTIC_SERVICE_ACCOUNTS__POLL_CRON` | `*/5 * * * *` | native tokens' last use read from each instance; expired accounts swept |
+| `AGNOSTIC_SERVICE_ACCOUNTS__LAST_USED_WRITE_SECONDS` | `60` | how often a gateway token's last use is written |
+| `AGNOSTIC_AUDIT__RETENTION_DAYS` | `400` | hot retention until the audit policy is saved in the app |
+| `AGNOSTIC_AUDIT__MAINTENANCE_CRON` | `17 3 * * *` | partitions, archive, restored months and expired exports |
+| `AGNOSTIC_AUDIT__DELIVER_CRON` / `__DELIVER_ON_RECORD` | `* * * * *` / `true` | SIEM delivery: periodic, plus queued a few seconds after events are written |
+| `AGNOSTIC_AUDIT__SETTLE_SECONDS` / `__DELIVERY_BATCH` | `5` / `500` | events younger than this wait for the next delivery; events per batch |
+| `AGNOSTIC_AUDIT__EXPORT_SYNC_LIMIT` | `10000` | above this many events, exports run as a background job |
+| `AGNOSTIC_GATEWAY__INGEST_CRON` | `* * * * *` | AgentOS authorization trails (`/authz/decisions`, `/authz/audit`) copied into the audit log |
+
+In the app (stored in the database): sign-in providers and the auth policy (*Organization › Authentication*), SCIM
+tokens, mapping rules, deprovisioning and Google sync (*Directory sync*), audit retention, archive target and hash
+chain (*Audit retention*), SIEM destinations, and the org setting `temporary_access_max_hours` (default `168`).
+
 ## Tests only
 
 | Variable | Meaning |

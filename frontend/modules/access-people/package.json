@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "People: members, org roles, role bindings and invitations",
+  "description": "People & groups: members, groups, invitations, access requests and permission checks",
   "exports": {
     ".": "./src/index.ts"
   },

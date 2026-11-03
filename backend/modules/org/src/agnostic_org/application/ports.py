@@ -41,6 +41,22 @@ class InvitationRepository(Protocol):
     async def count_pending(self, now: datetime) -> int: ...
 
 
+class GroupDirectory(Protocol):
+    """Implemented by the directory module: the groups people are in, and joining manual groups."""
+
+    async def validate(self, group_ids: Sequence[str]) -> None:
+        """Raise ``ValidationFailedError`` for unknown or IdP-synced groups."""
+        ...
+
+    async def add(self, user_id: str, group_ids: Sequence[str]) -> list[str]:
+        """Add someone to manual groups in the caller's transaction; returns the group ids they joined."""
+        ...
+
+    async def memberships(self, user_ids: Sequence[str]) -> dict[str, list[tuple[str, str]]]:
+        """User id → ``(group id, name)`` of the groups they are in."""
+        ...
+
+
 class InitialBindingsApplier(Protocol):
     async def validate(self, bindings: Sequence[InitialBinding]) -> None:
         """Raise ``ValidationFailedError`` for unknown roles or instances."""

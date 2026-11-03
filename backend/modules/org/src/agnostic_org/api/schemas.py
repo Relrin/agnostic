@@ -19,6 +19,7 @@ class OrgSettingsOut(BaseModel):
     require_explicit_bindings: bool
     audit_log_all_reads: bool
     approval_ttl_hours: int = Field(description="Hours until approvals without their own expiry expire; 0 = never")
+    temporary_access_max_hours: int = Field(default=168, description="The longest temporary access may last")
 
 
 class OrgOut(BaseModel):
@@ -49,6 +50,7 @@ class OrgOut(BaseModel):
                 require_explicit_bindings=view.settings.require_explicit_bindings,
                 audit_log_all_reads=view.settings.audit_log_all_reads,
                 approval_ttl_hours=view.settings.approval_ttl_hours,
+                temporary_access_max_hours=view.settings.temporary_access_max_hours,
             ),
             updated_at=profile.updated_at,
         )
@@ -58,6 +60,7 @@ class OrgSettingsUpdate(BaseModel):
     require_explicit_bindings: bool | None = None
     audit_log_all_reads: bool | None = None
     approval_ttl_hours: int | None = Field(default=None, ge=0, le=720)
+    temporary_access_max_hours: int | None = Field(default=None, ge=1, le=2160)
 
 
 class OrgUpdate(BaseModel):
@@ -77,6 +80,7 @@ class MemberOut(BaseModel):
     joined_at: datetime
     joined_via: str
     last_active_at: datetime | None
+    groups: list[MemberGroupOut] = Field(default_factory=list["MemberGroupOut"])
 
     @classmethod
     def from_view(cls, view: MemberView) -> MemberOut:
@@ -89,11 +93,30 @@ class MemberOut(BaseModel):
             joined_at=view.member.joined_at,
             joined_via=view.member.joined_via,
             last_active_at=view.user.last_active_at,
+            groups=[MemberGroupOut(id=group_id, name=name) for group_id, name in view.groups],
         )
+
+
+class MemberGroupOut(BaseModel):
+    id: str
+    name: str
 
 
 class MemberUpdate(BaseModel):
     org_role: OrgRoleName
+
+
+class MembersBulk(BaseModel):
+    user_ids: list[str] = Field(min_length=1, max_length=500)
+    operation: Literal["change_role", "add_to_group", "remove"]
+    org_role: OrgRoleName | None = None
+    group_id: str | None = None
+
+
+class BulkOutcomeOut(BaseModel):
+    user_id: str
+    ok: bool
+    error: str | None
 
 
 class InitialBindingIn(BaseModel):
@@ -106,6 +129,7 @@ class InvitationCreate(BaseModel):
     org_role: OrgRoleName = "member"
     bindings: list[InitialBindingIn] = Field(default_factory=list[InitialBindingIn], max_length=50)
     access_ends_at: AwareDatetime | None = None
+    group_ids: list[str] = Field(default_factory=list[str], max_length=50, description="Manual groups to join")
 
 
 class InitialBindingOut(BaseModel):
@@ -118,6 +142,7 @@ class InvitationOut(BaseModel):
     email: str
     org_role: OrgRoleName
     bindings: list[InitialBindingOut]
+    group_ids: list[str] = Field(default_factory=list[str])
     access_ends_at: datetime | None
     invited_by: str
     expires_at: datetime
@@ -131,6 +156,7 @@ class InvitationOut(BaseModel):
             email=invitation.email,
             org_role=invitation.org_role.value,
             bindings=[InitialBindingOut(role_id=b.role_id, instance_id=b.instance_id) for b in invitation.bindings],
+            group_ids=list(invitation.group_ids),
             access_ends_at=invitation.access_ends_at,
             invited_by=invitation.invited_by,
             expires_at=invitation.expires_at,

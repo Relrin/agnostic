@@ -1,7 +1,8 @@
 """Approval routing rules, who an approval reaches, and each instance's expiry policy.
 
 Routing is advisory: it decides who gets told, not who may resolve (that stays ``approvals:write`` through AgentOS).
-A rule names members and access roles; people holding a named role on the instance are included. Routed people who
+A rule names members, groups and access roles; members of a named group and people holding a named role on the
+instance are included. Routed people who
 can't read approvals there are left out, so a notification never points at a page someone can't open.
 """
 
@@ -14,6 +15,7 @@ from agnostic_access.facade import AccessFacade
 from agnostic_approvals.application.ports import ApprovalStore, Policy, RouteDraft
 from agnostic_approvals.domain.inbox import ApprovalRecord, Route, matching_routes
 from agnostic_audit.facade import AuditEntry, AuditLog, actor_of
+from agnostic_directory.facade import DirectoryFacade
 from agnostic_gateway.facade import GatewayFacade
 from agnostic_identity.facade import IdentityFacade
 from agnostic_instances.facade import Instance
@@ -23,6 +25,7 @@ from agnostic_kernel.errors import NotFoundError, ValidationFailedError
 READ = "approvals:read"
 WRITE = "approvals:write"
 ORG_WRITE = "settings:write"
+MEMBERS_READ = "org:members:read"
 ADMIN = "agent_os:admin"
 PERSONAL_CHANNELS = ("in_app", "email", "slack")
 MAX_TTL_HOURS = 24 * 30
@@ -33,6 +36,7 @@ class RouteView:
     route: Route
     member_names: dict[str, str]
     role_names: dict[str, str]
+    group_names: dict[str, str]
 
 
 @dataclass(frozen=True, slots=True)
@@ -55,7 +59,9 @@ class ApprovalRouting:
         access: AccessFacade,
         identity: IdentityFacade,
         audit: AuditLog,
+        directory: DirectoryFacade,
     ) -> None:
+        self._directory = directory
         self._gateway = gateway
         self._authorizer = authorizer
         self._store = store
@@ -67,14 +73,21 @@ class ApprovalRouting:
         ids = sorted({member for route in routes for member in route.member_ids})
         members = {user.id: user.display_name for user in await self._identity.get_users(ids)}
         roles = await self._access.role_names()
+        groups = {group.id: group.name for group in await self._directory.groups()}
         return [
             RouteView(
                 route,
                 {member: members.get(member, member) for member in route.member_ids},
                 {role: roles.get(role, role) for role in route.role_ids},
+                {group: groups.get(group, group) for group in route.group_ids},
             )
             for route in routes
         ]
+
+    async def for_group(self, principal: Principal, group_id: str) -> list[RouteView]:
+        """Routes naming a group, on every instance: "Approvals routed here" on the group."""
+        _ = await self._authorizer.require(principal, MEMBERS_READ)
+        return await self._views([route for route in await self._store.all_routes() if group_id in route.group_ids])
 
     async def list(self, principal: Principal, instance_ref: str | None) -> list[RouteView]:
         if instance_ref is None:
@@ -94,8 +107,8 @@ class ApprovalRouting:
         name = draft.name.strip()
         if not name:
             raise ValidationFailedError("A route needs a name, e.g. the team it reaches.")
-        if not draft.member_ids and not draft.role_ids:
-            raise ValidationFailedError("A route needs at least one member or role.")
+        if not draft.member_ids and not draft.role_ids and not draft.group_ids:
+            raise ValidationFailedError("A route needs at least one member, group or role.")
         unknown = [channel for channel in draft.channels if channel not in PERSONAL_CHANNELS]
         if unknown:
             raise ValidationFailedError(f"Unknown channels: {', '.join(unknown)}.")
@@ -107,6 +120,10 @@ class ApprovalRouting:
         absent = [member for member in draft.member_ids if member not in found]
         if absent:
             raise ValidationFailedError(f"Unknown members: {', '.join(absent)}.")
+        known = {group.id for group in await self._directory.groups()}
+        unknown_groups = [group for group in draft.group_ids if group not in known]
+        if unknown_groups:
+            raise ValidationFailedError(f"Unknown groups: {', '.join(unknown_groups)}.")
         return replace(draft, name=name, channels=tuple(c for c in PERSONAL_CHANNELS if c in draft.channels))
 
     async def create(self, principal: Principal, instance_ref: str | None, draft: RouteDraft) -> RouteView:
@@ -170,6 +187,8 @@ class ApprovalRouting:
             users.update(route.member_ids)
             if route.role_ids:
                 users.update(await self._access.holders(instance_id, role_ids=route.role_ids))
+            for group_id in route.group_ids:
+                users.update(await self._directory.members_of(group_id))
         return Recipients(
             user_ids=sorted(users & readers),
             routed_to=[route.name for route in routes],

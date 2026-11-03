@@ -22,6 +22,8 @@ from agnostic_kernel.logging import configure_logging
 from agnostic_kernel.modules import ModuleGraphError, discover_modules, load_modules, resolve_modules
 from agnostic_kernel.settings import Settings
 from agnostic_server import loops
+from agnostic_server.audit_cli import audit_app
+from agnostic_server.tokens import tokens_app
 from agnostic_server.worker import WorkerUnavailableError, run_worker
 
 LOOP = "agnostic_server.loops:new_event_loop"
@@ -33,6 +35,8 @@ modules_app = typer.Typer(no_args_is_help=True, help="Installed modules.")
 app.add_typer(db_app, name="db")
 app.add_typer(config_app, name="config")
 app.add_typer(modules_app, name="modules")
+app.add_typer(tokens_app, name="tokens")
+app.add_typer(audit_app, name="audit")
 
 
 def _source_dirs() -> list[Path]:

@@ -9,14 +9,24 @@ from collections.abc import Mapping, Sequence
 from datetime import timedelta
 from typing import Any, Protocol
 
+from agnostic_agentos_client import AgentOSError
 from agnostic_instances.application.diagnostics import RuntimeAuth
-from agnostic_instances.application.ports import InstanceRepository, RuntimeClient, Target
+from agnostic_instances.application.ports import InstanceRepository, RuntimeClient, SnapshotRepository, Target
 from agnostic_instances.application.tokens import MintedToken, TokenService
-from agnostic_instances.domain.instances import AuthMode, EnvTag, Instance, InstanceStatus, SubClaimMode
+from agnostic_instances.domain.instances import (
+    AuthMode,
+    CapabilityStatus,
+    EnvTag,
+    Instance,
+    InstanceStatus,
+    SubClaimMode,
+)
 from agnostic_kernel.crypto import SecretBox
 
 __all__ = [
+    "AgentOSError",
     "AuthMode",
+    "CapabilityStatus",
     "EnvTag",
     "Instance",
     "InstanceStatus",
@@ -66,6 +76,10 @@ class InstancesFacade(Protocol):
         """
         ...
 
+    async def capability(self, instance: Instance, name: str) -> CapabilityStatus:
+        """The capability's status from the last probe (``unknown`` before the first one)."""
+        ...
+
 
 class InstancesFacadeImpl:
     def __init__(
@@ -75,8 +89,10 @@ class InstancesFacadeImpl:
         box: SecretBox,
         auth: RuntimeAuth,
         client: RuntimeClient,
+        snapshots: SnapshotRepository,
     ) -> None:
         self._instances = instances
+        self._snapshots = snapshots
         self._tokens = tokens
         self._box = box
         self._auth = auth
@@ -122,3 +138,10 @@ class InstancesFacadeImpl:
         return await self._client.request_json(
             Target.of(instance), method, path, headers, params=params, json=json, form=form
         )
+
+    async def capability(self, instance: Instance, name: str) -> CapabilityStatus:
+        capabilities, _ = await self._snapshots.capabilities(instance.id)
+        for item in capabilities:
+            if item.name == name:
+                return item.status
+        return "unknown"

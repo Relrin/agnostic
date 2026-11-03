@@ -24,3 +24,5 @@ class GatewaySettings(BaseSettings):
     upstream_read_timeout: float = Field(default=600.0, gt=0)
     circuit_failures: int = Field(default=5, ge=1)
     circuit_cooldown_seconds: float = Field(default=30.0, gt=0)
+    ingest_cron: str = "* * * * *"
+    """How often AgentOS authorization trails (decisions and role changes) are copied into the audit log."""

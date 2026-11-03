@@ -1,250 +1,552 @@
-import { auditListEventsInfiniteOptions, describeError, type AuditEventOut } from "@agnostic/api";
-import { useInstances } from "@agnostic/core";
+// The audit log: every action and access decision, with saved views, filters kept in the URL, the selected event in
+// an aside (`?event=`), export, and the SIEM streaming status.
 import {
-  Badge,
+  auditGetPolicyOptions,
+  auditListActionsOptions,
+  auditListActorsOptions,
+  auditListEventsInfiniteOptions,
+  auditListViewsOptions,
+  describeError,
+  type AuditEventOut,
+  type InstanceOut,
+} from "@agnostic/api";
+import {
+  STALE_TIME,
+  formatCount,
+  useCan,
+  useDebouncedCallback,
+  useInstances,
+  withQueryFn,
+} from "@agnostic/core";
+import {
+  Avatar,
   Button,
-  CodeBlock,
+  DataTable,
   EmptyState,
   ErrorState,
   Input,
   LoadingRows,
   PageIntro,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetTitle,
+  cn,
+  type Column,
 } from "@agnostic/ui";
-import { skipToken, useInfiniteQuery } from "@tanstack/react-query";
-import { useState, type ReactNode } from "react";
+import { skipToken, useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { Link, useNavigate, useSearch } from "@tanstack/react-router";
+import { Download, Search } from "lucide-react";
+import { useState } from "react";
 
-type Decision = AuditEventOut["decision"];
-const ANY = "__any__";
-const DECISION_TONE = { allowed: "success", denied: "danger", n_a: "muted" } as const;
+import {
+  ACTOR_KINDS,
+  ACTOR_KIND_LABELS,
+  DECISIONS,
+  DECISION_LABELS,
+  DEFAULT_RETENTION_DAYS,
+  PAGE_SIZE,
+  RANGE_PRESETS,
+  SOURCES,
+  SOURCE_LABELS,
+  avatarKind,
+  describeRange,
+  eventsQuery,
+  filterSummary,
+  filtersOf,
+  fromLocalInput,
+  hasFilters,
+  isMachine,
+  readSearch,
+  scopeLine,
+  toLocalInput,
+  toSearch,
+  utcDay,
+  utcTime,
+  type ActorKind,
+  type AuditFilters,
+  type AuditSearch,
+} from "./audit-api";
+import { EventDetail } from "./event-detail";
+import { ExportDialog } from "./export-dialog";
+import { FilterMenu, type FilterOption } from "./filter-menu";
+import { OverflowMenu, SIEM_SETTINGS, SiemPill } from "./header-actions";
+import { SavedViewsBar, activeView } from "./saved-views";
 
-function DecisionPill({ decision, scope }: { decision: Decision; scope: string | null }) {
-  if (decision === "n_a") return <span className="text-fg-muted">—</span>;
+const PATH = "/access/audit";
+const KIND_PREFIX = "kind:";
+
+const ENV_TEXT: Record<InstanceOut["env_tag"], string> = {
+  production: "text-warning",
+  staging: "text-info",
+  development: "text-fg-secondary",
+};
+const ENV_DOT: Record<InstanceOut["env_tag"], string> = {
+  production: "bg-warning",
+  staging: "bg-info",
+  development: "bg-fg-muted",
+};
+
+function DecisionCell({ event }: { event: AuditEventOut }) {
+  const line = scopeLine(event);
   return (
-    <span className="flex flex-col gap-0.5">
-      <Badge tone={DECISION_TONE[decision]}>{decision}</Badge>
-      {scope && <span className="font-mono text-[11px] text-fg-muted">{scope}</span>}
+    <span className="flex flex-col items-start gap-1">
+      {event.decision === "allowed" ? (
+        <span className="rounded-type bg-accent/12 px-1.5 py-px font-mono text-[10.5px] font-semibold tracking-[0.06em] text-accent">
+          ALLOWED
+        </span>
+      ) : event.decision === "denied" ? (
+        <span className="rounded-type bg-danger/12 px-1.5 py-px font-mono text-[10.5px] font-semibold tracking-[0.06em] text-danger">
+          DENIED
+        </span>
+      ) : (
+        <span className="text-fg-muted">—</span>
+      )}
+      {line && <span className="font-mono text-[11px] break-all text-fg-muted">{line}</span>}
     </span>
   );
 }
 
-function Detail({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div className="flex flex-col gap-0.5">
-      <dt className="text-[11.5px] tracking-[0.06em] text-fg-muted uppercase">{label}</dt>
-      <dd className="text-[13px] break-words">{children}</dd>
-    </div>
-  );
-}
-
-function EventAside({
-  event,
-  instance,
-  onClose,
+function DateRangeForm({
+  since,
+  until,
+  onApply,
 }: {
-  event: AuditEventOut;
-  instance: string | undefined;
-  onClose: () => void;
+  since: string | undefined;
+  until: string | undefined;
+  onApply: (since: string | undefined, until: string | undefined) => void;
 }) {
+  const [from, setFrom] = useState(toLocalInput(since));
+  const [to, setTo] = useState(toLocalInput(until));
   return (
-    <Sheet
-      open
-      onOpenChange={(open) => {
-        if (!open) onClose();
+    <form
+      className="flex flex-col gap-2 border-t border-border-subtle p-1 pt-2"
+      onSubmit={(event) => {
+        event.preventDefault();
+        onApply(fromLocalInput(from), fromLocalInput(to));
       }}
     >
-      <SheetContent className="w-[min(520px,100%)] overflow-y-auto">
-        <SheetTitle className="pr-8 text-[16px] font-semibold">{event.summary}</SheetTitle>
-        <SheetDescription className="font-mono text-[12px] text-fg-muted">
-          {event.id} · {new Date(event.occurred_at).toLocaleString()}
-        </SheetDescription>
-        {event.decision === "denied" && (
-          <div className="rounded-tile border border-danger/35 bg-danger/5 px-3.5 py-3 text-[13px]">
-            <div className="font-semibold">Why it was denied</div>
-            <p className="text-fg-secondary">
-              {event.resource_display ? `${event.resource_display} ` : ""}needed{" "}
-              <code className="font-mono">{event.missing_scopes.join(", ") || event.scope_checked}</code>
-              {instance ? ` on ${instance}` : ""}. Ask an Owner or Administrator for a role that includes it.
-            </p>
-          </div>
-        )}
-        <dl className="grid grid-cols-2 gap-x-4 gap-y-3">
-          <Detail label="Actor">
-            {event.actor.display}
-            <span className="block font-mono text-[11.5px] text-fg-muted">{event.actor.id}</span>
-          </Detail>
-          <Detail label="Action">
-            <span className="font-mono">{event.action}</span>
-          </Detail>
-          <Detail label="Resource">{event.resource_display ?? event.resource_id ?? "—"}</Detail>
-          <Detail label="Instance">{instance ?? "org"}</Detail>
-          <Detail label="Decision">
-            <DecisionPill decision={event.decision} scope={event.scope_checked} />
-          </Detail>
-          <Detail label="Status">{event.response_status ?? "—"}</Detail>
-          <Detail label="Via">{event.via}</Detail>
-          <Detail label="IP">{event.ip ?? "—"}</Detail>
-          <Detail label="Request id">
-            <span className="font-mono text-[12px]">{event.request_id ?? "—"}</span>
-          </Detail>
-          <Detail label="Client">{event.client ?? "—"}</Detail>
-        </dl>
-        {event.diff && <CodeBlock title="Before / after" code={JSON.stringify(event.diff, null, 2)} />}
-      </SheetContent>
-    </Sheet>
+      <span className="text-[11.5px] text-fg-muted">Custom range (UTC)</span>
+      <Input
+        type="datetime-local"
+        aria-label="From (UTC)"
+        className="h-8"
+        value={from}
+        onChange={(event) => {
+          setFrom(event.target.value);
+        }}
+      />
+      <Input
+        type="datetime-local"
+        aria-label="To (UTC)"
+        className="h-8"
+        value={to}
+        onChange={(event) => {
+          setTo(event.target.value);
+        }}
+      />
+      <Button type="submit" size="28" disabled={!from && !to}>
+        Apply range
+      </Button>
+    </form>
   );
 }
 
-/** `/access/audit`: who did what, where, and whether it was allowed. */
+/** `/access/audit?q=&actor=&actor_kind=&action=&decision=&instance=&resource=&source=&since=&until=&event=`. */
 export function AuditPage() {
-  const instances = useInstances();
-  const [action, setAction] = useState("");
-  const [decision, setDecision] = useState<string>(ANY);
-  const [instance, setInstance] = useState<string>(ANY);
-  const [selected, setSelected] = useState<AuditEventOut | undefined>(undefined);
+  const search = useSearch({ strict: false }) as unknown as Record<string, unknown>;
+  const navigate = useNavigate();
+  const state = readSearch(search);
+  const filters = filtersOf(state);
+  const go = (next: AuditSearch) => {
+    void navigate({ to: PATH, search: toSearch(next) });
+  };
+  const patch = (changes: Partial<AuditFilters>) => {
+    go({ ...state, ...changes });
+  };
 
-  const options = auditListEventsInfiniteOptions({
-    query: {
-      limit: 50,
-      ...(action.trim() ? { action: action.trim() } : {}),
-      ...(decision !== ANY ? { decision: decision as Decision } : {}),
-      ...(instance !== ANY ? { instance } : {}),
-    },
-  });
+  const [query, setQuery] = useState(state.q ?? "");
+  const searchLater = useDebouncedCallback((value: string) => {
+    patch({ q: value.trim() || undefined });
+  }, 300);
+  /** A saved view (or "All events") replaces every filter. */
+  const apply = (next: AuditFilters) => {
+    setQuery(next.q ?? "");
+    go({ ...next, event: state.event });
+  };
+  const [exporting, setExporting] = useState(false);
+
+  const instances = useInstances();
+  const canExport = useCan("audit:export").allowed === true;
+  const canSettings = useCan("settings:write").allowed === true;
+  const canOrgWrite = useCan("org:write").allowed === true;
+
+  const options = auditListEventsInfiniteOptions({ query: { limit: PAGE_SIZE, ...eventsQuery(filters) } });
   const events = useInfiniteQuery({
     ...options,
     queryFn: options.queryFn ?? skipToken,
     getNextPageParam: (last) => last.next_cursor ?? undefined,
+    staleTime: STALE_TIME.list,
   });
-  const nameOf = (id: string | null) =>
-    id ? (instances.data?.find((item) => item.id === id)?.display_name ?? id) : undefined;
+  const views = useQuery({
+    ...withQueryFn(auditListViewsOptions()),
+    retry: false,
+    staleTime: STALE_TIME.list,
+  });
+  const actors = useQuery({
+    ...withQueryFn(auditListActorsOptions({ query: { limit: 100 } })),
+    retry: false,
+    staleTime: STALE_TIME.config,
+  });
+  const actions = useQuery({
+    ...withQueryFn(auditListActionsOptions()),
+    retry: false,
+    staleTime: STALE_TIME.config,
+  });
+  const policy = useQuery({
+    ...withQueryFn(auditGetPolicyOptions()),
+    retry: false,
+    staleTime: STALE_TIME.config,
+  });
+  const retention = policy.data?.hot_retention_days ?? DEFAULT_RETENTION_DAYS;
+
   const rows = events.data?.pages.flatMap((page) => page.data) ?? [];
+  const instanceOf = (id: string | null) => (id ? instances.data?.find((item) => item.id === id) : undefined);
+  const actorName = (id: string) => actors.data?.find((actor) => actor.id === id)?.display ?? id;
+  const instanceName = (id: string) => instanceOf(id)?.slug ?? id;
+  const summary = filterSummary(filters, { actor: actorName, instance: instanceName });
+  const filtered = hasFilters(filters);
+  const savedViews = views.data ?? [];
+  const current = activeView(savedViews, filters);
+  const allCount = !filtered && events.isSuccess && !events.hasNextPage ? rows.length : undefined;
+  const open = (id: string) => {
+    go({ ...state, event: id });
+  };
+
+  const actorOptions: FilterOption[] = [
+    ...ACTOR_KINDS.filter((kind) => kind !== "anonymous").map((kind) => ({
+      value: `${KIND_PREFIX}${kind}`,
+      label: ACTOR_KIND_LABELS[kind],
+    })),
+    ...(actors.data ?? []).map((actor) => ({
+      value: actor.id,
+      label: actor.display,
+      mono: isMachine(actor.kind),
+      meta: formatCount(actor.count),
+      icon: <Avatar id={actor.id} name={actor.display} kind={avatarKind(actor.kind)} size={18} />,
+    })),
+  ];
+  const actorCurrent = state.actor ?? (state.actor_kind ? `${KIND_PREFIX}${state.actor_kind}` : undefined);
+  const actorShown = state.actor
+    ? actorName(state.actor)
+    : state.actor_kind
+      ? ACTOR_KIND_LABELS[state.actor_kind as ActorKind]
+      : undefined;
+
+  const vocabulary = (actions.data ?? []).map((item) => item.action);
+  const prefixes = [...new Set(vocabulary.map((action) => action.split(".")[0]).filter(Boolean))].map(
+    (prefix) => `${String(prefix)}.*`,
+  );
+  const actionOptions: FilterOption[] = [
+    ...prefixes.map((value) => ({ value, label: value, mono: true, meta: "any" })),
+    ...vocabulary.map((value) => ({ value, label: value, mono: true })),
+  ];
+
+  const columns: Column<AuditEventOut>[] = [
+    {
+      id: "time",
+      header: "UTC",
+      className: "w-[92px]",
+      cell: (row) => (
+        <span className="flex flex-col font-mono whitespace-nowrap">
+          <span className="text-[12.5px]">{utcTime(row.occurred_at)}</span>
+          <span className="text-[11px] text-fg-muted">{utcDay(row.occurred_at)}</span>
+        </span>
+      ),
+    },
+    {
+      id: "actor",
+      header: "Actor",
+      cell: (row) => (
+        <span className="flex min-w-0 items-center gap-2">
+          <Avatar id={row.actor.id} name={row.actor.display} kind={avatarKind(row.actor.kind)} size={22} />
+          <span className={cn("truncate", isMachine(row.actor.kind) && "font-mono text-[12px]")}>
+            {row.actor.display}
+          </span>
+        </span>
+      ),
+    },
+    {
+      id: "action",
+      header: "Action",
+      cell: (row) => (
+        <span className="flex max-w-[320px] min-w-0 flex-col items-start gap-0.5">
+          <button
+            type="button"
+            className="cursor-pointer font-mono text-[12.5px] font-medium text-fg hover:underline"
+            onClick={(click) => {
+              click.stopPropagation();
+              open(row.id);
+            }}
+          >
+            {row.action}
+          </button>
+          <span className="line-clamp-1 text-[12px] text-fg-muted" title={row.summary}>
+            {row.summary}
+          </span>
+        </span>
+      ),
+    },
+    {
+      id: "resource",
+      header: "Resource",
+      cell: (row) => {
+        const resource = row.resource_display ?? row.resource_id ?? "—";
+        return (
+          <span className="block max-w-[220px] truncate font-mono text-[12px]" title={resource}>
+            {resource}
+          </span>
+        );
+      },
+    },
+    {
+      id: "where",
+      header: "Where",
+      cell: (row) => {
+        const instance = instanceOf(row.instance_id);
+        if (!row.instance_id) return <span className="font-mono text-[12px] text-fg-muted">org</span>;
+        return (
+          <span
+            className={cn(
+              "font-mono text-[12px]",
+              instance ? ENV_TEXT[instance.env_tag] : "text-fg-secondary",
+            )}
+          >
+            {instance?.slug ?? row.instance_id}
+          </span>
+        );
+      },
+    },
+    { id: "decision", header: "Decision", cell: (row) => <DecisionCell event={row} /> },
+  ];
 
   return (
-    <div className="mx-auto flex w-full max-w-[1320px] flex-col gap-6 px-8 pt-6 pb-10">
-      <PageIntro title="Audit log">
-        Every change in the control plane and every gateway write or denial, with who, where and why. Reads
-        are sampled unless the org logs all reads.
-      </PageIntro>
-      <div className="flex flex-wrap items-center gap-2">
-        <Input
-          aria-label="Filter by action"
-          mono
-          placeholder="Action, e.g. gateway.* or members.update"
-          className="max-w-[320px]"
-          value={action}
-          onChange={(event) => {
-            setAction(event.target.value);
-          }}
-        />
-        <Select value={decision} onValueChange={setDecision}>
-          <SelectTrigger aria-label="Decision" className="w-40">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={ANY}>Any decision</SelectItem>
-            <SelectItem value="allowed">Allowed</SelectItem>
-            <SelectItem value="denied">Denied</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={instance} onValueChange={setInstance}>
-          <SelectTrigger aria-label="Instance" className="w-48">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={ANY}>Any instance</SelectItem>
-            {(instances.data ?? []).map((item) => (
-              <SelectItem key={item.id} value={item.id}>
-                {item.display_name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-      {events.isPending ? (
-        <LoadingRows rows={8} label="Loading events" />
-      ) : events.isError ? (
-        <ErrorState reason={describeError(events.error).reason} onRetry={() => void events.refetch()} />
-      ) : rows.length === 0 ? (
-        <EmptyState title="No events match">Try a broader filter.</EmptyState>
-      ) : (
-        <div className="overflow-x-auto rounded-card border border-border">
-          <table className="w-full min-w-[900px] text-left text-[13px]">
-            <thead className="border-b border-border-subtle text-[11.5px] tracking-[0.06em] text-fg-muted uppercase">
-              <tr>
-                <th className="px-4 py-2.5 font-medium">Time</th>
-                <th className="px-4 py-2.5 font-medium">Actor</th>
-                <th className="px-4 py-2.5 font-medium">Action</th>
-                <th className="px-4 py-2.5 font-medium">Where</th>
-                <th className="px-4 py-2.5 font-medium">Decision</th>
-                <th className="px-4 py-2.5 font-medium">Summary</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-divider-row">
-              {rows.map((event) => (
-                <tr
-                  key={event.id}
-                  className="cursor-pointer bg-surface hover:bg-surface-hover"
+    <div className="flex h-full min-h-0">
+      <div className="flex min-w-0 flex-1 flex-col gap-5 overflow-y-auto px-7 pt-5 pb-10">
+        <PageIntro
+          title="Audit log"
+          actions={
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <SiemPill />
+              {canExport && (
+                <Button
+                  variant="outline"
+                  size="34"
                   onClick={() => {
-                    setSelected(event);
+                    setExporting(true);
                   }}
                 >
-                  <td className="px-4 py-2.5 font-mono text-[12px] whitespace-nowrap">
-                    {new Date(event.occurred_at).toLocaleTimeString()}
-                    <span className="block text-[11px] text-fg-muted">
-                      {new Date(event.occurred_at).toLocaleDateString()}
+                  <Download aria-hidden />
+                  Export view
+                </Button>
+              )}
+              {canSettings && (
+                <Button asChild variant="secondary" size="34">
+                  <Link to={SIEM_SETTINGS}>SIEM settings</Link>
+                </Button>
+              )}
+              {rows.some((row) => row.hash) && (
+                <OverflowMenu since={filters.since} until={filters.until} onOpenEvent={open} />
+              )}
+            </div>
+          }
+        >
+          Every action and access decision across the control plane and your AgentOS instances: who did what,
+          to which resource, and which scope decided it.
+        </PageIntro>
+
+        <SavedViewsBar
+          views={savedViews}
+          filters={filters}
+          allCount={allCount}
+          summary={summary}
+          canShare={canExport || canOrgWrite}
+          onApply={apply}
+        />
+
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative w-full max-w-[280px]">
+            <Search
+              aria-hidden
+              className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-fg-muted"
+            />
+            <Input
+              type="search"
+              aria-label="Search resource, request id or IP"
+              placeholder="Search resource, request id or IP"
+              className="h-8 pl-8"
+              value={query}
+              onChange={(event) => {
+                setQuery(event.target.value);
+                searchLater(event.target.value);
+              }}
+            />
+          </div>
+          <FilterMenu
+            label="Actor"
+            current={actorCurrent}
+            shown={actorShown}
+            options={actorOptions}
+            searchable
+            onSelect={(value) => {
+              if (value?.startsWith(KIND_PREFIX))
+                patch({ actor: undefined, actor_kind: value.slice(KIND_PREFIX.length) });
+              else patch({ actor: value, actor_kind: undefined });
+            }}
+          />
+          <FilterMenu
+            label="Action"
+            current={state.action}
+            options={actionOptions}
+            freeText={{ label: "Action or prefix", placeholder: "members.update or gateway.*" }}
+            onSelect={(action) => {
+              patch({ action });
+            }}
+          />
+          <FilterMenu
+            label="Decision"
+            current={state.decision}
+            options={DECISIONS.map((value) => ({ value, label: DECISION_LABELS[value] }))}
+            onSelect={(decision) => {
+              patch({ decision });
+            }}
+          />
+          <FilterMenu
+            label="Instance"
+            current={state.instance}
+            shown={state.instance ? instanceName(state.instance) : undefined}
+            options={(instances.data ?? []).map((instance) => ({
+              value: instance.id,
+              label: instance.slug,
+              mono: true,
+              icon: (
+                <span
+                  aria-hidden
+                  className={cn("size-1.5 shrink-0 rounded-full", ENV_DOT[instance.env_tag])}
+                />
+              ),
+            }))}
+            onSelect={(instance) => {
+              patch({ instance });
+            }}
+          />
+          <FilterMenu
+            label="Date"
+            current={state.since || state.until ? "range" : undefined}
+            shown={describeRange(state.since, state.until)}
+            listCurrent={false}
+            options={RANGE_PRESETS.map((preset) => ({ value: preset.id, label: preset.label }))}
+            onSelect={(id) => {
+              const preset = RANGE_PRESETS.find((item) => item.id === id);
+              patch({ since: preset?.since(new Date()).toISOString(), until: undefined });
+            }}
+          >
+            {(close) => (
+              <DateRangeForm
+                since={state.since}
+                until={state.until}
+                onApply={(since, until) => {
+                  patch({ since, until });
+                  close();
+                }}
+              />
+            )}
+          </FilterMenu>
+          <FilterMenu
+            label="Source"
+            current={state.source}
+            options={SOURCES.map((value) => ({ value, label: SOURCE_LABELS[value] }))}
+            onSelect={(source) => {
+              patch({ source });
+            }}
+          />
+          {state.resource && (
+            <FilterMenu
+              label="Resource"
+              current={state.resource}
+              options={[]}
+              onSelect={(resource) => {
+                patch({ resource });
+              }}
+            />
+          )}
+          {filtered && (
+            <Button
+              variant="ghost"
+              size="30"
+              onClick={() => {
+                apply({});
+              }}
+            >
+              Clear filters
+            </Button>
+          )}
+        </div>
+
+        {events.isError ? (
+          <ErrorState {...describeError(events.error)} onRetry={() => void events.refetch()} />
+        ) : events.isPending ? (
+          <LoadingRows rows={8} label="Loading events" />
+        ) : rows.length === 0 ? (
+          <EmptyState title="No events match">
+            {filtered ? "Try a broader filter or another saved view." : "Nothing has been recorded yet."}
+          </EmptyState>
+        ) : (
+          <div className="min-w-0 overflow-x-auto">
+            <div className="min-w-[820px] text-[12.5px]">
+              <DataTable
+                label="Audit events"
+                columns={columns}
+                rows={rows}
+                rowKey={(row) => row.id}
+                selectedKey={state.event ?? ""}
+                onRowClick={(row) => {
+                  open(row.id);
+                }}
+                footer={
+                  <>
+                    <span className="mr-auto">
+                      {formatCount(rows.length)}
+                      {events.hasNextPage ? "+" : ""} events ·{" "}
+                      {current?.name ?? (filtered ? "Filtered" : "All events")}
                     </span>
-                  </td>
-                  <td className="px-4 py-2.5">{event.actor.display}</td>
-                  <td className="px-4 py-2.5 font-mono text-[12px]">{event.action}</td>
-                  <td className="px-4 py-2.5">{nameOf(event.instance_id) ?? "org"}</td>
-                  <td className="px-4 py-2.5">
-                    <DecisionPill
-                      decision={event.decision}
-                      scope={event.decision === "denied" ? event.missing_scopes.join(", ") : null}
-                    />
-                  </td>
-                  <td className="px-4 py-2.5 text-fg-secondary">
-                    <button
-                      type="button"
-                      className="cursor-pointer text-left hover:underline"
-                      onClick={() => {
-                        setSelected(event);
-                      }}
-                    >
-                      {event.summary}
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-      {events.hasNextPage && (
-        <div>
-          <Button disabled={events.isFetchingNextPage} onClick={() => void events.fetchNextPage()}>
-            {events.isFetchingNextPage ? "Loading…" : "Load more"}
-          </Button>
-        </div>
-      )}
-      {selected && (
-        <EventAside
-          event={selected}
-          instance={nameOf(selected.instance_id)}
+                    {events.hasNextPage && (
+                      <Button
+                        variant="ghost"
+                        size="28"
+                        disabled={events.isFetchingNextPage}
+                        onClick={() => void events.fetchNextPage()}
+                      >
+                        {events.isFetchingNextPage ? "Loading…" : "Load more"}
+                      </Button>
+                    )}
+                    <span>Kept {formatCount(retention)} days · append-only</span>
+                  </>
+                }
+              />
+            </div>
+          </div>
+        )}
+      </div>
+      {state.event && (
+        <EventDetail
+          key={state.event}
+          eventId={state.event}
+          loaded={rows.find((row) => row.id === state.event)}
+          listSettled={!events.isPending}
+          instances={instances.data}
           onClose={() => {
-            setSelected(undefined);
+            go({ ...state, event: undefined });
           }}
         />
       )}
+      <ExportDialog open={exporting} onOpenChange={setExporting} filters={filters} summary={summary} />
     </div>
   );
 }

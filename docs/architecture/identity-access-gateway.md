@@ -4,6 +4,9 @@ Phase 1 gives the control plane its spine: people sign in, belong to the install
 connect AgentOS instances with per-instance keys, and call any AgentOS route through the gateway with a JWT that
 carries exactly their scopes. Every change and every denial is audited.
 
+Groups and identity-provider sync, editable roles, service accounts, temporary access, SAML, MFA and the full
+audit log (views, export, SIEM, archive) build on this: see [access governance](access-governance.md).
+
 ```mermaid
 flowchart LR
   B[Browser] -- cookie + X-CSRF-Token --> GW

@@ -5,7 +5,19 @@ from datetime import UTC, datetime, timedelta
 import pytest
 
 from agnostic_access.domain.effective import compute_access, explain
-from agnostic_access.domain.roles import BUILT_IN_BY_ID, BUILT_IN_ROLES, AccessRole, Binding
+from agnostic_access.domain.requests import AccessRequest, InvalidRequestError, check_duration, check_reason
+from agnostic_access.domain.roles import (
+    BUILT_IN_BY_ID,
+    BUILT_IN_ROLES,
+    AccessRole,
+    Binding,
+    InvalidRoleError,
+    RoleDraft,
+    check_draft,
+    compare_versions,
+    scope_diff,
+)
+from agnostic_access.domain.roles import role_slug as slug_of
 from agnostic_access.domain.scopes import ADMIN_SCOPE, compress, satisfies, split
 from agnostic_gateway.application.proxy import _holds
 from agnostic_gateway.domain.policies import DEFAULT_POLICIES, PolicyTable
@@ -221,3 +233,123 @@ def test_explanations() -> None:
     assert (
         org.text == "Delete instance needs `os:delete`. Sam is Administrator, which doesn't include it. Owners have it."
     )
+
+
+def test_group_bindings_count_only_for_groups_the_person_is_in() -> None:
+    mine = binding("rol_operator", principal_kind="group", principal_id="grp_support", id="bnd_group")
+    other = binding("rol_builder", principal_kind="group", principal_id="grp_research", id="bnd_other")
+    access = compute_access(
+        user_id="usr_maya",
+        org_role="member",
+        instance_id="ins_prod",
+        bindings=(mine, other),
+        roles=BUILT_IN_BY_ID,
+        require_explicit_bindings=False,
+        control_plane_scopes=CP,
+        now=NOW,
+        groups={"grp_support": "Support AI"},
+    )
+    assert access.role_names() == ["Operator"]
+    grant = access.find("sessions:read", control_plane=False)[0]
+    assert (grant.via_group_id, grant.via_group_name) == ("grp_support", "Support AI")
+    text = explain(
+        "sessions:read",
+        access,
+        who="Maya",
+        instance_label="prod",
+        action_label=None,
+        roles=BUILT_IN_ROLES,
+        elsewhere={},
+        is_control_plane=lambda scope: scope in CP,
+    ).text
+    assert text == "Granted by Operator via Support AI → `sessions:read` on prod."
+
+
+def test_service_accounts_hold_only_their_bindings() -> None:
+    access = compute_access(
+        user_id="sac_zendesk",
+        org_role=None,
+        instance_id="ins_prod",
+        bindings=(binding(None, scopes=("agents:support-triage:run",), principal_kind="service_account"),),
+        roles=BUILT_IN_BY_ID,
+        require_explicit_bindings=True,
+        control_plane_scopes=CP,
+        now=NOW,
+        principal_kind="service_account",
+    )
+    assert access.runtime_scopes() == {"agents:support-triage:run"}
+    assert not access.implicit_full
+    denied = explain(
+        "org:members:write",
+        access,
+        who="sa:zendesk-bridge",
+        instance_label=None,
+        action_label=None,
+        roles=BUILT_IN_ROLES,
+        elsewhere={},
+        is_control_plane=lambda scope: scope in CP,
+    )
+    assert "service account" in denied.text
+
+
+def test_role_drafts_are_checked_against_the_catalog() -> None:
+    catalogued = {"agents:read", "agents:run", "knowledge:write", "sessions:read"}.__contains__
+    draft = RoleDraft(
+        name="  Billing   runner ",
+        description=" ",
+        color="#7DA6FF",
+        permissions={"agents": ("read", "run", "run"), "sessions": ("read",), "empty": ()},
+        run_scope={"agents": ("billing-agent", " ")},
+    )
+    checked = check_draft(draft, catalogued=catalogued)
+    assert checked.name == "Billing runner"
+    assert checked.permissions == {"agents": ("read", "run"), "sessions": ("read",)}
+    assert checked.run_scope == {"agents": ("billing-agent",)}
+    assert slug_of(checked.name) == "billing-runner"
+    with pytest.raises(InvalidRoleError, match="agents:teleport"):
+        check_draft(RoleDraft("X", "", "#000000", {"agents": ("teleport",)}), catalogued=catalogued)
+    with pytest.raises(InvalidRoleError, match="can run"):
+        check_draft(
+            RoleDraft("X", "", "#000000", {"agents": ("read",)}, run_scope={"agents": ("a",)}), catalogued=catalogued
+        )
+    with pytest.raises(InvalidRoleError, match="bindable"):
+        check_draft(
+            RoleDraft("X", "", "#000000", {"agents": ("read",)}, bindable_instance_ids=()), catalogued=catalogued
+        )
+
+
+def test_scope_diff_and_version_comparison() -> None:
+    operator = BUILT_IN_BY_ID["rol_operator"].scopes()
+    edited = (operator | {"knowledge:write"}) - {"approvals:delete"}
+    diff = scope_diff(operator, edited)
+    assert (diff.added, diff.removed) == (("knowledge:write",), ("approvals:delete",))
+    assert diff.lines() == [{"op": "add", "text": "knowledge:write"}, {"op": "remove", "text": "approvals:delete"}]
+    assert compare_versions("3.1.12", "3.1.0")
+    assert not compare_versions("3.0.9", "3.1.0")
+    assert compare_versions(None, "3.1.0")
+
+
+def test_temporary_access_requests_follow_their_lifecycle() -> None:
+    request = AccessRequest(
+        id="areq_1",
+        requester_id="usr_priya",
+        instance_id="ins_prod",
+        role_id="rol_builder",
+        scopes=(),
+        reason="Hotfix",
+        duration_hours=4,
+        status="pending",
+        created_at=NOW,
+    )
+    with pytest.raises(InvalidRequestError, match="own request"):
+        request.approve(by="usr_priya", at=NOW, binding_id="bnd_1", note=None)
+    approved = request.approve(by="usr_dana", at=NOW, binding_id="bnd_1", note="ok")
+    assert approved.expires_at == NOW + timedelta(hours=4)
+    with pytest.raises(InvalidRequestError, match="already approved"):
+        approved.deny(by="usr_dana", at=NOW, note=None)
+    with pytest.raises(InvalidRequestError, match="Only the person"):
+        request.cancel(by="usr_dana", at=NOW)
+    with pytest.raises(InvalidRequestError, match="at most 168"):
+        check_duration(200, max_hours=168)
+    with pytest.raises(InvalidRequestError, match="Say why"):
+        check_reason("   ")

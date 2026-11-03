@@ -192,6 +192,8 @@ class Route:
     created_by: str | None
     created_at: datetime
     updated_at: datetime
+    group_ids: tuple[str, ...] = ()
+    """Groups whose members are routed (directory groups, manual or synced from the IdP)."""
 
     def matches(self, record: ApprovalRecord) -> bool:
         if self.tool_name and self.tool_name != record.tool_name:

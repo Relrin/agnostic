@@ -22,6 +22,7 @@ agnostic = "agnostic_server.cli:main"
 
 [tool.deptry.per_rule_ignores]
 DEP002 = ["uvloop"] # imported dynamically (see agnostic_server.loops)
+DEP003 = ["agnostic_service_accounts", "agnostic_audit"] # module facades imported lazily by `agnostic tokens|audit`
 
 [tool.uv.sources]
 agnostic-kernel = { workspace = true }

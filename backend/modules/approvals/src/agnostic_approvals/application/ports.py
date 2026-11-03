@@ -21,6 +21,7 @@ class RouteDraft:
     component_ids: tuple[str, ...] = ()
     member_ids: tuple[str, ...] = ()
     role_ids: tuple[str, ...] = ()
+    group_ids: tuple[str, ...] = ()
     channels: tuple[str, ...] = ("in_app",)
     channel_ids: tuple[str, ...] = ()
 
@@ -45,6 +46,10 @@ class StoredView:
 class ApprovalStore(Protocol):
     async def routes(self, instance_id: str | None, *, include_org: bool = True) -> list[Route]:
         """Routes of an instance (plus org-wide ones), or only org-wide ones with ``instance_id=None``."""
+        ...
+
+    async def all_routes(self) -> list[Route]:
+        """Every route, org-wide and per instance."""
         ...
 
     async def route(self, route_id: str) -> Route | None: ...

@@ -22,7 +22,7 @@ from agnostic_kernel.modules import AuditActionDecl, BaseModule, CapabilityProbe
 class ApprovalsModule(BaseModule):
     name = "approvals"
     version = "0.2.0"
-    depends_on = ("access", "audit", "identity", "instances", "gateway", "notifications", "settings")
+    depends_on = ("access", "audit", "directory", "identity", "instances", "gateway", "notifications", "settings")
 
     def __init__(self) -> None:
         self._poller: asyncio.Task[None] | None = None

@@ -129,6 +129,7 @@ export {
   type TimelineState,
 } from "./patterns/control";
 export { ShareList, StackedBarChart, ThinBar, type BarSeries } from "./patterns/chart";
+export { AccessChip, SaveBar, ScopeDiff, type DiffLine } from "./patterns/access";
 export {
   ApprovalCard,
   EntitySquare,

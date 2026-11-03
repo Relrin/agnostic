@@ -25,6 +25,7 @@ from agnostic_gateway.application.proxy import (
     GatewayUnreachableError,
     InstanceAuthFailedError,
     InstanceDisabledError,
+    deny_service_account,
 )
 from agnostic_instances.facade import AuthMode, Instance, InstancesFacade, InstanceStatus, SubClaimMode
 from agnostic_kernel.auth import Authorizer, Principal
@@ -101,8 +102,19 @@ class Elevation:
     ) -> ElevatedResponse:
         """Send one request as Instance admin on behalf of ``principal``, who must hold ``justification``.
 
-        Statuses are returned as they are; only transport failures and a rejected token raise.
+        Statuses are returned as they are; only transport failures and a rejected token raise. Never for service
+        accounts: scoped service accounts can't resolve approvals, whatever they hold.
         """
+        if principal.kind == "service_account":
+            await deny_service_account(
+                self._audit,
+                principal,
+                instance,
+                method=method,
+                path=path,
+                route=f"{method} {path}",
+                required=[justification],
+            )
         if not instance.elevation_enabled:
             raise ElevationDisabledError(
                 f"Only Instance admins can {action_label} on {instance.display_name}: delegated elevation is turned "

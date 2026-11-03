@@ -1,0 +1,34 @@
+[project]
+name = "agnostic-service-accounts"
+version = "0.1.0"
+description = "Service accounts: org-level machine identities, native AgentOS tokens per instance and gateway tokens with rotation"
+requires-python = "==3.15.*"
+license = "BSD-3-Clause"
+dependencies = [
+  "agnostic-access",
+  "agnostic-audit",
+  "agnostic-identity",
+  "agnostic-instances",
+  "agnostic-kernel",
+  "alembic==1.20.1",
+  "dishka==1.10.1",
+  "fastapi==0.162.0",
+  "procrastinate==3.10.0",
+  "pydantic==2.14.2",
+  "pydantic-settings==2.16.2",
+  "sqlalchemy[asyncio]==2.1.6",
+]
+
+[project.entry-points."agnostic.modules"]
+service_accounts = "agnostic_service_accounts.module:ServiceAccountsModule"
+
+[tool.uv.sources]
+agnostic-access = { workspace = true }
+agnostic-audit = { workspace = true }
+agnostic-identity = { workspace = true }
+agnostic-instances = { workspace = true }
+agnostic-kernel = { workspace = true }
+
+[build-system]
+requires = ["uv_build==0.13.6"]
+build-backend = "uv_build"

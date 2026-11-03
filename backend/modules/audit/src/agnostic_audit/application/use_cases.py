@@ -2,17 +2,25 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 
+from agnostic_audit.application.policy import PolicyCache
 from agnostic_audit.application.ports import (
+    ActorSummary,
     AuditRepository,
     EventQuery,
-    PartitionMaintenance,
     StandaloneAuditWriter,
 )
-from agnostic_audit.domain.events import EVENT_ID_PREFIX, AuditEntry, AuditEvent, render_summary
+from agnostic_audit.application.streaming import StreamTrigger
+from agnostic_audit.domain.events import (
+    EVENT_ID_PREFIX,
+    AuditEntry,
+    AuditEvent,
+    IngestedEntry,
+    render_summary,
+)
 from agnostic_kernel.context import current_client, current_request_id
 from agnostic_kernel.db import utcnow
 from agnostic_kernel.errors import NotFoundError
@@ -62,26 +70,78 @@ def build_event(entry: AuditEntry, vocabulary: AuditVocabulary) -> AuditEvent:
         diff=entry.diff,
         links=entry.links,
         source="control_plane",
+        denial_reason=entry.denial_reason,
+    )
+
+
+def ingested_event(entry: IngestedEntry) -> AuditEvent:
+    return AuditEvent(
+        id=new_id(EVENT_ID_PREFIX),
+        occurred_at=entry.occurred_at,
+        request_id=None,
+        actor=entry.actor,
+        via=entry.via,
+        ip=None,
+        client=entry.client,
+        action=entry.action,
+        resource_kind=entry.resource_kind,
+        resource_id=entry.resource_id,
+        resource_display=entry.resource_display,
+        instance_id=entry.instance_id,
+        decision=entry.decision,
+        scope_checked=entry.scope_checked,
+        missing_scopes=entry.missing_scopes,
+        response_status=entry.response_status,
+        summary=entry.summary,
+        diff=entry.diff,
+        links=None,
+        source="agentos",
+        denial_reason=entry.denial_reason,
+        source_event_id=entry.source_event_id,
     )
 
 
 class RecordEvent:
+    """Writes control-plane events; links them into the hash chain while the policy has it on."""
+
     def __init__(
-        self, repository: AuditRepository, standalone: StandaloneAuditWriter, vocabulary: AuditVocabulary
+        self,
+        repository: AuditRepository,
+        standalone: StandaloneAuditWriter,
+        vocabulary: AuditVocabulary,
+        policy: PolicyCache,
+        stream: StreamTrigger,
     ) -> None:
         self._repository = repository
         self._standalone = standalone
         self._vocabulary = vocabulary
+        self._policy = policy
+        self._stream = stream
 
     async def in_transaction(self, entry: AuditEntry) -> AuditEvent:
         event = build_event(entry, self._vocabulary)
-        await self._repository.add(event)
-        return event
+        stored = await self._repository.add(event, chained=(await self._policy.get()).hash_chain)
+        await self._stream.poke()
+        return stored
 
     async def now(self, entry: AuditEntry) -> AuditEvent:
         event = build_event(entry, self._vocabulary)
-        await self._standalone.write(event)
-        return event
+        stored = await self._standalone.write(event, chained=(await self._policy.get()).hash_chain)
+        await self._stream.poke()
+        return stored
+
+    async def ingest(self, entries: Sequence[IngestedEntry]) -> int:
+        """Store events read from AgentOS once each (by ``source_event_id``); returns how many were new.
+
+        Ingested events keep the time they happened elsewhere, so they stay outside the hash chain (which orders
+        events by when the control plane wrote them); the runtime's own trail is their source of truth.
+        """
+        if not entries:
+            return 0
+        written = await self._standalone.write_many([ingested_event(entry) for entry in entries])
+        if written:
+            await self._stream.poke()
+        return written
 
 
 @dataclass(frozen=True, slots=True)
@@ -112,16 +172,11 @@ class GetEvent:
         return event
 
 
-class MaintainPartitions:
-    def __init__(self, maintenance: PartitionMaintenance, retention_days: int, months_ahead: int = 2) -> None:
-        self._maintenance = maintenance
-        self._retention_days = retention_days
-        self._months_ahead = months_ahead
+class ListActors:
+    """People and machines seen in the log recently, most active first (for the actor filter)."""
 
-    async def __call__(self) -> tuple[list[str], list[str]]:
-        now = utcnow()
-        created = await self._maintenance.ensure_partitions(now, self._months_ahead)
-        dropped = await self._maintenance.drop_expired(now, self._retention_days)
-        if created or dropped:
-            log.info("audit.partitions", created=created, dropped=dropped)
-        return created, dropped
+    def __init__(self, repository: AuditRepository) -> None:
+        self._repository = repository
+
+    async def __call__(self, days: int = 90, limit: int = 100) -> list[ActorSummary]:
+        return await self._repository.actors(utcnow() - timedelta(days=days), limit)

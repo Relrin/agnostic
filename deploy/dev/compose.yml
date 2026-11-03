@@ -6,6 +6,9 @@
 # Postgres uses the pgvector image so the two reference AgentOS runtimes (just runtimes) can keep their data and
 # vectors in the same server, in their own databases. Mailpit catches every email the control plane sends
 # (http://localhost:8025), and slack-mock stands in for Slack (http://localhost:8030; see slack-mock/slack_mock.py).
+# Keycloak is a local identity provider with OIDC and SAML clients and IdP groups (http://localhost:8080, realm
+# "agnostic", admin/admin; see keycloak/agnostic-realm.json), and SeaweedFS is an S3-compatible store for the audit
+# archive (http://localhost:8333, bucket "agnostic-audit"; see seaweedfs/s3.json).
 name: agnostic-dev
 
 services:
@@ -65,5 +68,29 @@ services:
       timeout: 3s
       retries: 30
 
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.8.1-0@sha256:79c623a22abacf3fe6c00a5fb30f5b7843d717b234033b80995891c06116d244
+    command: ["start-dev", "--import-realm", "--http-port=8080"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_HEALTH_ENABLED: "true"
+    volumes:
+      - ./keycloak:/opt/keycloak/data/import:ro
+    ports:
+      - "${AGNOSTIC_DEV_KEYCLOAK_PORT:-8080}:8080"
+    profiles: ["sso"]
+
+  seaweedfs:
+    image: chrislusf/seaweedfs:4.48@sha256:4e61d15fd35994cb1e43e1e553dff106794841fd9a99ade2fc8c8bfce4d7872d
+    command: ["server", "-dir=/data", "-s3", "-s3.port=8333", "-s3.config=/etc/seaweedfs/s3.json"]
+    volumes:
+      - ./seaweedfs:/etc/seaweedfs:ro
+      - seaweedfs-data:/data
+    ports:
+      - "${AGNOSTIC_DEV_S3_PORT:-8333}:8333"
+    profiles: ["archive"]
+
 volumes:
   postgres-data:
+  seaweedfs-data:

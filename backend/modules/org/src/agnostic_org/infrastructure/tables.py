@@ -52,6 +52,7 @@ class InvitationRow(OrgBase):
     email: Mapped[str] = mapped_column(String(320))
     org_role: Mapped[str] = mapped_column(String(20))
     bindings: Mapped[list[dict[str, Any]]] = mapped_column(JsonDocument)
+    group_ids: Mapped[list[str]] = mapped_column(JsonDocument, default=list)
     access_ends_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     invited_by: Mapped[str] = mapped_column(String(40))
     token_hash: Mapped[str] = mapped_column(String(64), unique=True)

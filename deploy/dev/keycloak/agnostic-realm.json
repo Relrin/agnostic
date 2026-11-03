@@ -1,0 +1,124 @@
+{
+  "realm": "agnostic",
+  "enabled": true,
+  "displayName": "Agnostic (development)",
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "groups": [
+    { "name": "support-ai" },
+    { "name": "billing" },
+    { "name": "finance" }
+  ],
+  "users": [
+    {
+      "username": "maya",
+      "email": "maya@localhost.company",
+      "emailVerified": true,
+      "firstName": "Maya",
+      "lastName": "Chen",
+      "enabled": true,
+      "groups": ["/support-ai", "/billing"],
+      "credentials": [{ "type": "password", "value": "maya", "temporary": false }]
+    },
+    {
+      "username": "priya",
+      "email": "priya@localhost.company",
+      "emailVerified": true,
+      "firstName": "Priya",
+      "lastName": "Nair",
+      "enabled": true,
+      "groups": ["/support-ai"],
+      "credentials": [{ "type": "password", "value": "priya", "temporary": false }]
+    },
+    {
+      "username": "jonas",
+      "email": "jonas@localhost.company",
+      "emailVerified": true,
+      "firstName": "Jonas",
+      "lastName": "Weber",
+      "enabled": true,
+      "groups": ["/finance"],
+      "credentials": [{ "type": "password", "value": "jonas", "temporary": false }]
+    }
+  ],
+  "clientScopes": [
+    {
+      "name": "groups",
+      "protocol": "openid-connect",
+      "attributes": { "include.in.token.scope": "true" },
+      "protocolMappers": [
+        {
+          "name": "groups",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-group-membership-mapper",
+          "config": {
+            "full.path": "false",
+            "claim.name": "groups",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "agnostic",
+      "name": "Agnostic control plane (OIDC)",
+      "protocol": "openid-connect",
+      "enabled": true,
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "agnostic-dev-only",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "redirectUris": ["http://localhost:8000/api/v1/auth/sso/*", "http://localhost:5173/api/v1/auth/sso/*"],
+      "webOrigins": ["+"],
+      "defaultClientScopes": ["openid", "profile", "email", "groups"],
+      "attributes": { "pkce.code.challenge.method": "S256" }
+    },
+    {
+      "clientId": "http://localhost:8000/api/v1/auth/sso/keycloak-saml/metadata",
+      "name": "Agnostic control plane (SAML)",
+      "protocol": "saml",
+      "enabled": true,
+      "frontchannelLogout": false,
+      "redirectUris": ["http://localhost:8000/api/v1/auth/sso/keycloak-saml/acs"],
+      "attributes": {
+        "saml_name_id_format": "email",
+        "saml.authnstatement": "true",
+        "saml.server.signature": "true",
+        "saml.assertion.signature": "true",
+        "saml.client.signature": "false",
+        "saml.force.post.binding": "true",
+        "saml_assertion_consumer_url_post": "http://localhost:8000/api/v1/auth/sso/keycloak-saml/acs"
+      },
+      "protocolMappers": [
+        {
+          "name": "email",
+          "protocol": "saml",
+          "protocolMapper": "saml-user-property-mapper",
+          "config": { "user.attribute": "email", "attribute.name": "email", "attribute.nameformat": "Basic" }
+        },
+        {
+          "name": "name",
+          "protocol": "saml",
+          "protocolMapper": "saml-user-property-mapper",
+          "config": { "user.attribute": "firstName", "attribute.name": "name", "attribute.nameformat": "Basic" }
+        },
+        {
+          "name": "groups",
+          "protocol": "saml",
+          "protocolMapper": "saml-group-membership-mapper",
+          "config": {
+            "attribute.name": "groups",
+            "attribute.nameformat": "Basic",
+            "full.path": "false",
+            "single": "false"
+          }
+        }
+      ]
+    }
+  ]
+}

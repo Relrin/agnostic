@@ -26,6 +26,7 @@ def _route(row: RouteRow) -> Route:
         component_ids=tuple(row.component_ids or ()),
         member_ids=tuple(row.member_ids or ()),
         role_ids=tuple(row.role_ids or ()),
+        group_ids=tuple(row.group_ids or ()),
         channels=tuple(row.channels or ()),
         channel_ids=tuple(row.channel_ids or ()),
         created_by=row.created_by,
@@ -42,6 +43,7 @@ def _apply(row: RouteRow, draft: RouteDraft) -> None:
     row.component_ids = list(draft.component_ids)
     row.member_ids = list(draft.member_ids)
     row.role_ids = list(draft.role_ids)
+    row.group_ids = list(draft.group_ids)
     row.channels = list(draft.channels)
     row.channel_ids = list(draft.channel_ids)
 
@@ -59,6 +61,10 @@ class SqlApprovalStore:
         else:
             query = query.where(RouteRow.instance_id == instance_id)
         rows = (await self._session.scalars(query.order_by(RouteRow.name, RouteRow.id))).all()
+        return [_route(row) for row in rows]
+
+    async def all_routes(self) -> list[Route]:
+        rows = (await self._session.scalars(select(RouteRow).order_by(RouteRow.name, RouteRow.id))).all()
         return [_route(row) for row in rows]
 
     async def route(self, route_id: str) -> Route | None:

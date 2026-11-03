@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, ServerSentEventsResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AccessCreateBindingData, AccessCreateBindingErrors, AccessCreateBindingResponses, AccessDeleteBindingData, AccessDeleteBindingErrors, AccessDeleteBindingResponses, AccessExplainData, AccessExplainErrors, AccessExplainResponses, AccessListBindingsData, AccessListBindingsErrors, AccessListBindingsResponses, AccessListRolesData, AccessListRolesErrors, AccessListRolesResponses, AccessListScopesData, AccessListScopesErrors, AccessListScopesResponses, ApprovalsApprovalCountsData, ApprovalsApprovalCountsErrors, ApprovalsApprovalCountsResponses, ApprovalsCountData, ApprovalsCountErrors, ApprovalsCountResponses, ApprovalsCreateOrgRouteData, ApprovalsCreateOrgRouteErrors, ApprovalsCreateOrgRouteResponses, ApprovalsCreateRouteData, ApprovalsCreateRouteErrors, ApprovalsCreateRouteResponses, ApprovalsDecideData, ApprovalsDecideErrors, ApprovalsDecideResponses, ApprovalsDeleteRouteData, ApprovalsDeleteRouteErrors, ApprovalsDeleteRouteResponses, ApprovalsGetApprovalData, ApprovalsGetApprovalErrors, ApprovalsGetApprovalResponses, ApprovalsGetPolicyData, ApprovalsGetPolicyErrors, ApprovalsGetPolicyResponses, ApprovalsListApprovalsData, ApprovalsListApprovalsErrors, ApprovalsListApprovalsResponses, ApprovalsListOrgRoutesData, ApprovalsListOrgRoutesErrors, ApprovalsListOrgRoutesResponses, ApprovalsListRoutesData, ApprovalsListRoutesErrors, ApprovalsListRoutesResponses, ApprovalsPutPolicyData, ApprovalsPutPolicyErrors, ApprovalsPutPolicyResponses, ApprovalsUpdateRouteData, ApprovalsUpdateRouteErrors, ApprovalsUpdateRouteResponses, AuditGetEventData, AuditGetEventErrors, AuditGetEventResponses, AuditListActionsData, AuditListActionsErrors, AuditListActionsResponses, AuditListEventsData, AuditListEventsErrors, AuditListEventsResponses, AuthConfirmPasswordResetData, AuthConfirmPasswordResetErrors, AuthConfirmPasswordResetResponses, AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthLogoutData, AuthLogoutErrors, AuthLogoutResponses, AuthRequestPasswordResetData, AuthRequestPasswordResetErrors, AuthRequestPasswordResetResponses, AuthSignInOptionsData, AuthSignInOptionsErrors, AuthSignInOptionsResponses, AuthSsoCallbackData, AuthSsoCallbackErrors, AuthSsoStartData, AuthSsoStartErrors, ContextDataSubjectRequestData, ContextDataSubjectRequestErrors, ContextDataSubjectRequestResponses, ContextDeleteUserLearningsData, ContextDeleteUserLearningsErrors, ContextDeleteUserLearningsResponses, ContextFileProvenanceData, ContextFileProvenanceErrors, ContextFileProvenanceResponses, ContextKnowledgeBasesData, ContextKnowledgeBasesErrors, ContextKnowledgeBasesResponses, ContextKnowledgeContentData, ContextKnowledgeContentErrors, ContextKnowledgeContentResponses, ContextLearningCountsData, ContextLearningCountsErrors, ContextLearningCountsResponses, ContextMemoryDuplicatesData, ContextMemoryDuplicatesErrors, ContextMemoryDuplicatesResponses, ContextMemorySourceData, ContextMemorySourceErrors, ContextMemorySourceResponses, ContextOptimizeMemoriesData, ContextOptimizeMemoriesErrors, ContextOptimizeMemoriesResponses, EvalsAddCasesData, EvalsAddCasesErrors, EvalsAddCasesResponses, EvalsCancelBatchData, EvalsCancelBatchErrors, EvalsCancelBatchResponses, EvalsCompareBatchesData, EvalsCompareBatchesErrors, EvalsCompareBatchesResponses, EvalsCreateDatasetData, EvalsCreateDatasetErrors, EvalsCreateDatasetResponses, EvalsDeleteCaseData, EvalsDeleteCaseErrors, EvalsDeleteCaseResponses, EvalsDeleteDatasetData, EvalsDeleteDatasetErrors, EvalsDeleteDatasetResponses, EvalsDeleteGateData, EvalsDeleteGateErrors, EvalsDeleteGateResponses, EvalsEvalCapabilitiesData, EvalsEvalCapabilitiesErrors, EvalsEvalCapabilitiesResponses, EvalsEvalResultsData, EvalsEvalResultsErrors, EvalsEvalResultsResponses, EvalsGetBatchData, EvalsGetBatchErrors, EvalsGetBatchResponses, EvalsGetDatasetData, EvalsGetDatasetErrors, EvalsGetDatasetResponses, EvalsImportCasesData, EvalsImportCasesErrors, EvalsImportCasesResponses, EvalsListDatasetsData, EvalsListDatasetsErrors, EvalsListDatasetsResponses, EvalsListEvaluationsData, EvalsListEvaluationsErrors, EvalsListEvaluationsResponses, EvalsListGatesData, EvalsListGatesErrors, EvalsListGatesResponses, EvalsPutGateData, EvalsPutGateErrors, EvalsPutGateResponses, EvalsStartBatchData, EvalsStartBatchErrors, EvalsStartBatchResponses, EvalsUpdateCaseData, EvalsUpdateCaseErrors, EvalsUpdateCaseResponses, EvalsUpdateDatasetData, EvalsUpdateDatasetErrors, EvalsUpdateDatasetResponses, GatewayListPoliciesData, GatewayListPoliciesErrors, GatewayListPoliciesResponses, InstancesConnectInstanceData, InstancesConnectInstanceErrors, InstancesConnectInstanceResponses, InstancesDeleteInstanceData, InstancesDeleteInstanceErrors, InstancesDeleteInstanceResponses, InstancesDiscoverInstanceData, InstancesDiscoverInstanceErrors, InstancesDiscoverInstanceResponses, InstancesGetCapabilitiesData, InstancesGetCapabilitiesErrors, InstancesGetCapabilitiesResponses, InstancesGetConfigData, InstancesGetConfigErrors, InstancesGetConfigResponses, InstancesGetHealthData, InstancesGetHealthErrors, InstancesGetHealthResponses, InstancesGetInstanceData, InstancesGetInstanceErrors, InstancesGetInstanceResponses, InstancesGetKeysData, InstancesGetKeysErrors, InstancesGetKeysResponses, InstancesListInstancesData, InstancesListInstancesErrors, InstancesListInstancesResponses, InstancesProbeEndpointData, InstancesProbeEndpointErrors, InstancesProbeEndpointResponses, InstancesRotateKeysData, InstancesRotateKeysErrors, InstancesRotateKeysResponses, InstancesTestInstanceData, InstancesTestInstanceErrors, InstancesTestInstanceResponses, InstancesUpdateInstanceData, InstancesUpdateInstanceErrors, InstancesUpdateInstanceResponses, InstancesVerifyTokenData, InstancesVerifyTokenErrors, InstancesVerifyTokenResponses, InvitationsAcceptInvitationData, InvitationsAcceptInvitationErrors, InvitationsAcceptInvitationResponses, InvitationsCreateInvitationData, InvitationsCreateInvitationErrors, InvitationsCreateInvitationResponses, InvitationsListInvitationsData, InvitationsListInvitationsErrors, InvitationsListInvitationsResponses, InvitationsPreviewInvitationData, InvitationsPreviewInvitationErrors, InvitationsPreviewInvitationResponses, InvitationsResendInvitationData, InvitationsResendInvitationErrors, InvitationsResendInvitationResponses, InvitationsRevokeInvitationData, InvitationsRevokeInvitationErrors, InvitationsRevokeInvitationResponses, JwksJwksData, JwksJwksErrors, JwksJwksResponses, MeGetMeData, MeGetMeErrors, MeGetMeResponses, MeListMySessionsData, MeListMySessionsErrors, MeListMySessionsResponses, MembersGetMemberData, MembersGetMemberErrors, MembersGetMemberResponses, MembersListMembersData, MembersListMembersErrors, MembersListMembersResponses, MembersRemoveMemberData, MembersRemoveMemberErrors, MembersRemoveMemberResponses, MembersUpdateMemberData, MembersUpdateMemberErrors, MembersUpdateMemberResponses, MeMyAccessData, MeMyAccessErrors, MeMyAccessResponses, MeRevokeMySessionData, MeRevokeMySessionErrors, MeRevokeMySessionResponses, MeUpdateMeData, MeUpdateMeErrors, MeUpdateMeResponses, NotificationsCreateChannelData, NotificationsCreateChannelErrors, NotificationsCreateChannelResponses, NotificationsDeleteChannelData, NotificationsDeleteChannelErrors, NotificationsDeleteChannelResponses, NotificationsEventsData, NotificationsEventsErrors, NotificationsEventsResponses, NotificationsEventTypesData, NotificationsEventTypesErrors, NotificationsEventTypesResponses, NotificationsGetChannelData, NotificationsGetChannelErrors, NotificationsGetChannelResponses, NotificationsGetDefaultsData, NotificationsGetDefaultsErrors, NotificationsGetDefaultsResponses, NotificationsListChannelsData, NotificationsListChannelsErrors, NotificationsListChannelsResponses, NotificationsListNotificationsData, NotificationsListNotificationsErrors, NotificationsListNotificationsResponses, NotificationsMarkReadData, NotificationsMarkReadErrors, NotificationsMarkReadResponses, NotificationsMyPreferencesData, NotificationsMyPreferencesErrors, NotificationsMyPreferencesResponses, NotificationsPutDefaultsData, NotificationsPutDefaultsErrors, NotificationsPutDefaultsResponses, NotificationsTestChannelData, NotificationsTestChannelErrors, NotificationsTestChannelResponses, NotificationsUnreadCountData, NotificationsUnreadCountErrors, NotificationsUnreadCountResponses, NotificationsUpdateChannelData, NotificationsUpdateChannelErrors, NotificationsUpdateChannelResponses, NotificationsUpdateMyPreferencesData, NotificationsUpdateMyPreferencesErrors, NotificationsUpdateMyPreferencesResponses, ObserveGetOrgPriceTableData, ObserveGetOrgPriceTableErrors, ObserveGetOrgPriceTableResponses, ObserveGetPriceTableData, ObserveGetPriceTableErrors, ObserveGetPriceTableResponses, ObserveMetricsCsvData, ObserveMetricsCsvErrors, ObserveMetricsCsvResponses, ObserveMetricsSummaryData, ObserveMetricsSummaryErrors, ObserveMetricsSummaryResponses, ObserveOverviewData, ObserveOverviewErrors, ObserveOverviewResponses, ObservePutOrgPriceTableData, ObservePutOrgPriceTableErrors, ObservePutOrgPriceTableResponses, ObservePutPriceTableData, ObservePutPriceTableErrors, ObservePutPriceTableResponses, ObserveSpanStatsData, ObserveSpanStatsErrors, ObserveSpanStatsResponses, ObserveTraceComparisonData, ObserveTraceComparisonErrors, ObserveTraceComparisonResponses, OnboardingCompleteOnboardingData, OnboardingCompleteOnboardingErrors, OnboardingCompleteOnboardingResponses, OnboardingOnboardingStatusData, OnboardingOnboardingStatusErrors, OnboardingOnboardingStatusResponses, OrgGetOrgData, OrgGetOrgErrors, OrgGetOrgResponses, OrgUpdateOrgData, OrgUpdateOrgErrors, OrgUpdateOrgResponses, QueueCancelJobData, QueueCancelJobErrors, QueueCancelJobResponses, QueueQueueJobData, QueueQueueJobErrors, QueueQueueJobResponses, QueueQueueJobsData, QueueQueueJobsErrors, QueueQueueJobsResponses, QueueQueueOverviewData, QueueQueueOverviewErrors, QueueQueueOverviewResponses, QueueQueueSummaryData, QueueQueueSummaryErrors, QueueQueueSummaryResponses, QueueQueueWorkersData, QueueQueueWorkersErrors, QueueQueueWorkersResponses, QueueRequeueJobData, QueueRequeueJobErrors, QueueRequeueJobResponses, QueueResumeJobData, QueueResumeJobErrors, QueueResumeJobResponses, SchedulerCheckEndpointData, SchedulerCheckEndpointErrors, SchedulerCheckEndpointResponses, SchedulerCreateScheduleData, SchedulerCreateScheduleErrors, SchedulerCreateScheduleResponses, SchedulerDeleteScheduleData, SchedulerDeleteScheduleErrors, SchedulerDeleteScheduleResponses, SchedulerDisableScheduleData, SchedulerDisableScheduleErrors, SchedulerDisableScheduleResponses, SchedulerEnableScheduleData, SchedulerEnableScheduleErrors, SchedulerEnableScheduleResponses, SchedulerGetScheduleData, SchedulerGetScheduleErrors, SchedulerGetScheduleResponses, SchedulerListSchedulesData, SchedulerListSchedulesErrors, SchedulerListSchedulesResponses, SchedulerPreviewScheduleData, SchedulerPreviewScheduleErrors, SchedulerPreviewScheduleResponses, SchedulerSchedulerStatusData, SchedulerSchedulerStatusErrors, SchedulerSchedulerStatusResponses, SchedulerScheduleRunsData, SchedulerScheduleRunsErrors, SchedulerScheduleRunsResponses, SchedulerTriggerScheduleData, SchedulerTriggerScheduleErrors, SchedulerTriggerScheduleResponses, SchedulerUpdateScheduleData, SchedulerUpdateScheduleErrors, SchedulerUpdateScheduleResponses, SearchSearchData, SearchSearchErrors, SearchSearchResponses, SystemListModulesData, SystemListModulesErrors, SystemListModulesResponses, SystemLivenessData, SystemLivenessResponses, SystemReadinessData, SystemReadinessErrors, SystemReadinessResponses } from './types.gen';
+import type { AccessApproveRequestData, AccessApproveRequestErrors, AccessApproveRequestResponses, AccessCancelRequestData, AccessCancelRequestErrors, AccessCancelRequestResponses, AccessCreateBindingData, AccessCreateBindingErrors, AccessCreateBindingResponses, AccessCreateRequestData, AccessCreateRequestErrors, AccessCreateRequestResponses, AccessCreateRoleData, AccessCreateRoleErrors, AccessCreateRoleResponses, AccessDeleteBindingData, AccessDeleteBindingErrors, AccessDeleteBindingResponses, AccessDeleteRoleData, AccessDeleteRoleErrors, AccessDeleteRoleResponses, AccessDenyRequestData, AccessDenyRequestErrors, AccessDenyRequestResponses, AccessDuplicateRoleData, AccessDuplicateRoleErrors, AccessDuplicateRoleResponses, AccessExplainData, AccessExplainErrors, AccessExplainResponses, AccessGetRoleData, AccessGetRoleErrors, AccessGetRoleResponses, AccessGrantTemporaryData, AccessGrantTemporaryErrors, AccessGrantTemporaryResponses, AccessListBindingsData, AccessListBindingsErrors, AccessListBindingsResponses, AccessListRequestsData, AccessListRequestsErrors, AccessListRequestsResponses, AccessListRolesData, AccessListRolesErrors, AccessListRolesResponses, AccessListScopesData, AccessListScopesErrors, AccessListScopesResponses, AccessPreviewRoleData, AccessPreviewRoleErrors, AccessPreviewRoleResponses, AccessResetRoleData, AccessResetRoleErrors, AccessResetRoleResponses, AccessRoleHoldersData, AccessRoleHoldersErrors, AccessRoleHoldersResponses, AccessRoleVersionsData, AccessRoleVersionsErrors, AccessRoleVersionsResponses, AccessUpdateRoleData, AccessUpdateRoleErrors, AccessUpdateRoleResponses, ApprovalsApprovalCountsData, ApprovalsApprovalCountsErrors, ApprovalsApprovalCountsResponses, ApprovalsCountData, ApprovalsCountErrors, ApprovalsCountResponses, ApprovalsCreateOrgRouteData, ApprovalsCreateOrgRouteErrors, ApprovalsCreateOrgRouteResponses, ApprovalsCreateRouteData, ApprovalsCreateRouteErrors, ApprovalsCreateRouteResponses, ApprovalsDecideData, ApprovalsDecideErrors, ApprovalsDecideResponses, ApprovalsDeleteRouteData, ApprovalsDeleteRouteErrors, ApprovalsDeleteRouteResponses, ApprovalsGetApprovalData, ApprovalsGetApprovalErrors, ApprovalsGetApprovalResponses, ApprovalsGetPolicyData, ApprovalsGetPolicyErrors, ApprovalsGetPolicyResponses, ApprovalsListApprovalsData, ApprovalsListApprovalsErrors, ApprovalsListApprovalsResponses, ApprovalsListGroupRoutesData, ApprovalsListGroupRoutesErrors, ApprovalsListGroupRoutesResponses, ApprovalsListOrgRoutesData, ApprovalsListOrgRoutesErrors, ApprovalsListOrgRoutesResponses, ApprovalsListRoutesData, ApprovalsListRoutesErrors, ApprovalsListRoutesResponses, ApprovalsPutPolicyData, ApprovalsPutPolicyErrors, ApprovalsPutPolicyResponses, ApprovalsUpdateRouteData, ApprovalsUpdateRouteErrors, ApprovalsUpdateRouteResponses, AuditCheckPolicyWriteData, AuditCheckPolicyWriteErrors, AuditCheckPolicyWriteResponses, AuditCreateSinkData, AuditCreateSinkErrors, AuditCreateSinkResponses, AuditCreateViewData, AuditCreateViewErrors, AuditCreateViewResponses, AuditDeleteSinkData, AuditDeleteSinkErrors, AuditDeleteSinkResponses, AuditDeleteViewData, AuditDeleteViewErrors, AuditDeleteViewResponses, AuditDownloadExportData, AuditDownloadExportErrors, AuditDownloadExportResponses, AuditExportEventsData, AuditExportEventsErrors, AuditExportEventsResponses, AuditGetEventData, AuditGetEventErrors, AuditGetEventResponses, AuditGetExportData, AuditGetExportErrors, AuditGetExportResponses, AuditGetPolicyData, AuditGetPolicyErrors, AuditGetPolicyResponses, AuditListActionsData, AuditListActionsErrors, AuditListActionsResponses, AuditListActorsData, AuditListActorsErrors, AuditListActorsResponses, AuditListArchivesData, AuditListArchivesErrors, AuditListArchivesResponses, AuditListEventsData, AuditListEventsErrors, AuditListEventsResponses, AuditListExportsData, AuditListExportsErrors, AuditListExportsResponses, AuditListSinksData, AuditListSinksErrors, AuditListSinksResponses, AuditListViewsData, AuditListViewsErrors, AuditListViewsResponses, AuditRequestExportData, AuditRequestExportErrors, AuditRequestExportResponses, AuditRestoreArchiveData, AuditRestoreArchiveErrors, AuditRestoreArchiveResponses, AuditStreamStatusData, AuditStreamStatusErrors, AuditStreamStatusResponses, AuditTestSinkData, AuditTestSinkErrors, AuditTestSinkResponses, AuditUpdatePolicyData, AuditUpdatePolicyErrors, AuditUpdatePolicyResponses, AuditUpdateSinkData, AuditUpdateSinkErrors, AuditUpdateSinkResponses, AuditUpdateViewData, AuditUpdateViewErrors, AuditUpdateViewResponses, AuditVerifyChainData, AuditVerifyChainErrors, AuditVerifyChainResponses, AuthConfirmPasswordResetData, AuthConfirmPasswordResetErrors, AuthConfirmPasswordResetResponses, AuthCreateProviderData, AuthCreateProviderErrors, AuthCreateProviderResponses, AuthDeleteProviderData, AuthDeleteProviderErrors, AuthDeleteProviderResponses, AuthGetPolicyData, AuthGetPolicyErrors, AuthGetPolicyResponses, AuthGetProviderData, AuthGetProviderErrors, AuthGetProviderResponses, AuthListProvidersData, AuthListProvidersErrors, AuthListProvidersResponses, AuthLoginData, AuthLoginErrors, AuthLoginMfaData, AuthLoginMfaErrors, AuthLoginMfaResponses, AuthLoginResponses, AuthLoginTotpSetupData, AuthLoginTotpSetupErrors, AuthLoginTotpSetupResponses, AuthLoginWebauthnOptionsData, AuthLoginWebauthnOptionsErrors, AuthLoginWebauthnOptionsResponses, AuthLogoutData, AuthLogoutErrors, AuthLogoutResponses, AuthProviderSamlMetadataData, AuthProviderSamlMetadataErrors, AuthProviderSamlMetadataResponses, AuthRequestPasswordResetData, AuthRequestPasswordResetErrors, AuthRequestPasswordResetResponses, AuthSignInOptionsData, AuthSignInOptionsErrors, AuthSignInOptionsResponses, AuthSsoAcsData, AuthSsoAcsErrors, AuthSsoCallbackData, AuthSsoCallbackErrors, AuthSsoMetadataData, AuthSsoMetadataErrors, AuthSsoMetadataResponses, AuthSsoStartData, AuthSsoStartErrors, AuthStepUpData, AuthStepUpErrors, AuthStepUpResponses, AuthStepUpStatusData, AuthStepUpStatusErrors, AuthStepUpStatusResponses, AuthStepUpWebauthnOptionsData, AuthStepUpWebauthnOptionsErrors, AuthStepUpWebauthnOptionsResponses, AuthUpdatePolicyData, AuthUpdatePolicyErrors, AuthUpdatePolicyResponses, AuthUpdateProviderData, AuthUpdateProviderErrors, AuthUpdateProviderResponses, ContextDataSubjectRequestData, ContextDataSubjectRequestErrors, ContextDataSubjectRequestResponses, ContextDeleteUserLearningsData, ContextDeleteUserLearningsErrors, ContextDeleteUserLearningsResponses, ContextFileProvenanceData, ContextFileProvenanceErrors, ContextFileProvenanceResponses, ContextKnowledgeBasesData, ContextKnowledgeBasesErrors, ContextKnowledgeBasesResponses, ContextKnowledgeContentData, ContextKnowledgeContentErrors, ContextKnowledgeContentResponses, ContextLearningCountsData, ContextLearningCountsErrors, ContextLearningCountsResponses, ContextMemoryDuplicatesData, ContextMemoryDuplicatesErrors, ContextMemoryDuplicatesResponses, ContextMemorySourceData, ContextMemorySourceErrors, ContextMemorySourceResponses, ContextOptimizeMemoriesData, ContextOptimizeMemoriesErrors, ContextOptimizeMemoriesResponses, DirectoryAddGroupMemberData, DirectoryAddGroupMemberErrors, DirectoryAddGroupMemberResponses, DirectoryCreateGroupData, DirectoryCreateGroupErrors, DirectoryCreateGroupResponses, DirectoryCreateMappingRuleData, DirectoryCreateMappingRuleErrors, DirectoryCreateMappingRuleResponses, DirectoryCreateScimTokenData, DirectoryCreateScimTokenErrors, DirectoryCreateScimTokenResponses, DirectoryDeleteGroupData, DirectoryDeleteGroupErrors, DirectoryDeleteGroupResponses, DirectoryDeleteMappingRuleData, DirectoryDeleteMappingRuleErrors, DirectoryDeleteMappingRuleResponses, DirectoryGetDirectorySettingsData, DirectoryGetDirectorySettingsErrors, DirectoryGetDirectorySettingsResponses, DirectoryGetGoogleSyncData, DirectoryGetGoogleSyncErrors, DirectoryGetGoogleSyncResponses, DirectoryGetGroupData, DirectoryGetGroupErrors, DirectoryGetGroupResponses, DirectoryListGroupsData, DirectoryListGroupsErrors, DirectoryListGroupsResponses, DirectoryListMappingRulesData, DirectoryListMappingRulesErrors, DirectoryListMappingRulesResponses, DirectoryRemoveGroupMemberData, DirectoryRemoveGroupMemberErrors, DirectoryRemoveGroupMemberResponses, DirectoryRevokeScimTokenData, DirectoryRevokeScimTokenErrors, DirectoryRevokeScimTokenResponses, DirectoryRotateScimTokenData, DirectoryRotateScimTokenErrors, DirectoryRotateScimTokenResponses, DirectoryRunGoogleSyncData, DirectoryRunGoogleSyncErrors, DirectoryRunGoogleSyncResponses, DirectoryScimStatusData, DirectoryScimStatusErrors, DirectoryScimStatusResponses, DirectoryTestGoogleSyncData, DirectoryTestGoogleSyncErrors, DirectoryTestGoogleSyncResponses, DirectoryUpdateDirectorySettingsData, DirectoryUpdateDirectorySettingsErrors, DirectoryUpdateDirectorySettingsResponses, DirectoryUpdateGoogleSyncData, DirectoryUpdateGoogleSyncErrors, DirectoryUpdateGoogleSyncResponses, DirectoryUpdateGroupData, DirectoryUpdateGroupErrors, DirectoryUpdateGroupResponses, EvalsAddCasesData, EvalsAddCasesErrors, EvalsAddCasesResponses, EvalsCancelBatchData, EvalsCancelBatchErrors, EvalsCancelBatchResponses, EvalsCompareBatchesData, EvalsCompareBatchesErrors, EvalsCompareBatchesResponses, EvalsCreateDatasetData, EvalsCreateDatasetErrors, EvalsCreateDatasetResponses, EvalsDeleteCaseData, EvalsDeleteCaseErrors, EvalsDeleteCaseResponses, EvalsDeleteDatasetData, EvalsDeleteDatasetErrors, EvalsDeleteDatasetResponses, EvalsDeleteGateData, EvalsDeleteGateErrors, EvalsDeleteGateResponses, EvalsEvalCapabilitiesData, EvalsEvalCapabilitiesErrors, EvalsEvalCapabilitiesResponses, EvalsEvalResultsData, EvalsEvalResultsErrors, EvalsEvalResultsResponses, EvalsGetBatchData, EvalsGetBatchErrors, EvalsGetBatchResponses, EvalsGetDatasetData, EvalsGetDatasetErrors, EvalsGetDatasetResponses, EvalsImportCasesData, EvalsImportCasesErrors, EvalsImportCasesResponses, EvalsListDatasetsData, EvalsListDatasetsErrors, EvalsListDatasetsResponses, EvalsListEvaluationsData, EvalsListEvaluationsErrors, EvalsListEvaluationsResponses, EvalsListGatesData, EvalsListGatesErrors, EvalsListGatesResponses, EvalsPutGateData, EvalsPutGateErrors, EvalsPutGateResponses, EvalsStartBatchData, EvalsStartBatchErrors, EvalsStartBatchResponses, EvalsUpdateCaseData, EvalsUpdateCaseErrors, EvalsUpdateCaseResponses, EvalsUpdateDatasetData, EvalsUpdateDatasetErrors, EvalsUpdateDatasetResponses, GatewayListPoliciesData, GatewayListPoliciesErrors, GatewayListPoliciesResponses, InstancesConnectInstanceData, InstancesConnectInstanceErrors, InstancesConnectInstanceResponses, InstancesDeleteInstanceData, InstancesDeleteInstanceErrors, InstancesDeleteInstanceResponses, InstancesDiscoverInstanceData, InstancesDiscoverInstanceErrors, InstancesDiscoverInstanceResponses, InstancesGetCapabilitiesData, InstancesGetCapabilitiesErrors, InstancesGetCapabilitiesResponses, InstancesGetConfigData, InstancesGetConfigErrors, InstancesGetConfigResponses, InstancesGetHealthData, InstancesGetHealthErrors, InstancesGetHealthResponses, InstancesGetInstanceData, InstancesGetInstanceErrors, InstancesGetInstanceResponses, InstancesGetKeysData, InstancesGetKeysErrors, InstancesGetKeysResponses, InstancesListInstancesData, InstancesListInstancesErrors, InstancesListInstancesResponses, InstancesProbeEndpointData, InstancesProbeEndpointErrors, InstancesProbeEndpointResponses, InstancesRotateKeysData, InstancesRotateKeysErrors, InstancesRotateKeysResponses, InstancesTestInstanceData, InstancesTestInstanceErrors, InstancesTestInstanceResponses, InstancesUpdateInstanceData, InstancesUpdateInstanceErrors, InstancesUpdateInstanceResponses, InstancesVerifyTokenData, InstancesVerifyTokenErrors, InstancesVerifyTokenResponses, InvitationsAcceptInvitationData, InvitationsAcceptInvitationErrors, InvitationsAcceptInvitationResponses, InvitationsCreateInvitationData, InvitationsCreateInvitationErrors, InvitationsCreateInvitationResponses, InvitationsListInvitationsData, InvitationsListInvitationsErrors, InvitationsListInvitationsResponses, InvitationsPreviewInvitationData, InvitationsPreviewInvitationErrors, InvitationsPreviewInvitationResponses, InvitationsResendInvitationData, InvitationsResendInvitationErrors, InvitationsResendInvitationResponses, InvitationsRevokeInvitationData, InvitationsRevokeInvitationErrors, InvitationsRevokeInvitationResponses, JwksJwksData, JwksJwksErrors, JwksJwksResponses, MeConfirmTotpData, MeConfirmTotpErrors, MeConfirmTotpResponses, MeGetMeData, MeGetMeErrors, MeGetMeResponses, MeGetMyMfaData, MeGetMyMfaErrors, MeGetMyMfaResponses, MeListMySessionsData, MeListMySessionsErrors, MeListMySessionsResponses, MembersBulkMembersData, MembersBulkMembersErrors, MembersBulkMembersResponses, MembersExportMembersData, MembersExportMembersErrors, MembersExportMembersResponses, MembersGetMemberData, MembersGetMemberErrors, MembersGetMemberResponses, MembersListMembersData, MembersListMembersErrors, MembersListMembersResponses, MembersRemoveMemberData, MembersRemoveMemberErrors, MembersRemoveMemberResponses, MembersUpdateMemberData, MembersUpdateMemberErrors, MembersUpdateMemberResponses, MeMyAccessData, MeMyAccessErrors, MeMyAccessResponses, MeRegenerateRecoveryCodesData, MeRegenerateRecoveryCodesErrors, MeRegenerateRecoveryCodesResponses, MeRemoveFactorData, MeRemoveFactorErrors, MeRemoveFactorResponses, MeRevokeMySessionData, MeRevokeMySessionErrors, MeRevokeMySessionResponses, MeSetupTotpData, MeSetupTotpErrors, MeSetupTotpResponses, MeUpdateMeData, MeUpdateMeErrors, MeUpdateMeResponses, MeWebauthnOptionsData, MeWebauthnOptionsErrors, MeWebauthnOptionsResponses, MeWebauthnVerifyData, MeWebauthnVerifyErrors, MeWebauthnVerifyResponses, NotificationsCreateChannelData, NotificationsCreateChannelErrors, NotificationsCreateChannelResponses, NotificationsDeleteChannelData, NotificationsDeleteChannelErrors, NotificationsDeleteChannelResponses, NotificationsEventsData, NotificationsEventsErrors, NotificationsEventsResponses, NotificationsEventTypesData, NotificationsEventTypesErrors, NotificationsEventTypesResponses, NotificationsGetChannelData, NotificationsGetChannelErrors, NotificationsGetChannelResponses, NotificationsGetDefaultsData, NotificationsGetDefaultsErrors, NotificationsGetDefaultsResponses, NotificationsListChannelsData, NotificationsListChannelsErrors, NotificationsListChannelsResponses, NotificationsListNotificationsData, NotificationsListNotificationsErrors, NotificationsListNotificationsResponses, NotificationsMarkReadData, NotificationsMarkReadErrors, NotificationsMarkReadResponses, NotificationsMyPreferencesData, NotificationsMyPreferencesErrors, NotificationsMyPreferencesResponses, NotificationsPutDefaultsData, NotificationsPutDefaultsErrors, NotificationsPutDefaultsResponses, NotificationsTestChannelData, NotificationsTestChannelErrors, NotificationsTestChannelResponses, NotificationsUnreadCountData, NotificationsUnreadCountErrors, NotificationsUnreadCountResponses, NotificationsUpdateChannelData, NotificationsUpdateChannelErrors, NotificationsUpdateChannelResponses, NotificationsUpdateMyPreferencesData, NotificationsUpdateMyPreferencesErrors, NotificationsUpdateMyPreferencesResponses, ObserveGetOrgPriceTableData, ObserveGetOrgPriceTableErrors, ObserveGetOrgPriceTableResponses, ObserveGetPriceTableData, ObserveGetPriceTableErrors, ObserveGetPriceTableResponses, ObserveMetricsCsvData, ObserveMetricsCsvErrors, ObserveMetricsCsvResponses, ObserveMetricsSummaryData, ObserveMetricsSummaryErrors, ObserveMetricsSummaryResponses, ObserveOverviewData, ObserveOverviewErrors, ObserveOverviewResponses, ObservePutOrgPriceTableData, ObservePutOrgPriceTableErrors, ObservePutOrgPriceTableResponses, ObservePutPriceTableData, ObservePutPriceTableErrors, ObservePutPriceTableResponses, ObserveSpanStatsData, ObserveSpanStatsErrors, ObserveSpanStatsResponses, ObserveTraceComparisonData, ObserveTraceComparisonErrors, ObserveTraceComparisonResponses, OnboardingCompleteOnboardingData, OnboardingCompleteOnboardingErrors, OnboardingCompleteOnboardingResponses, OnboardingOnboardingStatusData, OnboardingOnboardingStatusErrors, OnboardingOnboardingStatusResponses, OrgGetOrgData, OrgGetOrgErrors, OrgGetOrgResponses, OrgUpdateOrgData, OrgUpdateOrgErrors, OrgUpdateOrgResponses, QueueCancelJobData, QueueCancelJobErrors, QueueCancelJobResponses, QueueQueueJobData, QueueQueueJobErrors, QueueQueueJobResponses, QueueQueueJobsData, QueueQueueJobsErrors, QueueQueueJobsResponses, QueueQueueOverviewData, QueueQueueOverviewErrors, QueueQueueOverviewResponses, QueueQueueSummaryData, QueueQueueSummaryErrors, QueueQueueSummaryResponses, QueueQueueWorkersData, QueueQueueWorkersErrors, QueueQueueWorkersResponses, QueueRequeueJobData, QueueRequeueJobErrors, QueueRequeueJobResponses, QueueResumeJobData, QueueResumeJobErrors, QueueResumeJobResponses, SchedulerCheckEndpointData, SchedulerCheckEndpointErrors, SchedulerCheckEndpointResponses, SchedulerCreateScheduleData, SchedulerCreateScheduleErrors, SchedulerCreateScheduleResponses, SchedulerDeleteScheduleData, SchedulerDeleteScheduleErrors, SchedulerDeleteScheduleResponses, SchedulerDisableScheduleData, SchedulerDisableScheduleErrors, SchedulerDisableScheduleResponses, SchedulerEnableScheduleData, SchedulerEnableScheduleErrors, SchedulerEnableScheduleResponses, SchedulerGetScheduleData, SchedulerGetScheduleErrors, SchedulerGetScheduleResponses, SchedulerListSchedulesData, SchedulerListSchedulesErrors, SchedulerListSchedulesResponses, SchedulerPreviewScheduleData, SchedulerPreviewScheduleErrors, SchedulerPreviewScheduleResponses, SchedulerSchedulerStatusData, SchedulerSchedulerStatusErrors, SchedulerSchedulerStatusResponses, SchedulerScheduleRunsData, SchedulerScheduleRunsErrors, SchedulerScheduleRunsResponses, SchedulerTriggerScheduleData, SchedulerTriggerScheduleErrors, SchedulerTriggerScheduleResponses, SchedulerUpdateScheduleData, SchedulerUpdateScheduleErrors, SchedulerUpdateScheduleResponses, SearchSearchData, SearchSearchErrors, SearchSearchResponses, ServiceAccountsCreateAccountData, ServiceAccountsCreateAccountErrors, ServiceAccountsCreateAccountResponses, ServiceAccountsDeleteAccountData, ServiceAccountsDeleteAccountErrors, ServiceAccountsDeleteAccountResponses, ServiceAccountsGetAccountData, ServiceAccountsGetAccountErrors, ServiceAccountsGetAccountResponses, ServiceAccountsIssueTokenData, ServiceAccountsIssueTokenErrors, ServiceAccountsIssueTokenResponses, ServiceAccountsListAccountsData, ServiceAccountsListAccountsErrors, ServiceAccountsListAccountsResponses, ServiceAccountsPreviewAccountData, ServiceAccountsPreviewAccountErrors, ServiceAccountsPreviewAccountResponses, ServiceAccountsRevokeTokenData, ServiceAccountsRevokeTokenErrors, ServiceAccountsRevokeTokenResponses, SystemListModulesData, SystemListModulesErrors, SystemListModulesResponses, SystemLivenessData, SystemLivenessResponses, SystemReadinessData, SystemReadinessErrors, SystemReadinessResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -24,12 +24,12 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
 export const jwksJwks = <ThrowOnError extends boolean = false>(options: Options<JwksJwksData, ThrowOnError>): RequestResult<JwksJwksResponses, JwksJwksErrors, ThrowOnError> => (options.client ?? client).get<JwksJwksResponses, JwksJwksErrors, ThrowOnError>({ url: '/.well-known/agnostic/instances/{instance_id}/jwks.json', ...options });
 
 /**
- * Role bindings, optionally for one person or one instance
+ * Role bindings, optionally for one principal, kind, role or instance
  */
 export const accessListBindings = <ThrowOnError extends boolean = false>(options?: Options<AccessListBindingsData, ThrowOnError>): RequestResult<AccessListBindingsResponses, AccessListBindingsErrors, ThrowOnError> => (options?.client ?? client).get<AccessListBindingsResponses, AccessListBindingsErrors, ThrowOnError>({ url: '/api/v1/access/bindings', ...options });
 
 /**
- * Give someone a role (or scopes) on an instance
+ * Give a person or group a role (or scopes) on an instance
  */
 export const accessCreateBinding = <ThrowOnError extends boolean = false>(options: Options<AccessCreateBindingData, ThrowOnError>): RequestResult<AccessCreateBindingResponses, AccessCreateBindingErrors, ThrowOnError> => (options.client ?? client).post<AccessCreateBindingResponses, AccessCreateBindingErrors, ThrowOnError>({
     url: '/api/v1/access/bindings',
@@ -58,14 +58,145 @@ export const accessExplain = <ThrowOnError extends boolean = false>(options: Opt
 });
 
 /**
- * Access roles (built-in in this phase) with their scopes
+ * Temporary access requests: yours, or the ones you can decide
+ */
+export const accessListRequests = <ThrowOnError extends boolean = false>(options?: Options<AccessListRequestsData, ThrowOnError>): RequestResult<AccessListRequestsResponses, AccessListRequestsErrors, ThrowOnError> => (options?.client ?? client).get<AccessListRequestsResponses, AccessListRequestsErrors, ThrowOnError>({ url: '/api/v1/access/requests', ...options });
+
+/**
+ * Ask for temporary access
+ */
+export const accessCreateRequest = <ThrowOnError extends boolean = false>(options: Options<AccessCreateRequestData, ThrowOnError>): RequestResult<AccessCreateRequestResponses, AccessCreateRequestErrors, ThrowOnError> => (options.client ?? client).post<AccessCreateRequestResponses, AccessCreateRequestErrors, ThrowOnError>({
+    url: '/api/v1/access/requests',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Approve a request: creates a binding that expires
+ */
+export const accessApproveRequest = <ThrowOnError extends boolean = false>(options: Options<AccessApproveRequestData, ThrowOnError>): RequestResult<AccessApproveRequestResponses, AccessApproveRequestErrors, ThrowOnError> => (options.client ?? client).post<AccessApproveRequestResponses, AccessApproveRequestErrors, ThrowOnError>({
+    url: '/api/v1/access/requests/{request_id}/approve',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Withdraw your own request
+ */
+export const accessCancelRequest = <ThrowOnError extends boolean = false>(options: Options<AccessCancelRequestData, ThrowOnError>): RequestResult<AccessCancelRequestResponses, AccessCancelRequestErrors, ThrowOnError> => (options.client ?? client).post<AccessCancelRequestResponses, AccessCancelRequestErrors, ThrowOnError>({ url: '/api/v1/access/requests/{request_id}/cancel', ...options });
+
+/**
+ * Deny a request
+ */
+export const accessDenyRequest = <ThrowOnError extends boolean = false>(options: Options<AccessDenyRequestData, ThrowOnError>): RequestResult<AccessDenyRequestResponses, AccessDenyRequestErrors, ThrowOnError> => (options.client ?? client).post<AccessDenyRequestResponses, AccessDenyRequestErrors, ThrowOnError>({
+    url: '/api/v1/access/requests/{request_id}/deny',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Access roles (built-in and custom) with their scopes and who holds them
  */
 export const accessListRoles = <ThrowOnError extends boolean = false>(options?: Options<AccessListRolesData, ThrowOnError>): RequestResult<AccessListRolesResponses, AccessListRolesErrors, ThrowOnError> => (options?.client ?? client).get<AccessListRolesResponses, AccessListRolesErrors, ThrowOnError>({ url: '/api/v1/access/roles', ...options });
+
+/**
+ * Create a custom access role
+ */
+export const accessCreateRole = <ThrowOnError extends boolean = false>(options: Options<AccessCreateRoleData, ThrowOnError>): RequestResult<AccessCreateRoleResponses, AccessCreateRoleErrors, ThrowOnError> => (options.client ?? client).post<AccessCreateRoleResponses, AccessCreateRoleErrors, ThrowOnError>({
+    url: '/api/v1/access/roles',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Delete a custom role (409 with its bindings while it is still bound)
+ */
+export const accessDeleteRole = <ThrowOnError extends boolean = false>(options: Options<AccessDeleteRoleData, ThrowOnError>): RequestResult<AccessDeleteRoleResponses, AccessDeleteRoleErrors, ThrowOnError> => (options.client ?? client).delete<AccessDeleteRoleResponses, AccessDeleteRoleErrors, ThrowOnError>({ url: '/api/v1/access/roles/{role_id}', ...options });
+
+/**
+ * One access role
+ */
+export const accessGetRole = <ThrowOnError extends boolean = false>(options: Options<AccessGetRoleData, ThrowOnError>): RequestResult<AccessGetRoleResponses, AccessGetRoleErrors, ThrowOnError> => (options.client ?? client).get<AccessGetRoleResponses, AccessGetRoleErrors, ThrowOnError>({ url: '/api/v1/access/roles/{role_id}', ...options });
+
+/**
+ * Save a role (a new version); holders get the new scopes on their next request
+ */
+export const accessUpdateRole = <ThrowOnError extends boolean = false>(options: Options<AccessUpdateRoleData, ThrowOnError>): RequestResult<AccessUpdateRoleResponses, AccessUpdateRoleErrors, ThrowOnError> => (options.client ?? client).patch<AccessUpdateRoleResponses, AccessUpdateRoleErrors, ThrowOnError>({
+    url: '/api/v1/access/roles/{role_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Copy a role as a custom role
+ */
+export const accessDuplicateRole = <ThrowOnError extends boolean = false>(options: Options<AccessDuplicateRoleData, ThrowOnError>): RequestResult<AccessDuplicateRoleResponses, AccessDuplicateRoleErrors, ThrowOnError> => (options.client ?? client).post<AccessDuplicateRoleResponses, AccessDuplicateRoleErrors, ThrowOnError>({
+    url: '/api/v1/access/roles/{role_id}/duplicate',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * People, groups and service accounts holding a role
+ */
+export const accessRoleHolders = <ThrowOnError extends boolean = false>(options: Options<AccessRoleHoldersData, ThrowOnError>): RequestResult<AccessRoleHoldersResponses, AccessRoleHoldersErrors, ThrowOnError> => (options.client ?? client).get<AccessRoleHoldersResponses, AccessRoleHoldersErrors, ThrowOnError>({ url: '/api/v1/access/roles/{role_id}/holders', ...options });
+
+/**
+ * What saving this draft would change, and for whom
+ */
+export const accessPreviewRole = <ThrowOnError extends boolean = false>(options: Options<AccessPreviewRoleData, ThrowOnError>): RequestResult<AccessPreviewRoleResponses, AccessPreviewRoleErrors, ThrowOnError> => (options.client ?? client).post<AccessPreviewRoleResponses, AccessPreviewRoleErrors, ThrowOnError>({
+    url: '/api/v1/access/roles/{role_id}/preview',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Put a built-in role back to its defaults (a new version)
+ */
+export const accessResetRole = <ThrowOnError extends boolean = false>(options: Options<AccessResetRoleData, ThrowOnError>): RequestResult<AccessResetRoleResponses, AccessResetRoleErrors, ThrowOnError> => (options.client ?? client).post<AccessResetRoleResponses, AccessResetRoleErrors, ThrowOnError>({ url: '/api/v1/access/roles/{role_id}/reset', ...options });
+
+/**
+ * Saved versions of a role, newest first
+ */
+export const accessRoleVersions = <ThrowOnError extends boolean = false>(options: Options<AccessRoleVersionsData, ThrowOnError>): RequestResult<AccessRoleVersionsResponses, AccessRoleVersionsErrors, ThrowOnError> => (options.client ?? client).get<AccessRoleVersionsResponses, AccessRoleVersionsErrors, ThrowOnError>({ url: '/api/v1/access/roles/{role_id}/versions', ...options });
 
 /**
  * The scope catalog: AgentOS 3.1 and control-plane scopes
  */
 export const accessListScopes = <ThrowOnError extends boolean = false>(options?: Options<AccessListScopesData, ThrowOnError>): RequestResult<AccessListScopesResponses, AccessListScopesErrors, ThrowOnError> => (options?.client ?? client).get<AccessListScopesResponses, AccessListScopesErrors, ThrowOnError>({ url: '/api/v1/access/scopes', ...options });
+
+/**
+ * Grant temporary access directly (Owners, Administrators)
+ */
+export const accessGrantTemporary = <ThrowOnError extends boolean = false>(options: Options<AccessGrantTemporaryData, ThrowOnError>): RequestResult<AccessGrantTemporaryResponses, AccessGrantTemporaryErrors, ThrowOnError> => (options.client ?? client).post<AccessGrantTemporaryResponses, AccessGrantTemporaryErrors, ThrowOnError>({
+    url: '/api/v1/access/temporary',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Org-wide routing rules (needs settings:write)
@@ -83,6 +214,11 @@ export const approvalsCreateOrgRoute = <ThrowOnError extends boolean = false>(op
         ...options.headers
     }
 });
+
+/**
+ * Routing rules naming a group, on any instance
+ */
+export const approvalsListGroupRoutes = <ThrowOnError extends boolean = false>(options: Options<ApprovalsListGroupRoutesData, ThrowOnError>): RequestResult<ApprovalsListGroupRoutesResponses, ApprovalsListGroupRoutesErrors, ThrowOnError> => (options.client ?? client).get<ApprovalsListGroupRoutesResponses, ApprovalsListGroupRoutesErrors, ThrowOnError>({ url: '/api/v1/approvals/routes/by-group/{group_id}', ...options });
 
 /**
  * Remove a routing rule
@@ -107,6 +243,21 @@ export const approvalsUpdateRoute = <ThrowOnError extends boolean = false>(optio
 export const auditListActions = <ThrowOnError extends boolean = false>(options?: Options<AuditListActionsData, ThrowOnError>): RequestResult<AuditListActionsResponses, AuditListActionsErrors, ThrowOnError> => (options?.client ?? client).get<AuditListActionsResponses, AuditListActionsErrors, ThrowOnError>({ url: '/api/v1/audit/actions', ...options });
 
 /**
+ * People and machines in the log over the last 90 days, most active first
+ */
+export const auditListActors = <ThrowOnError extends boolean = false>(options?: Options<AuditListActorsData, ThrowOnError>): RequestResult<AuditListActorsResponses, AuditListActorsErrors, ThrowOnError> => (options?.client ?? client).get<AuditListActorsResponses, AuditListActorsErrors, ThrowOnError>({ url: '/api/v1/audit/actors', ...options });
+
+/**
+ * Archived months, newest first
+ */
+export const auditListArchives = <ThrowOnError extends boolean = false>(options?: Options<AuditListArchivesData, ThrowOnError>): RequestResult<AuditListArchivesResponses, AuditListArchivesErrors, ThrowOnError> => (options?.client ?? client).get<AuditListArchivesResponses, AuditListArchivesErrors, ThrowOnError>({ url: '/api/v1/audit/archives', ...options });
+
+/**
+ * Re-import an archived month (YYYY-MM) for 7 days of searching (runs in the background)
+ */
+export const auditRestoreArchive = <ThrowOnError extends boolean = false>(options: Options<AuditRestoreArchiveData, ThrowOnError>): RequestResult<AuditRestoreArchiveResponses, AuditRestoreArchiveErrors, ThrowOnError> => (options.client ?? client).post<AuditRestoreArchiveResponses, AuditRestoreArchiveErrors, ThrowOnError>({ url: '/api/v1/audit/archives/{month}/restore', ...options });
+
+/**
  * Audit events, newest first
  */
 export const auditListEvents = <ThrowOnError extends boolean = false>(options?: Options<AuditListEventsData, ThrowOnError>): RequestResult<AuditListEventsResponses, AuditListEventsErrors, ThrowOnError> => (options?.client ?? client).get<AuditListEventsResponses, AuditListEventsErrors, ThrowOnError>({ url: '/api/v1/audit/events', ...options });
@@ -117,10 +268,260 @@ export const auditListEvents = <ThrowOnError extends boolean = false>(options?: 
 export const auditGetEvent = <ThrowOnError extends boolean = false>(options: Options<AuditGetEventData, ThrowOnError>): RequestResult<AuditGetEventResponses, AuditGetEventErrors, ThrowOnError> => (options.client ?? client).get<AuditGetEventResponses, AuditGetEventErrors, ThrowOnError>({ url: '/api/v1/audit/events/{event_id}', ...options });
 
 /**
+ * Download matching events (up to 10 000; larger ranges answer 413: use POST /audit/exports)
+ */
+export const auditExportEvents = <ThrowOnError extends boolean = false>(options?: Options<AuditExportEventsData, ThrowOnError>): RequestResult<AuditExportEventsResponses, AuditExportEventsErrors, ThrowOnError> => (options?.client ?? client).get<AuditExportEventsResponses, AuditExportEventsErrors, ThrowOnError>({ url: '/api/v1/audit/export', ...options });
+
+/**
+ * The caller's background exports from the last 24 hours
+ */
+export const auditListExports = <ThrowOnError extends boolean = false>(options?: Options<AuditListExportsData, ThrowOnError>): RequestResult<AuditListExportsResponses, AuditListExportsErrors, ThrowOnError> => (options?.client ?? client).get<AuditListExportsResponses, AuditListExportsErrors, ThrowOnError>({ url: '/api/v1/audit/exports', ...options });
+
+/**
+ * Start a background export of any size (kept 24 h)
+ */
+export const auditRequestExport = <ThrowOnError extends boolean = false>(options: Options<AuditRequestExportData, ThrowOnError>): RequestResult<AuditRequestExportResponses, AuditRequestExportErrors, ThrowOnError> => (options.client ?? client).post<AuditRequestExportResponses, AuditRequestExportErrors, ThrowOnError>({
+    url: '/api/v1/audit/exports',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * One background export
+ */
+export const auditGetExport = <ThrowOnError extends boolean = false>(options: Options<AuditGetExportData, ThrowOnError>): RequestResult<AuditGetExportResponses, AuditGetExportErrors, ThrowOnError> => (options.client ?? client).get<AuditGetExportResponses, AuditGetExportErrors, ThrowOnError>({ url: '/api/v1/audit/exports/{export_id}', ...options });
+
+/**
+ * The finished export as CSV or JSONL (stored compressed, decompressed while it streams)
+ */
+export const auditDownloadExport = <ThrowOnError extends boolean = false>(options: Options<AuditDownloadExportData, ThrowOnError>): RequestResult<AuditDownloadExportResponses, AuditDownloadExportErrors, ThrowOnError> => (options.client ?? client).get<AuditDownloadExportResponses, AuditDownloadExportErrors, ThrowOnError>({ url: '/api/v1/audit/exports/{export_id}/download', ...options });
+
+/**
+ * Retention, archive and hash-chain policy (the secret key is never returned)
+ */
+export const auditGetPolicy = <ThrowOnError extends boolean = false>(options?: Options<AuditGetPolicyData, ThrowOnError>): RequestResult<AuditGetPolicyResponses, AuditGetPolicyErrors, ThrowOnError> => (options?.client ?? client).get<AuditGetPolicyResponses, AuditGetPolicyErrors, ThrowOnError>({ url: '/api/v1/audit/policy', ...options });
+
+/**
+ * Change the policy (only the fields sent)
+ */
+export const auditUpdatePolicy = <ThrowOnError extends boolean = false>(options: Options<AuditUpdatePolicyData, ThrowOnError>): RequestResult<AuditUpdatePolicyResponses, AuditUpdatePolicyErrors, ThrowOnError> => (options.client ?? client).put<AuditUpdatePolicyResponses, AuditUpdatePolicyErrors, ThrowOnError>({
+    url: '/api/v1/audit/policy',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Write, read back and delete a small object in the archive bucket (stored settings, overlaid by the body)
+ */
+export const auditCheckPolicyWrite = <ThrowOnError extends boolean = false>(options?: Options<AuditCheckPolicyWriteData, ThrowOnError>): RequestResult<AuditCheckPolicyWriteResponses, AuditCheckPolicyWriteErrors, ThrowOnError> => (options?.client ?? client).post<AuditCheckPolicyWriteResponses, AuditCheckPolicyWriteErrors, ThrowOnError>({
+    url: '/api/v1/audit/policy/test-write',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options?.headers
+    }
+});
+
+/**
+ * SIEM sinks (secrets left out)
+ */
+export const auditListSinks = <ThrowOnError extends boolean = false>(options?: Options<AuditListSinksData, ThrowOnError>): RequestResult<AuditListSinksResponses, AuditListSinksErrors, ThrowOnError> => (options?.client ?? client).get<AuditListSinksResponses, AuditListSinksErrors, ThrowOnError>({ url: '/api/v1/audit/sinks', ...options });
+
+/**
+ * Add a SIEM sink (streams events from now on)
+ */
+export const auditCreateSink = <ThrowOnError extends boolean = false>(options: Options<AuditCreateSinkData, ThrowOnError>): RequestResult<AuditCreateSinkResponses, AuditCreateSinkErrors, ThrowOnError> => (options.client ?? client).post<AuditCreateSinkResponses, AuditCreateSinkErrors, ThrowOnError>({
+    url: '/api/v1/audit/sinks',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Remove a sink
+ */
+export const auditDeleteSink = <ThrowOnError extends boolean = false>(options: Options<AuditDeleteSinkData, ThrowOnError>): RequestResult<AuditDeleteSinkResponses, AuditDeleteSinkErrors, ThrowOnError> => (options.client ?? client).delete<AuditDeleteSinkResponses, AuditDeleteSinkErrors, ThrowOnError>({ url: '/api/v1/audit/sinks/{sink_id}', ...options });
+
+/**
+ * Change a sink; enabling it again clears its failing state
+ */
+export const auditUpdateSink = <ThrowOnError extends boolean = false>(options: Options<AuditUpdateSinkData, ThrowOnError>): RequestResult<AuditUpdateSinkResponses, AuditUpdateSinkErrors, ThrowOnError> => (options.client ?? client).patch<AuditUpdateSinkResponses, AuditUpdateSinkErrors, ThrowOnError>({
+    url: '/api/v1/audit/sinks/{sink_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Send one synthetic event to the sink now
+ */
+export const auditTestSink = <ThrowOnError extends boolean = false>(options: Options<AuditTestSinkData, ThrowOnError>): RequestResult<AuditTestSinkResponses, AuditTestSinkErrors, ThrowOnError> => (options.client ?? client).post<AuditTestSinkResponses, AuditTestSinkErrors, ThrowOnError>({ url: '/api/v1/audit/sinks/{sink_id}/test', ...options });
+
+/**
+ * Whether events are streaming to a SIEM, for the header pill
+ */
+export const auditStreamStatus = <ThrowOnError extends boolean = false>(options?: Options<AuditStreamStatusData, ThrowOnError>): RequestResult<AuditStreamStatusResponses, AuditStreamStatusErrors, ThrowOnError> => (options?.client ?? client).get<AuditStreamStatusResponses, AuditStreamStatusErrors, ThrowOnError>({ url: '/api/v1/audit/stream-status', ...options });
+
+/**
+ * Check the tamper-evidence hash chain over a time range
+ */
+export const auditVerifyChain = <ThrowOnError extends boolean = false>(options: Options<AuditVerifyChainData, ThrowOnError>): RequestResult<AuditVerifyChainResponses, AuditVerifyChainErrors, ThrowOnError> => (options.client ?? client).post<AuditVerifyChainResponses, AuditVerifyChainErrors, ThrowOnError>({
+    url: '/api/v1/audit/verify',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Saved views: the caller's own and the shared ones, with event counts
+ */
+export const auditListViews = <ThrowOnError extends boolean = false>(options?: Options<AuditListViewsData, ThrowOnError>): RequestResult<AuditListViewsResponses, AuditListViewsErrors, ThrowOnError> => (options?.client ?? client).get<AuditListViewsResponses, AuditListViewsErrors, ThrowOnError>({ url: '/api/v1/audit/views', ...options });
+
+/**
+ * Save the current filters as a view
+ */
+export const auditCreateView = <ThrowOnError extends boolean = false>(options: Options<AuditCreateViewData, ThrowOnError>): RequestResult<AuditCreateViewResponses, AuditCreateViewErrors, ThrowOnError> => (options.client ?? client).post<AuditCreateViewResponses, AuditCreateViewErrors, ThrowOnError>({
+    url: '/api/v1/audit/views',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Delete a view
+ */
+export const auditDeleteView = <ThrowOnError extends boolean = false>(options: Options<AuditDeleteViewData, ThrowOnError>): RequestResult<AuditDeleteViewResponses, AuditDeleteViewErrors, ThrowOnError> => (options.client ?? client).delete<AuditDeleteViewResponses, AuditDeleteViewErrors, ThrowOnError>({ url: '/api/v1/audit/views/{view_id}', ...options });
+
+/**
+ * Rename, re-filter or move a view
+ */
+export const auditUpdateView = <ThrowOnError extends boolean = false>(options: Options<AuditUpdateViewData, ThrowOnError>): RequestResult<AuditUpdateViewResponses, AuditUpdateViewErrors, ThrowOnError> => (options.client ?? client).patch<AuditUpdateViewResponses, AuditUpdateViewErrors, ThrowOnError>({
+    url: '/api/v1/audit/views/{view_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * The org's authentication policy
+ */
+export const authGetPolicy = <ThrowOnError extends boolean = false>(options?: Options<AuthGetPolicyData, ThrowOnError>): RequestResult<AuthGetPolicyResponses, AuthGetPolicyErrors, ThrowOnError> => (options?.client ?? client).get<AuthGetPolicyResponses, AuthGetPolicyErrors, ThrowOnError>({ url: '/api/v1/auth/admin/policy', ...options });
+
+/**
+ * Change the authentication policy: enforce SSO, break-glass Owner, session lifetimes, MFA
+ */
+export const authUpdatePolicy = <ThrowOnError extends boolean = false>(options: Options<AuthUpdatePolicyData, ThrowOnError>): RequestResult<AuthUpdatePolicyResponses, AuthUpdatePolicyErrors, ThrowOnError> => (options.client ?? client).put<AuthUpdatePolicyResponses, AuthUpdatePolicyErrors, ThrowOnError>({
+    url: '/api/v1/auth/admin/policy',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Sign-in providers: from settings (read-only) and managed here
+ */
+export const authListProviders = <ThrowOnError extends boolean = false>(options?: Options<AuthListProvidersData, ThrowOnError>): RequestResult<AuthListProvidersResponses, AuthListProvidersErrors, ThrowOnError> => (options?.client ?? client).get<AuthListProvidersResponses, AuthListProvidersErrors, ThrowOnError>({ url: '/api/v1/auth/admin/providers', ...options });
+
+/**
+ * Add an OIDC / OAuth 2 or SAML provider (needs a recent sign-in or step-up)
+ */
+export const authCreateProvider = <ThrowOnError extends boolean = false>(options: Options<AuthCreateProviderData, ThrowOnError>): RequestResult<AuthCreateProviderResponses, AuthCreateProviderErrors, ThrowOnError> => (options.client ?? client).post<AuthCreateProviderResponses, AuthCreateProviderErrors, ThrowOnError>({
+    url: '/api/v1/auth/admin/providers',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Delete a provider and its account links (needs a recent sign-in or step-up)
+ */
+export const authDeleteProvider = <ThrowOnError extends boolean = false>(options: Options<AuthDeleteProviderData, ThrowOnError>): RequestResult<AuthDeleteProviderResponses, AuthDeleteProviderErrors, ThrowOnError> => (options.client ?? client).delete<AuthDeleteProviderResponses, AuthDeleteProviderErrors, ThrowOnError>({ url: '/api/v1/auth/admin/providers/{provider_id}', ...options });
+
+/**
+ * One sign-in provider
+ */
+export const authGetProvider = <ThrowOnError extends boolean = false>(options: Options<AuthGetProviderData, ThrowOnError>): RequestResult<AuthGetProviderResponses, AuthGetProviderErrors, ThrowOnError> => (options.client ?? client).get<AuthGetProviderResponses, AuthGetProviderErrors, ThrowOnError>({ url: '/api/v1/auth/admin/providers/{provider_id}', ...options });
+
+/**
+ * Change a provider (needs a recent sign-in or step-up)
+ */
+export const authUpdateProvider = <ThrowOnError extends boolean = false>(options: Options<AuthUpdateProviderData, ThrowOnError>): RequestResult<AuthUpdateProviderResponses, AuthUpdateProviderErrors, ThrowOnError> => (options.client ?? client).patch<AuthUpdateProviderResponses, AuthUpdateProviderErrors, ThrowOnError>({
+    url: '/api/v1/auth/admin/providers/{provider_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * SAML service-provider metadata to import at the IdP
+ */
+export const authProviderSamlMetadata = <ThrowOnError extends boolean = false>(options: Options<AuthProviderSamlMetadataData, ThrowOnError>): RequestResult<AuthProviderSamlMetadataResponses, AuthProviderSamlMetadataErrors, ThrowOnError> => (options.client ?? client).get<AuthProviderSamlMetadataResponses, AuthProviderSamlMetadataErrors, ThrowOnError>({ url: '/api/v1/auth/admin/providers/{provider_id}/saml-metadata', ...options });
+
+/**
  * Sign in with email and password
+ *
+ * Returns the signed-in person, or `mfa_required: true` with a `challenge` when a second factor is needed (answer it at `POST /auth/login/mfa`). With SSO enforced only the break-glass Owner may use a password (others get `sso_required`).
  */
 export const authLogin = <ThrowOnError extends boolean = false>(options: Options<AuthLoginData, ThrowOnError>): RequestResult<AuthLoginResponses, AuthLoginErrors, ThrowOnError> => (options.client ?? client).post<AuthLoginResponses, AuthLoginErrors, ThrowOnError>({
     url: '/api/v1/auth/login',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Finish signing in with a second factor (or enroll one)
+ */
+export const authLoginMfa = <ThrowOnError extends boolean = false>(options: Options<AuthLoginMfaData, ThrowOnError>): RequestResult<AuthLoginMfaResponses, AuthLoginMfaErrors, ThrowOnError> => (options.client ?? client).post<AuthLoginMfaResponses, AuthLoginMfaErrors, ThrowOnError>({
+    url: '/api/v1/auth/login/mfa',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * While signing in: set up an authenticator app (when required)
+ */
+export const authLoginTotpSetup = <ThrowOnError extends boolean = false>(options: Options<AuthLoginTotpSetupData, ThrowOnError>): RequestResult<AuthLoginTotpSetupResponses, AuthLoginTotpSetupErrors, ThrowOnError> => (options.client ?? client).post<AuthLoginTotpSetupResponses, AuthLoginTotpSetupErrors, ThrowOnError>({
+    url: '/api/v1/auth/login/mfa/totp/setup',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * While signing in: WebAuthn request options (or creation options when enrolling)
+ */
+export const authLoginWebauthnOptions = <ThrowOnError extends boolean = false>(options: Options<AuthLoginWebauthnOptionsData, ThrowOnError>): RequestResult<AuthLoginWebauthnOptionsResponses, AuthLoginWebauthnOptionsErrors, ThrowOnError> => (options.client ?? client).post<AuthLoginWebauthnOptionsResponses, AuthLoginWebauthnOptionsErrors, ThrowOnError>({
+    url: '/api/v1/auth/login/mfa/webauthn/options',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -163,9 +564,19 @@ export const authConfirmPasswordReset = <ThrowOnError extends boolean = false>(o
 export const authSignInOptions = <ThrowOnError extends boolean = false>(options?: Options<AuthSignInOptionsData, ThrowOnError>): RequestResult<AuthSignInOptionsResponses, AuthSignInOptionsErrors, ThrowOnError> => (options?.client ?? client).get<AuthSignInOptionsResponses, AuthSignInOptionsErrors, ThrowOnError>({ url: '/api/v1/auth/providers', ...options });
 
 /**
+ * SAML assertion consumer service: the IdP posts SAMLResponse and RelayState here
+ */
+export const authSsoAcs = <ThrowOnError extends boolean = false>(options: Options<AuthSsoAcsData, ThrowOnError>): RequestResult<unknown, AuthSsoAcsErrors, ThrowOnError> => (options.client ?? client).post<unknown, AuthSsoAcsErrors, ThrowOnError>({ url: '/api/v1/auth/sso/{provider}/acs', ...options });
+
+/**
  * Where the SSO provider sends people back (redirects into the app)
  */
 export const authSsoCallback = <ThrowOnError extends boolean = false>(options: Options<AuthSsoCallbackData, ThrowOnError>): RequestResult<unknown, AuthSsoCallbackErrors, ThrowOnError> => (options.client ?? client).get<unknown, AuthSsoCallbackErrors, ThrowOnError>({ url: '/api/v1/auth/sso/{provider}/callback', ...options });
+
+/**
+ * This installation's SAML service-provider metadata for an enabled SAML provider (public)
+ */
+export const authSsoMetadata = <ThrowOnError extends boolean = false>(options: Options<AuthSsoMetadataData, ThrowOnError>): RequestResult<AuthSsoMetadataResponses, AuthSsoMetadataErrors, ThrowOnError> => (options.client ?? client).get<AuthSsoMetadataResponses, AuthSsoMetadataErrors, ThrowOnError>({ url: '/api/v1/auth/sso/{provider}/metadata', ...options });
 
 /**
  * Start signing in with an SSO provider (redirects to it)
@@ -173,10 +584,181 @@ export const authSsoCallback = <ThrowOnError extends boolean = false>(options: O
 export const authSsoStart = <ThrowOnError extends boolean = false>(options: Options<AuthSsoStartData, ThrowOnError>): RequestResult<unknown, AuthSsoStartErrors, ThrowOnError> => (options.client ?? client).get<unknown, AuthSsoStartErrors, ThrowOnError>({ url: '/api/v1/auth/sso/{provider}/start', ...options });
 
 /**
+ * How recently you confirmed it's you, and how you can
+ */
+export const authStepUpStatus = <ThrowOnError extends boolean = false>(options?: Options<AuthStepUpStatusData, ThrowOnError>): RequestResult<AuthStepUpStatusResponses, AuthStepUpStatusErrors, ThrowOnError> => (options?.client ?? client).get<AuthStepUpStatusResponses, AuthStepUpStatusErrors, ThrowOnError>({ url: '/api/v1/auth/step-up', ...options });
+
+/**
+ * Confirm it's you (password, authenticator code or security key) before a sensitive change
+ */
+export const authStepUp = <ThrowOnError extends boolean = false>(options: Options<AuthStepUpData, ThrowOnError>): RequestResult<AuthStepUpResponses, AuthStepUpErrors, ThrowOnError> => (options.client ?? client).post<AuthStepUpResponses, AuthStepUpErrors, ThrowOnError>({
+    url: '/api/v1/auth/step-up',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * WebAuthn request options for a step-up
+ */
+export const authStepUpWebauthnOptions = <ThrowOnError extends boolean = false>(options?: Options<AuthStepUpWebauthnOptionsData, ThrowOnError>): RequestResult<AuthStepUpWebauthnOptionsResponses, AuthStepUpWebauthnOptionsErrors, ThrowOnError> => (options?.client ?? client).post<AuthStepUpWebauthnOptionsResponses, AuthStepUpWebauthnOptionsErrors, ThrowOnError>({ url: '/api/v1/auth/step-up/webauthn/options', ...options });
+
+/**
  * Delete one person's learnings on every instance where you hold learnings:delete
  */
 export const contextDataSubjectRequest = <ThrowOnError extends boolean = false>(options: Options<ContextDataSubjectRequestData, ThrowOnError>): RequestResult<ContextDataSubjectRequestResponses, ContextDataSubjectRequestErrors, ThrowOnError> => (options.client ?? client).post<ContextDataSubjectRequestResponses, ContextDataSubjectRequestErrors, ThrowOnError>({
     url: '/api/v1/context/data-subject-requests',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Google Workspace sync: config (without the key) and the last run
+ */
+export const directoryGetGoogleSync = <ThrowOnError extends boolean = false>(options?: Options<DirectoryGetGoogleSyncData, ThrowOnError>): RequestResult<DirectoryGetGoogleSyncResponses, DirectoryGetGoogleSyncErrors, ThrowOnError> => (options?.client ?? client).get<DirectoryGetGoogleSyncResponses, DirectoryGetGoogleSyncErrors, ThrowOnError>({ url: '/api/v1/directory/google', ...options });
+
+/**
+ * Configure Google Workspace sync (omitted fields stay as they are)
+ */
+export const directoryUpdateGoogleSync = <ThrowOnError extends boolean = false>(options: Options<DirectoryUpdateGoogleSyncData, ThrowOnError>): RequestResult<DirectoryUpdateGoogleSyncResponses, DirectoryUpdateGoogleSyncErrors, ThrowOnError> => (options.client ?? client).put<DirectoryUpdateGoogleSyncResponses, DirectoryUpdateGoogleSyncErrors, ThrowOnError>({
+    url: '/api/v1/directory/google',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Run the Google Workspace sync now
+ */
+export const directoryRunGoogleSync = <ThrowOnError extends boolean = false>(options?: Options<DirectoryRunGoogleSyncData, ThrowOnError>): RequestResult<DirectoryRunGoogleSyncResponses, DirectoryRunGoogleSyncErrors, ThrowOnError> => (options?.client ?? client).post<DirectoryRunGoogleSyncResponses, DirectoryRunGoogleSyncErrors, ThrowOnError>({ url: '/api/v1/directory/google/sync', ...options });
+
+/**
+ * Check that the service account can read the directory
+ */
+export const directoryTestGoogleSync = <ThrowOnError extends boolean = false>(options?: Options<DirectoryTestGoogleSyncData, ThrowOnError>): RequestResult<DirectoryTestGoogleSyncResponses, DirectoryTestGoogleSyncErrors, ThrowOnError> => (options?.client ?? client).post<DirectoryTestGoogleSyncResponses, DirectoryTestGoogleSyncErrors, ThrowOnError>({ url: '/api/v1/directory/google/test', ...options });
+
+/**
+ * Groups with their member counts and where they come from
+ */
+export const directoryListGroups = <ThrowOnError extends boolean = false>(options?: Options<DirectoryListGroupsData, ThrowOnError>): RequestResult<DirectoryListGroupsResponses, DirectoryListGroupsErrors, ThrowOnError> => (options?.client ?? client).get<DirectoryListGroupsResponses, DirectoryListGroupsErrors, ThrowOnError>({ url: '/api/v1/directory/groups', ...options });
+
+/**
+ * Create a manual group
+ */
+export const directoryCreateGroup = <ThrowOnError extends boolean = false>(options: Options<DirectoryCreateGroupData, ThrowOnError>): RequestResult<DirectoryCreateGroupResponses, DirectoryCreateGroupErrors, ThrowOnError> => (options.client ?? client).post<DirectoryCreateGroupResponses, DirectoryCreateGroupErrors, ThrowOnError>({
+    url: '/api/v1/directory/groups',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Delete a group and its role bindings
+ */
+export const directoryDeleteGroup = <ThrowOnError extends boolean = false>(options: Options<DirectoryDeleteGroupData, ThrowOnError>): RequestResult<DirectoryDeleteGroupResponses, DirectoryDeleteGroupErrors, ThrowOnError> => (options.client ?? client).delete<DirectoryDeleteGroupResponses, DirectoryDeleteGroupErrors, ThrowOnError>({ url: '/api/v1/directory/groups/{group_id}', ...options });
+
+/**
+ * A group and its members
+ */
+export const directoryGetGroup = <ThrowOnError extends boolean = false>(options: Options<DirectoryGetGroupData, ThrowOnError>): RequestResult<DirectoryGetGroupResponses, DirectoryGetGroupErrors, ThrowOnError> => (options.client ?? client).get<DirectoryGetGroupResponses, DirectoryGetGroupErrors, ThrowOnError>({ url: '/api/v1/directory/groups/{group_id}', ...options });
+
+/**
+ * Rename a group or change its description
+ */
+export const directoryUpdateGroup = <ThrowOnError extends boolean = false>(options: Options<DirectoryUpdateGroupData, ThrowOnError>): RequestResult<DirectoryUpdateGroupResponses, DirectoryUpdateGroupErrors, ThrowOnError> => (options.client ?? client).patch<DirectoryUpdateGroupResponses, DirectoryUpdateGroupErrors, ThrowOnError>({
+    url: '/api/v1/directory/groups/{group_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Remove someone from a manual group
+ */
+export const directoryRemoveGroupMember = <ThrowOnError extends boolean = false>(options: Options<DirectoryRemoveGroupMemberData, ThrowOnError>): RequestResult<DirectoryRemoveGroupMemberResponses, DirectoryRemoveGroupMemberErrors, ThrowOnError> => (options.client ?? client).delete<DirectoryRemoveGroupMemberResponses, DirectoryRemoveGroupMemberErrors, ThrowOnError>({ url: '/api/v1/directory/groups/{group_id}/members/{user_id}', ...options });
+
+/**
+ * Add someone to a group (or change their role in it)
+ */
+export const directoryAddGroupMember = <ThrowOnError extends boolean = false>(options: Options<DirectoryAddGroupMemberData, ThrowOnError>): RequestResult<DirectoryAddGroupMemberResponses, DirectoryAddGroupMemberErrors, ThrowOnError> => (options.client ?? client).put<DirectoryAddGroupMemberResponses, DirectoryAddGroupMemberErrors, ThrowOnError>({
+    url: '/api/v1/directory/groups/{group_id}/members/{user_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * IdP group → Agnostic group mapping rules
+ */
+export const directoryListMappingRules = <ThrowOnError extends boolean = false>(options?: Options<DirectoryListMappingRulesData, ThrowOnError>): RequestResult<DirectoryListMappingRulesResponses, DirectoryListMappingRulesErrors, ThrowOnError> => (options?.client ?? client).get<DirectoryListMappingRulesResponses, DirectoryListMappingRulesErrors, ThrowOnError>({ url: '/api/v1/directory/mapping-rules', ...options });
+
+/**
+ * Add the members of an IdP group to a manual group (applied at once)
+ */
+export const directoryCreateMappingRule = <ThrowOnError extends boolean = false>(options: Options<DirectoryCreateMappingRuleData, ThrowOnError>): RequestResult<DirectoryCreateMappingRuleResponses, DirectoryCreateMappingRuleErrors, ThrowOnError> => (options.client ?? client).post<DirectoryCreateMappingRuleResponses, DirectoryCreateMappingRuleErrors, ThrowOnError>({
+    url: '/api/v1/directory/mapping-rules',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Delete a mapping rule and the memberships it made
+ */
+export const directoryDeleteMappingRule = <ThrowOnError extends boolean = false>(options: Options<DirectoryDeleteMappingRuleData, ThrowOnError>): RequestResult<DirectoryDeleteMappingRuleResponses, DirectoryDeleteMappingRuleErrors, ThrowOnError> => (options.client ?? client).delete<DirectoryDeleteMappingRuleResponses, DirectoryDeleteMappingRuleErrors, ThrowOnError>({ url: '/api/v1/directory/mapping-rules/{rule_id}', ...options });
+
+/**
+ * SCIM endpoint, last sync, counts and the tokens that still work
+ */
+export const directoryScimStatus = <ThrowOnError extends boolean = false>(options?: Options<DirectoryScimStatusData, ThrowOnError>): RequestResult<DirectoryScimStatusResponses, DirectoryScimStatusErrors, ThrowOnError> => (options?.client ?? client).get<DirectoryScimStatusResponses, DirectoryScimStatusErrors, ThrowOnError>({ url: '/api/v1/directory/scim', ...options });
+
+/**
+ * Create the SCIM token (shown only in this response)
+ */
+export const directoryCreateScimToken = <ThrowOnError extends boolean = false>(options: Options<DirectoryCreateScimTokenData, ThrowOnError>): RequestResult<DirectoryCreateScimTokenResponses, DirectoryCreateScimTokenErrors, ThrowOnError> => (options.client ?? client).post<DirectoryCreateScimTokenResponses, DirectoryCreateScimTokenErrors, ThrowOnError>({
+    url: '/api/v1/directory/scim/tokens',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Revoke a SCIM token
+ */
+export const directoryRevokeScimToken = <ThrowOnError extends boolean = false>(options: Options<DirectoryRevokeScimTokenData, ThrowOnError>): RequestResult<DirectoryRevokeScimTokenResponses, DirectoryRevokeScimTokenErrors, ThrowOnError> => (options.client ?? client).delete<DirectoryRevokeScimTokenResponses, DirectoryRevokeScimTokenErrors, ThrowOnError>({ url: '/api/v1/directory/scim/tokens/{token_id}', ...options });
+
+/**
+ * Issue a new SCIM token; the old one keeps working for 24 hours or until revoked
+ */
+export const directoryRotateScimToken = <ThrowOnError extends boolean = false>(options: Options<DirectoryRotateScimTokenData, ThrowOnError>): RequestResult<DirectoryRotateScimTokenResponses, DirectoryRotateScimTokenErrors, ThrowOnError> => (options.client ?? client).post<DirectoryRotateScimTokenResponses, DirectoryRotateScimTokenErrors, ThrowOnError>({ url: '/api/v1/directory/scim/tokens/{token_id}/rotate', ...options });
+
+/**
+ * Directory sync settings (deprovisioning behaviour)
+ */
+export const directoryGetDirectorySettings = <ThrowOnError extends boolean = false>(options?: Options<DirectoryGetDirectorySettingsData, ThrowOnError>): RequestResult<DirectoryGetDirectorySettingsResponses, DirectoryGetDirectorySettingsErrors, ThrowOnError> => (options?.client ?? client).get<DirectoryGetDirectorySettingsResponses, DirectoryGetDirectorySettingsErrors, ThrowOnError>({ url: '/api/v1/directory/settings', ...options });
+
+/**
+ * Change the deprovisioning behaviour
+ */
+export const directoryUpdateDirectorySettings = <ThrowOnError extends boolean = false>(options: Options<DirectoryUpdateDirectorySettingsData, ThrowOnError>): RequestResult<DirectoryUpdateDirectorySettingsResponses, DirectoryUpdateDirectorySettingsErrors, ThrowOnError> => (options.client ?? client).put<DirectoryUpdateDirectorySettingsResponses, DirectoryUpdateDirectorySettingsErrors, ThrowOnError>({
+    url: '/api/v1/directory/settings',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -814,6 +1396,55 @@ export const meUpdateMe = <ThrowOnError extends boolean = false>(options: Option
 export const meMyAccess = <ThrowOnError extends boolean = false>(options?: Options<MeMyAccessData, ThrowOnError>): RequestResult<MeMyAccessResponses, MeMyAccessErrors, ThrowOnError> => (options?.client ?? client).get<MeMyAccessResponses, MeMyAccessErrors, ThrowOnError>({ url: '/api/v1/me/access', ...options });
 
 /**
+ * Your second factors and the org's MFA policy
+ */
+export const meGetMyMfa = <ThrowOnError extends boolean = false>(options?: Options<MeGetMyMfaData, ThrowOnError>): RequestResult<MeGetMyMfaResponses, MeGetMyMfaErrors, ThrowOnError> => (options?.client ?? client).get<MeGetMyMfaResponses, MeGetMyMfaErrors, ThrowOnError>({ url: '/api/v1/me/mfa', ...options });
+
+/**
+ * Replace your recovery codes (shown once; needs a recent sign-in or step-up)
+ */
+export const meRegenerateRecoveryCodes = <ThrowOnError extends boolean = false>(options?: Options<MeRegenerateRecoveryCodesData, ThrowOnError>): RequestResult<MeRegenerateRecoveryCodesResponses, MeRegenerateRecoveryCodesErrors, ThrowOnError> => (options?.client ?? client).post<MeRegenerateRecoveryCodesResponses, MeRegenerateRecoveryCodesErrors, ThrowOnError>({ url: '/api/v1/me/mfa/recovery-codes', ...options });
+
+/**
+ * Confirm the authenticator app with a code from it
+ */
+export const meConfirmTotp = <ThrowOnError extends boolean = false>(options: Options<MeConfirmTotpData, ThrowOnError>): RequestResult<MeConfirmTotpResponses, MeConfirmTotpErrors, ThrowOnError> => (options.client ?? client).post<MeConfirmTotpResponses, MeConfirmTotpErrors, ThrowOnError>({
+    url: '/api/v1/me/mfa/totp/confirm',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Start setting up an authenticator app (pending until confirmed)
+ */
+export const meSetupTotp = <ThrowOnError extends boolean = false>(options?: Options<MeSetupTotpData, ThrowOnError>): RequestResult<MeSetupTotpResponses, MeSetupTotpErrors, ThrowOnError> => (options?.client ?? client).post<MeSetupTotpResponses, MeSetupTotpErrors, ThrowOnError>({ url: '/api/v1/me/mfa/totp/setup', ...options });
+
+/**
+ * WebAuthn creation options for a new security key or passkey
+ */
+export const meWebauthnOptions = <ThrowOnError extends boolean = false>(options?: Options<MeWebauthnOptionsData, ThrowOnError>): RequestResult<MeWebauthnOptionsResponses, MeWebauthnOptionsErrors, ThrowOnError> => (options?.client ?? client).post<MeWebauthnOptionsResponses, MeWebauthnOptionsErrors, ThrowOnError>({ url: '/api/v1/me/mfa/webauthn/options', ...options });
+
+/**
+ * Register the security key or passkey
+ */
+export const meWebauthnVerify = <ThrowOnError extends boolean = false>(options: Options<MeWebauthnVerifyData, ThrowOnError>): RequestResult<MeWebauthnVerifyResponses, MeWebauthnVerifyErrors, ThrowOnError> => (options.client ?? client).post<MeWebauthnVerifyResponses, MeWebauthnVerifyErrors, ThrowOnError>({
+    url: '/api/v1/me/mfa/webauthn/verify',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Remove a second factor (needs a recent sign-in or step-up)
+ */
+export const meRemoveFactor = <ThrowOnError extends boolean = false>(options: Options<MeRemoveFactorData, ThrowOnError>): RequestResult<MeRemoveFactorResponses, MeRemoveFactorErrors, ThrowOnError> => (options.client ?? client).delete<MeRemoveFactorResponses, MeRemoveFactorErrors, ThrowOnError>({ url: '/api/v1/me/mfa/{factor_id}', ...options });
+
+/**
  * Which channels each event reaches you through, and quiet hours
  */
 export const notificationsMyPreferences = <ThrowOnError extends boolean = false>(options?: Options<NotificationsMyPreferencesData, ThrowOnError>): RequestResult<NotificationsMyPreferencesResponses, NotificationsMyPreferencesErrors, ThrowOnError> => (options?.client ?? client).get<NotificationsMyPreferencesResponses, NotificationsMyPreferencesErrors, ThrowOnError>({ url: '/api/v1/me/notification-preferences', ...options });
@@ -844,6 +1475,23 @@ export const meRevokeMySession = <ThrowOnError extends boolean = false>(options:
  * Members of the org with their org roles
  */
 export const membersListMembers = <ThrowOnError extends boolean = false>(options?: Options<MembersListMembersData, ThrowOnError>): RequestResult<MembersListMembersResponses, MembersListMembersErrors, ThrowOnError> => (options?.client ?? client).get<MembersListMembersResponses, MembersListMembersErrors, ThrowOnError>({ url: '/api/v1/members', ...options });
+
+/**
+ * Change the org role of, add to a group, or remove several members
+ */
+export const membersBulkMembers = <ThrowOnError extends boolean = false>(options: Options<MembersBulkMembersData, ThrowOnError>): RequestResult<MembersBulkMembersResponses, MembersBulkMembersErrors, ThrowOnError> => (options.client ?? client).post<MembersBulkMembersResponses, MembersBulkMembersErrors, ThrowOnError>({
+    url: '/api/v1/members/bulk',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Members as CSV: email, name, org role, groups, joined, last active
+ */
+export const membersExportMembers = <ThrowOnError extends boolean = false>(options?: Options<MembersExportMembersData, ThrowOnError>): RequestResult<MembersExportMembersResponses, MembersExportMembersErrors, ThrowOnError> => (options?.client ?? client).get<MembersExportMembersResponses, MembersExportMembersErrors, ThrowOnError>({ url: '/api/v1/members/export.csv', ...options });
 
 /**
  * Remove someone from the org (signs them out)
@@ -1010,6 +1658,62 @@ export const observePutOrgPriceTable = <ThrowOnError extends boolean = false>(op
  * Command-palette search over people, instances, agents, teams and workflows
  */
 export const searchSearch = <ThrowOnError extends boolean = false>(options: Options<SearchSearchData, ThrowOnError>): RequestResult<SearchSearchResponses, SearchSearchErrors, ThrowOnError> => (options.client ?? client).get<SearchSearchResponses, SearchSearchErrors, ThrowOnError>({ url: '/api/v1/search', ...options });
+
+/**
+ * Service accounts: scopes, instances, who created them, last use, expiry
+ */
+export const serviceAccountsListAccounts = <ThrowOnError extends boolean = false>(options?: Options<ServiceAccountsListAccountsData, ThrowOnError>): RequestResult<ServiceAccountsListAccountsResponses, ServiceAccountsListAccountsErrors, ThrowOnError> => (options?.client ?? client).get<ServiceAccountsListAccountsResponses, ServiceAccountsListAccountsErrors, ThrowOnError>({ url: '/api/v1/service-accounts', ...options });
+
+/**
+ * Create a service account, its grants and tokens (each token is returned once)
+ */
+export const serviceAccountsCreateAccount = <ThrowOnError extends boolean = false>(options: Options<ServiceAccountsCreateAccountData, ThrowOnError>): RequestResult<ServiceAccountsCreateAccountResponses, ServiceAccountsCreateAccountErrors, ThrowOnError> => (options.client ?? client).post<ServiceAccountsCreateAccountResponses, ServiceAccountsCreateAccountErrors, ThrowOnError>({
+    url: '/api/v1/service-accounts',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * The principal, privileged scopes and CLI command of a create form, without creating
+ */
+export const serviceAccountsPreviewAccount = <ThrowOnError extends boolean = false>(options: Options<ServiceAccountsPreviewAccountData, ThrowOnError>): RequestResult<ServiceAccountsPreviewAccountResponses, ServiceAccountsPreviewAccountErrors, ThrowOnError> => (options.client ?? client).post<ServiceAccountsPreviewAccountResponses, ServiceAccountsPreviewAccountErrors, ThrowOnError>({
+    url: '/api/v1/service-accounts/preview',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Delete a service account: revoke every token (natively on each instance) and remove its grants
+ */
+export const serviceAccountsDeleteAccount = <ThrowOnError extends boolean = false>(options: Options<ServiceAccountsDeleteAccountData, ThrowOnError>): RequestResult<ServiceAccountsDeleteAccountResponses, ServiceAccountsDeleteAccountErrors, ThrowOnError> => (options.client ?? client).delete<ServiceAccountsDeleteAccountResponses, ServiceAccountsDeleteAccountErrors, ThrowOnError>({ url: '/api/v1/service-accounts/{account}', ...options });
+
+/**
+ * One service account (id, name or sa:<name>) with its scopes and tokens
+ */
+export const serviceAccountsGetAccount = <ThrowOnError extends boolean = false>(options: Options<ServiceAccountsGetAccountData, ThrowOnError>): RequestResult<ServiceAccountsGetAccountResponses, ServiceAccountsGetAccountErrors, ThrowOnError> => (options.client ?? client).get<ServiceAccountsGetAccountResponses, ServiceAccountsGetAccountErrors, ThrowOnError>({ url: '/api/v1/service-accounts/{account}', ...options });
+
+/**
+ * Issue a token, or rotate the current one (gateway: 24 h grace; native: revoke and recreate)
+ */
+export const serviceAccountsIssueToken = <ThrowOnError extends boolean = false>(options: Options<ServiceAccountsIssueTokenData, ThrowOnError>): RequestResult<ServiceAccountsIssueTokenResponses, ServiceAccountsIssueTokenErrors, ThrowOnError> => (options.client ?? client).post<ServiceAccountsIssueTokenResponses, ServiceAccountsIssueTokenErrors, ThrowOnError>({
+    url: '/api/v1/service-accounts/{account}/tokens',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Revoke a token now (by id or prefix)
+ */
+export const serviceAccountsRevokeToken = <ThrowOnError extends boolean = false>(options: Options<ServiceAccountsRevokeTokenData, ThrowOnError>): RequestResult<ServiceAccountsRevokeTokenResponses, ServiceAccountsRevokeTokenErrors, ThrowOnError> => (options.client ?? client).delete<ServiceAccountsRevokeTokenResponses, ServiceAccountsRevokeTokenErrors, ThrowOnError>({ url: '/api/v1/service-accounts/{account}/tokens/{token}', ...options });
 
 /**
  * Enabled and disabled modules with what they contribute

@@ -28,6 +28,7 @@ class RouteRow(TimestampMixin, ApprovalsBase):
     component_ids: Mapped[list[str]] = mapped_column(JsonDocument, default=list)
     member_ids: Mapped[list[str]] = mapped_column(JsonDocument, default=list)
     role_ids: Mapped[list[str]] = mapped_column(JsonDocument, default=list)
+    group_ids: Mapped[list[str]] = mapped_column(JsonDocument, default=list)
     channels: Mapped[list[str]] = mapped_column(JsonDocument, default=list)
     channel_ids: Mapped[list[str]] = mapped_column(JsonDocument, default=list)
     created_by: Mapped[str | None] = mapped_column(String(40))

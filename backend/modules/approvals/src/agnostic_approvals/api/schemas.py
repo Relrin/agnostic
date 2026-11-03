@@ -245,6 +245,7 @@ class RouteIn(BaseModel):
     component_ids: list[str] = Field(default_factory=list, max_length=100)
     member_ids: list[str] = Field(default_factory=list, max_length=200)
     role_ids: list[str] = Field(default_factory=list, max_length=50)
+    group_ids: list[str] = Field(default_factory=list, max_length=50)
     channels: list[PersonalChannelName] = Field(default_factory=lambda: ["in_app"])
     channel_ids: list[str] = Field(default_factory=list, max_length=20, description="Org notification channels")
 
@@ -257,6 +258,7 @@ class RouteIn(BaseModel):
             component_ids=tuple(self.component_ids),
             member_ids=tuple(self.member_ids),
             role_ids=tuple(self.role_ids),
+            group_ids=tuple(self.group_ids),
             channels=tuple(self.channels),
             channel_ids=tuple(self.channel_ids),
         )
@@ -276,6 +278,7 @@ class RouteOut(BaseModel):
     component_ids: list[str]
     members: list[NamedRef]
     roles: list[NamedRef]
+    groups: list[NamedRef] = Field(default_factory=list[NamedRef])
     channels: list[PersonalChannelName]
     channel_ids: list[str]
     created_by: str | None
@@ -293,6 +296,7 @@ class RouteOut(BaseModel):
             component_ids=list(route.component_ids),
             members=[NamedRef(id=k, name=v) for k, v in view.member_names.items()],
             roles=[NamedRef(id=k, name=v) for k, v in view.role_names.items()],
+            groups=[NamedRef(id=k, name=v) for k, v in view.group_names.items()],
             channels=list(route.channels),  # pyright: ignore[reportArgumentType]
             channel_ids=list(route.channel_ids),
             created_by=route.created_by,

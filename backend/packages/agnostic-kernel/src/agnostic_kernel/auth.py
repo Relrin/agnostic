@@ -33,6 +33,8 @@ class Principal:
     session_id: str | None = None
     """The web session that authenticated the request (hashed id), if any."""
     via: str = "web"
+    forwards_user_id: bool = False
+    """Service accounts only: the gateway passes the caller's ``user_id`` through instead of dropping it."""
 
 
 SYSTEM_PRINCIPAL = Principal(kind="system", id="system", display_name="Agnostic", via="system")

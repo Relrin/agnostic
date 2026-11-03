@@ -4,3 +4,6 @@ b9e72df3753848b803fd2d1775966cc194505937:.env.example:generic-api-key:32
 # The invitation bindings call: an argument name containing "access" next to a dotted attribute (not a secret).
 b9e72df3753848b803fd2d1775966cc194505937:backend/modules/org/src/agnostic_org/application/members.py:generic-api-key:213
 b9e72df3753848b803fd2d1775966cc194505937:backend/modules/org/src/agnostic_org/application/invitations.py:generic-api-key:242
+# A fake Slack bot token in the notification-channel test fixture; the fixture now builds it at runtime.
+52c340cd37203fac535b25dc0606330d60098abb:backend/tests/unit/test_control_domain.py:generic-api-key:178
+52c340cd37203fac535b25dc0606330d60098abb:backend/tests/unit/test_control_domain.py:generic-api-key:179

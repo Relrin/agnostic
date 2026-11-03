@@ -17,6 +17,7 @@ from agnostic_kernel.ids import new_id
 from agnostic_kernel.mail import Email, Mailer
 from agnostic_org.application.members import WRITE_SCOPE, actor_role
 from agnostic_org.application.ports import (
+    GroupDirectory,
     InitialBindingsApplier,
     InvitationRepository,
     MemberRepository,
@@ -60,6 +61,7 @@ class InvitationContext:
     org: OrgRepository
     identity: IdentityFacade
     bindings: InitialBindingsApplier
+    groups: GroupDirectory
     authorizer: Authorizer
     audit: AuditLog
     mailer: Mailer
@@ -74,6 +76,7 @@ class _Invitations:
         self._org = context.org
         self._identity = context.identity
         self._bindings = context.bindings
+        self._groups = context.groups
         self._authorizer = context.authorizer
         self._audit = context.audit
         self._mailer = context.mailer
@@ -107,6 +110,7 @@ class InvitePerson(_Invitations):
         role: OrgRole,
         bindings: Sequence[InitialBinding],
         access_ends_at: datetime | None,
+        group_ids: Sequence[str] = (),
     ) -> IssuedInvitation:
         _ = await self._authorizer.require(principal, WRITE_SCOPE)
         try:
@@ -129,6 +133,7 @@ class InvitePerson(_Invitations):
         if access_ends_at is not None and access_ends_at <= now:
             raise ValidationFailedError("The access end date must be in the future.")
         await self._bindings.validate(bindings)
+        await self._groups.validate(group_ids)
 
         token = new_token(32)
         invitation = Invitation(
@@ -141,6 +146,7 @@ class InvitePerson(_Invitations):
             expires_at=now + INVITATION_TTL,
             status=InvitationStatus.PENDING,
             created_at=now,
+            group_ids=tuple(dict.fromkeys(group_ids)),
         )
         await self._invitations.add(invitation, hash_token(token))
         _ = await self._audit.record(
@@ -151,7 +157,10 @@ class InvitePerson(_Invitations):
                 resource_id=invitation.id,
                 resource_display=normalized,
                 fields={"email": normalized, "role": role.value},
-                diff={"bindings": [{"role_id": b.role_id, "instance_id": b.instance_id} for b in bindings]},
+                diff={
+                    "bindings": [{"role_id": b.role_id, "instance_id": b.instance_id} for b in bindings],
+                    "group_ids": list(invitation.group_ids),
+                },
             )
         )
         await self._org.commit()
@@ -244,6 +253,7 @@ class AcceptInvitation(PreviewInvitation):
             expires_at=invitation.access_ends_at,
             granted_by=invitation.invited_by,
         )
+        _ = await self._groups.add(user.id, invitation.group_ids)
         await self._invitations.set_status(invitation.id, InvitationStatus.ACCEPTED)
         _ = await self._audit.record(
             AuditEntry(

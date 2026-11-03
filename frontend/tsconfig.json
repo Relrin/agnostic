@@ -72,6 +72,15 @@
     },
     {
       "path": "modules/queue"
+    },
+    {
+      "path": "modules/access-roles"
+    },
+    {
+      "path": "modules/service-accounts"
+    },
+    {
+      "path": "modules/org-settings"
     }
   ]
 }
