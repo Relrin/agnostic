@@ -64,7 +64,9 @@ const ROOT_OPTIONS = {
   "elk.layered.spacing.nodeNodeBetweenLayers": "44",
   "elk.spacing.nodeNode": "28",
   "elk.layered.nodePlacement.strategy": "BRANDES_KOEPF",
-  "elk.layered.crossingMinimization.semiInteractive": "true",
+  // Branches and lanes stay in the order they're written (Router choices left to right).
+  "elk.layered.considerModelOrder.strategy": "NODES_AND_EDGES",
+  "elk.layered.crossingMinimization.forceNodeModelOrder": "true",
   "elk.edgeRouting": "ORTHOGONAL",
 };
 

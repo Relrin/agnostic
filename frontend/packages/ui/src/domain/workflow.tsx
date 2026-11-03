@@ -137,7 +137,7 @@ export function NodeCard({
       </span>
       <span className="truncate text-[13.5px] font-medium text-fg">{title || "Untitled"}</span>
       {chip && (
-        <span className="self-start truncate rounded-type border border-border px-1.5 py-0.5 font-mono text-[11.5px] text-fg-secondary">
+        <span className="max-w-full self-start truncate rounded-type border border-border px-1.5 py-0.5 font-mono text-[11.5px] text-fg-secondary">
           {chip}
         </span>
       )}

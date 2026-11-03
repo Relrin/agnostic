@@ -269,7 +269,7 @@ function WorkflowBuilder({ instance, componentId }: { instance: string; componen
 
   return (
     <BuilderProvider value={builder}>
-      <div className="flex min-h-0 flex-1 flex-col">
+      <div className="flex h-full min-h-0 flex-col">
         <div className="flex flex-wrap items-center gap-3 border-b border-border-subtle px-6 py-2.5">
           <Breadcrumb
             items={[

@@ -12,6 +12,7 @@ import {
   ReactFlowProvider,
   getSmoothStepPath,
   useReactFlow,
+  useStoreApi,
   type Edge,
   type EdgeProps,
   type Node,
@@ -373,6 +374,8 @@ const NODE_TYPES_MAP = {
   placeholder: PlaceholderView,
 };
 const EDGE_TYPES_MAP = { insert: InsertEdge };
+/** The lowest zoom at which the whole workflow is shown on open; below it the view starts on the first steps. */
+const READABLE_ZOOM = 0.4;
 
 // ---------------------------------------------------------------- the canvas
 
@@ -455,6 +458,7 @@ export function WorkflowCanvas(props: CanvasProps) {
   const { config, offsets, onOffsets, onOpenInspector, layoutVersion } = props;
   const { store, actions, readOnly } = useBuilderContext();
   const flow = useReactFlow();
+  const flowStore = useStoreApi();
   const [layout, setLayout] = useState<Layout | undefined>(undefined);
   const key = structureKey(config);
   const latestConfig = useRef(config);
@@ -472,10 +476,17 @@ export function WorkflowCanvas(props: CanvasProps) {
     };
   }, [key]);
 
-  // Open on the start of the workflow (a long one doesn't fit): the start and the first steps, at most at 100 %.
+  // Show the whole workflow when it stays readable; a long one opens on its start and first steps instead.
   const opened = useRef(false);
   const fitStart = useCallback(
     (duration: number) => {
+      const { width, height } = flowStore.getState();
+      const whole = flow.getNodesBounds(flow.getNodes());
+      const zoom = Math.min(width / (whole.width * 1.2), height / (whole.height * 1.2));
+      if (zoom >= READABLE_ZOOM) {
+        void flow.fitView({ maxZoom: 1, padding: 0.1, duration });
+        return;
+      }
       const first = [
         START,
         ...rootSteps(latestConfig.current)
@@ -484,7 +495,7 @@ export function WorkflowCanvas(props: CanvasProps) {
       ];
       void flow.fitView({ nodes: first.map((id) => ({ id })), maxZoom: 1, padding: 0.2, duration });
     },
-    [flow],
+    [flow, flowStore],
   );
   useEffect(() => {
     if (!layout || opened.current) return;

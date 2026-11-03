@@ -236,6 +236,8 @@ test.describe("workflow builder", () => {
     await page.getByRole("button", { name: "Run test" }).click();
     const panel = page.getByRole("region", { name: "Run test" });
     await panel.getByRole("textbox", { name: "Sample input" }).fill("I was charged twice, need a refund");
+    // The panel covers the lower half of the canvas: fit the view to what's left so the router's lanes show.
+    await page.getByRole("button", { name: "Auto-layout" }).click();
     await panel.getByRole("button", { name: "Run", exact: true }).click();
     await expect(board.locator('[data-path="steps[0]"] [data-slot="node-card"]')).toHaveAttribute(
       "data-status",
