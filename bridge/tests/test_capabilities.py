@@ -44,7 +44,11 @@ def test_open_os_reports_versions_and_features() -> None:
         f"GET {PATH}",
         "GET /agnostic/v1/events",
         "GET /agnostic/v1/files/provenance",
+        "GET /agnostic/v1/introspect/components",
+        "GET /agnostic/v1/registry/{type}/{name}/source",
         "GET /agnostic/v1/workers",
+        "POST /agnostic/v1/components/normalize",
+        "POST /agnostic/v1/components/validate",
         "POST /agnostic/v1/evals/run",
     ]
     features = body["features"]

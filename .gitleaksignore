@@ -7,3 +7,5 @@ b9e72df3753848b803fd2d1775966cc194505937:backend/modules/org/src/agnostic_org/ap
 # A fake Slack bot token in the notification-channel test fixture; the fixture now builds it at runtime.
 52c340cd37203fac535b25dc0606330d60098abb:backend/tests/unit/test_control_domain.py:generic-api-key:178
 52c340cd37203fac535b25dc0606330d60098abb:backend/tests/unit/test_control_domain.py:generic-api-key:179
+# A fake SCIM token in the org-settings e2e fixture; the fixture now builds it at runtime.
+eea9d4170793f4fd792cbfba2151115f68d74916:frontend/apps/web/e2e/org-settings.spec.ts:generic-api-key:127

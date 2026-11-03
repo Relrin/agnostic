@@ -1,0 +1,15 @@
+{
+  "add_search_knowledge_instructions": true,
+  "description": "Reviews draft answers for accuracy and tone.",
+  "id": "qa-reviewer",
+  "instructions": "Review the draft. Point out factual errors first, tone second.",
+  "markdown": true,
+  "model": {
+    "id": "agnostic-mock",
+    "name": "MockModel",
+    "provider": "Agnostic"
+  },
+  "name": "qa-reviewer",
+  "num_history_runs": 3,
+  "store_events": true
+}

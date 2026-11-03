@@ -1,0 +1,104 @@
+{
+  "add_datetime_to_context": true,
+  "add_history_to_context": true,
+  "add_memories_to_context": true,
+  "add_search_knowledge_instructions": true,
+  "add_session_state_to_context": true,
+  "add_session_summary_to_context": true,
+  "additional_context": "Customers on the gold tier get priority.",
+  "description": "Exercises every serializable field Studio edits.",
+  "enable_agentic_memory": true,
+  "enable_agentic_state": true,
+  "enable_session_summaries": true,
+  "expected_output": "A TriageResult.",
+  "id": "golden-full-agent",
+  "instructions": [
+    "Classify the ticket.",
+    "Escalate refunds over 100 to a human."
+  ],
+  "markdown": true,
+  "memory_manager": {
+    "registry_id": "support-memory"
+  },
+  "metadata": {
+    "owner": "support"
+  },
+  "model": {
+    "id": "mock-precise",
+    "name": "MockModel",
+    "provider": "Agnostic"
+  },
+  "name": "Golden full agent",
+  "num_history_runs": 5,
+  "output_schema": "TriageResult",
+  "read_chat_history": true,
+  "retries": 2,
+  "role": "Triage incoming tickets",
+  "session_state": {
+    "open_tickets": [],
+    "tier": "gold"
+  },
+  "store_events": true,
+  "tool_call_limit": 4,
+  "tools": [
+    {
+      "description": "Look up an order's status.",
+      "name": "lookup_order",
+      "parameters": {
+        "additionalProperties": false,
+        "properties": {
+          "order_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "order_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "description": "Search the help center.",
+      "name": "search_knowledge",
+      "parameters": {
+        "additionalProperties": false,
+        "properties": {
+          "query": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "approval_type": "required",
+      "description": "Refund a customer. Blocks until a human approves.",
+      "name": "refund_customer",
+      "parameters": {
+        "additionalProperties": false,
+        "properties": {
+          "amount": {
+            "type": "number"
+          },
+          "customer_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "customer_id",
+          "amount",
+          "reason"
+        ],
+        "type": "object"
+      },
+      "requires_confirmation": true
+    }
+  ],
+  "update_memory_on_run": true
+}

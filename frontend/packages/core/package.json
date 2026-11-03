@@ -12,6 +12,7 @@
     "@agnostic/ui": "workspace:*",
     "@microsoft/fetch-event-source": "2.0.1",
     "@tanstack/react-query": "5.105.0",
+    "@tanstack/react-router": "1.170.46",
     "lucide-react": "1.65.0",
     "zustand": "5.0.15"
   },

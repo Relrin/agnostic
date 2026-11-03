@@ -1,7 +1,8 @@
 """A small in-process AgentOS 3.1 stand-in: verifies control-plane JWTs and enforces scopes the way agno does.
 
 Only the routes the tests need: health/info/config, sessions, an SSE run, approvals (list, get, resolve, count),
-run continuation, metrics, traces (list, detail), schedules, component configs, eval runs, and the bridge's
+run continuation, metrics, traces (list, detail), schedules, components with their configs (guards, publish,
+set-current, links), the registry, eval runs, and the bridge's
 capabilities and version-pinned eval routes (when ``bridge`` is on), and the context routes (memories, optimize,
 session runs, knowledge content and config, learnings, agents and teams, and the bridge's file provenance when
 ``bridge_files`` is on), schedule CRUD with enable/disable/trigger, the durable queue (``queue_enabled``; admin
@@ -52,7 +53,7 @@ class FakeAgentOS:
     authz_changes: list[dict[str, Any]] | None = None
     """Rows of ``GET /authz/audit`` (``None``: change audit off, 404 like agno)."""
 
-    def __init__(
+    def __init__(  # noqa: PLR0915
         self,
         *,
         os_id: str = "fake-prod",
@@ -82,6 +83,17 @@ class FakeAgentOS:
         self.trace_details: dict[str, dict[str, Any]] = {}
         self.session_items: list[dict[str, Any]] | None = None
         self.component_stages: dict[tuple[str, int], str] = {}
+        """Stages of configs the tests only refer to (stored components below answer first)."""
+        self.components: dict[str, dict[str, Any]] = {}
+        self.configs: dict[str, dict[int, dict[str, Any]]] = {}
+        self.config_patches: list[dict[str, Any]] = []
+        self.registry_items: list[dict[str, Any]] = []
+        self.registry_sources: dict[tuple[str, str], dict[str, Any]] = {}
+        self.code_components: list[dict[str, Any]] = []
+        self.bridge_studio = False
+        """The bridge also serves Studio's validate, normalize, introspect and source routes."""
+        self.bridge_validations: list[dict[str, Any]] = []
+        self._clock = 0
         self.eval_runs: list[dict[str, Any]] = []
         self.eval_requests: list[dict[str, Any]] = []
         self.eval_responder: Any = None
@@ -157,6 +169,7 @@ class FakeAgentOS:
         app = FastAPI()
         self._service_account_routes(app)
         self._authz_routes(app)
+        self._component_routes(app)
 
         @app.get("/health")
         async def health() -> dict[str, str]:
@@ -237,6 +250,17 @@ class FakeAgentOS:
                 return guarded
             form = parse_qs((await request.body()).decode())
             message = form.get("message", [""])[0]
+            version = form.get("version", [None])[0]
+            pinned = self.configs.get(agent_id, {}).get(int(version)) if version else None
+            owner = self.components.get(agent_id, {}).get("user_id")
+            if (
+                pinned is not None
+                and pinned["stage"] == "draft"
+                and ADMIN not in guarded.get("scopes", [])
+                and guarded.get("sub") != owner
+            ):
+                # Drafts run only for their owner or an admin, like agno.
+                return JSONResponse({"detail": f"Agent {agent_id} not found"}, status_code=404)
             self.run_requests.append(
                 {
                     "agent_id": agent_id,
@@ -385,16 +409,6 @@ class FakeAgentOS:
                 return guarded
             return JSONResponse(page(self.schedule_runs.get(schedule_id, []), request))
 
-        @app.get("/components/{component_id}/configs/{version}")
-        async def component_config(component_id: str, version: int, request: Request) -> Response:
-            guarded = await self._guard(request, "components:read")
-            if isinstance(guarded, Response):
-                return guarded
-            stage = self.component_stages.get((component_id, version))
-            if stage is None:
-                return JSONResponse({"detail": "Config not found"}, status_code=404)
-            return JSONResponse({"component_id": component_id, "version": version, "stage": stage, "config": {}})
-
         @app.get("/eval-runs")
         async def eval_runs(request: Request) -> Response:
             guarded = await self._guard(request, "evals:read")
@@ -437,6 +451,15 @@ class FakeAgentOS:
             endpoints = ["GET /agnostic/v1/capabilities", "POST /agnostic/v1/evals/run"]
             if self.bridge_files:
                 endpoints.append("GET /agnostic/v1/files/provenance")
+            if self.bridge_studio:
+                endpoints.extend(
+                    [
+                        "POST /agnostic/v1/components/validate",
+                        "POST /agnostic/v1/components/normalize",
+                        "GET /agnostic/v1/introspect/components",
+                        "GET /agnostic/v1/registry/{resource_type}/{name}/source",
+                    ]
+                )
             return JSONResponse({"bridge_version": "0.2.0", "endpoints": endpoints})
 
         @app.post("/agnostic/v1/evals/run")
@@ -444,13 +467,6 @@ class FakeAgentOS:
             if not self.bridge:
                 return JSONResponse({"detail": "Not Found"}, status_code=404)
             return await run_eval(request, "/agnostic/v1/evals/run")
-
-        @app.get("/components")
-        async def components(request: Request) -> Any:
-            guarded = await self._guard(request, "components:read")
-            if isinstance(guarded, Response):
-                return guarded
-            return {"data": [], "meta": {"page": 1, "limit": 1, "total_pages": 0, "total_count": 0}}
 
         @app.get("/memories")
         async def memories(request: Request) -> Response:
@@ -919,3 +935,318 @@ class FakeAgentOS:
             if self.authz_changes is None:
                 return JSONResponse({"detail": "Change audit is not enabled"}, status_code=404)
             return trail(self.authz_changes, request)
+
+    # ---------------------------------------------------------------- components, registry, Studio bridge routes
+
+    def _component_routes(self, app: FastAPI) -> None:  # noqa: C901, PLR0915  (one route each)
+        def now() -> int:
+            self._clock = max(int(time.time()), self._clock + 1)
+            return self._clock
+
+        def not_found(what: str) -> JSONResponse:
+            return JSONResponse({"detail": f"{what} not found"}, status_code=404)
+
+        def guard_failed(component_id: str, guard: dict[str, Any] | None) -> JSONResponse | None:
+            if not guard:
+                return None
+            versions = self.configs.get(component_id, {})
+            latest = guard.get("latest_version")
+            if latest is not None and latest != max(versions, default=0):
+                return JSONResponse({"detail": "Stale latest_version"}, status_code=409)
+            current = guard.get("current_version")
+            stored = self.components[component_id].get("current_version") or 0
+            if current is not None and current != stored:
+                return JSONResponse({"detail": "Stale current_version"}, status_code=409)
+            return None
+
+        def paged(items: list[dict[str, Any]], request: Request) -> dict[str, Any]:
+            limit = int(request.query_params.get("limit", "20"))
+            number = int(request.query_params.get("page", "1"))
+            pages = (len(items) + limit - 1) // limit
+            return {
+                "data": items[(number - 1) * limit : number * limit],
+                "meta": {"page": number, "limit": limit, "total_pages": pages, "total_count": len(items)},
+            }
+
+        def stored_config(component_id: str, version: int, body: dict[str, Any], stamp: int) -> dict[str, Any]:
+            return {
+                "component_id": component_id,
+                "version": version,
+                "stage": body.get("stage") or "draft",
+                "label": body.get("label"),
+                "notes": body.get("notes"),
+                "config": body["config"],
+                "links": body.get("links") or [],
+                "created_at": stamp,
+                "updated_at": stamp,
+            }
+
+        @app.get("/components")
+        async def list_components(request: Request) -> Any:
+            guarded = await self._guard(request, "components:read")
+            if isinstance(guarded, Response):
+                return guarded
+            kind = request.query_params.get("component_type")
+            deleted = request.query_params.get("include_deleted") == "true"
+            items = [
+                item
+                for item in self.components.values()
+                if (kind is None or item["component_type"] == kind) and (deleted or item.get("deleted_at") is None)
+            ]
+            return paged(items, request)
+
+        @app.post("/components")
+        async def create_component(request: Request) -> Response:
+            guarded = await self._guard(request, "components:write")
+            if isinstance(guarded, Response):
+                return guarded
+            body = orjson.loads(await request.body())
+            component_id = body.get("component_id") or re.sub(r"[^a-z0-9]+", "-", body["name"].lower()).strip("-")
+            if component_id in self.components:
+                return JSONResponse({"detail": f"Component {component_id} already exists"}, status_code=409)
+            stamp = now()
+            published = (body.get("stage") or "draft") == "published"
+            self.components[component_id] = {
+                "component_id": component_id,
+                "component_type": body["component_type"],
+                "name": body["name"],
+                "description": body.get("description"),
+                "metadata": body.get("metadata"),
+                "current_version": 1 if published else None,
+                "user_id": guarded.get("sub"),
+                "created_at": stamp,
+                "updated_at": stamp,
+                "deleted_at": None,
+            }
+            self.configs[component_id] = {}
+            if body.get("config") is not None:
+                self.configs[component_id][1] = stored_config(component_id, 1, body, stamp)
+            return JSONResponse(self.components[component_id], status_code=201)
+
+        @app.get("/components/{component_id}")
+        async def get_component(component_id: str, request: Request) -> Response:
+            guarded = await self._guard(request, "components:read")
+            if isinstance(guarded, Response):
+                return guarded
+            item = self.components.get(component_id)
+            if item is None or (item.get("deleted_at") and request.query_params.get("include_deleted") != "true"):
+                return not_found("Component")
+            return JSONResponse(item)
+
+        @app.patch("/components/{component_id}")
+        async def patch_component(component_id: str, request: Request) -> Response:
+            guarded = await self._guard(request, "components:write")
+            if isinstance(guarded, Response):
+                return guarded
+            if component_id not in self.components:
+                return not_found("Component")
+            body = orjson.loads(await request.body())
+            for key in ("name", "description", "metadata"):
+                if body.get(key) is not None:
+                    self.components[component_id][key] = body[key]
+            self.components[component_id]["updated_at"] = now()
+            return JSONResponse(self.components[component_id])
+
+        @app.delete("/components/{component_id}")
+        async def archive_component(component_id: str, request: Request) -> Response:
+            guarded = await self._guard(request, "components:delete")
+            if isinstance(guarded, Response):
+                return guarded
+            if component_id not in self.components:
+                return not_found("Component")
+            dependents = sorted(
+                {
+                    parent
+                    for parent, versions in self.configs.items()
+                    for item in versions.values()
+                    for link in item.get("links") or []
+                    if link.get("child_component_id") == component_id and parent != component_id
+                }
+            )
+            if dependents:
+                return JSONResponse({"detail": "Pinned by other components", "dependents": dependents}, status_code=409)
+            self.components[component_id]["deleted_at"] = now()
+            return Response(status_code=204)
+
+        @app.post("/components/{component_id}/restore")
+        async def restore_component(component_id: str, request: Request) -> Response:
+            guarded = await self._guard(request, "components:delete")
+            if isinstance(guarded, Response):
+                return guarded
+            if component_id not in self.components:
+                return not_found("Component")
+            self.components[component_id]["deleted_at"] = None
+            return JSONResponse(self.components[component_id])
+
+        @app.get("/components/{component_id}/configs")
+        async def list_configs(component_id: str, request: Request) -> Response:
+            guarded = await self._guard(request, "components:read")
+            if isinstance(guarded, Response):
+                return guarded
+            if component_id not in self.components:
+                return not_found("Component")
+            with_config = request.query_params.get("include_config", "true") == "true"
+            versions = self.configs.get(component_id, {})
+            return JSONResponse(
+                [
+                    {key: value for key, value in versions[number].items() if key != "config" or with_config}
+                    for number in sorted(versions)
+                ]
+            )
+
+        @app.post("/components/{component_id}/configs")
+        async def create_config(component_id: str, request: Request) -> Response:
+            guarded = await self._guard(request, "components:write")
+            if isinstance(guarded, Response):
+                return guarded
+            if component_id not in self.components:
+                return not_found("Component")
+            body = orjson.loads(await request.body())
+            failed = guard_failed(component_id, body.get("guard"))
+            if failed is not None:
+                return failed
+            versions = self.configs.setdefault(component_id, {})
+            version = max(versions, default=0) + 1
+            versions[version] = stored_config(component_id, version, body, now())
+            if versions[version]["stage"] == "published" and body.get("set_current", True):
+                self.components[component_id]["current_version"] = version
+            return JSONResponse(versions[version], status_code=201)
+
+        @app.get("/components/{component_id}/configs/current")
+        async def current_config(component_id: str, request: Request) -> Response:
+            guarded = await self._guard(request, "components:read")
+            if isinstance(guarded, Response):
+                return guarded
+            item = self.components.get(component_id)
+            current = item.get("current_version") if item else None
+            if current is None:
+                return not_found("Current config")
+            return JSONResponse(self.configs[component_id][current])
+
+        @app.get("/components/{component_id}/configs/{version}")
+        async def component_config(component_id: str, version: int, request: Request) -> Response:
+            guarded = await self._guard(request, "components:read")
+            if isinstance(guarded, Response):
+                return guarded
+            stored = self.configs.get(component_id, {}).get(version)
+            if stored is not None:
+                return JSONResponse(stored)
+            stage = self.component_stages.get((component_id, version))
+            if stage is None:
+                return not_found("Config")
+            return JSONResponse({"component_id": component_id, "version": version, "stage": stage, "config": {}})
+
+        @app.patch("/components/{component_id}/configs/{version}")
+        async def patch_config(component_id: str, version: int, request: Request) -> Response:
+            guarded = await self._guard(request, "components:write")
+            if isinstance(guarded, Response):
+                return guarded
+            stored = self.configs.get(component_id, {}).get(version)
+            if stored is None:
+                return not_found("Config")
+            if stored["stage"] == "published":
+                return JSONResponse({"detail": "Published configs are immutable"}, status_code=400)
+            body = orjson.loads(await request.body())
+            failed = guard_failed(component_id, body.get("guard"))
+            if failed is not None:
+                return failed
+            for key in ("config", "label", "notes", "links"):
+                if body.get(key) is not None:
+                    stored[key] = body[key]
+            if body.get("stage") == "published":
+                stored["stage"] = "published"
+                self.components[component_id]["current_version"] = version
+            stored["updated_at"] = now()
+            self.config_patches.append({"component_id": component_id, "version": version, "body": body})
+            return JSONResponse(stored)
+
+        @app.delete("/components/{component_id}/configs/{version}")
+        async def delete_config(component_id: str, version: int, request: Request) -> Response:
+            guarded = await self._guard(request, "components:delete")
+            if isinstance(guarded, Response):
+                return guarded
+            stored = self.configs.get(component_id, {}).get(version)
+            if stored is None:
+                return not_found("Config")
+            if stored["stage"] != "draft":
+                return JSONResponse({"detail": "Only drafts can be deleted"}, status_code=400)
+            del self.configs[component_id][version]
+            return Response(status_code=204)
+
+        @app.post("/components/{component_id}/configs/{version}/set-current")
+        async def set_current(component_id: str, version: int, request: Request) -> Response:
+            guarded = await self._guard(request, "components:write")
+            if isinstance(guarded, Response):
+                return guarded
+            stored = self.configs.get(component_id, {}).get(version)
+            if stored is None:
+                return not_found("Config")
+            if stored["stage"] != "published":
+                return JSONResponse({"detail": "Only published versions can be current"}, status_code=400)
+            raw = await request.body()
+            failed = guard_failed(component_id, (orjson.loads(raw) if raw else {}).get("guard"))
+            if failed is not None:
+                return failed
+            self.components[component_id]["current_version"] = version
+            return JSONResponse(self.components[component_id])
+
+        @app.get("/registry")
+        async def registry(request: Request) -> Response:
+            guarded = await self._guard(request, "registry:read")
+            if isinstance(guarded, Response):
+                return guarded
+            kind = request.query_params.get("resource_type")
+            needle = (request.query_params.get("name") or "").lower()
+            items = [
+                item
+                for item in self.registry_items
+                if (kind is None or item["type"] == kind) and needle in str(item["name"]).lower()
+            ]
+            return JSONResponse(paged(items, request))
+
+        @app.post("/agnostic/v1/components/validate")
+        async def bridge_validate(request: Request) -> Response:
+            guarded = await self._guard(request, "components:read")
+            if isinstance(guarded, Response):
+                return guarded
+            if not self.bridge_studio:
+                return not_found("Route")
+            body = orjson.loads(await request.body())
+            self.bridge_validations.append(body)
+            known = {(item["type"], item["name"]) for item in self.registry_items}
+            errors = [
+                {"path": f"tools[{index}]", "message": f"Tool '{tool.get('name')}' is not in the registry"}
+                for index, tool in enumerate(body["config"].get("tools") or [])
+                if ("tool", tool.get("toolkit") or tool.get("name")) not in known
+            ]
+            return JSONResponse({"valid": not errors, "errors": errors})
+
+        @app.post("/agnostic/v1/components/normalize")
+        async def bridge_normalize(request: Request) -> Response:
+            guarded = await self._guard(request, "components:read")
+            if isinstance(guarded, Response):
+                return guarded
+            if not self.bridge_studio:
+                return not_found("Route")
+            return JSONResponse({"config": orjson.loads(await request.body())["config"]})
+
+        @app.get("/agnostic/v1/introspect/components")
+        async def bridge_introspect(request: Request) -> Response:
+            guarded = await self._guard(request, "components:read")
+            if isinstance(guarded, Response):
+                return guarded
+            if not self.bridge_studio:
+                return not_found("Route")
+            return JSONResponse(self.code_components)
+
+        @app.get("/agnostic/v1/registry/{resource_type}/{name}/source")
+        async def bridge_source(resource_type: str, name: str, request: Request) -> Response:
+            guarded = await self._guard(request, "registry:read")
+            if isinstance(guarded, Response):
+                return guarded
+            if not self.bridge_studio:
+                return not_found("Route")
+            if not any(item["type"] == resource_type and item["name"] == name for item in self.registry_items):
+                return not_found("Registry entry")
+            source = {"type": resource_type, "name": name, "module": "app.tools", "file": "app/tools.py", "line": 10}
+            return JSONResponse({**source, "declared": True, **self.registry_sources.get((resource_type, name), {})})

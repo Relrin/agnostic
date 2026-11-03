@@ -96,6 +96,7 @@ export function fromStoredRun(run: StoredRun, sessionId?: string): RunState {
     ...base,
     status,
     content,
+    structured: typeof run.content === "object" && run.content !== null ? run.content : undefined,
     reasoning: run.reasoning_content ?? "",
     tools,
     metrics: run.metrics ?? undefined,

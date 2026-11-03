@@ -1,0 +1,15 @@
+{
+  "add_search_knowledge_instructions": true,
+  "description": "Condenses long threads into a short brief.",
+  "id": "summarizer",
+  "instructions": "Summarise in at most five bullet points.",
+  "markdown": true,
+  "model": {
+    "id": "agnostic-mock",
+    "name": "MockModel",
+    "provider": "Agnostic"
+  },
+  "name": "summarizer",
+  "num_history_runs": 3,
+  "store_events": true
+}

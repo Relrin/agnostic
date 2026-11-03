@@ -1,0 +1,25 @@
+{
+  "description": "Takes escalated tickets and routes them to the right specialist.",
+  "id": "escalation-team",
+  "instructions": "Billing and refund questions go to billing-agent; complaints about answers go to qa-reviewer.",
+  "members": [
+    {
+      "agent_id": "billing-agent",
+      "type": "agent"
+    },
+    {
+      "agent_id": "qa-reviewer",
+      "type": "agent"
+    }
+  ],
+  "mode": "route",
+  "model": {
+    "id": "agnostic-mock",
+    "name": "MockModel",
+    "provider": "Agnostic"
+  },
+  "name": "escalation-team",
+  "num_history_runs": 3,
+  "respond_directly": true,
+  "store_events": true
+}

@@ -14,7 +14,7 @@ function streamResponse(body: string): Response {
   return new Response(body, { status: 200, headers: { "Content-Type": "text/event-stream" } });
 }
 
-type Call = { url: string; body: string };
+type Call = { url: string; body: string; headers: Headers };
 
 function fakeGateway(responses: readonly (() => Response)[]) {
   const calls: Call[] = [];
@@ -23,6 +23,7 @@ function fakeGateway(responses: readonly (() => Response)[]) {
     const body = init?.body;
     calls.push({
       url: input instanceof Request ? input.url : input.toString(),
+      headers: new Headers(init?.headers),
       body:
         body instanceof URLSearchParams
           ? body.toString()
@@ -146,5 +147,109 @@ describe("RunStream", () => {
       phase: "closed",
     });
     expect(gateway.calls).toHaveLength(1);
+  });
+
+  it("posts JSON to a custom endpoint", async () => {
+    const gateway = fakeGateway([() => streamResponse(sse(agentCompleted))]);
+    const url =
+      "http://agnostic.test/api/v1/instances/prod-agentos/studio/components/support-triage/test-runs";
+    const stream = new RunStream(
+      TARGET,
+      {},
+      { fetch: gateway.fetch, retryDelays: [], resumable: false, endpoint: { submit: url } },
+    );
+    await stream.submit({ message: "where is my order?", version: 4, sessionId: "ses_7f3a91c2" });
+    expect(gateway.calls[0]?.url).toBe(url);
+    expect(gateway.calls[0]?.headers.get("Content-Type")).toBe("application/json");
+    expect(JSON.parse(gateway.calls[0]?.body ?? "")).toEqual({
+      message: "where is my order?",
+      version: 4,
+      session_id: "ses_7f3a91c2",
+    });
+    expect(stream.getState()).toMatchObject({
+      status: "completed",
+      content: "Done. Order ord_1001: shipped",
+    });
+
+    await expect(
+      stream.submit({ message: "and this?", version: 4, files: [new File(["x"], "x.txt")] }),
+    ).rejects.toThrow("Files can't be attached");
+    expect(gateway.calls).toHaveLength(1);
+  });
+
+  it("submits to a custom endpoint and continues through the gateway", async () => {
+    const gateway = fakeGateway([
+      () => streamResponse(sse(agentPaused)),
+      () => streamResponse(sse(agentContinued)),
+    ]);
+    const stream = new RunStream(
+      TARGET,
+      {},
+      {
+        fetch: gateway.fetch,
+        retryDelays: [],
+        endpoint: { submit: "http://agnostic.test/api/v1/studio/agents/support-triage/drafts/4/test" },
+      },
+    );
+    await stream.submit({ message: "refund 49 for cus_8812" });
+    expect(gateway.calls[0]?.url).toBe(
+      "http://agnostic.test/api/v1/studio/agents/support-triage/drafts/4/test",
+    );
+    expect(stream.getState().status).toBe("paused");
+    await stream.continueRun({ tools: "[]" });
+    expect(gateway.calls[1]?.url).toBe(
+      "http://agnostic.test/api/v1/instances/prod-agentos/os/agents/support-triage/runs/run_9f2c41/continue",
+    );
+  });
+
+  it("ends in an error with a retry hint instead of resuming when not resumable", async () => {
+    const gateway = fakeGateway([() => streamResponse(sse(agentCompleted.slice(0, 4)))]);
+    const stream = new RunStream(TARGET, {}, { fetch: gateway.fetch, retryDelays: [0, 0], resumable: false });
+    await stream.submit({ message: "where is my order?" });
+    expect(stream.getState()).toMatchObject({
+      status: "error",
+      phase: "closed",
+      error: { type: "connection", message: expect.stringContaining("Run it again to retry") as unknown },
+    });
+    expect(gateway.calls).toHaveLength(1);
+    // Nothing to resume after a refresh either.
+    expect(RunStream.restorable("prod-agentos")).toEqual([]);
+  });
+
+  it("says what failed when a non-resumable stream can't open", async () => {
+    const gateway = fakeGateway([() => new Response("upstream down", { status: 502 })]);
+    const stream = new RunStream(TARGET, {}, { fetch: gateway.fetch, retryDelays: [0], resumable: false });
+    await stream.submit({ message: "hi" });
+    expect(stream.getState().error).toEqual({
+      type: "connection",
+      message: "HTTP 502. Run it again to retry.",
+    });
+    expect(gateway.calls).toHaveLength(1);
+  });
+
+  it("keeps the parsed output of a run with an output schema", async () => {
+    const output = { category: "shipping", priority: 2, order_id: "ord_1001" };
+    const events: RunEvent[] = [
+      ...agentCompleted.slice(0, 3),
+      {
+        ...agentCompleted[7],
+        event: "RunCompleted",
+        event_index: 3,
+        content: output,
+        content_type: "TicketTriage",
+      },
+    ];
+    const gateway = fakeGateway([() => streamResponse(sse(events))]);
+    const stream = new RunStream(TARGET, {}, { fetch: gateway.fetch, retryDelays: [] });
+    await stream.submit({ message: "where is my order?" });
+    expect(stream.getState()).toMatchObject({ status: "completed", structured: output });
+    expect(JSON.parse(stream.getState().content)).toEqual(output);
+  });
+
+  it("leaves structured unset for plain text runs", async () => {
+    const gateway = fakeGateway([() => streamResponse(sse(agentCompleted))]);
+    const stream = new RunStream(TARGET, {}, { fetch: gateway.fetch, retryDelays: [] });
+    await stream.submit({ message: "where is my order?" });
+    expect(stream.getState().structured).toBeUndefined();
   });
 });

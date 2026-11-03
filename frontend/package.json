@@ -15,7 +15,7 @@
     "dev": "yarn workspace @agnostic/web dev",
     "build": "yarn workspace @agnostic/web build",
     "typecheck": "tsc -b",
-    "lint": "eslint . --max-warnings=0",
+    "lint": "NODE_OPTIONS=--max-old-space-size=6144 eslint . --max-warnings=0",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run",

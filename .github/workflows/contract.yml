@@ -2,10 +2,10 @@ name: contract
 
 on:
   pull_request:
-    paths: ["runtime/**", "bridge/**", "backend/packages/agnostic-agentos-client/**", "backend/tests/contract/**"]
+    paths: ["runtime/**", "bridge/**", "backend/packages/agnostic-agentos-client/**", "backend/tests/contract/**", "backend/tests/golden/**"]
   push:
     branches: [master]
-    paths: ["runtime/**", "bridge/**", "backend/packages/agnostic-agentos-client/**", "backend/tests/contract/**"]
+    paths: ["runtime/**", "bridge/**", "backend/packages/agnostic-agentos-client/**", "backend/tests/contract/**", "backend/tests/golden/**"]
   schedule:
     - cron: "17 3 * * *"
   workflow_dispatch:
@@ -61,6 +61,16 @@ jobs:
           cd ..
           if ! git diff --stat --exit-code -- backend/packages/agnostic-agentos-client/openapi; then
             echo "::warning::The runtime's OpenAPI differs from the pinned snapshot. Run: just agentos-client-gen"
+          fi
+      - name: Golden agno configs are current
+        run: |
+          cd runtime
+          uv run python -m app.dump_golden
+          cd ..
+          git add --intent-to-add backend/tests/golden
+          if ! git diff --exit-code -- backend/tests/golden; then
+            echo "::error::agno serializes the runtime's components differently from backend/tests/golden. Run: just golden"
+            exit 1
           fi
       - if: failure()
         run: cat runtime/runtime.log

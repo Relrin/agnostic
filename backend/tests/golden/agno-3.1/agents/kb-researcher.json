@@ -1,0 +1,33 @@
+{
+  "add_search_knowledge_instructions": true,
+  "description": "Finds answers in the help-center knowledge base.",
+  "id": "kb-researcher",
+  "instructions": "Search the knowledge base and cite the article you used.",
+  "markdown": true,
+  "model": {
+    "id": "agnostic-mock",
+    "name": "MockModel",
+    "provider": "Agnostic"
+  },
+  "name": "kb-researcher",
+  "num_history_runs": 3,
+  "store_events": true,
+  "tools": [
+    {
+      "description": "Search the help center.",
+      "name": "search_knowledge",
+      "parameters": {
+        "additionalProperties": false,
+        "properties": {
+          "query": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      }
+    }
+  ]
+}

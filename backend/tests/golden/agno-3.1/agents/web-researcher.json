@@ -1,0 +1,33 @@
+{
+  "add_search_knowledge_instructions": true,
+  "description": "Researches public sources (offline stub in this runtime).",
+  "id": "web-researcher",
+  "instructions": "Search the web and summarise the three most relevant results.",
+  "markdown": true,
+  "model": {
+    "id": "agnostic-mock",
+    "name": "MockModel",
+    "provider": "Agnostic"
+  },
+  "name": "web-researcher",
+  "num_history_runs": 3,
+  "store_events": true,
+  "tools": [
+    {
+      "description": "Search the web (offline stub).",
+      "name": "web_search",
+      "parameters": {
+        "additionalProperties": false,
+        "properties": {
+          "query": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      }
+    }
+  ]
+}

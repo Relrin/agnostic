@@ -4,6 +4,8 @@ export * as tokens from "./lib/tokens";
 
 export { Badge, StatusPill, badgeVariants, type BadgeProps, type StatusPillProps } from "./primitives/badge";
 export { Button, buttonVariants, type ButtonProps } from "./primitives/button";
+export { Checkbox, type CheckboxProps } from "./primitives/checkbox";
+export { Combobox, type ComboboxOption, type ComboboxProps } from "./primitives/combobox";
 export {
   Command,
   CommandDialog,
@@ -102,6 +104,8 @@ export {
   type Health,
 } from "./patterns/page-header";
 export { CodeBlock, StepList, type StepState } from "./patterns/code-block";
+export { Accordion, AccordionSection, type AccordionSectionProps } from "./patterns/accordion";
+export { SortableList, type SortableItemState, type SortableListProps } from "./patterns/sortable-list";
 export { EmptyState, ErrorState, LoadingRows } from "./patterns/states";
 export {
   ApiHint,
@@ -148,6 +152,7 @@ export {
   type StepView,
   type ToolChipStatus,
 } from "./domain/run";
+export { GateResultList, LineLinkBadge, type GateResultRow, type GateState } from "./domain/studio";
 export { Composer, SessionList, type AttachmentRule, type SessionListItem } from "./domain/chat";
 export {
   SpanAttributes,

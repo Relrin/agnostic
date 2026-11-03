@@ -1,0 +1,1867 @@
+{
+  "$defs": {
+    "KnowledgeRef": {
+      "additionalProperties": true,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": ["name"],
+      "title": "KnowledgeRef",
+      "type": "object"
+    },
+    "MemoryManagerRef": {
+      "additionalProperties": true,
+      "properties": {
+        "registry_id": {
+          "title": "Registry Id",
+          "type": "string"
+        }
+      },
+      "required": ["registry_id"],
+      "title": "MemoryManagerRef",
+      "type": "object"
+    },
+    "ModelRef": {
+      "additionalProperties": true,
+      "description": "``Model.to_dict()``: the registry resolves it by id, provider and (to tell classes apart) name.",
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "provider": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Provider"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name"
+        }
+      },
+      "required": ["id"],
+      "title": "ModelRef",
+      "type": "object"
+    },
+    "ToolRef": {
+      "additionalProperties": true,
+      "description": "``Function.to_dict()`` plus the owning toolkit. Rehydration needs ``parameters``, so Studio always writes it.",
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "parameters": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parameters"
+        },
+        "strict": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Strict"
+        },
+        "requires_confirmation": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Requires Confirmation"
+        },
+        "external_execution": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "External Execution"
+        },
+        "approval_type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Approval Type"
+        },
+        "toolkit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Toolkit"
+        }
+      },
+      "required": ["name"],
+      "title": "ToolRef",
+      "type": "object"
+    }
+  },
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Stable id used in API paths and links.",
+      "title": "Id",
+      "x-agnostic": {
+        "help": "Stable id used in API paths and links.",
+        "label": "ID",
+        "legacy": false,
+        "order": 1,
+        "section": "identity",
+        "since_agno": "3.1",
+        "widget": "text"
+      }
+    },
+    "name": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Name",
+      "x-agnostic": {
+        "label": "Name",
+        "legacy": false,
+        "order": 2,
+        "section": "identity",
+        "since_agno": "3.1",
+        "widget": "text"
+      }
+    },
+    "description": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Description",
+      "x-agnostic": {
+        "label": "Description",
+        "legacy": false,
+        "order": 3,
+        "section": "identity",
+        "since_agno": "3.1",
+        "widget": "textarea"
+      }
+    },
+    "role": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "How a team leader introduces this member.",
+      "title": "Role",
+      "x-agnostic": {
+        "help": "How a team leader introduces this member.",
+        "label": "Role",
+        "legacy": false,
+        "order": 4,
+        "section": "identity",
+        "since_agno": "3.1",
+        "widget": "text"
+      }
+    },
+    "markdown": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Markdown",
+      "x-agnostic": {
+        "default": false,
+        "label": "Format answers as Markdown",
+        "legacy": false,
+        "order": 10,
+        "section": "output",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "metadata": {
+      "anyOf": [
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Metadata",
+      "x-agnostic": {
+        "label": "Metadata",
+        "legacy": false,
+        "order": 90,
+        "section": "advanced",
+        "since_agno": "3.1",
+        "widget": "json"
+      }
+    },
+    "model": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ModelRef"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "A model registered on the instance. Parameters such as temperature come from the preset.",
+      "title": "Model",
+      "x-agnostic": {
+        "help": "A model registered on the instance. Parameters such as temperature come from the preset.",
+        "label": "Model",
+        "legacy": false,
+        "order": 1,
+        "section": "model",
+        "since_agno": "3.1",
+        "widget": "model"
+      }
+    },
+    "reasoning_model": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ModelRef"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Reasoning Model",
+      "x-agnostic": {
+        "label": "Reasoning model",
+        "legacy": false,
+        "order": 2,
+        "section": "model",
+        "since_agno": "3.1",
+        "widget": "model"
+      }
+    },
+    "instructions": {
+      "anyOf": [
+        {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Instructions",
+      "x-agnostic": {
+        "label": "Instructions",
+        "legacy": false,
+        "order": 1,
+        "section": "instructions",
+        "since_agno": "3.1",
+        "widget": "string_list"
+      }
+    },
+    "expected_output": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Expected Output",
+      "x-agnostic": {
+        "label": "Expected output",
+        "legacy": false,
+        "order": 2,
+        "section": "instructions",
+        "since_agno": "3.1",
+        "widget": "textarea"
+      }
+    },
+    "additional_context": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Additional Context",
+      "x-agnostic": {
+        "label": "Additional context",
+        "legacy": false,
+        "order": 3,
+        "section": "instructions",
+        "since_agno": "3.1",
+        "widget": "textarea"
+      }
+    },
+    "system_message": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Replaces the generated system message.",
+      "title": "System Message",
+      "x-agnostic": {
+        "help": "Replaces the generated system message.",
+        "label": "System message",
+        "legacy": false,
+        "order": 10,
+        "section": "advanced",
+        "since_agno": "3.1",
+        "widget": "textarea"
+      }
+    },
+    "add_name_to_context": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Add Name To Context",
+      "x-agnostic": {
+        "default": false,
+        "label": "Add the name to the context",
+        "legacy": false,
+        "order": 10,
+        "section": "instructions",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "add_datetime_to_context": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Add Datetime To Context",
+      "x-agnostic": {
+        "default": false,
+        "label": "Add the date and time",
+        "legacy": false,
+        "order": 11,
+        "section": "instructions",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "add_location_to_context": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Add Location To Context",
+      "x-agnostic": {
+        "default": false,
+        "label": "Add the location",
+        "legacy": false,
+        "order": 12,
+        "section": "instructions",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "timezone_identifier": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Timezone Identifier",
+      "x-agnostic": {
+        "label": "Time zone",
+        "legacy": false,
+        "order": 13,
+        "section": "instructions",
+        "since_agno": "3.1",
+        "widget": "text"
+      }
+    },
+    "datetime_format": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Datetime Format",
+      "x-agnostic": {
+        "label": "Date and time format",
+        "legacy": false,
+        "order": 14,
+        "section": "advanced",
+        "since_agno": "3.1",
+        "widget": "text"
+      }
+    },
+    "tools": {
+      "anyOf": [
+        {
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/ToolRef"
+              },
+              {
+                "additionalProperties": true,
+                "type": "object"
+              }
+            ]
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Tools",
+      "x-agnostic": {
+        "label": "Tools",
+        "legacy": false,
+        "order": 1,
+        "section": "tools",
+        "since_agno": "3.1",
+        "widget": "tools"
+      }
+    },
+    "tool_call_limit": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Tool Call Limit",
+      "x-agnostic": {
+        "label": "Tool call limit",
+        "legacy": false,
+        "order": 2,
+        "section": "tools",
+        "since_agno": "3.1",
+        "widget": "number"
+      }
+    },
+    "tool_choice": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Tool Choice",
+      "x-agnostic": {
+        "label": "Tool choice",
+        "legacy": false,
+        "order": 20,
+        "section": "advanced",
+        "since_agno": "3.1",
+        "widget": "json"
+      }
+    },
+    "knowledge": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/KnowledgeRef"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "x-agnostic": {
+        "label": "Knowledge base",
+        "legacy": false,
+        "order": 1,
+        "section": "knowledge",
+        "since_agno": "3.1",
+        "widget": "knowledge"
+      }
+    },
+    "search_knowledge": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Search Knowledge",
+      "x-agnostic": {
+        "default": true,
+        "label": "Search the knowledge base",
+        "legacy": false,
+        "order": 2,
+        "section": "knowledge",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "add_knowledge_to_context": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Add Knowledge To Context",
+      "x-agnostic": {
+        "default": false,
+        "label": "Add references to the context",
+        "legacy": false,
+        "order": 3,
+        "section": "knowledge",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "knowledge_filters": {
+      "anyOf": [
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Knowledge Filters",
+      "x-agnostic": {
+        "label": "Filters",
+        "legacy": false,
+        "order": 4,
+        "section": "knowledge",
+        "since_agno": "3.1",
+        "widget": "json"
+      }
+    },
+    "enable_agentic_knowledge_filters": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Enable Agentic Knowledge Filters",
+      "x-agnostic": {
+        "default": false,
+        "label": "Let the model choose filters",
+        "legacy": false,
+        "order": 5,
+        "section": "knowledge",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "update_knowledge": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Update Knowledge",
+      "x-agnostic": {
+        "default": false,
+        "label": "Allow adding to the knowledge base",
+        "legacy": false,
+        "order": 6,
+        "section": "knowledge",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "references_format": {
+      "anyOf": [
+        {
+          "enum": ["json", "yaml"],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "References Format",
+      "x-agnostic": {
+        "default": "json",
+        "label": "References format",
+        "legacy": false,
+        "order": 7,
+        "section": "knowledge",
+        "since_agno": "3.1",
+        "widget": "select"
+      }
+    },
+    "memory_manager": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/MemoryManagerRef"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "x-agnostic": {
+        "label": "Memory manager",
+        "legacy": false,
+        "order": 1,
+        "section": "memory",
+        "since_agno": "3.1",
+        "widget": "memory_manager"
+      }
+    },
+    "enable_agentic_memory": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "The model decides what to remember.",
+      "title": "Enable Agentic Memory",
+      "x-agnostic": {
+        "default": false,
+        "help": "The model decides what to remember.",
+        "label": "Agentic memory",
+        "legacy": false,
+        "order": 2,
+        "section": "memory",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "update_memory_on_run": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Update Memory On Run",
+      "x-agnostic": {
+        "default": false,
+        "label": "Update memories after every run",
+        "legacy": false,
+        "order": 3,
+        "section": "memory",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "add_memories_to_context": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Add Memories To Context",
+      "x-agnostic": {
+        "label": "Add memories to the context",
+        "legacy": false,
+        "order": 4,
+        "section": "memory",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "learning": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "A learning machine from the registry. It supersedes the memory flags above when both are set.",
+      "title": "Learning",
+      "x-agnostic": {
+        "help": "A learning machine from the registry. It supersedes the memory flags above when both are set.",
+        "label": "Learning",
+        "legacy": false,
+        "order": 5,
+        "section": "memory",
+        "since_agno": "3.1",
+        "widget": "learning"
+      }
+    },
+    "add_learnings_to_context": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Add Learnings To Context",
+      "x-agnostic": {
+        "default": true,
+        "label": "Add learnings to the context",
+        "legacy": false,
+        "order": 6,
+        "section": "memory",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "add_history_to_context": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Add History To Context",
+      "x-agnostic": {
+        "default": false,
+        "label": "Add history to the context",
+        "legacy": false,
+        "order": 1,
+        "section": "context",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "num_history_runs": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Num History Runs",
+      "x-agnostic": {
+        "label": "Runs of history",
+        "legacy": false,
+        "order": 2,
+        "section": "context",
+        "since_agno": "3.1",
+        "widget": "number"
+      }
+    },
+    "num_history_messages": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Num History Messages",
+      "x-agnostic": {
+        "label": "Messages of history",
+        "legacy": false,
+        "order": 3,
+        "section": "context",
+        "since_agno": "3.1",
+        "widget": "number"
+      }
+    },
+    "max_tool_calls_from_history": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Max Tool Calls From History",
+      "x-agnostic": {
+        "label": "Tool calls kept from history",
+        "legacy": false,
+        "order": 4,
+        "section": "context",
+        "since_agno": "3.1",
+        "widget": "number"
+      }
+    },
+    "enable_session_summaries": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Enable Session Summaries",
+      "x-agnostic": {
+        "default": false,
+        "label": "Session summaries",
+        "legacy": false,
+        "order": 5,
+        "section": "context",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "add_session_summary_to_context": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Add Session Summary To Context",
+      "x-agnostic": {
+        "label": "Add the summary to the context",
+        "legacy": false,
+        "order": 6,
+        "section": "context",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "search_past_sessions": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Search Past Sessions",
+      "x-agnostic": {
+        "default": false,
+        "label": "Search past sessions",
+        "legacy": false,
+        "order": 7,
+        "section": "context",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "num_past_sessions_to_search": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Num Past Sessions To Search",
+      "x-agnostic": {
+        "label": "Past sessions to search",
+        "legacy": false,
+        "order": 8,
+        "section": "context",
+        "since_agno": "3.1",
+        "widget": "number"
+      }
+    },
+    "read_chat_history": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Read Chat History",
+      "x-agnostic": {
+        "default": false,
+        "label": "Tool to read the chat history",
+        "legacy": false,
+        "order": 9,
+        "section": "context",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "input_schema": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Input Schema",
+      "x-agnostic": {
+        "label": "Input schema",
+        "legacy": false,
+        "order": 2,
+        "section": "output",
+        "since_agno": "3.1",
+        "widget": "schema"
+      }
+    },
+    "output_schema": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "A schema registered on the instance, or an inline JSON Schema.",
+      "title": "Output Schema",
+      "x-agnostic": {
+        "help": "A schema registered on the instance, or an inline JSON Schema.",
+        "label": "Output schema",
+        "legacy": false,
+        "order": 1,
+        "section": "output",
+        "since_agno": "3.1",
+        "widget": "schema"
+      }
+    },
+    "use_json_mode": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Use Json Mode",
+      "x-agnostic": {
+        "default": false,
+        "label": "JSON mode",
+        "legacy": false,
+        "order": 3,
+        "section": "output",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "parse_response": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Parse Response",
+      "x-agnostic": {
+        "default": true,
+        "label": "Parse the response",
+        "legacy": false,
+        "order": 4,
+        "section": "output",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "session_state": {
+      "anyOf": [
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Session State",
+      "x-agnostic": {
+        "label": "Initial session state",
+        "legacy": false,
+        "order": 1,
+        "section": "session_state",
+        "since_agno": "3.1",
+        "widget": "json"
+      }
+    },
+    "add_session_state_to_context": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Add Session State To Context",
+      "x-agnostic": {
+        "default": false,
+        "label": "Add the state to the context",
+        "legacy": false,
+        "order": 2,
+        "section": "session_state",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "enable_agentic_state": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Enable Agentic State",
+      "x-agnostic": {
+        "default": false,
+        "label": "Let the model update the state",
+        "legacy": false,
+        "order": 3,
+        "section": "session_state",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "dependencies": {
+      "anyOf": [
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Dependencies",
+      "x-agnostic": {
+        "label": "Dependencies",
+        "legacy": false,
+        "order": 30,
+        "section": "advanced",
+        "since_agno": "3.1",
+        "widget": "json"
+      }
+    },
+    "add_dependencies_to_context": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Add Dependencies To Context",
+      "x-agnostic": {
+        "default": false,
+        "label": "Add dependencies to the context",
+        "legacy": false,
+        "order": 31,
+        "section": "advanced",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "store_media": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Store Media",
+      "x-agnostic": {
+        "default": true,
+        "label": "Store media",
+        "legacy": false,
+        "order": 40,
+        "section": "advanced",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "store_tool_messages": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Store Tool Messages",
+      "x-agnostic": {
+        "default": true,
+        "label": "Store tool messages",
+        "legacy": false,
+        "order": 41,
+        "section": "advanced",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "store_history_messages": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Store History Messages",
+      "x-agnostic": {
+        "default": false,
+        "label": "Store history messages",
+        "legacy": false,
+        "order": 42,
+        "section": "advanced",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "send_media_to_model": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Send Media To Model",
+      "x-agnostic": {
+        "default": true,
+        "label": "Send media to the model",
+        "legacy": false,
+        "order": 43,
+        "section": "advanced",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "resolve_in_context": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Resolve In Context",
+      "x-agnostic": {
+        "default": true,
+        "label": "Resolve placeholders in the context",
+        "legacy": false,
+        "order": 44,
+        "section": "advanced",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "compress_tool_results": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Compress Tool Results",
+      "x-agnostic": {
+        "default": false,
+        "label": "Compress tool results",
+        "legacy": false,
+        "order": 45,
+        "section": "advanced",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "system_message_role": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "System Message Role",
+      "x-agnostic": {
+        "default": "system",
+        "label": "System message role",
+        "legacy": false,
+        "order": 46,
+        "section": "advanced",
+        "since_agno": "3.1",
+        "widget": "text"
+      }
+    },
+    "add_search_knowledge_instructions": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Add Search Knowledge Instructions",
+      "x-agnostic": {
+        "default": false,
+        "label": "Explain the search tool in the instructions",
+        "legacy": false,
+        "order": 8,
+        "section": "knowledge",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "read_tool_call_history": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Read Tool Call History",
+      "x-agnostic": {
+        "default": false,
+        "label": "Tool to read past tool calls",
+        "legacy": false,
+        "order": 10,
+        "section": "context",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "structured_outputs": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Structured Outputs",
+      "x-agnostic": {
+        "label": "Provider structured outputs",
+        "legacy": false,
+        "order": 5,
+        "section": "output",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "retries": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Retries",
+      "x-agnostic": {
+        "default": 0,
+        "label": "Retries",
+        "legacy": false,
+        "order": 1,
+        "section": "advanced",
+        "since_agno": "3.1",
+        "widget": "number"
+      }
+    },
+    "delay_between_retries": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Delay Between Retries",
+      "x-agnostic": {
+        "default": 1,
+        "label": "Seconds between retries",
+        "legacy": false,
+        "order": 2,
+        "section": "advanced",
+        "since_agno": "3.1",
+        "widget": "number"
+      }
+    },
+    "exponential_backoff": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Exponential Backoff",
+      "x-agnostic": {
+        "default": false,
+        "label": "Exponential backoff",
+        "legacy": false,
+        "order": 3,
+        "section": "advanced",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "build_context": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Build Context",
+      "x-agnostic": {
+        "default": true,
+        "label": "Build the system message",
+        "legacy": false,
+        "order": 11,
+        "section": "advanced",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "build_user_context": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Build User Context",
+      "x-agnostic": {
+        "default": true,
+        "label": "Build the user message",
+        "legacy": false,
+        "order": 12,
+        "section": "advanced",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "user_message_role": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "User Message Role",
+      "x-agnostic": {
+        "default": "user",
+        "label": "User message role",
+        "legacy": false,
+        "order": 13,
+        "section": "advanced",
+        "since_agno": "3.1",
+        "widget": "text"
+      }
+    },
+    "stream": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Stream",
+      "x-agnostic": {
+        "label": "Stream responses",
+        "legacy": false,
+        "order": 50,
+        "section": "advanced",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "stream_events": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Stream Events",
+      "x-agnostic": {
+        "label": "Stream intermediate events",
+        "legacy": false,
+        "order": 51,
+        "section": "advanced",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "store_events": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Store Events",
+      "x-agnostic": {
+        "default": false,
+        "label": "Store run events",
+        "legacy": false,
+        "order": 52,
+        "section": "advanced",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "cache_callables": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Cache Callables",
+      "x-agnostic": {
+        "default": true,
+        "label": "Cache callable factories",
+        "legacy": false,
+        "order": 60,
+        "section": "advanced",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "debug_mode": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Debug Mode",
+      "x-agnostic": {
+        "default": false,
+        "label": "Debug mode",
+        "legacy": false,
+        "order": 70,
+        "section": "advanced",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    },
+    "debug_level": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Debug Level",
+      "x-agnostic": {
+        "default": 1,
+        "label": "Debug level",
+        "legacy": false,
+        "order": 71,
+        "section": "advanced",
+        "since_agno": "3.1",
+        "widget": "number"
+      }
+    },
+    "telemetry": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Telemetry",
+      "x-agnostic": {
+        "default": true,
+        "label": "Telemetry",
+        "legacy": false,
+        "order": 72,
+        "section": "advanced",
+        "since_agno": "3.1",
+        "widget": "switch"
+      }
+    }
+  },
+  "title": "AgentConfig",
+  "type": "object",
+  "x-agnostic-sections": [
+    {
+      "id": "identity",
+      "label": "Identity",
+      "fields": ["id", "name", "description", "role"]
+    },
+    {
+      "id": "model",
+      "label": "Model",
+      "fields": ["model", "reasoning_model"]
+    },
+    {
+      "id": "instructions",
+      "label": "Instructions",
+      "fields": [
+        "instructions",
+        "expected_output",
+        "additional_context",
+        "add_name_to_context",
+        "add_datetime_to_context",
+        "add_location_to_context",
+        "timezone_identifier"
+      ]
+    },
+    {
+      "id": "tools",
+      "label": "Tools",
+      "fields": ["tools", "tool_call_limit"]
+    },
+    {
+      "id": "knowledge",
+      "label": "Knowledge",
+      "fields": [
+        "knowledge",
+        "search_knowledge",
+        "add_knowledge_to_context",
+        "knowledge_filters",
+        "enable_agentic_knowledge_filters",
+        "update_knowledge",
+        "references_format",
+        "add_search_knowledge_instructions"
+      ]
+    },
+    {
+      "id": "memory",
+      "label": "Memory",
+      "fields": [
+        "memory_manager",
+        "enable_agentic_memory",
+        "update_memory_on_run",
+        "add_memories_to_context",
+        "learning",
+        "add_learnings_to_context"
+      ]
+    },
+    {
+      "id": "context",
+      "label": "Context",
+      "fields": [
+        "add_history_to_context",
+        "num_history_runs",
+        "num_history_messages",
+        "max_tool_calls_from_history",
+        "enable_session_summaries",
+        "add_session_summary_to_context",
+        "search_past_sessions",
+        "num_past_sessions_to_search",
+        "read_chat_history",
+        "read_tool_call_history"
+      ]
+    },
+    {
+      "id": "output",
+      "label": "Output schema",
+      "fields": [
+        "output_schema",
+        "input_schema",
+        "use_json_mode",
+        "parse_response",
+        "structured_outputs",
+        "markdown"
+      ]
+    },
+    {
+      "id": "session_state",
+      "label": "Session state",
+      "fields": ["session_state", "add_session_state_to_context", "enable_agentic_state"]
+    },
+    {
+      "id": "advanced",
+      "label": "Advanced",
+      "fields": [
+        "retries",
+        "delay_between_retries",
+        "exponential_backoff",
+        "system_message",
+        "build_context",
+        "build_user_context",
+        "user_message_role",
+        "datetime_format",
+        "tool_choice",
+        "dependencies",
+        "add_dependencies_to_context",
+        "store_media",
+        "store_tool_messages",
+        "store_history_messages",
+        "send_media_to_model",
+        "resolve_in_context",
+        "compress_tool_results",
+        "system_message_role",
+        "stream",
+        "stream_events",
+        "store_events",
+        "cache_callables",
+        "debug_mode",
+        "debug_level",
+        "telemetry",
+        "metadata"
+      ]
+    }
+  ],
+  "x-agnostic-agno": "3.1"
+}

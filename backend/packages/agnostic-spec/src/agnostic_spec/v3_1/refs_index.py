@@ -1,0 +1,64 @@
+"""Every registry reference a config makes, with the field path that makes it."""
+
+from __future__ import annotations
+
+from collections.abc import Iterator
+from dataclasses import dataclass
+from typing import Literal
+
+from agnostic_spec.v3_1.base import ComponentConfig, SharedConfig
+from agnostic_spec.v3_1.refs import ModelRef, ToolRef, learning_name, schema_name
+from agnostic_spec.v3_1.team import TeamConfig
+
+RefType = Literal["model", "tool", "knowledge", "schema", "memory_manager", "learning", "agent", "team"]
+MODEL_FIELDS = ("model", "reasoning_model", "parser_model", "output_model", "followup_model")
+
+
+@dataclass(frozen=True, slots=True)
+class RefUse:
+    path: str
+    type: RefType
+    name: str
+    """The registry entry's name (for memory managers: its registry id; for members: the component id)."""
+    function: str | None = None
+    """For a toolkit function: which function of the toolkit."""
+
+
+def iter_refs(config: ComponentConfig) -> Iterator[RefUse]:
+    if isinstance(config, SharedConfig):
+        yield from _models(config)
+        yield from _tools(config)
+        yield from _context(config)
+    if isinstance(config, TeamConfig):
+        for index, member in enumerate(config.members or []):
+            if member.component_id:
+                yield RefUse(f"members[{index}]", member.type, member.component_id)
+
+
+def _models(config: SharedConfig) -> Iterator[RefUse]:
+    extra = config.model_extra or {}
+    for field in MODEL_FIELDS:
+        raw: object = getattr(config, field, None) if field in type(config).model_fields else extra.get(field)
+        model = ModelRef.parse(raw) if raw is not None else None
+        if model is not None:
+            yield RefUse(field, "model", model.id)
+
+
+def _tools(config: SharedConfig) -> Iterator[RefUse]:
+    for index, tool in enumerate(config.tools or []):
+        if isinstance(tool, ToolRef):
+            yield RefUse(f"tools[{index}]", "tool", tool.registry_name, function=tool.name if tool.toolkit else None)
+
+
+def _context(config: SharedConfig) -> Iterator[RefUse]:
+    if config.knowledge is not None:
+        yield RefUse("knowledge", "knowledge", config.knowledge.name)
+    for field, value in (("input_schema", config.input_schema), ("output_schema", config.output_schema)):
+        name = schema_name(value)
+        if name is not None:
+            yield RefUse(field, "schema", name)
+    if config.memory_manager is not None:
+        yield RefUse("memory_manager", "memory_manager", config.memory_manager.registry_id)
+    learning = learning_name(config.learning)
+    if learning is not None:
+        yield RefUse("learning", "learning", learning)

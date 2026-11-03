@@ -20,9 +20,11 @@ from fastapi import APIRouter, Request
 from starlette.routing import BaseRoute, Mount
 
 from agnostic_bridge._capabilities import BridgeCapabilities, build_capabilities, default_replica_id
+from agnostic_bridge._components import NORMALIZE_PATH, VALIDATE_PATH, add_component_routes
 from agnostic_bridge._evals import RUN_EVAL_PATH, add_eval_routes
 from agnostic_bridge._events import EVENTS_PATH, add_event_routes
 from agnostic_bridge._files import PROVENANCE_PATH, add_file_routes
+from agnostic_bridge._introspect import INTROSPECT_COMPONENTS_PATH, REGISTRY_SOURCE_PATH, add_introspect_routes
 from agnostic_bridge._workers import WORKERS_PATH, add_worker_routes
 
 if TYPE_CHECKING:
@@ -40,6 +42,10 @@ SCOPE_MAPPINGS: dict[str, list[str]] = {
     # Admin, as AgentOS gates its /queue operator routes: worker and queue internals are a cross-tenant surface.
     f"GET {BRIDGE_PREFIX}{WORKERS_PATH}": ["agent_os:admin"],
     f"GET {BRIDGE_PREFIX}{EVENTS_PATH}": ["approvals:read", "schedules:read"],
+    f"POST {BRIDGE_PREFIX}{VALIDATE_PATH}": ["components:read"],
+    f"POST {BRIDGE_PREFIX}{NORMALIZE_PATH}": ["components:read"],
+    f"GET {BRIDGE_PREFIX}{INTROSPECT_COMPONENTS_PATH}": ["components:read"],
+    f"GET {BRIDGE_PREFIX}{REGISTRY_SOURCE_PATH}": ["registry:read"],
 }
 
 
@@ -64,6 +70,8 @@ def create_router(agent_os: AgentOS, *, replica_id: str | None = None, include_i
     add_file_routes(router, agent_os)
     add_worker_routes(router, agent_os, replica)
     add_event_routes(router, agent_os)
+    add_component_routes(router, agent_os)
+    add_introspect_routes(router, agent_os)
     return router
 
 

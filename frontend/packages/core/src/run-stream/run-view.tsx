@@ -1,19 +1,6 @@
 // One run in the conversation: header, live tool chips, member runs (teams), tasks, workflow step timeline, the
 // response (markdown, citations), inline approvals or step HITL when paused, and the run toolbar.
 import {
-  attachRun,
-  ensureRun,
-  formatCount,
-  formatDuration,
-  runTokens,
-  type RunState,
-  type RunStream,
-  type RunTarget,
-  type StepNode,
-  type StepRequirement,
-  type ToolCall,
-} from "@agnostic/core";
-import {
   Button,
   Callout,
   MarkdownView,
@@ -23,7 +10,6 @@ import {
   StepTimeline,
   ToolCallChip,
   UserBubble,
-  type HitlRequest,
   type HitlResolution,
   type StepView,
   type ToolChipStatus,
@@ -32,7 +18,14 @@ import { Link } from "@tanstack/react-router";
 import { Copy, GitFork, RotateCcw, ScanSearch } from "lucide-react";
 import { useState } from "react";
 
+import { formatCount, formatDuration } from "../format";
 import { RunApprovals } from "./approval";
+import type { StepRequirement } from "./events";
+import { resolveRequirement, toHitlRequest } from "./hitl";
+import { runTokens } from "./history";
+import type { RunState, StepNode, ToolCall } from "./reducer";
+import type { RunStream, RunTarget } from "./run-stream";
+import { attachRun, ensureRun } from "./store";
 
 const KIND = { agents: "agent", teams: "team", workflows: "workflow" } as const;
 
@@ -69,53 +62,6 @@ function toStepView(node: StepNode): StepView {
   };
 }
 
-export function toHitlRequest(requirement: StepRequirement): HitlRequest {
-  const output = requirement.step_output;
-  return {
-    stepName: requirement.step_name ?? "step",
-    confirmation: requirement.requires_confirmation
-      ? (requirement.confirmation_message ?? "Confirm to continue the workflow.")
-      : undefined,
-    userInput: requirement.requires_user_input
-      ? {
-          message: requirement.user_input_message ?? undefined,
-          fields: (requirement.user_input_schema ?? []).map((field) => ({
-            name: field.name,
-            type: field.field_type ?? "str",
-            description: field.description ?? undefined,
-            required: field.required ?? true,
-            allowedValues: field.allowed_values?.map(String),
-          })),
-        }
-      : undefined,
-    routes: requirement.requires_route_selection
-      ? {
-          choices: requirement.available_choices ?? [],
-          multiple: requirement.allow_multiple_selections ?? false,
-        }
-      : undefined,
-    outputReview: requirement.requires_output_review
-      ? typeof output === "string"
-        ? output
-        : JSON.stringify(output ?? {}, null, 2)
-      : undefined,
-  };
-}
-
-/** Apply a HITL answer to the requirement, as AgentOS expects it back in `step_requirements`. */
-export function resolveRequirement(
-  requirement: StepRequirement,
-  resolution: HitlResolution,
-): StepRequirement {
-  return {
-    ...requirement,
-    confirmed: resolution.confirmed,
-    ...(resolution.confirmed ? {} : { rejected: true }),
-    ...(resolution.userInput ? { user_input: resolution.userInput } : {}),
-    ...(resolution.selected ? { selected_choices: resolution.selected } : {}),
-  };
-}
-
 function references(state: RunState): { key: string; label: string; href?: string | undefined }[] {
   const raw = state.citations;
   const urls =
@@ -127,6 +73,17 @@ function references(state: RunState): { key: string; label: string; href?: strin
   );
 }
 
+export type RunViewProps = {
+  state: RunState;
+  stream: RunStream | undefined;
+  target: RunTarget;
+  instanceName: string;
+  componentName: string;
+  versionLabel?: string | undefined;
+  onRetry?: (() => void) | undefined;
+  onFork?: (() => void) | undefined;
+};
+
 export function RunView({
   state,
   stream,
@@ -136,16 +93,7 @@ export function RunView({
   versionLabel,
   onRetry,
   onFork,
-}: {
-  state: RunState;
-  stream: RunStream | undefined;
-  target: RunTarget;
-  instanceName: string;
-  componentName: string;
-  versionLabel?: string | undefined;
-  onRetry?: (() => void) | undefined;
-  onFork?: (() => void) | undefined;
-}) {
+}: RunViewProps) {
   const [copied, setCopied] = useState(false);
   const instance = target.instance;
   const family = target.family;

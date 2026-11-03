@@ -1,7 +1,7 @@
 // RunStream AgentOS run over SSE through the gateway. Submits with `background=true, stream=true` (the run
 // survives a dropped connection), reduces events into a RunState, and reconnects with `/resume` +
 // `last_event_index` when the stream ends before the run settles: a browser refresh, a gateway or API replica
-// restart. Cancel and continue (agents `tools`, teams `requirements`, workflows `step_requirements`) go through the
+// restart (unless the stream is not `resumable`). Cancel and continue (agents `tools`, teams `requirements`, workflows `step_requirements`) go through the
 // same object.
 import { describeError, gatewayFetch, gatewayUrl, isProblem, writeHeaders } from "@agnostic/api";
 import { fetchEventSource, type EventSourceMessage } from "@microsoft/fetch-event-source";
@@ -32,8 +32,19 @@ export type RunStreamOptions = {
   fetch?: typeof fetch;
   /** Backoff between /resume attempts, in ms. */
   retryDelays?: readonly number[];
-  /** Persist active runs in sessionStorage so a refresh can resume them (default true). */
+  /** Persist active runs in sessionStorage so a refresh can resume them (default: `resumable`). */
   persist?: boolean;
+  /**
+   * Where to submit instead of the gateway's `{family}/{id}/runs` (a full URL, e.g. a control-plane endpoint that
+   * runs a draft), as a JSON body. Continue, resume and cancel still go through the gateway with the run id it
+   * returns.
+   */
+  endpoint?: { submit: string } | undefined;
+  /**
+   * Reconnect with `/resume` when the stream drops before the run settles (default true). When false, a drop ends
+   * the stream in an error state that says to run it again.
+   */
+  resumable?: boolean;
 };
 
 export type StreamPhase = "idle" | "connecting" | "streaming" | "reconnecting" | "closed";
@@ -41,6 +52,7 @@ export type StreamPhase = "idle" | "connecting" | "streaming" | "reconnecting" |
 export type RunStreamState = RunState & { phase: StreamPhase; attempts: number };
 
 const DEFAULT_DELAYS = [500, 1000, 2000, 4000, 8000, 15000];
+const DROPPED = "The connection dropped before the run finished. Run it again to retry.";
 const STORAGE_KEY = "agnostic.active-runs";
 
 class FatalStreamError extends Error {}
@@ -90,6 +102,9 @@ export class RunStream {
   private readonly fetchImpl: typeof fetch | undefined;
   private readonly delays: readonly number[];
   private readonly persist: boolean;
+  private readonly resumable: boolean;
+  private readonly submitUrl: string | undefined;
+  private openError: string | undefined;
   private disposed = false;
   private retryTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -103,7 +118,9 @@ export class RunStream {
     this.target = target;
     this.fetchImpl = options.fetch;
     this.delays = options.retryDelays ?? DEFAULT_DELAYS;
-    this.persist = options.persist ?? true;
+    this.resumable = options.resumable ?? true;
+    this.persist = options.persist ?? this.resumable;
+    this.submitUrl = options.endpoint?.submit;
     this.store = createStore<RunStreamState>(() => ({
       ...initialRunState({ kind: FAMILY_KIND[target.family], componentId: target.componentId, ...initial }),
       phase: "idle",
@@ -123,8 +140,18 @@ export class RunStream {
     return `${this.target.family}/${encodeURIComponent(this.target.componentId)}/runs`;
   }
 
-  /** Start a run: multipart for agents and teams (files allowed), a form for workflows. */
+  private gateway(path: string): string {
+    return gatewayUrl(this.target.instance, path);
+  }
+
+  /**
+   * Start a run: multipart for agents and teams (files allowed), a form for workflows, and JSON
+   * (`message`, `version`, `session_id`) to a custom `endpoint`, which takes no files.
+   */
   async submit(input: SubmitInput): Promise<void> {
+    if (this.submitUrl && input.files?.length) {
+      throw new Error("Files can't be attached to a run submitted to a custom endpoint.");
+    }
     this.set({
       input: input.message,
       status: "pending",
@@ -138,6 +165,14 @@ export class RunStream {
       session_id: input.sessionId,
       version: input.version === undefined ? undefined : String(input.version),
     };
+    if (this.submitUrl) {
+      const json = { message: input.message, version: input.version, session_id: input.sessionId };
+      await this.open(this.submitUrl, JSON.stringify(json), {
+        "Content-Type": "application/json",
+        "Idempotency-Key": this.key,
+      });
+      return;
+    }
     if (this.target.family === "workflows") {
       body = form(common);
     } else {
@@ -146,7 +181,7 @@ export class RunStream {
       for (const file of input.files ?? []) multipart.append("files", file, file.name);
       body = multipart;
     }
-    await this.open(this.base(), body, { "Idempotency-Key": this.key });
+    await this.open(this.gateway(this.base()), body, { "Idempotency-Key": this.key });
   }
 
   /**
@@ -178,7 +213,7 @@ export class RunStream {
     }
     const last = this.getState().lastEventIndex;
     await this.open(
-      `${this.base()}/${encodeURIComponent(state.runId)}/resume`,
+      this.gateway(`${this.base()}/${encodeURIComponent(state.runId)}/resume`),
       form({ last_event_index: last >= 0 ? String(last) : undefined, session_id: state.sessionId }),
     );
   }
@@ -209,7 +244,7 @@ export class RunStream {
     if (!state.runId) return;
     this.set({ status: "running", pause: undefined, lastEventIndex: -1 });
     await this.open(
-      `${this.base()}/${encodeURIComponent(state.runId)}/continue`,
+      this.gateway(`${this.base()}/${encodeURIComponent(state.runId)}/continue`),
       form({ ...fields, session_id: state.sessionId, stream: "true", background: "true" }),
     );
   }
@@ -228,7 +263,7 @@ export class RunStream {
 
   // ------------------------------------------------------------ transport
 
-  private async open(path: string, body: BodyInit, extra: Record<string, string> = {}): Promise<void> {
+  private async open(url: string, body: BodyInit, extra: Record<string, string> = {}): Promise<void> {
     if (this.disposed) return;
     clearTimeout(this.retryTimer);
     this.controller?.abort();
@@ -237,8 +272,9 @@ export class RunStream {
     this.set({ phase: this.getState().attempts > 0 ? "reconnecting" : "connecting" });
     const headers = writeHeaders("POST", { Accept: "text/event-stream", ...extra });
     let fatal = false;
+    this.openError = undefined;
     try {
-      await fetchEventSource(gatewayUrl(this.target.instance, path), {
+      await fetchEventSource(url, {
         method: "POST",
         headers: Object.fromEntries(headers.entries()),
         body,
@@ -273,7 +309,22 @@ export class RunStream {
       this.save();
       return;
     }
+    if (!this.resumable) {
+      this.dropped();
+      return;
+    }
     this.scheduleResume();
+  }
+
+  /** A non-resumable stream ended early: say why (when the gateway did) and that running it again is the retry. */
+  private dropped(): void {
+    const detail = this.openError;
+    this.set({
+      phase: "closed",
+      attempts: 0,
+      status: "error",
+      error: { message: detail ? `${detail}. Run it again to retry.` : DROPPED, type: "connection" },
+    });
   }
 
   private async openFailed(response: Response): Promise<never> {
@@ -302,6 +353,7 @@ export class RunStream {
       this.set({ status: "error", error: { message: detail, type: `HTTP ${String(response.status)}` } });
       throw new FatalStreamError(detail);
     }
+    this.openError = detail;
     throw new Error(detail);
   }
 

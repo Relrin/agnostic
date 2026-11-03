@@ -17,6 +17,11 @@ runtime started without `JWT_VERIFICATION_KEY` (`auth_mode=none`). The same runt
 `cd backend && uv run python ../scripts/record_sse_fixtures.py --url http://127.0.0.1:7777` rewrites
 `frontend/packages/core/src/run-stream/__fixtures__/recorded/`, which `recorded.test.ts` checks against the reducer.
 
+Studio's golden fixtures live in `backend/tests/golden/agno-3.1`: agno's `to_dict()` of the reference runtime's
+agents and teams (`.json`) and the code Studio generates for each (`.py`). After an agno upgrade or a generator
+change, run `just golden` and review the diff; the contract job fails when the runtime serializes differently from
+the committed JSON.
+
 ## Backend
 
 - Unit tests build the real app with `make_settings(sqlite_url(tmp_path))` and drive it through

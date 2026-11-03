@@ -9,7 +9,9 @@ Query, Yarn 4 workspaces. The shell composes feature modules that register throu
 |---|---|---|
 | `apps/web` (`@agnostic/web`) | shell: router assembly, sidebar, header, command palette, providers | everything |
 | `packages/ui` (`@agnostic/ui`) | design system: tokens, primitives, patterns, Storybook | nothing internal |
-| `packages/core` (`@agnostic/core`) | module SDK, navigation, query defaults | packages |
+| `packages/core` (`@agnostic/core`) | module SDK, navigation, query defaults, run streaming and `RunView` | packages |
+| `packages/editor` (`@agnostic/editor`) | read-only code views on CodeMirror 6 (`CodeView`, loaded on demand) | `@agnostic/ui` |
+| `packages/studio` (`@agnostic/studio`) | Studio editor building blocks: draft document, form, code and test panes, versions, publish and promote dialogs ([Studio](studio.md)) | packages |
 | `packages/api` (`@agnostic/api`) | generated client + TanStack Query options | packages |
 | `packages/testing` (`@agnostic/testing`) | render helpers, MSW handlers with sample data | packages |
 | `modules/*` (`@agnostic/module-*`) | feature modules | packages only, never another module |
@@ -66,7 +68,15 @@ Primitives: `Button` (10 variants, 5 sizes), `Badge`/`StatusPill`, `Input`, `Sel
 `KpiTile`, `AttentionCard`, `DataTable`/`Pager`, `FilterChip`, `KeyValueList`, `ApiHint`, `MarkdownView` (Shiki on
 demand), `JsonView`, `JsonEditor`, `StackedBarChart` (with "View as table"), `ShareList`, `Toaster`. Domain widgets:
 `RunBlock`, `ToolCallChip`, `ApprovalCard`, `StepTimeline`, `StepHitlForm`, `Composer`, `SessionList`, `RunCard`,
-`RunTimelineSeparator`, `UserBubble`, `EntitySquare`.
+`RunTimelineSeparator`, `UserBubble`, `EntitySquare`. For the Studio editors: `SortableList` (@dnd-kit, grip handle and
+keyboard sorting), `Accordion`/`AccordionSection`, `Checkbox`, `Combobox` (Popover + `Command`), `LineLinkBadge` and
+`GateResultList`.
+
+`@agnostic/editor` holds `CodeView`: read-only Python or JSON on CodeMirror 6, themed from the `--syntax-*` tokens,
+with a 3px change-mark strip (added/modified) beside the line numbers, a focused line (accent background, scrolled
+into view), inline notes under a line with a wavy underline on their columns, and an `onCursor` callback for linking
+lines back to form fields. CodeMirror loads in its own chunk on first render (`CodeViewSkeleton` meanwhile;
+`preloadCodeView()` fetches it early).
 
 Fonts (Geist, Geist Mono) are self-hosted through `@fontsource-variable`; there are no runtime CDN calls.
 
@@ -78,7 +88,10 @@ design relies on and that the TypeScript token mirror matches `tokens.css`.
 
 Home, Chat and Sessions (`modules/home`, `modules/chat`, `modules/sessions`) read AgentOS through the gateway with the
 helpers in `@agnostic/core` (`useComponents`, `useSessions`, `useSessionRuns`, `useSessionActions`) and render runs
-from one `RunState`, whether live (`RunStream`) or stored (`fromStoredRun`). `RealtimeProvider` (mounted by the shell)
+from one `RunState`, whether live (`RunStream`) or stored (`fromStoredRun`), with `RunView` from `@agnostic/core`
+(inline approvals and step HITL included). `RunStream` can submit to another endpoint (`endpoint.submit`, e.g. a
+draft test run) and skip `/resume` reconnects (`resumable: false`); `RunState.structured` holds the parsed output of
+components with an output schema. `RealtimeProvider` (mounted by the shell)
 holds the realtime connection and updates the query cache; the approvals nav badge comes from `useApprovalsCount`.
 Catalog entries without a module are splat routes, so links below them (`traces/<id>`) land on the placeholder. See
 [Operate and realtime](operate-and-realtime.md).

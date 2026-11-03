@@ -12,6 +12,9 @@
       "path": "../../packages/core"
     },
     {
+      "path": "../../packages/editor"
+    },
+    {
       "path": "../../packages/api"
     },
     {
@@ -82,6 +85,21 @@
     },
     {
       "path": "../../modules/org-settings"
+    },
+    {
+      "path": "../../packages/studio"
+    },
+    {
+      "path": "../../modules/registry"
+    },
+    {
+      "path": "../../modules/studio-agents"
+    },
+    {
+      "path": "../../modules/studio-teams"
+    },
+    {
+      "path": "../../modules/studio-workflows"
     }
   ]
 }

@@ -1,0 +1,28 @@
+{
+  "description": "Researches a question across the knowledge base and the web, then writes a brief.",
+  "id": "research-team",
+  "instructions": "Ask kb-researcher first, web-researcher for anything missing, and summarizer for the final brief.",
+  "members": [
+    {
+      "agent_id": "kb-researcher",
+      "type": "agent"
+    },
+    {
+      "agent_id": "web-researcher",
+      "type": "agent"
+    },
+    {
+      "agent_id": "summarizer",
+      "type": "agent"
+    }
+  ],
+  "mode": "coordinate",
+  "model": {
+    "id": "agnostic-mock",
+    "name": "MockModel",
+    "provider": "Agnostic"
+  },
+  "name": "research-team",
+  "num_history_runs": 3,
+  "store_events": true
+}

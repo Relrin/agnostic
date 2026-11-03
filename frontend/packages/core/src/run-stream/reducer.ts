@@ -67,6 +67,8 @@ export type RunState = {
   status: RunStatus;
   input?: string | undefined;
   content: string;
+  /** The parsed output when the component has an output schema (the completed run's `content` is an object). */
+  structured?: unknown;
   reasoning: string;
   tools: ToolCall[];
   members: Record<string, MemberRun>;
@@ -119,6 +121,10 @@ function text(value: unknown): string {
   if (value === null || value === undefined) return "";
   if (typeof value === "string") return value;
   return JSON.stringify(value, null, 2);
+}
+
+function isStructured(value: unknown): value is object {
+  return typeof value === "object" && value !== null;
 }
 
 function seconds(event: RunEvent): number | undefined {
@@ -501,6 +507,7 @@ function completed(state: RunState, event: RunEvent): RunState {
     ...state,
     status: "completed",
     content: state.content || text(event.content),
+    structured: isStructured(event.content) ? event.content : state.structured,
     metrics: event.metrics ?? state.metrics,
     citations: event.citations ?? state.citations,
     references: event.references ?? state.references,
@@ -557,6 +564,7 @@ function apply(state: RunState, event: RunEvent): RunState {
         ...state,
         status: state.status === "pending" ? "running" : state.status,
         content: state.content + (typeof event.content === "string" ? event.content : ""),
+        structured: isStructured(event.content) ? event.content : state.structured,
         reasoning: state.reasoning + (event.reasoning_content ?? ""),
         citations: event.citations ?? state.citations,
         references: event.references ?? state.references,

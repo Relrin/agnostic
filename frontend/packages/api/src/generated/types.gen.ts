@@ -1007,6 +1007,24 @@ export type AuthPolicyUpdate = {
 };
 
 /**
+ * AvailabilityOut
+ */
+export type AvailabilityOut = {
+    /**
+     * Kind
+     */
+    kind: 'available' | 'unavailable' | 'registered';
+    /**
+     * Text
+     */
+    text: string;
+    /**
+     * Title
+     */
+    title: string;
+};
+
+/**
  * BaselineOut
  */
 export type BaselineOut = {
@@ -1653,6 +1671,96 @@ export type CheckpointOut = {
 };
 
 /**
+ * CodeNoteOut
+ */
+export type CodeNoteOut = {
+    /**
+     * Col End
+     */
+    col_end: number;
+    /**
+     * Col Start
+     */
+    col_start: number;
+    /**
+     * Entry
+     */
+    entry: string | null;
+    /**
+     * Kind
+     */
+    kind: string;
+    /**
+     * Line
+     */
+    line: number;
+    /**
+     * Message
+     */
+    message: string;
+    /**
+     * Path
+     */
+    path: string;
+};
+
+/**
+ * CodegenIn
+ */
+export type CodegenIn = {
+    /**
+     * Base Config
+     *
+     * Mark the lines that differ from this config.
+     */
+    base_config?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Config
+     */
+    config: {
+        [key: string]: unknown;
+    };
+    kind: KindIn;
+};
+
+/**
+ * CodegenOut
+ */
+export type CodegenOut = {
+    /**
+     * Base Code
+     */
+    base_code: string | null;
+    /**
+     * Code
+     */
+    code: string;
+    /**
+     * Filename
+     */
+    filename: string;
+    /**
+     * Marks
+     */
+    marks: {
+        [key: string]: 'added' | 'modified';
+    };
+    /**
+     * Notes
+     */
+    notes: Array<CodeNoteOut>;
+    ruff: RuffOut;
+    /**
+     * Spans
+     */
+    spans: {
+        [key: string]: SpanOut;
+    };
+};
+
+/**
  * ComparisonCountsOut
  */
 export type ComparisonCountsOut = {
@@ -1706,6 +1814,31 @@ export type ComparisonRowOut = {
 };
 
 /**
+ * ComponentDetailOut
+ */
+export type ComponentDetailOut = {
+    component: StudioComponentOut;
+    current: VersionOut | null;
+    draft: VersionOut | null;
+    /**
+     * Editable
+     */
+    editable: boolean;
+    /**
+     * Labels
+     */
+    labels: Array<string>;
+    /**
+     * Owner Group Id
+     */
+    owner_group_id: string | null;
+    /**
+     * Versions
+     */
+    versions: Array<VersionOut>;
+};
+
+/**
  * ComponentOut
  */
 export type ComponentOut = {
@@ -1750,6 +1883,43 @@ export type ComponentOut = {
      * Tokens the sessions didn't tie to a model
      */
     unattributed: TokensOut;
+};
+
+/**
+ * ComponentRowOut
+ */
+export type ComponentRowOut = {
+    component: StudioComponentOut;
+    /**
+     * Draft Updated At
+     */
+    draft_updated_at: string | null;
+    /**
+     * Draft Version
+     */
+    draft_version: number | null;
+    /**
+     * Editable
+     */
+    editable: boolean;
+    /**
+     * Labels
+     */
+    labels: Array<string>;
+    /**
+     * Latest Version
+     */
+    latest_version: number | null;
+    /**
+     * Owner Group Id
+     */
+    owner_group_id: string | null;
+    /**
+     * Runs 7D
+     *
+     * Runs in the last 7 days, when the instance reports them.
+     */
+    runs_7d?: number | null;
 };
 
 /**
@@ -2005,6 +2175,57 @@ export type CountsOut = {
      * Workflows
      */
     workflows?: number;
+};
+
+/**
+ * CreateIn
+ */
+export type CreateIn = {
+    /**
+     * Component Id
+     */
+    component_id?: string | null;
+    /**
+     * Config
+     */
+    config?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Description
+     */
+    description?: string | null;
+    kind: KindIn;
+    /**
+     * Mode
+     */
+    mode?: 'blank' | 'template' | 'duplicate' | 'import';
+    /**
+     * Model
+     */
+    model?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Notes
+     */
+    notes?: string | null;
+    /**
+     * Source Id
+     */
+    source_id?: string | null;
+    /**
+     * Source Version
+     */
+    source_version?: number | null;
+    /**
+     * Template Id
+     */
+    template_id?: string | null;
 };
 
 /**
@@ -2412,6 +2633,60 @@ export type DeliveryOut = {
 };
 
 /**
+ * DetailOut
+ */
+export type DetailOut = {
+    /**
+     * Key
+     */
+    key: string;
+    /**
+     * Value
+     */
+    value: string;
+};
+
+/**
+ * DiagnosticOut
+ */
+export type DiagnosticOut = {
+    /**
+     * Code
+     */
+    code: string;
+    /**
+     * Message
+     */
+    message: string;
+    /**
+     * Path
+     */
+    path: string;
+    /**
+     * Severity
+     */
+    severity: 'error' | 'warning' | 'info';
+};
+
+/**
+ * DiffCountsOut
+ */
+export type DiffCountsOut = {
+    /**
+     * Added
+     */
+    added: number;
+    /**
+     * Changed
+     */
+    changed: number;
+    /**
+     * Removed
+     */
+    removed: number;
+};
+
+/**
  * DiffLineOut
  */
 export type DiffLineOut = {
@@ -2423,6 +2698,53 @@ export type DiffLineOut = {
      * Text
      */
     text: string;
+};
+
+/**
+ * DiffOut
+ */
+export type DiffOut = {
+    /**
+     * Changes
+     */
+    changes: Array<FieldChangeOut>;
+    /**
+     * Code After
+     */
+    code_after: string;
+    /**
+     * Code Before
+     */
+    code_before: string;
+    /**
+     * Component Id
+     */
+    component_id: string;
+    counts: DiffCountsOut;
+    /**
+     * From Version
+     */
+    from_version: number;
+    /**
+     * Lines Added
+     */
+    lines_added: number;
+    /**
+     * Lines Removed
+     */
+    lines_removed: number;
+    /**
+     * Summary
+     */
+    summary: string;
+    /**
+     * To Version
+     */
+    to_version: number;
+    /**
+     * Unified
+     */
+    unified: string;
 };
 
 /**
@@ -3001,6 +3323,32 @@ export type FactorOut = {
 };
 
 /**
+ * FieldChangeOut
+ */
+export type FieldChangeOut = {
+    /**
+     * After
+     */
+    after?: unknown;
+    /**
+     * Before
+     */
+    before?: unknown;
+    /**
+     * Field
+     */
+    field: string;
+    /**
+     * Op
+     */
+    op: 'added' | 'removed' | 'changed';
+    /**
+     * Path
+     */
+    path: string;
+};
+
+/**
  * FieldError
  */
 export type FieldError = {
@@ -3133,6 +3481,80 @@ export type FileReaderOut = {
      * Step
      */
     step: string | null;
+};
+
+/**
+ * FunctionOut
+ */
+export type FunctionOut = {
+    /**
+     * Description
+     */
+    description: string | null;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Parameters
+     */
+    parameters: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Requires Confirmation
+     */
+    requires_confirmation: boolean;
+    /**
+     * Signature
+     */
+    signature: string | null;
+};
+
+/**
+ * GateCheckOut
+ */
+export type GateCheckOut = {
+    /**
+     * Batch Id
+     */
+    batch_id: string | null;
+    /**
+     * Blocks
+     */
+    blocks: boolean;
+    /**
+     * Consequence
+     */
+    consequence: string;
+    /**
+     * Dataset Id
+     */
+    dataset_id: string;
+    /**
+     * Dataset Name
+     */
+    dataset_name: string | null;
+    /**
+     * Eval Type
+     */
+    eval_type: string;
+    /**
+     * Gate Id
+     */
+    gate_id: string;
+    /**
+     * Min Average
+     */
+    min_average: number;
+    /**
+     * State
+     */
+    state: 'off' | 'no_result' | 'would_block' | 'passes';
+    /**
+     * Value
+     */
+    value: number | null;
 };
 
 /**
@@ -4256,6 +4678,10 @@ export type KeysOut = {
     rotation_note: string;
 };
 
+export type KindIn = 'agent' | 'team';
+
+export type KindQuery = 'agent' | 'team' | 'workflow';
+
 /**
  * KnowledgeBaseOut
  */
@@ -4365,6 +4791,32 @@ export type KpisOut = {
 };
 
 /**
+ * LayerOut
+ */
+export type LayerOut = {
+    /**
+     * Diagnostics
+     */
+    diagnostics: Array<DiagnosticOut>;
+    /**
+     * Hint
+     */
+    hint: string | null;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Label
+     */
+    label: string;
+    /**
+     * Status
+     */
+    status: 'ok' | 'failed' | 'warning' | 'skipped';
+};
+
+/**
  * LearningCountsOut
  */
 export type LearningCountsOut = {
@@ -4382,6 +4834,28 @@ export type LearningCountsOut = {
     id_schemes?: {
         [key: string]: string;
     };
+};
+
+/**
+ * LintMessageOut
+ */
+export type LintMessageOut = {
+    /**
+     * Code
+     */
+    code: string;
+    /**
+     * Column
+     */
+    column: number;
+    /**
+     * Line
+     */
+    line: number;
+    /**
+     * Message
+     */
+    message: string;
 };
 
 /**
@@ -4757,6 +5231,32 @@ export type MemorySourceOut = {
     user_id: string | null;
 };
 
+/**
+ * MetaPatchIn
+ */
+export type MetaPatchIn = {
+    /**
+     * Clear Owner
+     */
+    clear_owner?: boolean;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Labels
+     */
+    labels?: Array<string> | null;
+    /**
+     * Name
+     */
+    name?: string | null;
+    /**
+     * Owner Group Id
+     */
+    owner_group_id?: string | null;
+};
+
 export type Method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 /**
@@ -5024,6 +5524,20 @@ export type NativeTokenOut = {
      * Status
      */
     status: 'active' | 'revoked' | 'expired';
+};
+
+/**
+ * NewDraftIn
+ */
+export type NewDraftIn = {
+    /**
+     * From Version
+     */
+    from_version?: number | null;
+    /**
+     * Notes
+     */
+    notes?: string | null;
 };
 
 /**
@@ -5835,6 +6349,98 @@ export type Problem = {
 };
 
 /**
+ * PromoteIn
+ */
+export type PromoteIn = {
+    /**
+     * Include Children
+     */
+    include_children?: boolean;
+    /**
+     * Target
+     *
+     * Instance id or slug to promote to.
+     */
+    target: string;
+    /**
+     * Version
+     *
+     * Defaults to the current version.
+     */
+    version?: number | null;
+};
+
+/**
+ * PromotionApplyIn
+ */
+export type PromotionApplyIn = {
+    /**
+     * Publish
+     */
+    publish?: boolean;
+};
+
+/**
+ * PromotionOut
+ */
+export type PromotionOut = {
+    /**
+     * Applied At
+     */
+    applied_at: string | null;
+    /**
+     * Component Id
+     */
+    component_id: string;
+    /**
+     * Component Kind
+     */
+    component_kind: string;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Created By Name
+     */
+    created_by_name: string;
+    /**
+     * From Instance
+     */
+    from_instance: string;
+    /**
+     * From Version
+     */
+    from_version: number;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Include Children
+     */
+    include_children: boolean;
+    /**
+     * Report
+     */
+    report: {
+        [key: string]: unknown;
+    };
+    /**
+     * Status
+     */
+    status: 'dry_run' | 'blocked' | 'applied' | 'published' | 'failed';
+    /**
+     * To Instance
+     */
+    to_instance: string;
+    /**
+     * To Version
+     */
+    to_version: number | null;
+};
+
+/**
  * ProviderCreate
  */
 export type ProviderCreate = {
@@ -6082,6 +6688,84 @@ export type ProviderUpdate = {
      * Trust Unverified Email
      */
     trust_unverified_email?: boolean | null;
+};
+
+/**
+ * PublishCheckOut
+ */
+export type PublishCheckOut = {
+    /**
+     * Blocked By Gates
+     */
+    blocked_by_gates: boolean;
+    /**
+     * Can Override
+     */
+    can_override: boolean;
+    /**
+     * Can Publish
+     */
+    can_publish: boolean;
+    /**
+     * Changes
+     */
+    changes: Array<FieldChangeOut>;
+    /**
+     * Gates
+     */
+    gates: Array<GateCheckOut>;
+    /**
+     * Outcome
+     */
+    outcome: string;
+    /**
+     * Stage
+     */
+    stage: 'draft' | 'published';
+    /**
+     * Summary
+     */
+    summary: string;
+    validation: ValidationOut;
+    /**
+     * Version
+     */
+    version: number;
+};
+
+/**
+ * PublishIn
+ */
+export type PublishIn = {
+    /**
+     * Notes
+     */
+    notes?: string | null;
+    /**
+     * Override Reason
+     *
+     * Publish past failed eval gates (needs evals:gates:override).
+     */
+    override_reason?: string | null;
+};
+
+/**
+ * PublishOut
+ */
+export type PublishOut = {
+    /**
+     * Gates
+     */
+    gates: Array<GateCheckOut>;
+    /**
+     * Outcome
+     */
+    outcome: string;
+    /**
+     * Overridden
+     */
+    overridden: boolean;
+    version: VersionOut;
 };
 
 /**
@@ -6453,6 +7137,119 @@ export type RecoveryCodesOut = {
      * Recovery Codes
      */
     recovery_codes: Array<string>;
+};
+
+/**
+ * RegistryEntryDetailOut
+ */
+export type RegistryEntryDetailOut = {
+    entry: RegistryEntryOut;
+    /**
+     * Used By
+     */
+    used_by: Array<UsedByOut>;
+};
+
+/**
+ * RegistryEntryOut
+ */
+export type RegistryEntryOut = {
+    /**
+     * Approval Type
+     */
+    approval_type: string | null;
+    availability: AvailabilityOut;
+    /**
+     * Blurb
+     */
+    blurb: string;
+    /**
+     * Code
+     */
+    code: string | null;
+    /**
+     * Code Label
+     */
+    code_label: string | null;
+    /**
+     * Config Value
+     *
+     * What a config stores when a builder picks this entry (a model ref, tool dicts, a knowledge ref…).
+     */
+    config_value: unknown;
+    /**
+     * Description
+     */
+    description: string | null;
+    /**
+     * Details
+     */
+    details: Array<DetailOut>;
+    /**
+     * Functions
+     */
+    functions: Array<FunctionOut>;
+    /**
+     * Id
+     */
+    id: string | null;
+    /**
+     * Meta
+     */
+    meta: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Requires Approval
+     */
+    requires_approval: boolean;
+    source: SourceOut | null;
+    /**
+     * Status
+     */
+    status: 'registered' | 'discovered';
+    /**
+     * Studio Available
+     */
+    studio_available: boolean;
+    /**
+     * Type
+     */
+    type: string;
+    /**
+     * Used By Count
+     */
+    used_by_count: number;
+};
+
+/**
+ * RegistryOut
+ */
+export type RegistryOut = {
+    /**
+     * Bridge
+     */
+    bridge: boolean;
+    /**
+     * Counts
+     */
+    counts: {
+        [key: string]: number;
+    };
+    /**
+     * Entries
+     */
+    entries: Array<RegistryEntryOut>;
+    /**
+     * Instance
+     */
+    instance: string;
+    /**
+     * Total
+     */
+    total: number;
 };
 
 /**
@@ -6874,6 +7671,28 @@ export type RoutePolicyOut = {
     source: string;
 };
 
+/**
+ * RuffOut
+ */
+export type RuffOut = {
+    /**
+     * Available
+     */
+    available: boolean;
+    /**
+     * Formatted
+     */
+    formatted: boolean;
+    /**
+     * Messages
+     */
+    messages: Array<LintMessageOut>;
+    /**
+     * Status
+     */
+    status: string;
+};
+
 export type RuleSourceOut = 'scim' | 'oidc_claim' | 'google_directory';
 
 /**
@@ -6953,6 +7772,40 @@ export type SamlSettingsOut = {
      * Sso Url
      */
     sso_url: string;
+};
+
+/**
+ * SaveDraftIn
+ */
+export type SaveDraftIn = {
+    /**
+     * Config
+     */
+    config: {
+        [key: string]: unknown;
+    };
+    /**
+     * Label
+     */
+    label?: string | null;
+    /**
+     * Notes
+     */
+    notes?: string | null;
+    /**
+     * Pins
+     *
+     * Team members pinned at a version, by component id.
+     */
+    pins?: {
+        [key: string]: number;
+    } | null;
+    /**
+     * Revision
+     *
+     * The revision the editor loaded; a mismatch is a 409.
+     */
+    revision?: string | null;
 };
 
 /**
@@ -7873,6 +8726,27 @@ export type SessionOut = {
 };
 
 /**
+ * SetCurrentIn
+ */
+export type SetCurrentIn = {
+    /**
+     * Reason
+     */
+    reason?: string | null;
+};
+
+/**
+ * SetCurrentOut
+ */
+export type SetCurrentOut = {
+    /**
+     * Outcome
+     */
+    outcome: string;
+    version: VersionOut;
+};
+
+/**
  * SignInProviderOut
  */
 export type SignInProviderOut = {
@@ -8025,6 +8899,24 @@ export type SinkTestOut = {
 };
 
 /**
+ * SourceOut
+ */
+export type SourceOut = {
+    /**
+     * File
+     */
+    file: string | null;
+    /**
+     * Line
+     */
+    line: number | null;
+    /**
+     * Module
+     */
+    module: string | null;
+};
+
+/**
  * SpanGroupOut
  */
 export type SpanGroupOut = {
@@ -8053,6 +8945,28 @@ export type SpanGroupOut = {
 };
 
 export type SpanKindOut = 'workflow' | 'step' | 'agent' | 'team' | 'model' | 'tool' | 'other';
+
+/**
+ * SpanOut
+ */
+export type SpanOut = {
+    /**
+     * Col End
+     */
+    col_end: number;
+    /**
+     * Col Start
+     */
+    col_start: number;
+    /**
+     * End Line
+     */
+    end_line: number;
+    /**
+     * Line
+     */
+    line: number;
+};
 
 /**
  * SpanStatsOut
@@ -8233,6 +9147,45 @@ export type StreamStatusOut = {
 };
 
 /**
+ * StudioComponentOut
+ */
+export type StudioComponentOut = {
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Current Version
+     */
+    current_version: number | null;
+    /**
+     * Deleted At
+     */
+    deleted_at: string | null;
+    /**
+     * Description
+     */
+    description: string | null;
+    /**
+     * Id
+     */
+    id: string;
+    kind: KindQuery;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Source
+     */
+    source: 'studio' | 'code';
+    /**
+     * Updated At
+     */
+    updated_at: string | null;
+};
+
+/**
  * SummaryOut
  */
 export type SummaryOut = {
@@ -8311,6 +9264,31 @@ export type SystemModules = {
 export type TargetKindName = 'agent' | 'team' | 'workflow' | 'custom';
 
 /**
+ * TemplateOut
+ */
+export type TemplateOut = {
+    /**
+     * Config
+     */
+    config: {
+        [key: string]: unknown;
+    };
+    /**
+     * Description
+     */
+    description: string;
+    /**
+     * Id
+     */
+    id: string;
+    kind: KindIn;
+    /**
+     * Label
+     */
+    label: string;
+};
+
+/**
  * TemporaryGrantIn
  */
 export type TemporaryGrantIn = {
@@ -8361,6 +9339,24 @@ export type TestReportOut = {
      * Steps
      */
     steps: Array<StepOut>;
+};
+
+/**
+ * TestRunIn
+ */
+export type TestRunIn = {
+    /**
+     * Message
+     */
+    message: string;
+    /**
+     * Session Id
+     */
+    session_id?: string | null;
+    /**
+     * Version
+     */
+    version: number;
 };
 
 /**
@@ -8585,6 +9581,45 @@ export type UnreadOut = {
 };
 
 /**
+ * UsedByOut
+ */
+export type UsedByOut = {
+    /**
+     * Component Id
+     */
+    component_id: string;
+    /**
+     * Component Kind
+     */
+    component_kind: string;
+    /**
+     * Component Name
+     */
+    component_name: string;
+    /**
+     * Versions
+     */
+    versions: Array<string>;
+    /**
+     * Versions Text
+     */
+    versions_text: string;
+};
+
+/**
+ * ValidateIn
+ */
+export type ValidateIn = {
+    /**
+     * Config
+     */
+    config: {
+        [key: string]: unknown;
+    };
+    kind: KindIn;
+};
+
+/**
  * ValidationError
  */
 export type ValidationError = {
@@ -8610,6 +9645,24 @@ export type ValidationError = {
      * Error Type
      */
     type: string;
+};
+
+/**
+ * ValidationOut
+ */
+export type ValidationOut = {
+    /**
+     * Layers
+     */
+    layers: Array<LayerOut>;
+    /**
+     * Ok
+     */
+    ok: boolean;
+    /**
+     * Summary
+     */
+    summary: string;
 };
 
 /**
@@ -8670,6 +9723,98 @@ export type VerifyTokenIn = {
      * Token
      */
     token: string;
+};
+
+/**
+ * VersionOut
+ */
+export type VersionOut = {
+    /**
+     * Author Name
+     */
+    author_name: string | null;
+    /**
+     * Based On Version
+     */
+    based_on_version: number | null;
+    /**
+     * Change Summary
+     */
+    change_summary: string | null;
+    /**
+     * Config
+     */
+    config: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Current
+     */
+    current: boolean;
+    /**
+     * Eval Status
+     */
+    eval_status: string | null;
+    /**
+     * Label
+     */
+    label: string | null;
+    /**
+     * Links
+     */
+    links: Array<{
+        [key: string]: unknown;
+    }>;
+    /**
+     * Notes
+     */
+    notes: string | null;
+    /**
+     * Promoted From
+     */
+    promoted_from: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Published At
+     */
+    published_at: string | null;
+    /**
+     * Published By Name
+     */
+    published_by_name: string | null;
+    /**
+     * Revision
+     */
+    revision: string;
+    /**
+     * Saved At
+     */
+    saved_at: string | null;
+    /**
+     * Stage
+     */
+    stage: 'draft' | 'published';
+    /**
+     * Tag
+     */
+    tag: string;
+    /**
+     * Updated At
+     */
+    updated_at: string | null;
+    /**
+     * Updated By Name
+     */
+    updated_by_name: string | null;
+    /**
+     * Version
+     */
+    version: number;
 };
 
 /**
@@ -14881,6 +16026,910 @@ export type SchedulerTriggerScheduleResponses = {
 
 export type SchedulerTriggerScheduleResponse = SchedulerTriggerScheduleResponses[keyof SchedulerTriggerScheduleResponses];
 
+export type StudioCodegenData = {
+    body: CodegenIn;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/codegen';
+};
+
+export type StudioCodegenErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type StudioCodegenError = StudioCodegenErrors[keyof StudioCodegenErrors];
+
+export type StudioCodegenResponses = {
+    /**
+     * Successful Response
+     */
+    200: CodegenOut;
+};
+
+export type StudioCodegenResponse = StudioCodegenResponses[keyof StudioCodegenResponses];
+
+export type StudioListComponentsData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: {
+        /**
+         * Kind
+         */
+        kind?: 'agent' | 'team' | 'workflow';
+    };
+    url: '/api/v1/instances/{instance}/studio/components';
+};
+
+export type StudioListComponentsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type StudioListComponentsError = StudioListComponentsErrors[keyof StudioListComponentsErrors];
+
+export type StudioListComponentsResponses = {
+    /**
+     * Response Studio List Components
+     *
+     * Successful Response
+     */
+    200: Array<ComponentRowOut>;
+};
+
+export type StudioListComponentsResponse = StudioListComponentsResponses[keyof StudioListComponentsResponses];
+
+export type StudioCreateComponentData = {
+    body: CreateIn;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/components';
+};
+
+export type StudioCreateComponentErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type StudioCreateComponentError = StudioCreateComponentErrors[keyof StudioCreateComponentErrors];
+
+export type StudioCreateComponentResponses = {
+    /**
+     * Successful Response
+     */
+    201: ComponentDetailOut;
+};
+
+export type StudioCreateComponentResponse = StudioCreateComponentResponses[keyof StudioCreateComponentResponses];
+
+export type StudioArchiveComponentData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Component Id
+         */
+        component_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/components/{component_id}';
+};
+
+export type StudioArchiveComponentErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type StudioArchiveComponentError = StudioArchiveComponentErrors[keyof StudioArchiveComponentErrors];
+
+export type StudioArchiveComponentResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type StudioArchiveComponentResponse = StudioArchiveComponentResponses[keyof StudioArchiveComponentResponses];
+
+export type StudioGetComponentData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Component Id
+         */
+        component_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/components/{component_id}';
+};
+
+export type StudioGetComponentErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type StudioGetComponentError = StudioGetComponentErrors[keyof StudioGetComponentErrors];
+
+export type StudioGetComponentResponses = {
+    /**
+     * Successful Response
+     */
+    200: ComponentDetailOut;
+};
+
+export type StudioGetComponentResponse = StudioGetComponentResponses[keyof StudioGetComponentResponses];
+
+export type StudioPatchComponentData = {
+    body: MetaPatchIn;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Component Id
+         */
+        component_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/components/{component_id}';
+};
+
+export type StudioPatchComponentErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type StudioPatchComponentError = StudioPatchComponentErrors[keyof StudioPatchComponentErrors];
+
+export type StudioPatchComponentResponses = {
+    /**
+     * Successful Response
+     */
+    200: ComponentDetailOut;
+};
+
+export type StudioPatchComponentResponse = StudioPatchComponentResponses[keyof StudioPatchComponentResponses];
+
+export type StudioNewDraftData = {
+    body: NewDraftIn;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Component Id
+         */
+        component_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/components/{component_id}/configs';
+};
+
+export type StudioNewDraftErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type StudioNewDraftError = StudioNewDraftErrors[keyof StudioNewDraftErrors];
+
+export type StudioNewDraftResponses = {
+    /**
+     * Successful Response
+     */
+    201: VersionOut;
+};
+
+export type StudioNewDraftResponse = StudioNewDraftResponses[keyof StudioNewDraftResponses];
+
+export type StudioDiscardDraftData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Component Id
+         */
+        component_id: string;
+        /**
+         * Version
+         */
+        version: number;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/components/{component_id}/configs/{version}';
+};
+
+export type StudioDiscardDraftErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type StudioDiscardDraftError = StudioDiscardDraftErrors[keyof StudioDiscardDraftErrors];
+
+export type StudioDiscardDraftResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type StudioDiscardDraftResponse = StudioDiscardDraftResponses[keyof StudioDiscardDraftResponses];
+
+export type StudioGetVersionData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Component Id
+         */
+        component_id: string;
+        /**
+         * Version
+         */
+        version: number;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/components/{component_id}/configs/{version}';
+};
+
+export type StudioGetVersionErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type StudioGetVersionError = StudioGetVersionErrors[keyof StudioGetVersionErrors];
+
+export type StudioGetVersionResponses = {
+    /**
+     * Successful Response
+     */
+    200: VersionOut;
+};
+
+export type StudioGetVersionResponse = StudioGetVersionResponses[keyof StudioGetVersionResponses];
+
+export type StudioSaveDraftData = {
+    body: SaveDraftIn;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Component Id
+         */
+        component_id: string;
+        /**
+         * Version
+         */
+        version: number;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/components/{component_id}/configs/{version}';
+};
+
+export type StudioSaveDraftErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type StudioSaveDraftError = StudioSaveDraftErrors[keyof StudioSaveDraftErrors];
+
+export type StudioSaveDraftResponses = {
+    /**
+     * Successful Response
+     */
+    200: VersionOut;
+};
+
+export type StudioSaveDraftResponse = StudioSaveDraftResponses[keyof StudioSaveDraftResponses];
+
+export type StudioPublishData = {
+    body: PublishIn;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Component Id
+         */
+        component_id: string;
+        /**
+         * Version
+         */
+        version: number;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/components/{component_id}/configs/{version}/publish';
+};
+
+export type StudioPublishErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type StudioPublishError = StudioPublishErrors[keyof StudioPublishErrors];
+
+export type StudioPublishResponses = {
+    /**
+     * Successful Response
+     */
+    200: PublishOut;
+};
+
+export type StudioPublishResponse = StudioPublishResponses[keyof StudioPublishResponses];
+
+export type StudioSetCurrentData = {
+    body: SetCurrentIn;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Component Id
+         */
+        component_id: string;
+        /**
+         * Version
+         */
+        version: number;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/components/{component_id}/configs/{version}/set-current';
+};
+
+export type StudioSetCurrentErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type StudioSetCurrentError = StudioSetCurrentErrors[keyof StudioSetCurrentErrors];
+
+export type StudioSetCurrentResponses = {
+    /**
+     * Successful Response
+     */
+    200: SetCurrentOut;
+};
+
+export type StudioSetCurrentResponse = StudioSetCurrentResponses[keyof StudioSetCurrentResponses];
+
+export type StudioDiffVersionsData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Component Id
+         */
+        component_id: string;
+    };
+    query: {
+        /**
+         * From
+         */
+        from: number;
+        /**
+         * To
+         */
+        to: number;
+    };
+    url: '/api/v1/instances/{instance}/studio/components/{component_id}/diff';
+};
+
+export type StudioDiffVersionsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type StudioDiffVersionsError = StudioDiffVersionsErrors[keyof StudioDiffVersionsErrors];
+
+export type StudioDiffVersionsResponses = {
+    /**
+     * Successful Response
+     */
+    200: DiffOut;
+};
+
+export type StudioDiffVersionsResponse = StudioDiffVersionsResponses[keyof StudioDiffVersionsResponses];
+
+export type StudioListPromotionsData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Component Id
+         */
+        component_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/components/{component_id}/promotions';
+};
+
+export type StudioListPromotionsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type StudioListPromotionsError = StudioListPromotionsErrors[keyof StudioListPromotionsErrors];
+
+export type StudioListPromotionsResponses = {
+    /**
+     * Response Studio List Promotions
+     *
+     * Successful Response
+     */
+    200: Array<PromotionOut>;
+};
+
+export type StudioListPromotionsResponse = StudioListPromotionsResponses[keyof StudioListPromotionsResponses];
+
+export type StudioPromoteData = {
+    body: PromoteIn;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Component Id
+         */
+        component_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/components/{component_id}/promotions';
+};
+
+export type StudioPromoteErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type StudioPromoteError = StudioPromoteErrors[keyof StudioPromoteErrors];
+
+export type StudioPromoteResponses = {
+    /**
+     * Successful Response
+     */
+    201: PromotionOut;
+};
+
+export type StudioPromoteResponse = StudioPromoteResponses[keyof StudioPromoteResponses];
+
+export type StudioPublishCheckData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Component Id
+         */
+        component_id: string;
+    };
+    query: {
+        /**
+         * Version
+         */
+        version: number;
+    };
+    url: '/api/v1/instances/{instance}/studio/components/{component_id}/publish-check';
+};
+
+export type StudioPublishCheckErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type StudioPublishCheckError = StudioPublishCheckErrors[keyof StudioPublishCheckErrors];
+
+export type StudioPublishCheckResponses = {
+    /**
+     * Successful Response
+     */
+    200: PublishCheckOut;
+};
+
+export type StudioPublishCheckResponse = StudioPublishCheckResponses[keyof StudioPublishCheckResponses];
+
+export type StudioRestoreComponentData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Component Id
+         */
+        component_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/components/{component_id}/restore';
+};
+
+export type StudioRestoreComponentErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type StudioRestoreComponentError = StudioRestoreComponentErrors[keyof StudioRestoreComponentErrors];
+
+export type StudioRestoreComponentResponses = {
+    /**
+     * Successful Response
+     */
+    200: ComponentDetailOut;
+};
+
+export type StudioRestoreComponentResponse = StudioRestoreComponentResponses[keyof StudioRestoreComponentResponses];
+
+export type StudioTestRunData = {
+    body: TestRunIn;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Component Id
+         */
+        component_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/components/{component_id}/test-runs';
+};
+
+export type StudioTestRunErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type StudioTestRunError = StudioTestRunErrors[keyof StudioTestRunErrors];
+
+export type StudioTestRunResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
+
+export type StudioApplyPromotionData = {
+    body: PromotionApplyIn;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Promotion Id
+         */
+        promotion_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/promotions/{promotion_id}/apply';
+};
+
+export type StudioApplyPromotionErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type StudioApplyPromotionError = StudioApplyPromotionErrors[keyof StudioApplyPromotionErrors];
+
+export type StudioApplyPromotionResponses = {
+    /**
+     * Successful Response
+     */
+    200: PromotionOut;
+};
+
+export type StudioApplyPromotionResponse = StudioApplyPromotionResponses[keyof StudioApplyPromotionResponses];
+
+export type StudioRegistryData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: {
+        /**
+         * Type
+         */
+        type?: string | null;
+        /**
+         * Q
+         */
+        q?: string | null;
+    };
+    url: '/api/v1/instances/{instance}/studio/registry';
+};
+
+export type StudioRegistryErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type StudioRegistryError = StudioRegistryErrors[keyof StudioRegistryErrors];
+
+export type StudioRegistryResponses = {
+    /**
+     * Successful Response
+     */
+    200: RegistryOut;
+};
+
+export type StudioRegistryResponse = StudioRegistryResponses[keyof StudioRegistryResponses];
+
+export type StudioRefreshRegistryData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/registry/refresh';
+};
+
+export type StudioRefreshRegistryErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type StudioRefreshRegistryError = StudioRefreshRegistryErrors[keyof StudioRefreshRegistryErrors];
+
+export type StudioRefreshRegistryResponses = {
+    /**
+     * Successful Response
+     */
+    200: RegistryOut;
+};
+
+export type StudioRefreshRegistryResponse = StudioRefreshRegistryResponses[keyof StudioRefreshRegistryResponses];
+
+export type StudioRegistryEntryData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Entry Type
+         */
+        entry_type: string;
+        /**
+         * Name
+         */
+        name: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/registry/{entry_type}/{name}';
+};
+
+export type StudioRegistryEntryErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type StudioRegistryEntryError = StudioRegistryEntryErrors[keyof StudioRegistryEntryErrors];
+
+export type StudioRegistryEntryResponses = {
+    /**
+     * Successful Response
+     */
+    200: RegistryEntryDetailOut;
+};
+
+export type StudioRegistryEntryResponse = StudioRegistryEntryResponses[keyof StudioRegistryEntryResponses];
+
+export type StudioValidateData = {
+    body: ValidateIn;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/validate';
+};
+
+export type StudioValidateErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type StudioValidateError = StudioValidateErrors[keyof StudioValidateErrors];
+
+export type StudioValidateResponses = {
+    /**
+     * Successful Response
+     */
+    200: ValidationOut;
+};
+
+export type StudioValidateResponse = StudioValidateResponses[keyof StudioValidateResponses];
+
 export type InstancesTestInstanceData = {
     body?: never;
     path: {
@@ -16645,6 +18694,80 @@ export type ServiceAccountsRevokeTokenResponses = {
 };
 
 export type ServiceAccountsRevokeTokenResponse = ServiceAccountsRevokeTokenResponses[keyof ServiceAccountsRevokeTokenResponses];
+
+export type StudioSchemaData = {
+    body?: never;
+    path: {
+        /**
+         * Kind
+         */
+        kind: 'agent' | 'team';
+    };
+    query?: never;
+    url: '/api/v1/studio/schema/{kind}';
+};
+
+export type StudioSchemaErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type StudioSchemaError = StudioSchemaErrors[keyof StudioSchemaErrors];
+
+export type StudioSchemaResponses = {
+    /**
+     * Response Studio Schema
+     *
+     * Successful Response
+     */
+    200: {
+        [key: string]: unknown;
+    };
+};
+
+export type StudioSchemaResponse = StudioSchemaResponses[keyof StudioSchemaResponses];
+
+export type StudioTemplatesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Kind
+         */
+        kind?: KindIn | null;
+    };
+    url: '/api/v1/studio/templates';
+};
+
+export type StudioTemplatesErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type StudioTemplatesError = StudioTemplatesErrors[keyof StudioTemplatesErrors];
+
+export type StudioTemplatesResponses = {
+    /**
+     * Response Studio Templates
+     *
+     * Successful Response
+     */
+    200: Array<TemplateOut>;
+};
+
+export type StudioTemplatesResponse = StudioTemplatesResponses[keyof StudioTemplatesResponses];
 
 export type SystemListModulesData = {
     body?: never;

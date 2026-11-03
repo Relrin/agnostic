@@ -1,0 +1,59 @@
+{
+  "add_search_knowledge_instructions": true,
+  "description": "Handles billing questions and refunds (refunds need approval).",
+  "id": "billing-agent",
+  "instructions": "Resolve billing questions. Refunds always go through refund_customer, which a human approves.",
+  "markdown": true,
+  "model": {
+    "id": "agnostic-mock",
+    "name": "MockModel",
+    "provider": "Agnostic"
+  },
+  "name": "billing-agent",
+  "num_history_runs": 3,
+  "store_events": true,
+  "tools": [
+    {
+      "description": "Look up an order's status.",
+      "name": "lookup_order",
+      "parameters": {
+        "additionalProperties": false,
+        "properties": {
+          "order_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "order_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "approval_type": "required",
+      "description": "Refund a customer. Blocks until a human approves.",
+      "name": "refund_customer",
+      "parameters": {
+        "additionalProperties": false,
+        "properties": {
+          "amount": {
+            "type": "number"
+          },
+          "customer_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "customer_id",
+          "amount",
+          "reason"
+        ],
+        "type": "object"
+      },
+      "requires_confirmation": true
+    }
+  ]
+}

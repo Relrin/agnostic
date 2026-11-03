@@ -6,8 +6,12 @@
 @import "./tokens.css";
 
 @source "../";
-/* Feature modules live outside the app's Vite root, so Tailwind doesn't find their classes on its own. */
+/* Feature modules and the packages that render UI live outside the app's Vite root, so Tailwind doesn't find their
+   classes on its own. */
 @source "../../../../modules";
+@source "../../../core/src";
+@source "../../../editor/src";
+@source "../../../studio/src";
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 

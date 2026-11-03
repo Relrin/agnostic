@@ -10,6 +10,8 @@ export default defineConfig({
     environment: "jsdom",
     include: ["{apps,packages,modules}/*/src/**/*.test.{ts,tsx}"],
     setupFiles: ["./vitest.setup.ts"],
+    // Page tests that click through whole flows take 2–3 s alone and about twice that with every file in parallel.
+    testTimeout: 15_000,
     css: false,
     coverage: {
       provider: "v8",

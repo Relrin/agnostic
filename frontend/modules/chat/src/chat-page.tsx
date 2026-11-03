@@ -1,5 +1,6 @@
 import { describeError } from "@agnostic/api";
 import {
+  RunView,
   SESSION_TYPE,
   agentosKeys,
   dayGroup,
@@ -47,7 +48,6 @@ import { useNavigate, useParams, useSearch } from "@tanstack/react-router";
 import { PanelRight, Plus } from "lucide-react";
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 
-import { RunView } from "./run-view";
 import { SessionRail } from "./session-rail";
 
 const FAMILIES: readonly { value: RunFamily; label: string; kind: "agent" | "team" | "workflow" }[] = [

@@ -33,9 +33,27 @@ __metadata:
     "@agnostic/ui": "workspace:*"
     "@microsoft/fetch-event-source": "npm:2.0.1"
     "@tanstack/react-query": "npm:5.105.0"
+    "@tanstack/react-router": "npm:1.170.46"
     lucide-react: "npm:1.65.0"
     react: "npm:19.3.1"
     zustand: "npm:5.0.15"
+  peerDependencies:
+    react: 19.3.1
+  languageName: unknown
+  linkType: soft
+
+"@agnostic/editor@workspace:*, @agnostic/editor@workspace:packages/editor":
+  version: 0.0.0-use.local
+  resolution: "@agnostic/editor@workspace:packages/editor"
+  dependencies:
+    "@agnostic/ui": "workspace:*"
+    "@codemirror/lang-json": "npm:6.0.2"
+    "@codemirror/lang-python": "npm:6.2.1"
+    "@codemirror/language": "npm:6.13.1"
+    "@codemirror/state": "npm:6.7.6"
+    "@codemirror/view": "npm:6.43.15"
+    "@lezer/highlight": "npm:1.2.5"
+    react: "npm:19.3.1"
   peerDependencies:
     react: 19.3.1
   languageName: unknown
@@ -381,6 +399,26 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@agnostic/module-registry@workspace:*, @agnostic/module-registry@workspace:modules/registry":
+  version: 0.0.0-use.local
+  resolution: "@agnostic/module-registry@workspace:modules/registry"
+  dependencies:
+    "@agnostic/api": "workspace:*"
+    "@agnostic/core": "workspace:*"
+    "@agnostic/testing": "workspace:*"
+    "@agnostic/ui": "workspace:*"
+    "@tanstack/react-query": "npm:5.105.0"
+    "@tanstack/react-router": "npm:1.170.46"
+    "@testing-library/jest-dom": "npm:7.0.1"
+    lucide-react: "npm:1.65.0"
+    msw: "npm:3.0.3"
+    react: "npm:19.3.1"
+    react-dom: "npm:19.3.1"
+  peerDependencies:
+    react: 19.3.1
+  languageName: unknown
+  linkType: soft
+
 "@agnostic/module-scheduler@workspace:*, @agnostic/module-scheduler@workspace:modules/scheduler":
   version: 0.0.0-use.local
   resolution: "@agnostic/module-scheduler@workspace:modules/scheduler"
@@ -461,12 +499,96 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@agnostic/module-studio-agents@workspace:*, @agnostic/module-studio-agents@workspace:modules/studio-agents":
+  version: 0.0.0-use.local
+  resolution: "@agnostic/module-studio-agents@workspace:modules/studio-agents"
+  dependencies:
+    "@agnostic/api": "workspace:*"
+    "@agnostic/core": "workspace:*"
+    "@agnostic/studio": "workspace:*"
+    "@agnostic/testing": "workspace:*"
+    "@agnostic/ui": "workspace:*"
+    "@tanstack/react-query": "npm:5.105.0"
+    "@tanstack/react-router": "npm:1.170.46"
+    "@testing-library/jest-dom": "npm:7.0.1"
+    lucide-react: "npm:1.65.0"
+    msw: "npm:3.0.3"
+    react: "npm:19.3.1"
+    react-dom: "npm:19.3.1"
+  peerDependencies:
+    react: 19.3.1
+  languageName: unknown
+  linkType: soft
+
+"@agnostic/module-studio-teams@workspace:*, @agnostic/module-studio-teams@workspace:modules/studio-teams":
+  version: 0.0.0-use.local
+  resolution: "@agnostic/module-studio-teams@workspace:modules/studio-teams"
+  dependencies:
+    "@agnostic/api": "workspace:*"
+    "@agnostic/core": "workspace:*"
+    "@agnostic/studio": "workspace:*"
+    "@agnostic/testing": "workspace:*"
+    "@agnostic/ui": "workspace:*"
+    "@tanstack/react-query": "npm:5.105.0"
+    "@tanstack/react-router": "npm:1.170.46"
+    "@testing-library/jest-dom": "npm:7.0.1"
+    lucide-react: "npm:1.65.0"
+    msw: "npm:3.0.3"
+    react: "npm:19.3.1"
+    react-dom: "npm:19.3.1"
+  peerDependencies:
+    react: 19.3.1
+  languageName: unknown
+  linkType: soft
+
+"@agnostic/module-studio-workflows@workspace:*, @agnostic/module-studio-workflows@workspace:modules/studio-workflows":
+  version: 0.0.0-use.local
+  resolution: "@agnostic/module-studio-workflows@workspace:modules/studio-workflows"
+  dependencies:
+    "@agnostic/api": "workspace:*"
+    "@agnostic/core": "workspace:*"
+    "@agnostic/studio": "workspace:*"
+    "@agnostic/testing": "workspace:*"
+    "@agnostic/ui": "workspace:*"
+    "@tanstack/react-query": "npm:5.105.0"
+    "@tanstack/react-router": "npm:1.170.46"
+    "@testing-library/jest-dom": "npm:7.0.1"
+    lucide-react: "npm:1.65.0"
+    msw: "npm:3.0.3"
+    react: "npm:19.3.1"
+    react-dom: "npm:19.3.1"
+  peerDependencies:
+    react: 19.3.1
+  languageName: unknown
+  linkType: soft
+
 "@agnostic/module-traces@workspace:*, @agnostic/module-traces@workspace:modules/traces":
   version: 0.0.0-use.local
   resolution: "@agnostic/module-traces@workspace:modules/traces"
   dependencies:
     "@agnostic/api": "workspace:*"
     "@agnostic/core": "workspace:*"
+    "@agnostic/testing": "workspace:*"
+    "@agnostic/ui": "workspace:*"
+    "@tanstack/react-query": "npm:5.105.0"
+    "@tanstack/react-router": "npm:1.170.46"
+    "@testing-library/jest-dom": "npm:7.0.1"
+    lucide-react: "npm:1.65.0"
+    msw: "npm:3.0.3"
+    react: "npm:19.3.1"
+    react-dom: "npm:19.3.1"
+  peerDependencies:
+    react: 19.3.1
+  languageName: unknown
+  linkType: soft
+
+"@agnostic/studio@workspace:*, @agnostic/studio@workspace:packages/studio":
+  version: 0.0.0-use.local
+  resolution: "@agnostic/studio@workspace:packages/studio"
+  dependencies:
+    "@agnostic/api": "workspace:*"
+    "@agnostic/core": "workspace:*"
+    "@agnostic/editor": "workspace:*"
     "@agnostic/testing": "workspace:*"
     "@agnostic/ui": "workspace:*"
     "@tanstack/react-query": "npm:5.105.0"
@@ -503,6 +625,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@agnostic/ui@workspace:packages/ui"
   dependencies:
+    "@dnd-kit/core": "npm:6.3.1"
+    "@dnd-kit/sortable": "npm:10.0.0"
     "@fontsource-variable/geist": "npm:5.3.0"
     "@fontsource-variable/geist-mono": "npm:5.3.0"
     "@storybook/addon-a11y": "npm:10.6.5"
@@ -560,10 +684,14 @@ __metadata:
     "@agnostic/module-metrics": "workspace:*"
     "@agnostic/module-org-settings": "workspace:*"
     "@agnostic/module-queue": "workspace:*"
+    "@agnostic/module-registry": "workspace:*"
     "@agnostic/module-scheduler": "workspace:*"
     "@agnostic/module-service-accounts": "workspace:*"
     "@agnostic/module-sessions": "workspace:*"
     "@agnostic/module-settings": "workspace:*"
+    "@agnostic/module-studio-agents": "workspace:*"
+    "@agnostic/module-studio-teams": "workspace:*"
+    "@agnostic/module-studio-workflows": "workspace:*"
     "@agnostic/module-traces": "workspace:*"
     "@agnostic/testing": "workspace:*"
     "@agnostic/ui": "workspace:*"
@@ -812,6 +940,84 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@codemirror/autocomplete@npm:^6.3.2":
+  version: 6.20.4
+  resolution: "@codemirror/autocomplete@npm:6.20.4"
+  dependencies:
+    "@codemirror/language": "npm:^6.0.0"
+    "@codemirror/state": "npm:^6.0.0"
+    "@codemirror/view": "npm:^6.17.0"
+    "@lezer/common": "npm:^1.0.0"
+  checksum: 10c0/f823a470dd0eccecc83e6ec527017c8fa70f2c4e98e4d4a1ed1d93b671f7271e590fb6899cd22a6608ffb1fb44b09613685969c1a43928cb80639640e4055da1
+  languageName: node
+  linkType: hard
+
+"@codemirror/lang-json@npm:6.0.2":
+  version: 6.0.2
+  resolution: "@codemirror/lang-json@npm:6.0.2"
+  dependencies:
+    "@codemirror/language": "npm:^6.0.0"
+    "@lezer/json": "npm:^1.0.0"
+  checksum: 10c0/4a36022226557d0571c143f907638eb2d46c0f7cf96c6d9a86dac397a789efa2b387e3dd3df94bac21e27692892443b24f8129c044c9012df66e68f5080745b0
+  languageName: node
+  linkType: hard
+
+"@codemirror/lang-python@npm:6.2.1":
+  version: 6.2.1
+  resolution: "@codemirror/lang-python@npm:6.2.1"
+  dependencies:
+    "@codemirror/autocomplete": "npm:^6.3.2"
+    "@codemirror/language": "npm:^6.8.0"
+    "@codemirror/state": "npm:^6.0.0"
+    "@lezer/common": "npm:^1.2.1"
+    "@lezer/python": "npm:^1.1.4"
+  checksum: 10c0/6e92ac7e5e6e3162cfbbef40be6314278b9b9ff6f65cfc207a75ec95d84a404b9930913240e1a15e3d18c538f6b243f6a0bba4c3e37fa4e318939dfebc51ebd0
+  languageName: node
+  linkType: hard
+
+"@codemirror/language@npm:6.13.1, @codemirror/language@npm:^6.0.0, @codemirror/language@npm:^6.8.0":
+  version: 6.13.1
+  resolution: "@codemirror/language@npm:6.13.1"
+  dependencies:
+    "@codemirror/state": "npm:^6.0.0"
+    "@codemirror/streamparser": "npm:^6.0.0"
+    "@codemirror/view": "npm:^6.23.0"
+    "@lezer/common": "npm:^1.5.0"
+    "@lezer/highlight": "npm:^1.0.0"
+    "@lezer/lr": "npm:^1.0.0"
+    style-mod: "npm:^4.0.0"
+  checksum: 10c0/2ff0cb0d1ad7196138093f2bf8642090f5420ce090c20df5bf4888b4a1d7ae3545b1ea7a0a9b7aa0c6a5a2b5c19326cca36812038beec0a5874e01de03849b44
+  languageName: node
+  linkType: hard
+
+"@codemirror/state@npm:6.7.6, @codemirror/state@npm:^6.0.0, @codemirror/state@npm:^6.7.0":
+  version: 6.7.6
+  resolution: "@codemirror/state@npm:6.7.6"
+  dependencies:
+    "@marijn/find-cluster-break": "npm:^1.0.0"
+  checksum: 10c0/1ea16c30571210d40f6161a3a43b221fa1522fdcfef4836f6063dcd3d04fd2d5f4aefbc5cfdcd30f7d9df96985967cfb12cd876e4abb1cd41bff41ec8f3d328e
+  languageName: node
+  linkType: hard
+
+"@codemirror/streamparser@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "@codemirror/streamparser@npm:6.0.0"
+  checksum: 10c0/6bff019d5ef905e1aac77a8a10170c3910fb55a0ae610259e0295924399fad4a62f96f27848d80a7ab1ef237256a6d2a1012278693aec5a9937b9c9696b05815
+  languageName: node
+  linkType: hard
+
+"@codemirror/view@npm:6.43.15, @codemirror/view@npm:^6.17.0, @codemirror/view@npm:^6.23.0":
+  version: 6.43.15
+  resolution: "@codemirror/view@npm:6.43.15"
+  dependencies:
+    "@codemirror/state": "npm:^6.7.0"
+    crelt: "npm:^1.0.6"
+    style-mod: "npm:^4.1.0"
+    w3c-keyname: "npm:^2.2.4"
+  checksum: 10c0/314cb8a46634b522c706757fbb0b673d468eecf5ab5fe9d5c7e586a2a20c6deb2a2f61c0813cf9153dc3cc4ff7607a399c22fef6162d9656e674f5f18a127065
+  languageName: node
+  linkType: hard
+
 "@csstools/color-helpers@npm:^6.1.2":
   version: 6.1.2
   resolution: "@csstools/color-helpers@npm:6.1.2"
@@ -867,6 +1073,55 @@ __metadata:
   version: 4.0.2
   resolution: "@csstools/css-tokenizer@npm:4.0.2"
   checksum: 10c0/748b42450064cca6a54d2bb8a719cb765c6433b8988ed8855f39c9814b8ef30c4daab235ffee9dacb0388916d6e250ec6bee454e8353d06161228e129e4272ae
+  languageName: node
+  linkType: hard
+
+"@dnd-kit/accessibility@npm:^3.1.1":
+  version: 3.1.1
+  resolution: "@dnd-kit/accessibility@npm:3.1.1"
+  dependencies:
+    tslib: "npm:^2.0.0"
+  peerDependencies:
+    react: ">=16.8.0"
+  checksum: 10c0/be0bf41716dc58f9386bc36906ec1ce72b7b42b6d1d0e631d347afe9bd8714a829bd6f58a346dd089b1519e93918ae2f94497411a61a4f5e4d9247c6cfd1fef8
+  languageName: node
+  linkType: hard
+
+"@dnd-kit/core@npm:6.3.1":
+  version: 6.3.1
+  resolution: "@dnd-kit/core@npm:6.3.1"
+  dependencies:
+    "@dnd-kit/accessibility": "npm:^3.1.1"
+    "@dnd-kit/utilities": "npm:^3.2.2"
+    tslib: "npm:^2.0.0"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+  checksum: 10c0/196db95d81096d9dc248983533eab91ba83591770fa5c894b1ac776f42af0d99522b3fd5bb3923411470e4733fcfa103e6ee17adc17b9b7eb54c7fbec5ff7c52
+  languageName: node
+  linkType: hard
+
+"@dnd-kit/sortable@npm:10.0.0":
+  version: 10.0.0
+  resolution: "@dnd-kit/sortable@npm:10.0.0"
+  dependencies:
+    "@dnd-kit/utilities": "npm:^3.2.2"
+    tslib: "npm:^2.0.0"
+  peerDependencies:
+    "@dnd-kit/core": ^6.3.0
+    react: ">=16.8.0"
+  checksum: 10c0/37ee48bc6789fb512dc0e4c374a96d19abe5b2b76dc34856a5883aaa96c3297891b94cc77bbc409e074dcce70967ebcb9feb40cd9abadb8716fc280b4c7f99af
+  languageName: node
+  linkType: hard
+
+"@dnd-kit/utilities@npm:^3.2.2":
+  version: 3.2.2
+  resolution: "@dnd-kit/utilities@npm:3.2.2"
+  dependencies:
+    tslib: "npm:^2.0.0"
+  peerDependencies:
+    react: ">=16.8.0"
+  checksum: 10c0/9aa90526f3e3fd567b5acc1b625a63177b9e8d00e7e50b2bd0e08fa2bf4dba7e19529777e001fdb8f89a7ce69f30b190c8364d390212634e0afdfa8c395e85a0
   languageName: node
   linkType: hard
 
@@ -1550,10 +1805,64 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@lezer/common@npm:^1.0.0, @lezer/common@npm:^1.2.0, @lezer/common@npm:^1.2.1, @lezer/common@npm:^1.3.0, @lezer/common@npm:^1.5.0":
+  version: 1.5.5
+  resolution: "@lezer/common@npm:1.5.5"
+  checksum: 10c0/d989bd7453d1fd90f2c0baf33fcf6e5f2082fcf3f1faf8b271ae51bef1ad388e2e53f5d91c16e841b70fe4d2ed7ed08adb3fb23cb03fee6455dad3c72f6ff998
+  languageName: node
+  linkType: hard
+
+"@lezer/highlight@npm:1.2.5, @lezer/highlight@npm:^1.0.0":
+  version: 1.2.5
+  resolution: "@lezer/highlight@npm:1.2.5"
+  dependencies:
+    "@lezer/common": "npm:^1.3.0"
+  checksum: 10c0/cb40f6efd8ba947b4a391368114ae394e36cbb2b7db07a7629278f9feed953d909868296f4acb936c7b70e4e7032458c5fcd6a2e836012ae6c02790b2de574fa
+  languageName: node
+  linkType: hard
+
+"@lezer/json@npm:^1.0.0":
+  version: 1.0.3
+  resolution: "@lezer/json@npm:1.0.3"
+  dependencies:
+    "@lezer/common": "npm:^1.2.0"
+    "@lezer/highlight": "npm:^1.0.0"
+    "@lezer/lr": "npm:^1.0.0"
+  checksum: 10c0/e91c957cc0825e927b55fbcd233d7ee0b39f9c2a89d9475489f394b7eba2b59e5f480d157a12d5cd6ae6f14bc99f9ccd8e8113baad498199ef1b13c49105f546
+  languageName: node
+  linkType: hard
+
+"@lezer/lr@npm:^1.0.0":
+  version: 1.4.12
+  resolution: "@lezer/lr@npm:1.4.12"
+  dependencies:
+    "@lezer/common": "npm:^1.0.0"
+  checksum: 10c0/3912ecd5f9ed916a13e929ab5f7d2cfc26d6d389b0b0d0673cbfb4d957042069f7c7182c991ebcb2019c4bba289102f81662200277b6c365911e62969fa67d74
+  languageName: node
+  linkType: hard
+
+"@lezer/python@npm:^1.1.4":
+  version: 1.1.19
+  resolution: "@lezer/python@npm:1.1.19"
+  dependencies:
+    "@lezer/common": "npm:^1.2.0"
+    "@lezer/highlight": "npm:^1.0.0"
+    "@lezer/lr": "npm:^1.0.0"
+  checksum: 10c0/e1e337d78b161ae0754a8969f956273fbd3e3a0b8d00005dab209b585a8ccb4d8fb132960cee7571c159a75cfa9bf2609894b9cc1eec9c059593495da4d4beb0
+  languageName: node
+  linkType: hard
+
 "@lukeed/ms@npm:2.0.2":
   version: 2.0.2
   resolution: "@lukeed/ms@npm:2.0.2"
   checksum: 10c0/843b922717313bcde4943f478145d8bc13115b9b91d83bbaed53739b5644122984412310aed574792f4e6b492f2cbda178175f601856d310f67e14834c3f17a0
+  languageName: node
+  linkType: hard
+
+"@marijn/find-cluster-break@npm:^1.0.0":
+  version: 1.0.4
+  resolution: "@marijn/find-cluster-break@npm:1.0.4"
+  checksum: 10c0/6b3dc07fbccacad4cb58029bae59a106dd51be91a15b2810a62e4bf7adc633091eb0a23619f4da7f83f8b52c739b6f5674e8204883d1b34798df9bbf8f472df6
   languageName: node
   linkType: hard
 
@@ -5180,6 +5489,13 @@ __metadata:
   version: 2.0.1
   resolution: "cookie@npm:2.0.1"
   checksum: 10c0/dcf3bd6ec9d0f4f32be7575e23242866cb53be55fc3d4cf36215638596661cec1327a3b4ca286ba15eba8f2abd443e422b8c5f708af4ea9f75b4d3dedc67ee4c
+  languageName: node
+  linkType: hard
+
+"crelt@npm:^1.0.6":
+  version: 1.0.7
+  resolution: "crelt@npm:1.0.7"
+  checksum: 10c0/5fdb5fcfa492a176c4cdaac611c131a183a91f2e6e3ea2ba2111b6891ca75bb7ba1ef81d67dab34387f5553c415d8a3d776690d3cf3ee68fca2dd3bfbed382e9
   languageName: node
   linkType: hard
 
@@ -9772,6 +10088,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"style-mod@npm:^4.0.0, style-mod@npm:^4.1.0":
+  version: 4.1.4
+  resolution: "style-mod@npm:4.1.4"
+  checksum: 10c0/e588c4f10b6c226482ac6d508f074af645cc1f22e6573f8d8bdc0a98412b4c6ea474ecd88625d966c7f1a929ae861d3db0d7b2f8fa5b4652ef2e877211c4391d
+  languageName: node
+  linkType: hard
+
 "style-to-object@npm:^2.0.0":
   version: 2.0.2
   resolution: "style-to-object@npm:2.0.2"
@@ -10409,6 +10732,13 @@ __metadata:
   bin:
     vitest: ./vitest.mjs
   checksum: 10c0/b6e38164490c4ca0c2bbc4e74ec8f9052a344caab3f3bf0e8c4485b6493af0f789d7aafd41f4128f66d576f50d3c860f0674322add2b4d348b6ea250ec8c77c8
+  languageName: node
+  linkType: hard
+
+"w3c-keyname@npm:^2.2.4":
+  version: 2.2.8
+  resolution: "w3c-keyname@npm:2.2.8"
+  checksum: 10c0/37cf335c90efff31672ebb345577d681e2177f7ff9006a9ad47c68c5a9d265ba4a7b39d6c2599ceea639ca9315584ce4bd9c9fbf7a7217bfb7a599e71943c4c4
   languageName: node
   linkType: hard
 

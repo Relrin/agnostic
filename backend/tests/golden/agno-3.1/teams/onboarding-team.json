@@ -1,0 +1,24 @@
+{
+  "description": "Plans a new customer's onboarding as a task list: help-center research, then a welcome brief.",
+  "id": "onboarding-team",
+  "instructions": "Create a task for kb-researcher per product area, then one for summarizer to write the brief.",
+  "members": [
+    {
+      "agent_id": "kb-researcher",
+      "type": "agent"
+    },
+    {
+      "agent_id": "summarizer",
+      "type": "agent"
+    }
+  ],
+  "mode": "tasks",
+  "model": {
+    "id": "agnostic-mock",
+    "name": "MockModel",
+    "provider": "Agnostic"
+  },
+  "name": "onboarding-team",
+  "num_history_runs": 3,
+  "store_events": true
+}

@@ -291,7 +291,7 @@ class Gateway:
         if response.status_code in {401, 503}:
             await self._raise_upstream_problem(instance, response)
         if request.method not in {"GET", "HEAD", "OPTIONS"} and response.status_code < 400:  # noqa: PLR2004
-            _ = await self._store.incr(f"gw:gen:{instance.id}", ttl=86400)
+            await self.invalidate(instance.id)
         await self._maybe_audit(principal, instance, policy, path, required, response.status_code)
         return await self._respond(instance, response, cache_key, policy)
 
@@ -383,6 +383,10 @@ class Gateway:
         if ttl > 0:
             await self._store.set(key, minted.token.encode(), ttl=ttl)
         return {"Authorization": f"Bearer {minted.token}"}, scope_key
+
+    async def invalidate(self, instance_id: str) -> None:
+        """Drop every cached response of the instance (cache keys carry this generation)."""
+        _ = await self._store.incr(f"gw:gen:{instance_id}", ttl=86400)
 
     async def _cache_key(
         self, instance: Instance, policy: RoutePolicy, request: ProxyRequest, scope_key: str

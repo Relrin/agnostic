@@ -8,6 +8,7 @@ members = [
     "agnostic-agentos-client",
     "agnostic-approvals",
     "agnostic-audit",
+    "agnostic-codegen",
     "agnostic-context",
     "agnostic-directory",
     "agnostic-evals",
@@ -24,6 +25,8 @@ members = [
     "agnostic-server",
     "agnostic-service-accounts",
     "agnostic-settings",
+    "agnostic-spec",
+    "agnostic-studio",
     "agnostic-workspace",
 ]
 
@@ -159,6 +162,21 @@ requires-dist = [
     { name = "pydantic", specifier = "==2.14.2" },
     { name = "pydantic-settings", specifier = "==2.16.2" },
     { name = "sqlalchemy", extras = ["asyncio"], specifier = "==2.1.6" },
+]
+
+[[package]]
+name = "agnostic-codegen"
+version = "0.1.0"
+source = { editable = "packages/agnostic-codegen" }
+dependencies = [
+    { name = "agnostic-spec" },
+    { name = "ruff" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "agnostic-spec", editable = "packages/agnostic-spec" },
+    { name = "ruff", specifier = "==0.17.3" },
 ]
 
 [[package]]
@@ -748,6 +766,60 @@ requires-dist = [
 ]
 
 [[package]]
+name = "agnostic-spec"
+version = "0.1.0"
+source = { editable = "packages/agnostic-spec" }
+dependencies = [
+    { name = "pydantic" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "pydantic", specifier = "==2.14.2" }]
+
+[[package]]
+name = "agnostic-studio"
+version = "0.1.0"
+source = { editable = "modules/studio" }
+dependencies = [
+    { name = "agnostic-agentos-client" },
+    { name = "agnostic-audit" },
+    { name = "agnostic-codegen" },
+    { name = "agnostic-evals" },
+    { name = "agnostic-gateway" },
+    { name = "agnostic-instances" },
+    { name = "agnostic-kernel" },
+    { name = "agnostic-spec" },
+    { name = "alembic" },
+    { name = "dishka" },
+    { name = "fastapi" },
+    { name = "orjson" },
+    { name = "procrastinate" },
+    { name = "pydantic" },
+    { name = "pydantic-settings" },
+    { name = "sqlalchemy", extra = ["asyncio"] },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "agnostic-agentos-client", editable = "packages/agnostic-agentos-client" },
+    { name = "agnostic-audit", editable = "modules/audit" },
+    { name = "agnostic-codegen", editable = "packages/agnostic-codegen" },
+    { name = "agnostic-evals", editable = "modules/evals" },
+    { name = "agnostic-gateway", editable = "modules/gateway" },
+    { name = "agnostic-instances", editable = "modules/instances" },
+    { name = "agnostic-kernel", editable = "packages/agnostic-kernel" },
+    { name = "agnostic-spec", editable = "packages/agnostic-spec" },
+    { name = "alembic", specifier = "==1.20.1" },
+    { name = "dishka", specifier = "==1.10.1" },
+    { name = "fastapi", specifier = "==0.162.0" },
+    { name = "orjson", specifier = "==3.13.0" },
+    { name = "procrastinate", specifier = "==3.10.0" },
+    { name = "pydantic", specifier = "==2.14.2" },
+    { name = "pydantic-settings", specifier = "==2.16.2" },
+    { name = "sqlalchemy", extras = ["asyncio"], specifier = "==2.1.6" },
+]
+
+[[package]]
 name = "agnostic-workspace"
 version = "0.0.0"
 source = { virtual = "." }
@@ -756,6 +828,7 @@ dependencies = [
     { name = "agnostic-agentos-client" },
     { name = "agnostic-approvals" },
     { name = "agnostic-audit" },
+    { name = "agnostic-codegen" },
     { name = "agnostic-context" },
     { name = "agnostic-directory" },
     { name = "agnostic-evals" },
@@ -772,6 +845,8 @@ dependencies = [
     { name = "agnostic-server" },
     { name = "agnostic-service-accounts" },
     { name = "agnostic-settings" },
+    { name = "agnostic-spec" },
+    { name = "agnostic-studio" },
 ]
 
 [package.dev-dependencies]
@@ -801,6 +876,7 @@ requires-dist = [
     { name = "agnostic-agentos-client", editable = "packages/agnostic-agentos-client" },
     { name = "agnostic-approvals", editable = "modules/approvals" },
     { name = "agnostic-audit", editable = "modules/audit" },
+    { name = "agnostic-codegen", editable = "packages/agnostic-codegen" },
     { name = "agnostic-context", editable = "modules/context" },
     { name = "agnostic-directory", editable = "modules/directory" },
     { name = "agnostic-evals", editable = "modules/evals" },
@@ -817,6 +893,8 @@ requires-dist = [
     { name = "agnostic-server", editable = "apps/agnostic-server" },
     { name = "agnostic-service-accounts", editable = "modules/service_accounts" },
     { name = "agnostic-settings", editable = "modules/settings" },
+    { name = "agnostic-spec", editable = "packages/agnostic-spec" },
+    { name = "agnostic-studio", editable = "modules/studio" },
 ]
 
 [package.metadata.requires-dev]

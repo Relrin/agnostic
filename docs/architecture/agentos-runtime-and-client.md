@@ -14,11 +14,11 @@ It follows the recommended production recipe:
 | `tracing` | on |
 | `scheduler` | on, with a shared `internal_service_token` |
 | `queue` | `QueueConfig(durable=True, redis=…)` |
-| `registry` | `app/registry.py`: tools, the mock model, the database |
+| `registry` | `app/registry.py`: tools, mock model presets (ids `mock-precise`, `mock-creative`), the `TriageResult` and `RefundRequest` schemas (`app/schemas.py`), the `support-memory` memory manager, the database |
 | `user_isolation` | on for `dev-prod`; elsewhere `RUNTIME_USER_ISOLATION` (default off) |
 | `authorization` | `Authorization(verify_audience=True, audience=<runtime id>, issuer=RUNTIME_JWT_ISSUER)` when `JWT_VERIFICATION_KEY` (or `JWT_JWKS_FILE`) is set; otherwise `auth_mode=none` for development |
 | `telemetry` | off |
-| bridge | `agnostic-bridge` installed (`app = install(agent_os)`): `GET /agnostic/v1/capabilities` |
+| bridge | `agnostic-bridge` installed (`app = install(agent_os)`): every route in [the bridge table](#agnostic-bridge) |
 
 Sample components (one file each, matching the Sources path mapping):
 
@@ -51,12 +51,31 @@ Run two instances with `just runtimes` ([guide](../how-to/reference-runtimes.md)
 - protected by AgentOS's own auth layer: their scopes are added to `app.state.scope_mappings`, the route → scopes
   table AgentOS's auth middleware reads, so JWTs, service-account tokens and `agent_os:admin` behave as on built-in
   routes;
-- read-only: the bridge stores nothing and never calls a model.
+- stateless: the bridge keeps nothing of its own; only the eval route calls models, and it stores its result in
+  the AgentOS db.
 
-v0.1 serves `GET /agnostic/v1/capabilities` (`config:read`): bridge, agno and Python versions, `os_id`, a replica
-id (`AGNOSTIC_BRIDGE_REPLICA_ID`, else `<hostname>:<pid>`) and the features the AgentOS object runs. The control
-plane's capability probe marks the bridge available on a `2xx`. `app.dump_openapi` leaves the bridge's paths out of
-the pinned AgentOS OpenAPI snapshot.
+| Route | Scopes | What it does |
+|---|---|---|
+| `GET /agnostic/v1/capabilities` | `config:read` | Bridge, agno and Python versions, `os_id`, a replica id (`AGNOSTIC_BRIDGE_REPLICA_ID`, else `<hostname>:<pid>`), the features the AgentOS object runs and the bridge's endpoints |
+| `POST /agnostic/v1/evals/run` | `evals:write` | `POST /eval-runs` against a chosen config version of an agent or team, drafts included |
+| `GET /agnostic/v1/files/provenance` | `filesystem:read`, `traces:read` | File-tool calls on one workspace path, from the stored traces |
+| `GET /agnostic/v1/workers` | `agent_os:admin` | The answering replica's queue and scheduler |
+| `GET /agnostic/v1/events` | `approvals:read`, `schedules:read` | New approvals and failed schedule runs since a point in time |
+| `POST /agnostic/v1/components/validate` | `components:read` | `{kind, config}` → `{valid, errors: [{path, message}]}`: a strict `from_dict` against the registry and db |
+| `POST /agnostic/v1/components/normalize` | `components:read` | `{kind, config}` → `{config}`: a lenient `from_dict`, then `to_dict()`; 422 with `{valid, errors}` when it can't be built |
+| `GET /agnostic/v1/introspect/components` | `components:read` | Code-defined agents, teams and workflows: `[{id, kind, name, module, file, line, config}]` |
+| `GET /agnostic/v1/registry/{type}/{name}/source` | `registry:read` | `{type, name, module, file, line, declared, requires_confirmation, approval_type}` for one registry entry; 404 when it isn't registered |
+
+The component routes need a synchronous db (503 otherwise) and store nothing. Source locations are best-effort and
+null when `inspect` can't find them. The control plane's capability probe marks the bridge available on a `2xx` from
+`/capabilities`. `app.dump_openapi` leaves the bridge's paths out of the pinned AgentOS OpenAPI snapshot.
+
+### Golden configs
+
+`app/dump_golden.py` (`just golden`) writes `to_dict()` of every runtime agent and team, plus two fixtures that set
+every field Studio edits, to `backend/tests/golden/agno-3.1/{agents,teams}/<id>.json`. `contract.yml` regenerates
+them and fails when they differ from the committed files, so a change in how agno serializes a config is reviewed
+with the agno upgrade.
 
 ## `agnostic-agentos-client`
 

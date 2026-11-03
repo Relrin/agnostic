@@ -63,6 +63,14 @@ ElevatedResponse = GatewayResponse
 """The response of one elevated request (same shape as a typed call made as the person)."""
 
 
+@dataclass(frozen=True, slots=True)
+class ElevatedStream:
+    status: int
+    content_type: str
+    body: AsyncIterator[bytes]
+    """Relays the upstream body chunk by chunk and closes the upstream response when drained or closed."""
+
+
 class Elevation:
     def __init__(
         self,
@@ -105,6 +113,68 @@ class Elevation:
         Statuses are returned as they are; only transport failures and a rejected token raise. Never for service
         accounts: scoped service accounts can't resolve approvals, whatever they hold.
         """
+        response = await self._open(
+            principal,
+            instance,
+            method,
+            path,
+            justification=justification,
+            action_label=action_label,
+            params=params,
+            json=json,
+            form=form,
+        )
+        try:
+            raw = await response.aread()
+        finally:
+            await response.aclose()
+        return ElevatedResponse(response.status_code, decode_body(raw))
+
+    async def stream(
+        self,
+        principal: Principal,
+        instance: Instance,
+        method: str,
+        path: str,
+        *,
+        justification: str,
+        action_label: str,
+        params: Mapping[str, str] | None = None,
+        form: Mapping[str, str] | None = None,
+        accept: str = "text/event-stream",
+    ) -> ElevatedStream:
+        """Like :meth:`send`, but the body is relayed as it arrives (a streamed run). The caller drains or closes it."""
+        response = await self._open(
+            principal,
+            instance,
+            method,
+            path,
+            justification=justification,
+            action_label=action_label,
+            params=params,
+            form=form,
+            accept=accept,
+        )
+        return ElevatedStream(
+            status=response.status_code,
+            content_type=response.headers.get("content-type", ""),
+            body=_relay(response),
+        )
+
+    async def _open(
+        self,
+        principal: Principal,
+        instance: Instance,
+        method: str,
+        path: str,
+        *,
+        justification: str,
+        action_label: str,
+        params: Mapping[str, str] | None = None,
+        json: Any = None,  # noqa: ANN401
+        form: Mapping[str, str] | None = None,
+        accept: str | None = None,
+    ) -> httpx.Response:
         if principal.kind == "service_account":
             await deny_service_account(
                 self._audit,
@@ -125,6 +195,8 @@ class Elevation:
 
         headers, jti = await self._credentials(principal, instance)
         headers["X-Request-Id"] = current_request_id() or ""
+        if accept is not None:
+            headers["Accept"] = accept
         content: bytes | None = None
         if json is not None:
             content = orjson.dumps(json)
@@ -144,17 +216,14 @@ class Elevation:
         except InstanceUnreachableError as exc:
             await self._record(principal, instance, method, path, justification, jti, 502)
             raise GatewayUnreachableError(f"{instance.display_name} didn't answer: {exc}") from exc
-        try:
-            raw = await response.aread()
-        finally:
-            await response.aclose()
         await self._record(principal, instance, method, path, justification, jti, response.status_code)
         if response.status_code == 401:  # noqa: PLR2004
+            await response.aclose()
             raise InstanceAuthFailedError(
                 f"{instance.display_name} rejected the elevated token. Run Test connection in Settings › Connection.",
                 extra={"instance_id": instance.id, "upstream_status": 401},
             )
-        return ElevatedResponse(response.status_code, decode_body(raw))
+        return response
 
     async def _credentials(self, principal: Principal, instance: Instance) -> tuple[dict[str, str], str | None]:
         if instance.auth_mode is AuthMode.NONE:
@@ -216,6 +285,14 @@ def _urlencode(form: Mapping[str, str]) -> bytes:
 
 async def _once(content: bytes) -> AsyncIterator[bytes]:
     yield content
+
+
+async def _relay(response: httpx.Response) -> AsyncIterator[bytes]:
+    try:
+        async for chunk in response.aiter_raw():
+            yield chunk
+    finally:
+        await response.aclose()
 
 
 def decode_body(raw: bytes) -> Any:  # noqa: ANN401

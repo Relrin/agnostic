@@ -105,6 +105,8 @@ class MockModel(Model):
     name: str = "MockModel"
     provider: str = "Agnostic"
     persona: str = "assistant"
+    # Sampling setting a real model would take, so presets can differ by it; the mock ignores it.
+    temperature: float | None = None
 
     def _respond(self, messages: list[Message], tools: list[dict[str, Any]] | None) -> ModelResponse:
         user_text = next((m.get_content_string() for m in reversed(messages) if m.role == "user"), "")

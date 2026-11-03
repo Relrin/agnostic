@@ -115,6 +115,9 @@ export {
   useRunStream,
   useRunStreams,
 } from "./run-stream/store";
+export { RunApprovals } from "./run-stream/approval";
+export { resolveRequirement, toHitlRequest } from "./run-stream/hitl";
+export { RunView, type RunViewProps } from "./run-stream/run-view";
 export { RealtimeClient, type RealtimeListener, type RealtimeMessage } from "./realtime/events-client";
 export {
   RealtimeProvider,

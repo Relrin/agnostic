@@ -14,6 +14,7 @@ from agnostic_evals.application.datasets import Datasets
 from agnostic_evals.application.gates import Gates
 from agnostic_evals.application.ports import BatchRepository, DatasetRepository, GateRepository
 from agnostic_evals.application.run_batch import RunBatch
+from agnostic_evals.facade import EvalGates, EvalGatesImpl
 from agnostic_evals.infrastructure.repository import SqlBatchRepository, SqlDatasetRepository, SqlGateRepository
 from agnostic_evals.settings import EvalsSettings
 from agnostic_kernel.domain_events import DomainEvents
@@ -32,6 +33,7 @@ class EvalsProvider(Provider):
     batches = provide(Batches)
     evaluations = provide(ListEvaluations)
     gates = provide(Gates)
+    version_gates = provide(EvalGatesImpl, provides=EvalGates)
 
     @provide
     def run_batch(

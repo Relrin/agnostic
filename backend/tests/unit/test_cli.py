@@ -87,6 +87,7 @@ def test_control_branches_downgrade_cleanly() -> None:
         ("scheduler", "d0001_scheduler"),
         ("service_accounts", "w0001_service_accounts"),
         ("directory", "r0001_directory"),
+        ("studio", "u0001_studio"),
         ("identity", "i0002_sso_mfa"),
         ("audit", "a0002_governance"),
     ):

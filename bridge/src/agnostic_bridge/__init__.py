@@ -11,20 +11,34 @@ Routes live under ``/agnostic/v1``, are guarded by the same AgentOS auth layer a
 the scopes in :data:`SCOPE_MAPPINGS` (``agent_os:admin`` passes too). The bridge keeps no state of its own; its
 eval route runs AgentOS's own eval helpers, which call models and store the result in the AgentOS db; its file
 provenance route reads the traces AgentOS already stores; its workers route describes the replica that answers; its
-events route reads the approvals and schedule runs AgentOS already stores.
+events route reads the approvals and schedule runs AgentOS already stores; its component routes rebuild configs with
+agno's ``from_dict`` without storing them; its introspection routes read code-defined components and registry entries.
 """
 
 from agnostic_bridge._app import BRIDGE_PREFIX, SCOPE_MAPPINGS, create_router, install
 from agnostic_bridge._capabilities import BridgeCapabilities, BridgeFeatures, BridgeQueueFeatures, __version__
+from agnostic_bridge._components import (
+    NORMALIZE_PATH,
+    VALIDATE_PATH,
+    ComponentConfigInput,
+    ComponentError,
+    NormalizedConfig,
+    ValidationResult,
+)
 from agnostic_bridge._evals import BridgeEvalRun, BridgeEvalRunInput
 from agnostic_bridge._events import EVENTS_PATH, BridgeEvent, EventsResponse
 from agnostic_bridge._files import FileEvent, FileProvenanceResponse
+from agnostic_bridge._introspect import INTROSPECT_COMPONENTS_PATH, REGISTRY_SOURCE_PATH, CodeComponent, RegistrySource
 from agnostic_bridge._workers import WORKERS_PATH, WorkersQueueConfig, WorkersResponse, WorkersScheduler
 
 __all__ = [
     "BRIDGE_PREFIX",
     "EVENTS_PATH",
+    "INTROSPECT_COMPONENTS_PATH",
+    "NORMALIZE_PATH",
+    "REGISTRY_SOURCE_PATH",
     "SCOPE_MAPPINGS",
+    "VALIDATE_PATH",
     "WORKERS_PATH",
     "BridgeCapabilities",
     "BridgeEvalRun",
@@ -32,9 +46,15 @@ __all__ = [
     "BridgeEvent",
     "BridgeFeatures",
     "BridgeQueueFeatures",
+    "CodeComponent",
+    "ComponentConfigInput",
+    "ComponentError",
     "EventsResponse",
     "FileEvent",
     "FileProvenanceResponse",
+    "NormalizedConfig",
+    "RegistrySource",
+    "ValidationResult",
     "WorkersQueueConfig",
     "WorkersResponse",
     "WorkersScheduler",

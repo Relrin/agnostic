@@ -1,0 +1,75 @@
+{
+  "add_search_knowledge_instructions": true,
+  "description": "Classifies incoming tickets and answers simple ones.",
+  "id": "support-triage",
+  "instructions": "Triage the ticket: answer from the help center when you can, otherwise hand off. Refunds go through refund_customer, which a human approves.",
+  "markdown": true,
+  "model": {
+    "id": "agnostic-mock",
+    "name": "MockModel",
+    "provider": "Agnostic"
+  },
+  "name": "support-triage",
+  "num_history_runs": 3,
+  "store_events": true,
+  "tools": [
+    {
+      "description": "Look up an order's status.",
+      "name": "lookup_order",
+      "parameters": {
+        "additionalProperties": false,
+        "properties": {
+          "order_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "order_id"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "description": "Search the help center.",
+      "name": "search_knowledge",
+      "parameters": {
+        "additionalProperties": false,
+        "properties": {
+          "query": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "approval_type": "required",
+      "description": "Refund a customer. Blocks until a human approves.",
+      "name": "refund_customer",
+      "parameters": {
+        "additionalProperties": false,
+        "properties": {
+          "amount": {
+            "type": "number"
+          },
+          "customer_id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "customer_id",
+          "amount",
+          "reason"
+        ],
+        "type": "object"
+      },
+      "requires_confirmation": true
+    }
+  ]
+}

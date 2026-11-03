@@ -2,7 +2,8 @@
 
 :meth:`GatewayFacade.call` runs the passthrough pipeline (route policy, scope pre-check, scoped JWT, audit), so a
 typed control-plane endpoint sees exactly what the person would see in the browser. Only typed control-plane actions
-that the control plane has authorized itself (approval decisions) use :meth:`GatewayFacade.elevated`.
+that the control plane has authorized itself (approval decisions, draft test runs) use :meth:`GatewayFacade.elevated`
+or :meth:`GatewayFacade.elevated_stream`.
 """
 
 from __future__ import annotations
@@ -15,6 +16,7 @@ import orjson
 
 from agnostic_gateway.application.elevation import (
     ElevatedResponse,
+    ElevatedStream,
     Elevation,
     ElevationDisabledError,
     GatewayResponse,
@@ -26,6 +28,7 @@ from agnostic_kernel.auth import Principal
 
 __all__ = [
     "ElevatedResponse",
+    "ElevatedStream",
     "ElevationDisabledError",
     "GatewayFacade",
     "GatewayFacadeImpl",
@@ -68,6 +71,25 @@ class GatewayFacade(Protocol):
         json: Any = None,  # noqa: ANN401
         form: Mapping[str, str] | None = None,
     ) -> ElevatedResponse: ...
+
+    async def invalidate(self, instance: Instance) -> None:
+        """Forget the gateway's cached responses for the instance (e.g. after the registry changed)."""
+        ...
+
+    async def elevated_stream(
+        self,
+        principal: Principal,
+        instance: Instance,
+        method: str,
+        path: str,
+        *,
+        justification: str,
+        action_label: str,
+        params: Mapping[str, str] | None = None,
+        form: Mapping[str, str] | None = None,
+    ) -> ElevatedStream:
+        """One elevated request whose body is relayed as it arrives (a streamed run of a draft version)."""
+        ...
 
 
 class GatewayFacadeImpl:
@@ -138,6 +160,32 @@ class GatewayFacadeImpl:
             action_label=action_label,
             params=params,
             json=json,
+            form=form,
+        )
+
+    async def invalidate(self, instance: Instance) -> None:
+        await self._gateway.invalidate(instance.id)
+
+    async def elevated_stream(
+        self,
+        principal: Principal,
+        instance: Instance,
+        method: str,
+        path: str,
+        *,
+        justification: str,
+        action_label: str,
+        params: Mapping[str, str] | None = None,
+        form: Mapping[str, str] | None = None,
+    ) -> ElevatedStream:
+        return await self._elevation.stream(
+            principal,
+            instance,
+            method,
+            path,
+            justification=justification,
+            action_label=action_label,
+            params=params,
             form=form,
         )
 

@@ -8,10 +8,13 @@ import {
   type AgentOS,
   type DecideOut,
 } from "@agnostic/api";
-import { formatRelative, useCan, type ToolCall } from "@agnostic/core";
 import { ApprovalCard, Callout } from "@agnostic/ui";
 import { skipToken, useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+
+import { formatRelative } from "../format";
+import { useCan } from "../permissions";
+import type { ToolCall } from "./reducer";
 
 type Approval = AgentOS.ApprovalResponse;
 

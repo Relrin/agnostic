@@ -49,7 +49,7 @@ class ScopeCatalog:
                     action=action,
                     source="control_plane",
                     description=declared[name],
-                    privileged=action in {"write", "delete", "manage", "rotate", "operate", "promote"},
+                    privileged=action in {"write", "delete", "manage", "rotate", "operate", "promote", "override"},
                 )
             )
 

@@ -18,10 +18,14 @@ import { memoryModule } from "@agnostic/module-memory";
 import { metricsModule } from "@agnostic/module-metrics";
 import { orgSettingsModule } from "@agnostic/module-org-settings";
 import { queueModule } from "@agnostic/module-queue";
+import { registryModule } from "@agnostic/module-registry";
 import { schedulerModule } from "@agnostic/module-scheduler";
 import { serviceAccountsModule } from "@agnostic/module-service-accounts";
 import { sessionsModule } from "@agnostic/module-sessions";
 import { settingsModule } from "@agnostic/module-settings";
+import { studioAgentsModule } from "@agnostic/module-studio-agents";
+import { studioTeamsModule } from "@agnostic/module-studio-teams";
+import { studioWorkflowsModule } from "@agnostic/module-studio-workflows";
 import { tracesModule } from "@agnostic/module-traces";
 
 export const MODULES: readonly ModuleManifest[] = [
@@ -36,6 +40,10 @@ export const MODULES: readonly ModuleManifest[] = [
   auditModule,
   homeModule,
   chatModule,
+  studioAgentsModule,
+  studioTeamsModule,
+  studioWorkflowsModule,
+  registryModule,
   sessionsModule,
   tracesModule,
   metricsModule,

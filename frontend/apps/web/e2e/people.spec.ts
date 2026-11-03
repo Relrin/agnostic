@@ -164,7 +164,7 @@ async function stubDirectory(page: Page): Promise<Directory> {
             tokens: [
               {
                 id: "sct_okta",
-                label: "Okta",
+                label: "Okta SCIM",
                 prefix: "scim_9f2",
                 state: "active",
                 created_at: T,

@@ -161,6 +161,12 @@ agentos-client-gen:
         --enum-field-as-literal one --allow-extra-fields --disable-timestamp --use-annotated \
         --custom-file-header '# Generated from openapi/agentos-3.1.12.json by datamodel-code-generator. Do not edit; run `just agentos-client-gen`.'
 
+# Write agno's serialized agents and teams to backend/tests/golden (the control plane's config fixtures) and the
+# code Studio generates for each of them
+golden:
+    cd runtime && uv run python -m app.dump_golden
+    cd backend && uv run python -m agnostic_codegen tests/golden/agno-3.1
+
 # ---------------------------------------------------------------- supply chain
 
 # Dependency license policy

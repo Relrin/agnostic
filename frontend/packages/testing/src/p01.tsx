@@ -232,6 +232,8 @@ export const ownerAccess: MyAccessOut = {
     "os:keys:rotate",
     "audit:read",
     "evals:gates:write",
+    "evals:gates:override",
+    "studio:promote",
   ],
   grants: [],
 };

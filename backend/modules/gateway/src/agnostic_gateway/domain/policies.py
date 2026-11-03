@@ -210,6 +210,11 @@ DEFAULT_POLICIES: tuple[RoutePolicy, ...] = (
     _p("POST", "/agnostic/v1/evals/run", "evals:write", audit="full", bucket="run"),
     # Which runs wrote and read a file: joined from tool spans, so it needs both families.
     _p("GET", "/agnostic/v1/files/provenance", "filesystem:read", "traces:read"),
+    # Studio checks: agno's strict load and canonical form of a config, read-only against the live registry.
+    _p("POST", "/agnostic/v1/components/validate", "components:read", audit="decision", bucket="read"),
+    _p("POST", "/agnostic/v1/components/normalize", "components:read", audit="decision", bucket="read"),
+    _p("GET", "/agnostic/v1/introspect/components", "components:read", ttl=60),
+    _p("GET", "/agnostic/v1/registry/{resource_type}/{name}/source", "registry:read", ttl=300),
 )
 
 UPLOAD_ROUTES: frozenset[tuple[str, str]] = frozenset({("POST", "/knowledge/content")})

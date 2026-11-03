@@ -1,0 +1,31 @@
+{
+  "add_history_to_context": true,
+  "description": "Works a task list across two members.",
+  "determine_input_for_members": false,
+  "id": "golden-tasks-team",
+  "instructions": [
+    "Create one task per member.",
+    "Mark the goal complete when every task is done."
+  ],
+  "markdown": true,
+  "max_iterations": 6,
+  "members": [
+    {
+      "agent_id": "kb-researcher",
+      "type": "agent"
+    },
+    {
+      "agent_id": "summarizer",
+      "type": "agent"
+    }
+  ],
+  "mode": "tasks",
+  "model": {
+    "id": "mock-creative",
+    "name": "MockModel",
+    "provider": "Agnostic"
+  },
+  "name": "Golden tasks team",
+  "num_history_runs": 3,
+  "store_events": true
+}

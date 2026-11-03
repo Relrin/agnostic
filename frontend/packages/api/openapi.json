@@ -2196,6 +2196,34 @@
         "title": "AuthPolicyUpdate",
         "type": "object"
       },
+      "AvailabilityOut": {
+        "properties": {
+          "kind": {
+            "enum": [
+              "available",
+              "unavailable",
+              "registered"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "title",
+          "text"
+        ],
+        "title": "AvailabilityOut",
+        "type": "object"
+      },
       "BaselineOut": {
         "properties": {
           "duration_ms": {
@@ -3415,6 +3443,149 @@
         "title": "CheckpointOut",
         "type": "object"
       },
+      "CodeNoteOut": {
+        "properties": {
+          "col_end": {
+            "title": "Col End",
+            "type": "integer"
+          },
+          "col_start": {
+            "title": "Col Start",
+            "type": "integer"
+          },
+          "entry": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entry"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "line": {
+            "title": "Line",
+            "type": "integer"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "path": {
+            "title": "Path",
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "kind",
+          "line",
+          "col_start",
+          "col_end",
+          "message",
+          "entry"
+        ],
+        "title": "CodeNoteOut",
+        "type": "object"
+      },
+      "CodegenIn": {
+        "properties": {
+          "base_config": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Mark the lines that differ from this config.",
+            "title": "Base Config"
+          },
+          "config": {
+            "additionalProperties": true,
+            "title": "Config",
+            "type": "object"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/KindIn"
+          }
+        },
+        "required": [
+          "kind",
+          "config"
+        ],
+        "title": "CodegenIn",
+        "type": "object"
+      },
+      "CodegenOut": {
+        "properties": {
+          "base_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Code"
+          },
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "filename": {
+            "title": "Filename",
+            "type": "string"
+          },
+          "marks": {
+            "additionalProperties": {
+              "enum": [
+                "added",
+                "modified"
+              ],
+              "type": "string"
+            },
+            "title": "Marks",
+            "type": "object"
+          },
+          "notes": {
+            "items": {
+              "$ref": "#/components/schemas/CodeNoteOut"
+            },
+            "title": "Notes",
+            "type": "array"
+          },
+          "ruff": {
+            "$ref": "#/components/schemas/RuffOut"
+          },
+          "spans": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/SpanOut"
+            },
+            "title": "Spans",
+            "type": "object"
+          }
+        },
+        "required": [
+          "code",
+          "filename",
+          "spans",
+          "marks",
+          "notes",
+          "ruff",
+          "base_code"
+        ],
+        "title": "CodegenOut",
+        "type": "object"
+      },
       "ComparisonCountsOut": {
         "properties": {
           "below_after": {
@@ -3521,6 +3692,73 @@
         "title": "ComparisonRowOut",
         "type": "object"
       },
+      "ComponentDetailOut": {
+        "properties": {
+          "component": {
+            "$ref": "#/components/schemas/StudioComponentOut"
+          },
+          "current": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/VersionOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "draft": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/VersionOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "editable": {
+            "title": "Editable",
+            "type": "boolean"
+          },
+          "labels": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Labels",
+            "type": "array"
+          },
+          "owner_group_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner Group Id"
+          },
+          "versions": {
+            "items": {
+              "$ref": "#/components/schemas/VersionOut"
+            },
+            "title": "Versions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "component",
+          "editable",
+          "versions",
+          "draft",
+          "current",
+          "owner_group_id",
+          "labels"
+        ],
+        "title": "ComponentDetailOut",
+        "type": "object"
+      },
       "ComponentOut": {
         "properties": {
           "approximate": {
@@ -3593,6 +3831,92 @@
           "approximate"
         ],
         "title": "ComponentOut",
+        "type": "object"
+      },
+      "ComponentRowOut": {
+        "properties": {
+          "component": {
+            "$ref": "#/components/schemas/StudioComponentOut"
+          },
+          "draft_updated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Draft Updated At"
+          },
+          "draft_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Draft Version"
+          },
+          "editable": {
+            "title": "Editable",
+            "type": "boolean"
+          },
+          "labels": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Labels",
+            "type": "array"
+          },
+          "latest_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Version"
+          },
+          "owner_group_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner Group Id"
+          },
+          "runs_7d": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Runs in the last 7 days, when the instance reports them.",
+            "title": "Runs 7D"
+          }
+        },
+        "required": [
+          "component",
+          "editable",
+          "latest_version",
+          "draft_version",
+          "draft_updated_at",
+          "owner_group_id",
+          "labels"
+        ],
+        "title": "ComponentRowOut",
         "type": "object"
       },
       "ConfigOut": {
@@ -4021,6 +4345,131 @@
           }
         },
         "title": "CountsOut",
+        "type": "object"
+      },
+      "CreateIn": {
+        "properties": {
+          "component_id": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "pattern": "^[a-z0-9][a-z0-9-]*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Component Id"
+          },
+          "config": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Config"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/KindIn"
+          },
+          "mode": {
+            "default": "blank",
+            "enum": [
+              "blank",
+              "template",
+              "duplicate",
+              "import"
+            ],
+            "title": "Mode",
+            "type": "string"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "source_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Id"
+          },
+          "source_version": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Version"
+          },
+          "template_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Template Id"
+          }
+        },
+        "required": [
+          "kind",
+          "name"
+        ],
+        "title": "CreateIn",
         "type": "object"
       },
       "CreatedOut": {
@@ -4727,6 +5176,80 @@
         "title": "DeliveryOut",
         "type": "object"
       },
+      "DetailOut": {
+        "properties": {
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "value": {
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "value"
+        ],
+        "title": "DetailOut",
+        "type": "object"
+      },
+      "DiagnosticOut": {
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "path": {
+            "title": "Path",
+            "type": "string"
+          },
+          "severity": {
+            "enum": [
+              "error",
+              "warning",
+              "info"
+            ],
+            "title": "Severity",
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "severity",
+          "code",
+          "message"
+        ],
+        "title": "DiagnosticOut",
+        "type": "object"
+      },
+      "DiffCountsOut": {
+        "properties": {
+          "added": {
+            "title": "Added",
+            "type": "integer"
+          },
+          "changed": {
+            "title": "Changed",
+            "type": "integer"
+          },
+          "removed": {
+            "title": "Removed",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "added",
+          "changed",
+          "removed"
+        ],
+        "title": "DiffCountsOut",
+        "type": "object"
+      },
       "DiffLineOut": {
         "properties": {
           "op": {
@@ -4747,6 +5270,71 @@
           "text"
         ],
         "title": "DiffLineOut",
+        "type": "object"
+      },
+      "DiffOut": {
+        "properties": {
+          "changes": {
+            "items": {
+              "$ref": "#/components/schemas/FieldChangeOut"
+            },
+            "title": "Changes",
+            "type": "array"
+          },
+          "code_after": {
+            "title": "Code After",
+            "type": "string"
+          },
+          "code_before": {
+            "title": "Code Before",
+            "type": "string"
+          },
+          "component_id": {
+            "title": "Component Id",
+            "type": "string"
+          },
+          "counts": {
+            "$ref": "#/components/schemas/DiffCountsOut"
+          },
+          "from_version": {
+            "title": "From Version",
+            "type": "integer"
+          },
+          "lines_added": {
+            "title": "Lines Added",
+            "type": "integer"
+          },
+          "lines_removed": {
+            "title": "Lines Removed",
+            "type": "integer"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          },
+          "to_version": {
+            "title": "To Version",
+            "type": "integer"
+          },
+          "unified": {
+            "title": "Unified",
+            "type": "string"
+          }
+        },
+        "required": [
+          "component_id",
+          "from_version",
+          "to_version",
+          "changes",
+          "counts",
+          "summary",
+          "code_before",
+          "code_after",
+          "unified",
+          "lines_added",
+          "lines_removed"
+        ],
+        "title": "DiffOut",
         "type": "object"
       },
       "DirectorySettingsIn": {
@@ -5837,6 +6425,40 @@
         "title": "FactorOut",
         "type": "object"
       },
+      "FieldChangeOut": {
+        "properties": {
+          "after": {
+            "title": "After"
+          },
+          "before": {
+            "title": "Before"
+          },
+          "field": {
+            "title": "Field",
+            "type": "string"
+          },
+          "op": {
+            "enum": [
+              "added",
+              "removed",
+              "changed"
+            ],
+            "title": "Op",
+            "type": "string"
+          },
+          "path": {
+            "title": "Path",
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "field",
+          "op"
+        ],
+        "title": "FieldChangeOut",
+        "type": "object"
+      },
       "FieldError": {
         "properties": {
           "loc": {
@@ -6094,6 +6716,146 @@
           "count"
         ],
         "title": "FileReaderOut",
+        "type": "object"
+      },
+      "FunctionOut": {
+        "properties": {
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "parameters": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parameters"
+          },
+          "requires_confirmation": {
+            "title": "Requires Confirmation",
+            "type": "boolean"
+          },
+          "signature": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Signature"
+          }
+        },
+        "required": [
+          "name",
+          "description",
+          "parameters",
+          "signature",
+          "requires_confirmation"
+        ],
+        "title": "FunctionOut",
+        "type": "object"
+      },
+      "GateCheckOut": {
+        "properties": {
+          "batch_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Batch Id"
+          },
+          "blocks": {
+            "title": "Blocks",
+            "type": "boolean"
+          },
+          "consequence": {
+            "title": "Consequence",
+            "type": "string"
+          },
+          "dataset_id": {
+            "title": "Dataset Id",
+            "type": "string"
+          },
+          "dataset_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dataset Name"
+          },
+          "eval_type": {
+            "title": "Eval Type",
+            "type": "string"
+          },
+          "gate_id": {
+            "title": "Gate Id",
+            "type": "string"
+          },
+          "min_average": {
+            "title": "Min Average",
+            "type": "number"
+          },
+          "state": {
+            "enum": [
+              "off",
+              "no_result",
+              "would_block",
+              "passes"
+            ],
+            "title": "State",
+            "type": "string"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "gate_id",
+          "dataset_id",
+          "dataset_name",
+          "eval_type",
+          "min_average",
+          "value",
+          "batch_id",
+          "state",
+          "consequence",
+          "blocks"
+        ],
+        "title": "GateCheckOut",
         "type": "object"
       },
       "GateIn": {
@@ -8205,6 +8967,21 @@
         "title": "KeysOut",
         "type": "object"
       },
+      "KindIn": {
+        "enum": [
+          "agent",
+          "team"
+        ],
+        "type": "string"
+      },
+      "KindQuery": {
+        "enum": [
+          "agent",
+          "team",
+          "workflow"
+        ],
+        "type": "string"
+      },
       "KnowledgeBaseOut": {
         "properties": {
           "db_id": {
@@ -8439,6 +9216,55 @@
         "title": "KpisOut",
         "type": "object"
       },
+      "LayerOut": {
+        "properties": {
+          "diagnostics": {
+            "items": {
+              "$ref": "#/components/schemas/DiagnosticOut"
+            },
+            "title": "Diagnostics",
+            "type": "array"
+          },
+          "hint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hint"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "ok",
+              "failed",
+              "warning",
+              "skipped"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "status",
+          "hint",
+          "diagnostics"
+        ],
+        "title": "LayerOut",
+        "type": "object"
+      },
       "LearningCountsOut": {
         "properties": {
           "counts": {
@@ -8468,6 +9294,34 @@
           "counts"
         ],
         "title": "LearningCountsOut",
+        "type": "object"
+      },
+      "LintMessageOut": {
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "column": {
+            "title": "Column",
+            "type": "integer"
+          },
+          "line": {
+            "title": "Line",
+            "type": "integer"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "line",
+          "column"
+        ],
+        "title": "LintMessageOut",
         "type": "object"
       },
       "Liveness": {
@@ -9174,6 +10028,68 @@
         "title": "MemorySourceOut",
         "type": "object"
       },
+      "MetaPatchIn": {
+        "properties": {
+          "clear_owner": {
+            "default": false,
+            "title": "Clear Owner",
+            "type": "boolean"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "labels": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 20,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Labels"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "owner_group_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner Group Id"
+          }
+        },
+        "title": "MetaPatchIn",
+        "type": "object"
+      },
       "Method": {
         "enum": [
           "GET",
@@ -9671,6 +10587,36 @@
           "last_used_at"
         ],
         "title": "NativeTokenOut",
+        "type": "object"
+      },
+      "NewDraftIn": {
+        "properties": {
+          "from_version": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Version"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          }
+        },
+        "title": "NewDraftIn",
         "type": "object"
       },
       "NotificationOut": {
@@ -11213,6 +12159,146 @@
         "title": "Problem",
         "type": "object"
       },
+      "PromoteIn": {
+        "properties": {
+          "include_children": {
+            "default": true,
+            "title": "Include Children",
+            "type": "boolean"
+          },
+          "target": {
+            "description": "Instance id or slug to promote to.",
+            "title": "Target",
+            "type": "string"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Defaults to the current version.",
+            "title": "Version"
+          }
+        },
+        "required": [
+          "target"
+        ],
+        "title": "PromoteIn",
+        "type": "object"
+      },
+      "PromotionApplyIn": {
+        "properties": {
+          "publish": {
+            "default": false,
+            "title": "Publish",
+            "type": "boolean"
+          }
+        },
+        "title": "PromotionApplyIn",
+        "type": "object"
+      },
+      "PromotionOut": {
+        "properties": {
+          "applied_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Applied At"
+          },
+          "component_id": {
+            "title": "Component Id",
+            "type": "string"
+          },
+          "component_kind": {
+            "title": "Component Kind",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "created_by_name": {
+            "title": "Created By Name",
+            "type": "string"
+          },
+          "from_instance": {
+            "title": "From Instance",
+            "type": "string"
+          },
+          "from_version": {
+            "title": "From Version",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "include_children": {
+            "title": "Include Children",
+            "type": "boolean"
+          },
+          "report": {
+            "additionalProperties": true,
+            "title": "Report",
+            "type": "object"
+          },
+          "status": {
+            "enum": [
+              "dry_run",
+              "blocked",
+              "applied",
+              "published",
+              "failed"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "to_instance": {
+            "title": "To Instance",
+            "type": "string"
+          },
+          "to_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Version"
+          }
+        },
+        "required": [
+          "id",
+          "from_instance",
+          "to_instance",
+          "component_id",
+          "component_kind",
+          "from_version",
+          "to_version",
+          "include_children",
+          "status",
+          "report",
+          "created_by_name",
+          "created_at",
+          "applied_at"
+        ],
+        "title": "PromotionOut",
+        "type": "object"
+      },
       "ProviderCreate": {
         "properties": {
           "allowed_email_domains": {
@@ -11852,6 +12938,134 @@
           }
         },
         "title": "ProviderUpdate",
+        "type": "object"
+      },
+      "PublishCheckOut": {
+        "properties": {
+          "blocked_by_gates": {
+            "title": "Blocked By Gates",
+            "type": "boolean"
+          },
+          "can_override": {
+            "title": "Can Override",
+            "type": "boolean"
+          },
+          "can_publish": {
+            "title": "Can Publish",
+            "type": "boolean"
+          },
+          "changes": {
+            "items": {
+              "$ref": "#/components/schemas/FieldChangeOut"
+            },
+            "title": "Changes",
+            "type": "array"
+          },
+          "gates": {
+            "items": {
+              "$ref": "#/components/schemas/GateCheckOut"
+            },
+            "title": "Gates",
+            "type": "array"
+          },
+          "outcome": {
+            "title": "Outcome",
+            "type": "string"
+          },
+          "stage": {
+            "enum": [
+              "draft",
+              "published"
+            ],
+            "title": "Stage",
+            "type": "string"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          },
+          "validation": {
+            "$ref": "#/components/schemas/ValidationOut"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "version",
+          "stage",
+          "validation",
+          "gates",
+          "blocked_by_gates",
+          "can_publish",
+          "can_override",
+          "outcome",
+          "summary",
+          "changes"
+        ],
+        "title": "PublishCheckOut",
+        "type": "object"
+      },
+      "PublishIn": {
+        "properties": {
+          "notes": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "override_reason": {
+            "anyOf": [
+              {
+                "maxLength": 1000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Publish past failed eval gates (needs evals:gates:override).",
+            "title": "Override Reason"
+          }
+        },
+        "title": "PublishIn",
+        "type": "object"
+      },
+      "PublishOut": {
+        "properties": {
+          "gates": {
+            "items": {
+              "$ref": "#/components/schemas/GateCheckOut"
+            },
+            "title": "Gates",
+            "type": "array"
+          },
+          "outcome": {
+            "title": "Outcome",
+            "type": "string"
+          },
+          "overridden": {
+            "title": "Overridden",
+            "type": "boolean"
+          },
+          "version": {
+            "$ref": "#/components/schemas/VersionOut"
+          }
+        },
+        "required": [
+          "version",
+          "outcome",
+          "overridden",
+          "gates"
+        ],
+        "title": "PublishOut",
         "type": "object"
       },
       "QueueJobDetailOut": {
@@ -12636,6 +13850,213 @@
         "title": "RecoveryCodesOut",
         "type": "object"
       },
+      "RegistryEntryDetailOut": {
+        "properties": {
+          "entry": {
+            "$ref": "#/components/schemas/RegistryEntryOut"
+          },
+          "used_by": {
+            "items": {
+              "$ref": "#/components/schemas/UsedByOut"
+            },
+            "title": "Used By",
+            "type": "array"
+          }
+        },
+        "required": [
+          "entry",
+          "used_by"
+        ],
+        "title": "RegistryEntryDetailOut",
+        "type": "object"
+      },
+      "RegistryEntryOut": {
+        "properties": {
+          "approval_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approval Type"
+          },
+          "availability": {
+            "$ref": "#/components/schemas/AvailabilityOut"
+          },
+          "blurb": {
+            "title": "Blurb",
+            "type": "string"
+          },
+          "code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code"
+          },
+          "code_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code Label"
+          },
+          "config_value": {
+            "description": "What a config stores when a builder picks this entry (a model ref, tool dicts, a knowledge ref…).",
+            "title": "Config Value"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "details": {
+            "items": {
+              "$ref": "#/components/schemas/DetailOut"
+            },
+            "title": "Details",
+            "type": "array"
+          },
+          "functions": {
+            "items": {
+              "$ref": "#/components/schemas/FunctionOut"
+            },
+            "title": "Functions",
+            "type": "array"
+          },
+          "id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "meta": {
+            "title": "Meta",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "requires_approval": {
+            "title": "Requires Approval",
+            "type": "boolean"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SourceOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "enum": [
+              "registered",
+              "discovered"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "studio_available": {
+            "title": "Studio Available",
+            "type": "boolean"
+          },
+          "type": {
+            "title": "Type",
+            "type": "string"
+          },
+          "used_by_count": {
+            "title": "Used By Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "type",
+          "name",
+          "id",
+          "description",
+          "blurb",
+          "meta",
+          "status",
+          "details",
+          "code",
+          "code_label",
+          "requires_approval",
+          "approval_type",
+          "studio_available",
+          "availability",
+          "functions",
+          "source",
+          "used_by_count",
+          "config_value"
+        ],
+        "title": "RegistryEntryOut",
+        "type": "object"
+      },
+      "RegistryOut": {
+        "properties": {
+          "bridge": {
+            "title": "Bridge",
+            "type": "boolean"
+          },
+          "counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Counts",
+            "type": "object"
+          },
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/RegistryEntryOut"
+            },
+            "title": "Entries",
+            "type": "array"
+          },
+          "instance": {
+            "title": "Instance",
+            "type": "string"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "instance",
+          "entries",
+          "counts",
+          "total",
+          "bridge"
+        ],
+        "title": "RegistryOut",
+        "type": "object"
+      },
       "RequeueIn": {
         "properties": {
           "force": {
@@ -13412,6 +14833,37 @@
         "title": "RoutePolicyOut",
         "type": "object"
       },
+      "RuffOut": {
+        "properties": {
+          "available": {
+            "title": "Available",
+            "type": "boolean"
+          },
+          "formatted": {
+            "title": "Formatted",
+            "type": "boolean"
+          },
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/LintMessageOut"
+            },
+            "title": "Messages",
+            "type": "array"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "available",
+          "status",
+          "formatted",
+          "messages"
+        ],
+        "title": "RuffOut",
+        "type": "object"
+      },
       "RuleSourceOut": {
         "enum": [
           "scim",
@@ -13541,6 +14993,71 @@
           "acs_url"
         ],
         "title": "SamlSettingsOut",
+        "type": "object"
+      },
+      "SaveDraftIn": {
+        "properties": {
+          "config": {
+            "additionalProperties": true,
+            "title": "Config",
+            "type": "object"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "pins": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "integer"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Team members pinned at a version, by component id.",
+            "title": "Pins"
+          },
+          "revision": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The revision the editor loaded; a mismatch is a 409.",
+            "title": "Revision"
+          }
+        },
+        "required": [
+          "config"
+        ],
+        "title": "SaveDraftIn",
         "type": "object"
       },
       "SavedViewIn": {
@@ -15264,6 +16781,41 @@
         "title": "SessionOut",
         "type": "object"
       },
+      "SetCurrentIn": {
+        "properties": {
+          "reason": {
+            "anyOf": [
+              {
+                "maxLength": 1000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "title": "SetCurrentIn",
+        "type": "object"
+      },
+      "SetCurrentOut": {
+        "properties": {
+          "outcome": {
+            "title": "Outcome",
+            "type": "string"
+          },
+          "version": {
+            "$ref": "#/components/schemas/VersionOut"
+          }
+        },
+        "required": [
+          "version",
+          "outcome"
+        ],
+        "title": "SetCurrentOut",
+        "type": "object"
+      },
       "SignInProviderOut": {
         "properties": {
           "display_name": {
@@ -15556,6 +17108,50 @@
         "title": "SinkTestOut",
         "type": "object"
       },
+      "SourceOut": {
+        "properties": {
+          "file": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File"
+          },
+          "line": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Line"
+          },
+          "module": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Module"
+          }
+        },
+        "required": [
+          "module",
+          "file",
+          "line"
+        ],
+        "title": "SourceOut",
+        "type": "object"
+      },
       "SpanGroupOut": {
         "properties": {
           "count": {
@@ -15601,6 +17197,34 @@
           "other"
         ],
         "type": "string"
+      },
+      "SpanOut": {
+        "properties": {
+          "col_end": {
+            "title": "Col End",
+            "type": "integer"
+          },
+          "col_start": {
+            "title": "Col Start",
+            "type": "integer"
+          },
+          "end_line": {
+            "title": "End Line",
+            "type": "integer"
+          },
+          "line": {
+            "title": "Line",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "line",
+          "col_start",
+          "col_end",
+          "end_line"
+        ],
+        "title": "SpanOut",
+        "type": "object"
       },
       "SpanStatsOut": {
         "properties": {
@@ -15931,6 +17555,93 @@
         "title": "StreamStatusOut",
         "type": "object"
       },
+      "StudioComponentOut": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "current_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Version"
+          },
+          "deleted_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deleted At"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/KindQuery"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "source": {
+            "enum": [
+              "studio",
+              "code"
+            ],
+            "title": "Source",
+            "type": "string"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "name",
+          "description",
+          "current_version",
+          "source",
+          "created_at",
+          "updated_at",
+          "deleted_at"
+        ],
+        "title": "StudioComponentOut",
+        "type": "object"
+      },
       "SummaryOut": {
         "properties": {
           "avg": {
@@ -16098,6 +17809,39 @@
         ],
         "type": "string"
       },
+      "TemplateOut": {
+        "properties": {
+          "config": {
+            "additionalProperties": true,
+            "title": "Config",
+            "type": "object"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/KindIn"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "label",
+          "description",
+          "config"
+        ],
+        "title": "TemplateOut",
+        "type": "object"
+      },
       "TemporaryGrantIn": {
         "properties": {
           "duration_hours": {
@@ -16195,6 +17939,38 @@
           "capabilities"
         ],
         "title": "TestReportOut",
+        "type": "object"
+      },
+      "TestRunIn": {
+        "properties": {
+          "message": {
+            "maxLength": 20000,
+            "minLength": 1,
+            "title": "Message",
+            "type": "string"
+          },
+          "session_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Id"
+          },
+          "version": {
+            "minimum": 1.0,
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "message",
+          "version"
+        ],
+        "title": "TestRunIn",
         "type": "object"
       },
       "TimelineEntryOut": {
@@ -16621,6 +18397,60 @@
         "title": "UnreadOut",
         "type": "object"
       },
+      "UsedByOut": {
+        "properties": {
+          "component_id": {
+            "title": "Component Id",
+            "type": "string"
+          },
+          "component_kind": {
+            "title": "Component Kind",
+            "type": "string"
+          },
+          "component_name": {
+            "title": "Component Name",
+            "type": "string"
+          },
+          "versions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Versions",
+            "type": "array"
+          },
+          "versions_text": {
+            "title": "Versions Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "component_id",
+          "component_kind",
+          "component_name",
+          "versions",
+          "versions_text"
+        ],
+        "title": "UsedByOut",
+        "type": "object"
+      },
+      "ValidateIn": {
+        "properties": {
+          "config": {
+            "additionalProperties": true,
+            "title": "Config",
+            "type": "object"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/KindIn"
+          }
+        },
+        "required": [
+          "kind",
+          "config"
+        ],
+        "title": "ValidateIn",
+        "type": "object"
+      },
       "ValidationError": {
         "properties": {
           "ctx": {
@@ -16659,6 +18489,32 @@
           "type"
         ],
         "title": "ValidationError",
+        "type": "object"
+      },
+      "ValidationOut": {
+        "properties": {
+          "layers": {
+            "items": {
+              "$ref": "#/components/schemas/LayerOut"
+            },
+            "title": "Layers",
+            "type": "array"
+          },
+          "ok": {
+            "title": "Ok",
+            "type": "boolean"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ok",
+          "summary",
+          "layers"
+        ],
+        "title": "ValidationOut",
         "type": "object"
       },
       "VectorDbOut": {
@@ -16767,6 +18623,219 @@
           "token"
         ],
         "title": "VerifyTokenIn",
+        "type": "object"
+      },
+      "VersionOut": {
+        "properties": {
+          "author_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Author Name"
+          },
+          "based_on_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Based On Version"
+          },
+          "change_summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change Summary"
+          },
+          "config": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Config"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "current": {
+            "title": "Current",
+            "type": "boolean"
+          },
+          "eval_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Eval Status"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          },
+          "links": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Links",
+            "type": "array"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "promoted_from": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Promoted From"
+          },
+          "published_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published At"
+          },
+          "published_by_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published By Name"
+          },
+          "revision": {
+            "title": "Revision",
+            "type": "string"
+          },
+          "saved_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Saved At"
+          },
+          "stage": {
+            "enum": [
+              "draft",
+              "published"
+            ],
+            "title": "Stage",
+            "type": "string"
+          },
+          "tag": {
+            "title": "Tag",
+            "type": "string"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "updated_by_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated By Name"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "version",
+          "stage",
+          "tag",
+          "current",
+          "label",
+          "notes",
+          "created_at",
+          "updated_at",
+          "revision",
+          "author_name",
+          "updated_by_name",
+          "saved_at",
+          "published_by_name",
+          "published_at",
+          "eval_status",
+          "change_summary",
+          "based_on_version",
+          "promoted_from",
+          "links",
+          "config"
+        ],
+        "title": "VersionOut",
         "type": "object"
       },
       "ViewOut": {
@@ -27731,6 +29800,1617 @@
         ]
       }
     },
+    "/api/v1/instances/{instance}/studio/codegen": {
+      "post": {
+        "operationId": "studio_codegen",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CodegenIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodegenOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Generated Python with span map, gutter marks, notes and ruff",
+        "tags": [
+          "studio"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/studio/components": {
+      "get": {
+        "operationId": "studio_list_components",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "kind",
+            "required": false,
+            "schema": {
+              "default": "agent",
+              "enum": [
+                "agent",
+                "team",
+                "workflow"
+              ],
+              "title": "Kind",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ComponentRowOut"
+                  },
+                  "title": "Response Studio List Components",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Agents, teams or workflows: stored in Studio and defined in code",
+        "tags": [
+          "studio"
+        ]
+      },
+      "post": {
+        "operationId": "studio_create_component",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComponentDetailOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Create a component with draft v1 (blank, from a template, duplicated or imported)",
+        "tags": [
+          "studio"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/studio/components/{component_id}": {
+      "delete": {
+        "operationId": "studio_archive_component",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "component_id",
+            "required": true,
+            "schema": {
+              "title": "Component Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Archive (409 lists the dependents)",
+        "tags": [
+          "studio"
+        ]
+      },
+      "get": {
+        "operationId": "studio_get_component",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "component_id",
+            "required": true,
+            "schema": {
+              "title": "Component Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComponentDetailOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "A component with its versions, its open draft and its current version",
+        "tags": [
+          "studio"
+        ]
+      },
+      "patch": {
+        "operationId": "studio_patch_component",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "component_id",
+            "required": true,
+            "schema": {
+              "title": "Component Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MetaPatchIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComponentDetailOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Rename, describe, label or assign an owner group",
+        "tags": [
+          "studio"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/studio/components/{component_id}/configs": {
+      "post": {
+        "operationId": "studio_new_draft",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "component_id",
+            "required": true,
+            "schema": {
+              "title": "Component Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewDraftIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "A new draft from a version (default: the current one), member pins included",
+        "tags": [
+          "studio"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/studio/components/{component_id}/configs/{version}": {
+      "delete": {
+        "operationId": "studio_discard_draft",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "component_id",
+            "required": true,
+            "schema": {
+              "title": "Component Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "version",
+            "required": true,
+            "schema": {
+              "title": "Version",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Discard a draft",
+        "tags": [
+          "studio"
+        ]
+      },
+      "get": {
+        "operationId": "studio_get_version",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "component_id",
+            "required": true,
+            "schema": {
+              "title": "Component Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "version",
+            "required": true,
+            "schema": {
+              "title": "Version",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "One version with its config",
+        "tags": [
+          "studio"
+        ]
+      },
+      "patch": {
+        "operationId": "studio_save_draft",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "component_id",
+            "required": true,
+            "schema": {
+              "title": "Component Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "version",
+            "required": true,
+            "schema": {
+              "title": "Version",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveDraftIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Save a draft (409 when someone else saved it first)",
+        "tags": [
+          "studio"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/studio/components/{component_id}/configs/{version}/publish": {
+      "post": {
+        "operationId": "studio_publish",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "component_id",
+            "required": true,
+            "schema": {
+              "title": "Component Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "version",
+            "required": true,
+            "schema": {
+              "title": "Version",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublishOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Publish a draft; failed gates need override_reason and evals:gates:override",
+        "tags": [
+          "studio"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/studio/components/{component_id}/configs/{version}/set-current": {
+      "post": {
+        "operationId": "studio_set_current",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "component_id",
+            "required": true,
+            "schema": {
+              "title": "Component Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "version",
+            "required": true,
+            "schema": {
+              "title": "Version",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetCurrentIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SetCurrentOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Make a published version current (rollback)",
+        "tags": [
+          "studio"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/studio/components/{component_id}/diff": {
+      "get": {
+        "operationId": "studio_diff_versions",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "component_id",
+            "required": true,
+            "schema": {
+              "title": "Component Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "from",
+            "required": true,
+            "schema": {
+              "minimum": 1,
+              "title": "From",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "to",
+            "required": true,
+            "schema": {
+              "minimum": 1,
+              "title": "To",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiffOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Field-level and code diff between two versions",
+        "tags": [
+          "studio"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/studio/components/{component_id}/promotions": {
+      "get": {
+        "operationId": "studio_list_promotions",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "component_id",
+            "required": true,
+            "schema": {
+              "title": "Component Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PromotionOut"
+                  },
+                  "title": "Response Studio List Promotions",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Recent promotions of this component to other instances",
+        "tags": [
+          "studio"
+        ]
+      },
+      "post": {
+        "operationId": "studio_promote",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "component_id",
+            "required": true,
+            "schema": {
+              "title": "Component Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PromoteIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PromotionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Dry run: does every registry reference and pinned member exist on the target?",
+        "tags": [
+          "studio"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/studio/components/{component_id}/publish-check": {
+      "get": {
+        "operationId": "studio_publish_check",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "component_id",
+            "required": true,
+            "schema": {
+              "title": "Component Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "version",
+            "required": true,
+            "schema": {
+              "minimum": 1,
+              "title": "Version",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublishCheckOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Validation and eval gates for publishing a version",
+        "tags": [
+          "studio"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/studio/components/{component_id}/restore": {
+      "post": {
+        "operationId": "studio_restore_component",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "component_id",
+            "required": true,
+            "schema": {
+              "title": "Component Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComponentDetailOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Restore an archived component",
+        "tags": [
+          "studio"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/studio/components/{component_id}/test-runs": {
+      "post": {
+        "operationId": "studio_test_run",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "component_id",
+            "required": true,
+            "schema": {
+              "title": "Component Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TestRunIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Run a draft version and stream its events (delegated elevation; needs components:write and run)",
+        "tags": [
+          "studio"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/studio/promotions/{promotion_id}/apply": {
+      "post": {
+        "operationId": "studio_apply_promotion",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "promotion_id",
+            "required": true,
+            "schema": {
+              "title": "Promotion Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PromotionApplyIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PromotionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Create the drafts on the target (and publish)",
+        "tags": [
+          "studio"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/studio/registry": {
+      "get": {
+        "operationId": "studio_registry",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Type"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Everything Studio can compose with, with used-by counts",
+        "tags": [
+          "studio"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/studio/registry/refresh": {
+      "post": {
+        "operationId": "studio_refresh_registry",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Re-read the registry and rebuild the used-by index",
+        "tags": [
+          "studio"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/studio/registry/{entry_type}/{name}": {
+      "get": {
+        "operationId": "studio_registry_entry",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "entry_type",
+            "required": true,
+            "schema": {
+              "title": "Entry Type",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "title": "Name",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryEntryDetailOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "One registry entry and where it's used",
+        "tags": [
+          "studio"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/studio/validate": {
+      "post": {
+        "operationId": "studio_validate",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValidateIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Shape, registry references, rules and agno's strict load",
+        "tags": [
+          "studio"
+        ]
+      }
+    },
     "/api/v1/instances/{instance}/test": {
       "post": {
         "operationId": "instances_test_instance",
@@ -30597,6 +34277,131 @@
         "summary": "Revoke a token now (by id or prefix)",
         "tags": [
           "service-accounts"
+        ]
+      }
+    },
+    "/api/v1/studio/schema/{kind}": {
+      "get": {
+        "operationId": "studio_schema",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "kind",
+            "required": true,
+            "schema": {
+              "enum": [
+                "agent",
+                "team"
+              ],
+              "title": "Kind",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Studio Schema",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "JSON Schema of a config, with the form's sections and field metadata",
+        "tags": [
+          "studio"
+        ]
+      }
+    },
+    "/api/v1/studio/templates": {
+      "get": {
+        "operationId": "studio_templates",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "kind",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/KindIn"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Kind"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TemplateOut"
+                  },
+                  "title": "Response Studio Templates",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Starting points for new agents and teams",
+        "tags": [
+          "studio"
         ]
       }
     },
