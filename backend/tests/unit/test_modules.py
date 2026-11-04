@@ -26,6 +26,7 @@ def test_entry_points_discover_the_installed_modules() -> None:
         "settings",
         "org",
         "search",
+        "system",
         "directory",
         "access",
         "gateway",

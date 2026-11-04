@@ -1,5 +1,5 @@
 import { describeError } from "@agnostic/api";
-import { formatCount, useCan } from "@agnostic/core";
+import { formatCount, formatInZone, useCan } from "@agnostic/core";
 import {
   Badge,
   Button,
@@ -23,7 +23,6 @@ import { DisableDialog } from "./schedule-actions";
 import { ScheduleDetail } from "./schedule-detail";
 import { ScheduleFormDialog } from "./schedule-form";
 import {
-  formatInZone,
   targetLabel,
   times,
   useScheduleActions,
@@ -292,7 +291,7 @@ export function SchedulerPage() {
       ) : schedules.isPending ? (
         <LoadingRows label="Loading schedules" />
       ) : rows.length === 0 ? (
-        <EmptyState title="No schedules yet.">
+        <EmptyState title="No schedules yet">
           A schedule starts a background run of an agent, team or workflow on a cron, in its own timezone.
         </EmptyState>
       ) : (

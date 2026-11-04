@@ -23,15 +23,16 @@ from agnostic_audit.application.ports import (
 )
 from agnostic_audit.domain.archive import (
     RESTORE_DAYS,
+    ArchiveCheck,
     ArchiveTarget,
     ArchiveVerificationError,
     Manifest,
-    month_bounds,
+    check_archive,
     object_keys,
     parse_month,
 )
 from agnostic_audit.domain.chain import ChainResult, ChainVerifier
-from agnostic_audit.domain.events import AuditEvent, event_document, event_from_document
+from agnostic_audit.domain.events import AuditEvent, event_document
 from agnostic_audit.domain.governance import ArchivedMonth
 from agnostic_kernel.db import utcnow
 from agnostic_kernel.domain_events import DomainEvents
@@ -233,6 +234,26 @@ class Archives:
             raise NotFoundError(f"No archive for {month}.")
         return archive
 
+    async def _check(self, archive: ArchivedMonth, target: ArchiveTarget) -> ArchiveCheck:
+        store = self._stores.open(target)
+        try:
+            manifest = Manifest.parse(await store.get(archive.manifest_key))
+        except (ValueError, KeyError) as exc:
+            return ArchiveCheck(archive.month, 0, 0, (f"{archive.manifest_key} isn't a valid manifest: {exc}",))
+        head = await store.head(archive.object_key)
+        data = await store.get(archive.object_key)
+        return check_archive(archive.month, data, manifest, recorded_sha256=archive.sha256, size=head.size)
+
+    async def verify(self, month: str) -> ArchiveCheck:
+        """Download an archived month and check it against its manifest, without restoring anything."""
+        archive = await self.get(month)
+        target = await self._policies.target()
+        if target is None:
+            raise ValidationFailedError("Configure the archive bucket before verifying archives.")
+        check = await self._check(archive, target)
+        log.info("audit.archive_verified", month=month, ok=check.ok, problems=list(check.problems))
+        return check
+
     async def restore(self, month: str, now: datetime | None = None) -> ArchivedMonth:
         """Download, verify against the manifest, and re-insert the month's events for 7 days of searching."""
         now = now or utcnow()
@@ -242,20 +263,10 @@ class Archives:
         target = await self._policies.target()
         if target is None:
             raise ValidationFailedError("Configure the archive bucket before restoring.")
-        store = self._stores.open(target)
-        manifest = Manifest.parse(await store.get(archive.manifest_key))
-        data = await store.get(archive.object_key)
-        digest = hashlib.sha256(data).hexdigest()
-        if digest != manifest.sha256 or digest != archive.sha256:
-            raise ArchiveVerificationError(f"{archive.object_key}: SHA-256 doesn't match the manifest")
-        events = [event_from_document(json.loads(line)) for line in zstd.decompress(data).splitlines() if line.strip()]
-        if len(events) != manifest.event_count:
-            raise ArchiveVerificationError(
-                f"{archive.object_key}: {len(events)} events, the manifest says {manifest.event_count}"
-            )
-        start, end = month_bounds(month)
-        if any(not start <= event.occurred_at < end for event in events):
-            raise ArchiveVerificationError(f"{archive.object_key}: events outside {month}")
+        check = await self._check(archive, target)
+        if not check.ok:
+            raise ArchiveVerificationError(f"{archive.object_key}: {'; '.join(check.problems)}")
+        events = list(check.events)
         await self._maintenance.drop_month(month)  # leftovers of an interrupted restore
         await self._maintenance.ensure_month(month)
         try:

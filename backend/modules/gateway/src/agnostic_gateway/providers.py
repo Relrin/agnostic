@@ -10,6 +10,7 @@ from dishka import (
     provide,  # pyright: ignore[reportUnknownVariableType]
 )
 
+from agnostic_gateway.application.direct import DirectTokens
 from agnostic_gateway.application.elevation import Elevation
 from agnostic_gateway.application.ingest import IngestAuthz
 from agnostic_gateway.application.ports import RoutePolicyRepository, Upstream
@@ -18,6 +19,7 @@ from agnostic_gateway.application.streaming import CircuitBreaker
 from agnostic_gateway.facade import GatewayFacade, GatewayFacadeImpl
 from agnostic_gateway.infrastructure.upstream import SqlRoutePolicyRepository, UpstreamPool
 from agnostic_gateway.settings import GatewaySettings
+from agnostic_instances.facade import ConnectionTlsFactory
 
 
 class GatewayProvider(Provider):
@@ -27,6 +29,7 @@ class GatewayProvider(Provider):
     table_cache = provide(PolicyTableCache, scope=Scope.APP)
     instance_cache = provide(InstanceCache, scope=Scope.APP)
     gateway = provide(Gateway)
+    direct_tokens = provide(DirectTokens)
     elevation = provide(Elevation)
     facade = provide(GatewayFacadeImpl, provides=GatewayFacade)
     ingest_authz = provide(IngestAuthz)
@@ -50,7 +53,7 @@ class GatewayProvider(Provider):
         return CircuitBreaker(threshold=settings.circuit_failures, cooldown=settings.circuit_cooldown_seconds)
 
     @provide(scope=Scope.APP)
-    async def upstream(self, settings: GatewaySettings) -> AsyncIterator[Upstream]:
-        pool = UpstreamPool(read_timeout=settings.upstream_read_timeout)
+    async def upstream(self, settings: GatewaySettings, tls: ConnectionTlsFactory) -> AsyncIterator[Upstream]:
+        pool = UpstreamPool(read_timeout=settings.upstream_read_timeout, tls=tls)
         yield pool
         await pool.aclose()

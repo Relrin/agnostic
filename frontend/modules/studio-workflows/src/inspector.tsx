@@ -114,7 +114,7 @@ export const Inspector = forwardRef<HTMLElement, InspectorProps>(function Inspec
           />
         </div>
       ) : (
-        <EmptyState title="Nothing to edit." />
+        <EmptyState title="Nothing to edit" />
       )}
     </aside>
   );

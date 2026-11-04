@@ -21,6 +21,7 @@ coverage.xml
 htmlcov/
 *.egg-info/
 dist/
+.drill/
 build/
 
 # Node / frontend
@@ -31,6 +32,7 @@ node_modules/
 .pnp.*
 storybook-static/
 playwright-report/
+playwright-report-csp/
 test-results/
 blob-report/
 *.tsbuildinfo
@@ -43,3 +45,4 @@ blob-report/
 .DS_Store
 Thumbs.db
 **/.tsbuild/
+deploy/compose/.env

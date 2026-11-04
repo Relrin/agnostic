@@ -13,7 +13,7 @@ export function Input({ className, mono = false, type = "text", ...props }: Inpu
       data-slot="input"
       type={type}
       className={cn(
-        "h-[34px] w-full min-w-0 rounded-control border border-border-input bg-inset px-2.5 text-[13px] text-fg transition-colors placeholder:text-fg-muted focus-visible:border-accent focus-visible:shadow-selection focus-visible:outline-none disabled:text-fg-disabled aria-invalid:border-danger",
+        "h-[var(--control-h-34)] w-full min-w-0 rounded-control border border-border-input bg-inset px-2.5 text-[13px] text-fg transition-colors placeholder:text-fg-muted focus-visible:border-accent focus-visible:shadow-selection focus-visible:outline-none disabled:text-fg-disabled aria-invalid:border-danger",
         mono && "font-mono text-[12.5px]",
         className,
       )}

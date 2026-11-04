@@ -95,7 +95,9 @@ async def test_readiness_reports_missing_redis(sqlite_database: str) -> None:
         transport = httpx.ASGITransport(app=manager.app)
         async with httpx.AsyncClient(transport=transport, base_url="http://test") as http:
             response = await http.get("/readyz")
-    assert response.status_code == 503
+    # A cache outage degrades the replica but keeps it in rotation (only the database and migrations gate it).
+    assert response.status_code == 200
+    assert response.json()["status"] == "degraded"
     checks = {c["name"]: c["ok"] for c in response.json()["checks"]}
     assert checks == {"database": True, "cache": False, "migrations": True}
 

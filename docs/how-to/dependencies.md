@@ -6,7 +6,7 @@
 |---|---|---|
 | Python packages | every `pyproject.toml` | `==` versions; `uv.lock` pins the rest (`uv sync --locked` in CI) |
 | Build backend | `[build-system]` | `uv_build==0.13.6` |
-| Python itself | `backend/.python-version`, `runtime/.python-version`, `bridge/.python-version` | `3.15.2`, `3.13.12`, `3.13.12` (the bridge also declares `requires-python >=3.10`: CI tests 3.10 and 3.13) |
+| Python itself | `backend/.python-version`, `runtime/.python-version`, `bridge/.python-version` | `3.15.2`, `3.13.12`, `3.13.12` (the bridge also declares `requires-python >=3.10`; CI tests 3.13) |
 | uv | `[tool.uv] required-version` | `==0.13.6` |
 | JS packages | every `package.json` | exact versions (`.yarnrc.yml` `defaultSemverRangePrefix: ""`); `yarn.lock` |
 | Yarn | `packageManager` + `.yarn/releases/yarn-4.18.1.cjs` | `yarnPath`, no Corepack needed |

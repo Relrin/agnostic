@@ -181,7 +181,7 @@ export function AskPage() {
           </div>
         ))}
       </aside>
-      <main className="flex min-w-0 flex-1 flex-col gap-4 overflow-y-auto px-6 pt-5 pb-6">
+      <section className="flex min-w-0 flex-1 flex-col gap-4 overflow-y-auto px-6 pt-5 pb-6">
         <PageIntro title="Ask your OS">
           Questions about this instance, answered from your traces, sessions, schedules, approvals and audit
           log, with your access. Answers are generated and list the pages they used.
@@ -211,7 +211,7 @@ export function AskPage() {
               go(accepted.conversation_id);
           }}
         />
-      </main>
+      </section>
     </div>
   );
 }

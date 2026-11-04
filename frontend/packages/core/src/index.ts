@@ -63,15 +63,29 @@ export {
   type SessionsQuery,
 } from "./agentos";
 export {
+  configureFormatting,
   dayGroup,
   formatBytes,
+  formatCalendarDay,
   formatCount,
+  formatDate,
+  formatDateTime,
   formatDuration,
+  formatInZone,
   formatPercent,
   formatRelative,
+  formatTime,
   formatWhen,
+  formattingTimeZone,
+  localTimezone,
+  timezones,
   toDate,
+  zoneParts,
+  type ZoneParts,
 } from "./format";
+export { DensityProvider, useDensity } from "./density";
+export { useTourFromSearch } from "./tour";
+export { docsLink, resolveGuideLink } from "./docs";
 export {
   META_EVENTS,
   baseEventName,

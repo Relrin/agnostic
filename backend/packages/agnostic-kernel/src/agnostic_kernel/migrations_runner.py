@@ -8,6 +8,7 @@ ones, so turning a module off never strands its revisions in the version table.
 from __future__ import annotations
 
 import os
+import time
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -25,6 +26,8 @@ from agnostic_kernel.tables import KernelBase
 
 MIGRATIONS_DIR = Path(__file__).with_name("migrations")
 KERNEL_VERSIONS = MIGRATIONS_DIR / "versions"
+UNLIMITED_STATEMENTS = "SET LOCAL statement_timeout = 0"
+"""Migrations build indexes and rewrite tables: they run without the API's statement timeout."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -78,6 +81,7 @@ def pending_revisions(script: ScriptDirectory, current: Sequence[str]) -> tuple[
 async def _run(engine: AsyncEngine, config: Config, operation: str, *args: object) -> None:
     async with engine.begin() as connection:
         if engine.dialect.name == "postgresql":
+            _ = await connection.execute(text(UNLIMITED_STATEMENTS))
             _ = await connection.execute(text(f"CREATE SCHEMA IF NOT EXISTS {SCHEMA}"))
 
         def run(sync_connection: Connection) -> None:
@@ -93,6 +97,54 @@ async def upgrade(engine: AsyncEngine, modules: Iterable[Module], revision: str 
 
 async def downgrade(engine: AsyncEngine, modules: Iterable[Module], revision: str) -> None:
     await _run(engine, alembic_config(modules), "downgrade", revision)
+
+
+@dataclass(frozen=True, slots=True)
+class AppliedRevision:
+    revision: str
+    seconds: float
+
+
+class _DryRunRollback(Exception):  # noqa: N818
+    """Raised inside the migration transaction so it rolls back."""
+
+
+async def check_upgrade(
+    engine: AsyncEngine, modules: Iterable[Module], revision: str = "heads"
+) -> list[AppliedRevision]:
+    """Apply pending migrations inside one transaction, time each revision, then roll everything back.
+
+    Run it against a copy of production data before an upgrade: a migration that fails or locks for long shows up
+    here, and the database is left as it was. PostgreSQL only: its DDL is transactional, SQLite's driver commits
+    schema changes as they happen.
+    """
+    config = alembic_config(modules)
+    applied: list[AppliedRevision] = []
+    started = time.perf_counter()
+
+    def on_version_apply(**kwargs: object) -> None:
+        nonlocal started
+        step = kwargs.get("step")
+        now = time.perf_counter()
+        applied.append(AppliedRevision(str(getattr(step, "up_revision_id", step)), now - started))
+        started = now
+
+    config.attributes["on_version_apply"] = on_version_apply
+    try:
+        async with engine.begin() as connection:
+            if engine.dialect.name == "postgresql":
+                _ = await connection.execute(text(UNLIMITED_STATEMENTS))
+                _ = await connection.execute(text(f"CREATE SCHEMA IF NOT EXISTS {SCHEMA}"))
+
+            def run(sync_connection: Connection) -> None:
+                config.attributes["connection"] = sync_connection
+                command.upgrade(config, revision)
+                raise _DryRunRollback  # noqa: TRY301  (the only way out of run_sync that rolls back)
+
+            await connection.run_sync(run)
+    except _DryRunRollback:
+        pass
+    return applied
 
 
 async def state(engine: AsyncEngine, modules: Sequence[Module]) -> MigrationState:

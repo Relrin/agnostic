@@ -18,7 +18,7 @@ class SearchDocumentRow(SearchBase):
     """One palette entry. On PostgreSQL the migration adds a generated ``tsv`` column (GIN) and a trigram index."""
 
     __tablename__ = "search_documents"
-    __table_args__ = (Index("ix_search_documents_provider", "provider"),)
+    __table_args__ = (Index("ix_search_documents_provider", "provider"), Index("ix_search_documents_ref", "ref"))
 
     id: Mapped[str] = mapped_column(String(400), primary_key=True)
     provider: Mapped[str] = mapped_column(String(60))

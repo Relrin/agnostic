@@ -1,0 +1,85 @@
+name: upgrade & restore drills
+
+# Every database left by a pre-1.0 milestone must upgrade to the current code, and a backup restored with the
+# customer's own tooling (pg_dump/pg_restore) must come back complete. Nightly, on release branches, and by hand.
+on:
+  schedule:
+    - cron: "41 2 * * *"
+  workflow_dispatch:
+  push:
+    branches: ["release/**"]
+  pull_request:
+    paths:
+      - "backend/**/migrations/**"
+      - "deploy/upgrade-milestones.txt"
+      - "scripts/upgrade_drill.sh"
+      - "scripts/restore_drill.sh"
+
+permissions:
+  contents: read
+
+env:
+  UV_VERSION: "0.13.6"
+
+jobs:
+  upgrade-drill:
+    name: upgrade from every pre-1.0 milestone
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: pgvector/pgvector:0.8.7-pg18-trixie@sha256:5895949dfcdf308eb0cd31c950c93c14895c77f33fbedfecf1fa511ab1d4bcd2
+        env: { POSTGRES_USER: agnostic, POSTGRES_PASSWORD: agnostic, POSTGRES_DB: agnostic }
+        ports: ["5432:5432"]
+        options: --health-cmd "pg_isready -U agnostic" --health-interval 2s --health-retries 30
+      redis:
+        image: redis:8.10.3-alpine@sha256:21090af93f8324db2f0f0f4f38a7c60369d47d917e000c3423d89d2ae2883537
+        ports: ["6379:6379"]
+        options: --health-cmd "redis-cli ping" --health-interval 2s --health-retries 30
+    env:
+      AGNOSTIC_DRILL_DATABASE_URL: postgresql://agnostic:agnostic@localhost:5432/agnostic
+      AGNOSTIC_REDIS__URL: redis://localhost:6379/0
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { fetch-depth: 0 }
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with: { version: "${{ env.UV_VERSION }}", enable-cache: true }
+      - run: cd backend && uv sync --locked
+      - run: bash scripts/upgrade_drill.sh
+
+  restore-drill:
+    name: back up, restore, verify
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: pgvector/pgvector:0.8.7-pg18-trixie@sha256:5895949dfcdf308eb0cd31c950c93c14895c77f33fbedfecf1fa511ab1d4bcd2
+        env: { POSTGRES_USER: agnostic, POSTGRES_PASSWORD: agnostic, POSTGRES_DB: agnostic }
+        ports: ["5432:5432"]
+        options: --health-cmd "pg_isready -U agnostic" --health-interval 2s --health-retries 30
+      redis:
+        image: redis:8.10.3-alpine@sha256:21090af93f8324db2f0f0f4f38a7c60369d47d917e000c3423d89d2ae2883537
+        ports: ["6379:6379"]
+        options: --health-cmd "redis-cli ping" --health-interval 2s --health-retries 30
+    env:
+      AGNOSTIC_ENV: test
+      AGNOSTIC_DATABASE__URL: postgresql://agnostic:agnostic@localhost:5432/agnostic
+      AGNOSTIC_REDIS__URL: redis://localhost:6379/0
+      # A throwaway key for the drill database only.
+      AGNOSTIC_SECRETS__MASTER_KEY: AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with: { version: "${{ env.UV_VERSION }}", enable-cache: true }
+      - name: PostgreSQL 18 client tools
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSo /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt noble-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+          sudo apt-get update && sudo apt-get install --yes postgresql-client-18
+      - name: Seed a database
+        working-directory: backend
+        run: |
+          uv sync --locked
+          uv run agnostic migrate
+          printf '%s\n' "restore-drill-password" | uv run agnostic bootstrap --org-name "Restore drill" \
+            --owner-email owner@drill.test --owner-name "Drill Owner" --password-stdin
+      - run: bash scripts/restore_drill.sh

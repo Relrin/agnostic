@@ -3,7 +3,15 @@
   "compilerOptions": {
     "types": ["vite/client", "node"]
   },
-  "include": ["src", "e2e", "vite.config.ts", "playwright.config.ts"],
+  "include": [
+    "src",
+    "e2e",
+    "e2e-csp",
+    "vite.config.ts",
+    "playwright.config.ts",
+    "playwright.csp.config.ts",
+    "security-headers.ts"
+  ],
   "references": [
     {
       "path": "../../packages/ui"
@@ -85,6 +93,12 @@
     },
     {
       "path": "../../modules/org-settings"
+    },
+    {
+      "path": "../../modules/system"
+    },
+    {
+      "path": "../../modules/help"
     },
     {
       "path": "../../packages/studio"

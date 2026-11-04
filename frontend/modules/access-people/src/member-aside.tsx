@@ -13,7 +13,16 @@ import {
   type MemberOut,
 } from "@agnostic/api";
 import { settled, useAssistant, useExplanation } from "@agnostic/assistant";
-import { ORG_ROLE_LABELS, STALE_TIME, useCan, useMe, useOrg, withQueryFn } from "@agnostic/core";
+import {
+  ORG_ROLE_LABELS,
+  STALE_TIME,
+  formatDate,
+  formatDateTime,
+  useCan,
+  useMe,
+  useOrg,
+  withQueryFn,
+} from "@agnostic/core";
 import {
   Avatar,
   Badge,
@@ -251,9 +260,7 @@ function TemporaryAccessDialog({
   const grant = useMutation({
     ...accessGrantTemporaryMutation(),
     onSuccess: async (binding) => {
-      toast.success(
-        `${member.display_name} has access until ${new Date(binding.expires_at ?? "").toLocaleString()}`,
-      );
+      toast.success(`${member.display_name} has access until ${formatDateTime(binding.expires_at)}`);
       await refreshDirectory(client);
       onOpenChange(false);
     },
@@ -714,9 +721,8 @@ export function MemberAside({
           <div className="flex min-w-0 flex-col">
             <SheetTitle className="text-[16px] font-semibold">{member.display_name}</SheetTitle>
             <SheetDescription className="text-[12.5px] text-fg-secondary">
-              {member.email} · joined{" "}
-              {new Date(member.joined_at).toLocaleDateString("en-GB", { month: "short", year: "numeric" })}{" "}
-              through {member.joined_via}
+              {member.email} · joined {formatDate(member.joined_at, { day: false })} through{" "}
+              {member.joined_via}
             </SheetDescription>
           </div>
         </div>

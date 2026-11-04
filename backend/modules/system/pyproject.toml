@@ -1,0 +1,28 @@
+[project]
+name = "agnostic-system"
+version = "0.1.0"
+description = "System page: versions, endpoint checks, job queues and failed jobs, delivery backlogs, instance polling"
+requires-python = "==3.15.*"
+license = "BSD-3-Clause"
+dependencies = [
+  "agnostic-audit",
+  "agnostic-instances",
+  "agnostic-kernel",
+  "dishka==1.10.1",
+  "fastapi==0.162.0",
+  "pydantic==2.14.2",
+  "redis==8.1.0",
+  "sqlalchemy[asyncio]==2.1.6",
+]
+
+[project.entry-points."agnostic.modules"]
+system = "agnostic_system.module:SystemModule"
+
+[tool.uv.sources]
+agnostic-audit = { workspace = true }
+agnostic-instances = { workspace = true }
+agnostic-kernel = { workspace = true }
+
+[build-system]
+requires = ["uv_build==0.13.6"]
+build-backend = "uv_build"

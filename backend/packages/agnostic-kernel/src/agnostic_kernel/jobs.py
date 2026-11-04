@@ -7,6 +7,7 @@ API. Long-running jobs report progress through :class:`JobProgressReporter`.
 
 from __future__ import annotations
 
+import asyncio
 from collections.abc import AsyncGenerator, Iterable
 from contextlib import asynccontextmanager
 from typing import Any, cast
@@ -58,6 +59,26 @@ def register_jobs(app: procrastinate.App, specs: Iterable[JobSpec]) -> list[str]
     return names
 
 
+RETRY_STALLED_TASK = "kernel.retry_stalled_jobs"
+STALLED_AFTER_SECONDS = 60.0
+"""A ``doing`` job whose worker hasn't sent a heartbeat for this long was abandoned (the worker was killed). Workers
+heartbeat every 10 s, so this is six missed heartbeats."""
+
+
+async def retry_stalled_jobs(context: procrastinate.JobContext, timestamp: int) -> int:  # noqa: ARG001
+    """Every minute: queue again the jobs of workers that died mid-job (OOM kill, node loss, SIGKILL).
+
+    A retried job runs again from the start: every job must be safe to run twice (see ``JobSpec``).
+    """
+    manager = context.app.job_manager
+    retried = 0
+    for job in await manager.get_stalled_jobs(seconds_since_heartbeat=STALLED_AFTER_SECONDS):
+        log.warning("jobs.stalled_retried", job_id=job.id, task=job.task_name, worker=job.worker_id)
+        await manager.retry_job(job)
+        retried += 1
+    return retried
+
+
 def worker_options(
     container: AsyncContainer,
     *,
@@ -74,6 +95,28 @@ def worker_options(
     if queues:
         options["queues"] = list(queues)
     return options
+
+
+async def keep_working(app: procrastinate.App, options: WorkerOptions, *, max_delay: float = 30.0) -> None:
+    """Run the worker until cancelled, starting it again when it stops on its own.
+
+    Procrastinate stops a worker whose listener or heartbeat loses the database (a restart, a failover); this keeps
+    the process and starts the worker loop again, with backoff, so the queue drains once the database is back.
+    """
+    delay = 1.0
+    while True:
+        started = asyncio.get_running_loop().time()
+        try:
+            await app.run_worker_async(**options)
+            log.warning("worker.stopped", detail="the job loop ended on its own; starting it again")
+        except asyncio.CancelledError:
+            raise
+        except Exception as exc:  # noqa: BLE001  (any failure of the loop is retried; the process stays up)
+            log.warning("worker.failed", error=str(exc) or type(exc).__name__)
+        ran_for = asyncio.get_running_loop().time() - started
+        delay = 1.0 if ran_for > 60 else min(delay * 2, max_delay)  # noqa: PLR2004
+        log.info("worker.restarting", in_seconds=delay)
+        await asyncio.sleep(delay)
 
 
 @asynccontextmanager

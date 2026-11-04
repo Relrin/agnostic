@@ -59,6 +59,10 @@ class OidcClient:
         self._discovery = (time.monotonic() + DISCOVERY_TTL, metadata)
         return metadata
 
+    async def check(self) -> str:
+        """Read the discovery document (raises like a sign-in would); returns the authorization endpoint."""
+        return str((await self._metadata()).get("authorization_endpoint", ""))
+
     async def _signing_key(self, metadata: Mapping[str, Any], kid: str | None) -> jwt.PyJWK:
         for refresh in (False, True):
             if self._jwks is None or refresh:

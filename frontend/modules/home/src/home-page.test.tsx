@@ -2,12 +2,15 @@ import {
   API,
   assistantCalls,
   assistantHandlers,
+  GATEWAY,
   p01Handlers,
   p02Handlers,
   renderPage,
+  sampleMe,
+  sampleOrg,
   sampleOverview,
 } from "@agnostic/testing";
-import { screen, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
@@ -146,5 +149,46 @@ describe("kpiDelta", () => {
       sentiment: "good",
     });
     expect(kpiDelta({ value: 1, previous: null, delta: null, delta_pct: null }, "count", "")).toBeUndefined();
+  });
+});
+
+describe("GetStarted", () => {
+  it("lists the first steps still to do, opens their tours and can be dismissed", async () => {
+    let sent: unknown;
+    server.use(
+      http.get(`${API}/org`, () =>
+        HttpResponse.json({ ...sampleOrg, member_count: 1, pending_invitations: 0 }),
+      ),
+      http.get(`${GATEWAY}/sessions`, () =>
+        HttpResponse.json({ data: [], meta: { page: 1, limit: 1, total_pages: 0, total_count: 0 } }),
+      ),
+      http.patch(`${API}/me`, async ({ request }) => {
+        sent = await request.json();
+        return HttpResponse.json({ ...sampleMe, preferences: { "onboarding.dismissed": true } });
+      }),
+    );
+    renderPage(HomePage, { path: "/i/$instance/home", url: "/i/prod-agentos/home" });
+
+    const card = await screen.findByRole("region", { name: "Get started" });
+    expect(within(card).getByText("1 of 3 done")).toBeInTheDocument();
+    const steps = within(card).getByRole("list", { name: "First steps" });
+    expect(
+      within(steps).getByRole("heading", { name: /Connect your first instance\s*\(done\)/ }),
+    ).toBeInTheDocument();
+    expect(
+      within(steps).getByRole("heading", { name: /Chat with your first agent\s*\(to do\)/ }),
+    ).toBeInTheDocument();
+    const [chatTour] = within(steps).getAllByRole("link", { name: "Show me" });
+    expect(chatTour).toHaveAttribute("href", "/i/prod-agentos/chat?tour=chat");
+    expect(within(steps).getByRole("link", { name: "Sign-in settings" })).toHaveAttribute(
+      "href",
+      "/org/settings/authentication",
+    );
+
+    await userEvent.setup().click(within(card).getByRole("button", { name: "Dismiss" }));
+    await waitFor(() => {
+      expect(screen.queryByRole("region", { name: "Get started" })).not.toBeInTheDocument();
+    });
+    expect(sent).toEqual({ preferences: { "onboarding.dismissed": true } });
   });
 });

@@ -8,22 +8,13 @@ import {
   meUpdateMeMutation,
   type MeOut,
 } from "@agnostic/api";
-import { ORG_ROLE_LABELS, useMe, withQueryFn } from "@agnostic/core";
-import {
-  Badge,
-  Button,
-  Callout,
-  ErrorState,
-  Field,
-  Input,
-  LoadingRows,
-  PageIntro,
-  Switch,
-} from "@agnostic/ui";
+import { ORG_ROLE_LABELS, formatDateTime, useMe, withQueryFn } from "@agnostic/core";
+import { Badge, Button, Callout, ErrorState, Field, Input, LoadingRows, PageIntro } from "@agnostic/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type SubmitEvent } from "react";
 
 import { NotificationPreferences } from "./notification-preferences";
+import { Preferences } from "./preferences";
 import { TwoStepVerification } from "./two-step";
 
 function ProfileForm({ me }: { me: MeOut }) {
@@ -80,30 +71,6 @@ function ProfileForm({ me }: { me: MeOut }) {
   );
 }
 
-function Preferences({ me }: { me: MeOut }) {
-  const queryClient = useQueryClient();
-  const update = useMutation({
-    ...meUpdateMeMutation(),
-    onSuccess: (data) => {
-      queryClient.setQueryData(meGetMeQueryKey(), data);
-    },
-  });
-  const apiHints = me.preferences.api_hints === true;
-  return (
-    <div className="flex max-w-xl flex-col gap-4">
-      <Switch
-        label="API hints"
-        description="Show the API call behind each screen, so you can script what you click."
-        checked={apiHints}
-        disabled={update.isPending}
-        onCheckedChange={(checked) => {
-          update.mutate({ body: { preferences: { api_hints: checked } } });
-        }}
-      />
-    </div>
-  );
-}
-
 function Sessions() {
   const queryClient = useQueryClient();
   const sessions = useQuery(withQueryFn(meListMySessionsOptions()));
@@ -123,7 +90,7 @@ function Sessions() {
             <span className="truncate text-[13.5px]">{session.user_agent ?? "Unknown browser"}</span>
             <span className="text-[12px] text-fg-muted">
               {session.method === "password" ? "Password" : session.method.replace("sso:", "SSO · ")} ·{" "}
-              {session.ip ?? "unknown address"} · since {new Date(session.created_at).toLocaleString()}
+              {session.ip ?? "unknown address"} · since {formatDateTime(session.created_at)}
             </span>
           </div>
           {session.current ? (

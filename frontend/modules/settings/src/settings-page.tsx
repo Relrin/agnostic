@@ -6,7 +6,7 @@ import {
   instancesListInstancesQueryKey,
   problemCode,
 } from "@agnostic/api";
-import { withQueryFn } from "@agnostic/core";
+import { formatDateTime, withQueryFn } from "@agnostic/core";
 import {
   Callout,
   ErrorState,
@@ -121,9 +121,7 @@ export function SettingsPage() {
     <div className="mx-auto flex w-full max-w-[1100px] flex-col gap-6 px-8 pt-6 pb-10">
       <PageIntro title={`Settings · ${instance.data.display_name}`}>
         Connection, trust and what the runtime reports in /config.
-        {config.data?.fetched_at
-          ? ` Snapshot from ${new Date(config.data.fetched_at).toLocaleString()}.`
-          : ""}
+        {config.data?.fetched_at ? ` Snapshot from ${formatDateTime(config.data.fetched_at)}.` : ""}
       </PageIntro>
       <Tabs
         value={section}

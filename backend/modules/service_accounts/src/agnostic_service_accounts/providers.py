@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import hashlib
-
 from dishka import (
     Provider,
     Scope,
@@ -16,7 +14,7 @@ from agnostic_audit.facade import AuditLog
 from agnostic_identity.facade import BearerPrincipalResolver, IdentityFacade
 from agnostic_instances.facade import InstancesFacade
 from agnostic_kernel.auth import Authorizer
-from agnostic_kernel.crypto import load_master_key
+from agnostic_kernel.crypto import SecretBox
 from agnostic_kernel.domain_events import DomainEvents
 from agnostic_kernel.ephemeral import EphemeralStore
 from agnostic_kernel.settings import Settings
@@ -31,12 +29,11 @@ from agnostic_service_accounts.settings import ServiceAccountsSettings
 PEPPER_CONTEXT = b"agnostic/service-accounts/gateway-token-pepper/v1:"
 
 
-def token_pepper(settings: Settings, module: ServiceAccountsSettings) -> str:
-    """The configured pepper, or one derived from the master key (stable across restarts without config)."""
+def token_peppers(box: SecretBox, module: ServiceAccountsSettings) -> tuple[str, ...]:
+    """The configured pepper, or peppers derived from the master keys (current first; stable without config)."""
     if module.token_pepper is not None:
-        return module.token_pepper.get_secret_value()
-    master = load_master_key(settings.secrets, environment=settings.env)
-    return hashlib.sha256(PEPPER_CONTEXT + master).hexdigest()
+        return (module.token_pepper.get_secret_value(),)
+    return box.derive_all(PEPPER_CONTEXT)
 
 
 class ServiceAccountsProvider(Provider):
@@ -51,8 +48,11 @@ class ServiceAccountsProvider(Provider):
         return SqlServiceAccountRepository(session)
 
     @provide(scope=Scope.APP)
-    def hashing(self, settings: Settings, module: ServiceAccountsSettings) -> TokenHashing:
-        return TokenHashing(pepper=token_pepper(settings, module), touch_every_seconds=module.last_used_write_seconds)
+    def hashing(self, box: SecretBox, module: ServiceAccountsSettings) -> TokenHashing:
+        current, *previous = token_peppers(box, module)
+        return TokenHashing(
+            pepper=current, touch_every_seconds=module.last_used_write_seconds, previous_peppers=tuple(previous)
+        )
 
     @provide
     def service_accounts(

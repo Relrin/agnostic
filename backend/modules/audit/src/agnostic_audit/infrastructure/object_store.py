@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import base64
 import hashlib
-import hmac
 import re
 from collections.abc import Mapping
 from datetime import UTC, datetime
@@ -19,65 +18,10 @@ import httpx
 from agnostic_audit.application.ports import ObjectNotFoundError, ObjectStore, ObjectStoreError, StoredObject
 from agnostic_audit.domain.archive import ArchiveTarget
 from agnostic_audit.infrastructure.http import AuditHttp
+from agnostic_kernel.aws_sigv4 import EMPTY_SHA256, sign
 
-ALGORITHM = "AWS4-HMAC-SHA256"
 SERVICE = "s3"
-EMPTY_SHA256 = hashlib.sha256(b"").hexdigest()
 _ERROR = re.compile(r"<(Code|Message)>([^<]*)</\1>")
-
-
-def _hmac(key: bytes, message: str) -> bytes:
-    return hmac.new(key, message.encode(), hashlib.sha256).digest()
-
-
-def signing_key(secret_access_key: str, date: str, region: str, service: str = SERVICE) -> bytes:
-    key = _hmac(("AWS4" + secret_access_key).encode(), date)
-    return _hmac(_hmac(_hmac(key, region), service), "aws4_request")
-
-
-def canonical_uri(path: str) -> str:
-    return quote(path, safe="/~")
-
-
-def sign(
-    *,
-    method: str,
-    url: httpx.URL,
-    headers: Mapping[str, str],
-    payload_sha256: str,
-    access_key_id: str,
-    secret_access_key: str,
-    region: str,
-    at: datetime,
-) -> dict[str, str]:
-    """The request's headers plus ``x-amz-date``, ``x-amz-content-sha256`` and ``Authorization``."""
-    amz_date = at.astimezone(UTC).strftime("%Y%m%dT%H%M%SZ")
-    date = amz_date[:8]
-    signed: dict[str, str] = {key.lower(): " ".join(value.strip().split()) for key, value in headers.items()}
-    signed |= {"host": url.netloc.decode(), "x-amz-date": amz_date, "x-amz-content-sha256": payload_sha256}
-    names = sorted(signed)
-    query = "&".join(
-        f"{quote(key, safe='-_.~')}={quote(value, safe='-_.~')}" for key, value in sorted(url.params.multi_items())
-    )
-    canonical = "\n".join(
-        (
-            method.upper(),
-            canonical_uri(url.path),
-            query,
-            "".join(f"{name}:{signed[name]}\n" for name in names),
-            ";".join(names),
-            payload_sha256,
-        )
-    )
-    scope = f"{date}/{region}/{SERVICE}/aws4_request"
-    to_sign = "\n".join((ALGORITHM, amz_date, scope, hashlib.sha256(canonical.encode()).hexdigest()))
-    signature = hmac.new(signing_key(secret_access_key, date, region), to_sign.encode(), hashlib.sha256).hexdigest()
-    return {
-        **{name: signed[name] for name in names},
-        "authorization": (
-            f"{ALGORITHM} Credential={access_key_id}/{scope}, SignedHeaders={';'.join(names)}, Signature={signature}"
-        ),
-    }
 
 
 def _describe(response: httpx.Response) -> str:
@@ -108,6 +52,7 @@ class S3ObjectStore:
             access_key_id=self._target.access_key_id,
             secret_access_key=self._target.secret_access_key,
             region=self._target.region,
+            service=SERVICE,
             at=datetime.now(UTC),
         )
         try:

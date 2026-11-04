@@ -3,7 +3,9 @@
 import { useState, type ReactNode } from "react";
 
 import { cn } from "../lib/cn";
-import { niceTicks, tickLabel, visibleRange } from "../lib/virtual";
+import { useDensityContext } from "../lib/density";
+import { groupDigits } from "../lib/format";
+import { ROW_HEIGHTS, niceTicks, tickLabel, visibleRange } from "../lib/virtual";
 
 export type SpanKindName = "workflow" | "step" | "agent" | "team" | "model" | "tool" | "other";
 
@@ -19,8 +21,8 @@ export type SpanRowView = {
 
 export type GhostBar = { startMs: number; durationMs: number };
 
-const ROW = 36;
-const TREE_ROW = 34;
+/** Rows shown before the list scrolls. */
+const VISIBLE_ROWS = 14;
 const GLYPH: Record<SpanKindName, string> = {
   workflow: "W",
   step: "S",
@@ -87,7 +89,7 @@ export function SpanWaterfall({
   selectedId,
   onSelect,
   ghosts,
-  height = ROW * 14,
+  height,
   label = "Span waterfall",
 }: {
   spans: readonly SpanRowView[];
@@ -99,6 +101,7 @@ export function SpanWaterfall({
   height?: number;
   label?: string;
 }) {
+  const rowHeight = ROW_HEIGHTS[useDensityContext()].table;
   const scale = Math.max(
     totalMs,
     ...Object.values(ghosts ?? {}).map((ghost) => ghost.startMs + ghost.durationMs),
@@ -113,7 +116,8 @@ export function SpanWaterfall({
         <span role="columnheader" className="px-3 py-2">
           Span
         </span>
-        <span role="columnheader" className="relative py-2" aria-label="Timeline">
+        <span role="columnheader" className="relative py-2">
+          <span className="sr-only">Timeline</span>
           {ticks.map((tick) => (
             <span
               key={tick}
@@ -131,8 +135,8 @@ export function SpanWaterfall({
       </div>
       <VirtualRows
         rows={spans}
-        rowHeight={ROW}
-        height={height}
+        rowHeight={rowHeight}
+        height={height ?? rowHeight * VISIBLE_ROWS}
         label={label}
         render={(span) => {
           const ghost = ghosts?.[span.id];
@@ -176,7 +180,7 @@ export function SpanWaterfall({
                   className={cn(
                     "absolute h-2.5 min-w-0.5 rounded-bar",
                     span.failed ? "bg-danger" : "bg-neutral-mark",
-                    ghost ? "top-[7px]" : "top-1/2 -translate-y-1/2",
+                    ghost ? "top-[20%]" : "top-1/2 -translate-y-1/2",
                     selected && "shadow-[0_0_0_2px_var(--accent)]",
                   )}
                   style={{ left: pct(span.startMs, scale), width: pct(span.durationMs, scale) }}
@@ -185,7 +189,7 @@ export function SpanWaterfall({
                   <span
                     aria-hidden
                     data-ghost
-                    className="absolute top-[21px] h-1.5 min-w-0.5 rounded-bar border-[1.5px] border-dashed border-fg-secondary"
+                    className="absolute top-[58%] h-1.5 min-w-0.5 rounded-bar border-[1.5px] border-dashed border-fg-secondary"
                     style={{ left: pct(ghost.startMs, scale), width: pct(ghost.durationMs, scale) }}
                   />
                 )}
@@ -194,7 +198,7 @@ export function SpanWaterfall({
                 role="cell"
                 className={cn("px-2 text-right font-mono tabular-nums", span.failed && "text-danger")}
               >
-                {Math.round(span.durationMs).toLocaleString("en-US")}
+                {groupDigits(Math.round(span.durationMs))}
               </span>
             </div>
           );
@@ -208,19 +212,20 @@ export function SpanTree({
   spans,
   selectedId,
   onSelect,
-  height = TREE_ROW * 14,
+  height,
 }: {
   spans: readonly SpanRowView[];
   selectedId?: string | undefined;
   onSelect?: (id: string) => void;
   height?: number;
 }) {
+  const rowHeight = ROW_HEIGHTS[useDensityContext()].tree;
   return (
     <div role="tree" aria-label="Span tree" className="text-[12.5px]">
       <VirtualRows
         rows={spans}
-        rowHeight={TREE_ROW}
-        height={height}
+        rowHeight={rowHeight}
+        height={height ?? rowHeight * VISIBLE_ROWS}
         label="Spans"
         render={(span) => {
           const selected = span.id === selectedId;
@@ -264,7 +269,7 @@ export function SpanTree({
                 {span.failed ? "ERROR" : "OK"}
               </span>
               <span className="w-16 text-right font-mono tabular-nums">
-                {Math.round(span.durationMs).toLocaleString("en-US")}
+                {groupDigits(Math.round(span.durationMs))}
               </span>
             </div>
           );

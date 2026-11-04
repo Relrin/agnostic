@@ -87,8 +87,8 @@ describe("WorkflowBuilderPage", () => {
     renderPage(WorkflowBuilderPage, BUILDER);
     const board = await canvas();
     expect(
-      within(board).getByRole("button", { name: /^Router Route by category, cel · input/ }),
-    ).toBeInTheDocument();
+      within(board).getByRole("button", { name: "Router Route by category" }),
+    ).toHaveAccessibleDescription(/^cel · input/);
     expect(within(board).getByRole("button", { name: /^Parallel Investigate/ })).toBeInTheDocument();
     expect(within(board).getByRole("button", { name: /^Loop Draft & review/ })).toBeInTheDocument();
     expect(within(board).getByText("avg 1.1 s")).toBeInTheDocument();
@@ -111,7 +111,7 @@ describe("WorkflowBuilderPage", () => {
     const palette = screen.getByRole("complementary", { name: "Step palette" });
     await user.click(within(palette).getByRole("button", { name: "Add a Step" }));
     expect(
-      await within(board).findByRole("button", { name: /^Step Step, no executor yet/ }),
+      await within(board).findByRole("button", { name: "Step Step", description: /^no executor yet/ }),
     ).toBeInTheDocument();
     expect(await screen.findByText(/13 steps · 1 problem/)).toBeInTheDocument();
     await waitFor(
@@ -130,7 +130,7 @@ describe("WorkflowBuilderPage", () => {
 
     await user.click(screen.getByRole("button", { name: "Undo" }));
     await waitFor(() => {
-      expect(within(board).queryByRole("button", { name: /^Step Step,/ })).not.toBeInTheDocument();
+      expect(within(board).queryByRole("button", { name: "Step Step" })).not.toBeInTheDocument();
     });
   });
 

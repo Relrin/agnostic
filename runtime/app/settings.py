@@ -25,6 +25,10 @@ class RuntimeSettings(BaseSettings):
     # When set, tokens must carry this `iss` (the control plane's public URL, AGNOSTIC_HTTP__PUBLIC_URL).
     jwt_issuer: str | None = None
     max_concurrency: int = 4
+    # Direct mode: the control plane's public origin(s), comma-separated, allowed to call this runtime from browsers.
+    cors_origins: str = ""
+    # Keep AgentOS's authorization decision log (the control plane ingests it; needed when browsers call directly).
+    authz_audit: bool = False
     # Failures to reproduce on purpose, e.g. "web_search=timeout" (comma-separated tool=fault pairs). Development
     # only: it is how the dev stack gets a daily-brief run that fails the way production ones do.
     faults: str = ""
@@ -42,6 +46,10 @@ class RuntimeSettings(BaseSettings):
         if self.user_isolation is not None:
             return self.user_isolation
         return self.id == PROD_RUNTIME_ID
+
+    @property
+    def cors_origin_list(self) -> list[str]:
+        return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
 
     @property
     def jwt_enabled(self) -> bool:

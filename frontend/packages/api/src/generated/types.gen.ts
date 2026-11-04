@@ -1647,6 +1647,30 @@ export type BulkOutcomeOut = {
 };
 
 /**
+ * CacheOut
+ */
+export type CacheOut = {
+    /**
+     * Backend
+     */
+    backend: string;
+    /**
+     * Hit Ratio
+     *
+     * Since this API process started
+     */
+    hit_ratio: number | null;
+    /**
+     * Hits
+     */
+    hits: number;
+    /**
+     * Misses
+     */
+    misses: number;
+};
+
+/**
  * CanvasLayoutIn
  */
 export type CanvasLayoutIn = {
@@ -2333,6 +2357,30 @@ export type ChannelPatch = {
      * Name
      */
     name?: string | null;
+};
+
+/**
+ * CheckOut
+ */
+export type CheckOut = {
+    /**
+     * Detail
+     */
+    detail: string;
+    /**
+     * Facts
+     */
+    facts: {
+        [key: string]: string;
+    };
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Ok
+     */
+    ok: boolean;
 };
 
 /**
@@ -3056,6 +3104,18 @@ export type ConnectIn = {
      * Ca Bundle Pem
      */
     ca_bundle_pem?: string | null;
+    /**
+     * Client Cert Pem
+     *
+     * Client certificate chain (PEM) for mutual TLS
+     */
+    client_cert_pem?: string | null;
+    /**
+     * Client Key Pem
+     *
+     * Its private key (PEM, unencrypted); stored sealed, never returned
+     */
+    client_key_pem?: string | null;
     /**
      * Display Name
      */
@@ -4025,6 +4085,24 @@ export type DiffOut = {
 };
 
 /**
+ * DirectTokenOut
+ */
+export type DirectTokenOut = {
+    /**
+     * Base Url
+     */
+    base_url: string;
+    /**
+     * Expires At
+     */
+    expires_at: string;
+    /**
+     * Token
+     */
+    token: string;
+};
+
+/**
  * DirectorySettingsIn
  */
 export type DirectorySettingsIn = {
@@ -4627,6 +4705,36 @@ export type FactorOut = {
      * Last Used At
      */
     last_used_at: string | null;
+};
+
+/**
+ * FailedJobOut
+ */
+export type FailedJobOut = {
+    /**
+     * Argument Names
+     */
+    argument_names: Array<string>;
+    /**
+     * Attempts
+     */
+    attempts: number;
+    /**
+     * Failed At
+     */
+    failed_at: string | null;
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Queue
+     */
+    queue: string;
+    /**
+     * Task
+     */
+    task: string;
 };
 
 /**
@@ -5394,6 +5502,34 @@ export type GroupUpdate = {
 };
 
 /**
+ * GuideEntry
+ */
+export type GuideEntry = {
+    /**
+     * Path
+     */
+    path: string;
+    /**
+     * Title
+     */
+    title: string;
+};
+
+/**
+ * GuideIndex
+ */
+export type GuideIndex = {
+    /**
+     * Available
+     */
+    available: boolean;
+    /**
+     * Guides
+     */
+    guides: Array<GuideEntry>;
+};
+
+/**
  * HTTPValidationError
  */
 export type HttpValidationError = {
@@ -5560,6 +5696,12 @@ export type InstanceOut = {
      */
     auth_mode: 'none' | 'security_key' | 'jwt' | 'unknown';
     /**
+     * Browser Url
+     *
+     * Where browsers reach the runtime in direct mode
+     */
+    browser_url: string;
+    /**
      * Created At
      */
     created_at: string;
@@ -5583,6 +5725,12 @@ export type InstanceOut = {
      */
     has_ca_bundle: boolean;
     /**
+     * Has Client Certificate
+     *
+     * A client certificate is presented to the runtime (mutual TLS)
+     */
+    has_client_certificate: boolean;
+    /**
      * Has Security Key
      */
     has_security_key: boolean;
@@ -5598,6 +5746,12 @@ export type InstanceOut = {
      * Latency Ms
      */
     latency_ms: number | null;
+    /**
+     * Network Mode
+     *
+     * gateway: browsers go through the control plane; direct: browsers call the runtime with a token
+     */
+    network_mode: 'gateway' | 'direct';
     /**
      * Os Id
      */
@@ -5669,6 +5823,40 @@ export type InstanceOutcomeOut = {
 };
 
 /**
+ * InstancePollOut
+ */
+export type InstancePollOut = {
+    /**
+     * Display Name
+     */
+    display_name: string;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Last Seen At
+     */
+    last_seen_at: string | null;
+    /**
+     * Latency Ms
+     */
+    latency_ms: number | null;
+    /**
+     * Network Mode
+     */
+    network_mode: string;
+    /**
+     * Slug
+     */
+    slug: string;
+    /**
+     * Status
+     */
+    status: string;
+};
+
+/**
  * InstanceRefOut
  */
 export type InstanceRefOut = {
@@ -5691,11 +5879,29 @@ export type InstanceRefOut = {
  */
 export type InstanceUpdate = {
     /**
+     * Browser Url
+     *
+     * Direct mode: the runtime's URL for browsers; empty string resets it
+     */
+    browser_url?: string | null;
+    /**
      * Ca Bundle Pem
      *
      * Empty string removes it
      */
     ca_bundle_pem?: string | null;
+    /**
+     * Client Cert Pem
+     *
+     * With client_key_pem; empty strings remove the client certificate
+     */
+    client_cert_pem?: string | null;
+    /**
+     * Client Key Pem
+     *
+     * Write-only
+     */
+    client_key_pem?: string | null;
     /**
      * Display Name
      */
@@ -5709,6 +5915,10 @@ export type InstanceUpdate = {
      */
     endpoint_url?: string | null;
     env_tag?: EnvTagName | null;
+    /**
+     * Network Mode
+     */
+    network_mode?: 'gateway' | 'direct' | null;
     /**
      * Security Key
      *
@@ -7884,6 +8094,18 @@ export type ProbeIn = {
      */
     ca_bundle_pem?: string | null;
     /**
+     * Client Cert Pem
+     *
+     * Client certificate chain (PEM) for mutual TLS
+     */
+    client_cert_pem?: string | null;
+    /**
+     * Client Key Pem
+     *
+     * Its private key (PEM, unencrypted); stored sealed, never returned
+     */
+    client_key_pem?: string | null;
+    /**
      * Endpoint Url
      */
     endpoint_url: string;
@@ -8673,6 +8895,34 @@ export type QueueJobsPageOut = {
      * Total
      */
     total: number | null;
+};
+
+/**
+ * QueueOut
+ */
+export type QueueOut = {
+    /**
+     * Failed
+     */
+    failed: number;
+    /**
+     * Oldest Wait Seconds
+     *
+     * Age of the oldest due job not picked up yet
+     */
+    oldest_wait_seconds: number | null;
+    /**
+     * Queue
+     */
+    queue: string;
+    /**
+     * Running
+     */
+    running: number;
+    /**
+     * Waiting
+     */
+    waiting: number;
 };
 
 /**
@@ -10885,6 +11135,34 @@ export type SpanTypeStatOut = {
     name: string;
 };
 
+/**
+ * StatusItemOut
+ */
+export type StatusItemOut = {
+    /**
+     * Detail
+     */
+    detail: string;
+    /**
+     * Facts
+     */
+    facts: {
+        [key: string]: string;
+    };
+    /**
+     * Group
+     */
+    group: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * State
+     */
+    state: 'ok' | 'warning' | 'error';
+};
+
 export type StatusName = 'pending' | 'approved' | 'rejected' | 'expired' | 'cancelled';
 
 /**
@@ -11226,6 +11504,32 @@ export type SystemFeatures = {
 };
 
 /**
+ * SystemInfo
+ */
+export type SystemInfo = {
+    /**
+     * Docs Available
+     *
+     * User guides are bundled (in-product help works offline)
+     */
+    docs_available: boolean;
+    /**
+     * Environment
+     */
+    environment: string;
+    /**
+     * Version
+     */
+    version: string;
+    /**
+     * Web App
+     *
+     * The API serves the web app on this origin
+     */
+    web_app: boolean;
+};
+
+/**
  * SystemModules
  */
 export type SystemModules = {
@@ -11237,6 +11541,30 @@ export type SystemModules = {
      * Enabled
      */
     enabled: Array<ModuleInfo>;
+};
+
+/**
+ * SystemStatusOut
+ */
+export type SystemStatusOut = {
+    cache: CacheOut;
+    /**
+     * Environment
+     */
+    environment: string;
+    /**
+     * Instances
+     */
+    instances: Array<InstancePollOut>;
+    /**
+     * Items
+     */
+    items: Array<StatusItemOut>;
+    /**
+     * Queues
+     */
+    queues: Array<QueueOut>;
+    versions: VersionsOut;
 };
 
 export type TargetIn = 'agents' | 'teams' | 'workflows' | 'registry' | 'ignored';
@@ -11896,6 +12224,34 @@ export type VersionOut = {
      * Version
      */
     version: number;
+};
+
+/**
+ * VersionsOut
+ */
+export type VersionsOut = {
+    /**
+     * Cache
+     */
+    cache: string;
+    /**
+     * Database
+     */
+    database: string;
+    /**
+     * Modules
+     */
+    modules: {
+        [key: string]: string;
+    };
+    /**
+     * Python
+     */
+    python: string;
+    /**
+     * Server
+     */
+    server: string;
 };
 
 /**
@@ -20716,6 +21072,40 @@ export type InstancesTestInstanceResponses = {
 
 export type InstancesTestInstanceResponse = InstancesTestInstanceResponses[keyof InstancesTestInstanceResponses];
 
+export type GatewayDirectTokenData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/token';
+};
+
+export type GatewayDirectTokenErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type GatewayDirectTokenError = GatewayDirectTokenErrors[keyof GatewayDirectTokenErrors];
+
+export type GatewayDirectTokenResponses = {
+    /**
+     * Successful Response
+     */
+    200: DirectTokenOut;
+};
+
+export type GatewayDirectTokenResponse = GatewayDirectTokenResponses[keyof GatewayDirectTokenResponses];
+
 export type ObserveSpanStatsData = {
     body?: never;
     path: {
@@ -22925,6 +23315,96 @@ export type StudioTemplatesResponses = {
 
 export type StudioTemplatesResponse = StudioTemplatesResponses[keyof StudioTemplatesResponses];
 
+export type SystemRunChecksData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/system/checks';
+};
+
+export type SystemRunChecksErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SystemRunChecksError = SystemRunChecksErrors[keyof SystemRunChecksErrors];
+
+export type SystemRunChecksResponses = {
+    /**
+     * Response System Run Checks
+     *
+     * Successful Response
+     */
+    200: Array<CheckOut>;
+};
+
+export type SystemRunChecksResponse = SystemRunChecksResponses[keyof SystemRunChecksResponses];
+
+export type SystemListGuidesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/system/docs';
+};
+
+export type SystemListGuidesErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SystemListGuidesError = SystemListGuidesErrors[keyof SystemListGuidesErrors];
+
+export type SystemListGuidesResponses = {
+    /**
+     * Successful Response
+     */
+    200: GuideIndex;
+};
+
+export type SystemListGuidesResponse = SystemListGuidesResponses[keyof SystemListGuidesResponses];
+
+export type SystemReadGuideData = {
+    body?: never;
+    path: {
+        /**
+         * Path
+         */
+        path: string;
+    };
+    query?: never;
+    url: '/api/v1/system/docs/{path}';
+};
+
+export type SystemReadGuideErrors = {
+    /**
+     * Client error
+     */
+    '4XX': unknown;
+    /**
+     * Server error
+     */
+    '5XX': unknown;
+};
+
+export type SystemReadGuideResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
+
 export type SystemListFeaturesData = {
     body?: never;
     path?: never;
@@ -22954,6 +23434,145 @@ export type SystemListFeaturesResponses = {
 
 export type SystemListFeaturesResponse = SystemListFeaturesResponses[keyof SystemListFeaturesResponses];
 
+export type SystemSystemInfoData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/system/info';
+};
+
+export type SystemSystemInfoErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SystemSystemInfoError = SystemSystemInfoErrors[keyof SystemSystemInfoErrors];
+
+export type SystemSystemInfoResponses = {
+    /**
+     * Successful Response
+     */
+    200: SystemInfo;
+};
+
+export type SystemSystemInfoResponse = SystemSystemInfoResponses[keyof SystemSystemInfoResponses];
+
+export type SystemListFailedJobsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Limit
+         */
+        limit?: number;
+        /**
+         * Before
+         *
+         * Page: jobs with a smaller id
+         */
+        before?: number | null;
+    };
+    url: '/api/v1/system/jobs/failed';
+};
+
+export type SystemListFailedJobsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SystemListFailedJobsError = SystemListFailedJobsErrors[keyof SystemListFailedJobsErrors];
+
+export type SystemListFailedJobsResponses = {
+    /**
+     * Response System List Failed Jobs
+     *
+     * Successful Response
+     */
+    200: Array<FailedJobOut>;
+};
+
+export type SystemListFailedJobsResponse = SystemListFailedJobsResponses[keyof SystemListFailedJobsResponses];
+
+export type SystemDiscardJobData = {
+    body?: never;
+    path: {
+        /**
+         * Job Id
+         */
+        job_id: number;
+    };
+    query?: never;
+    url: '/api/v1/system/jobs/{job_id}';
+};
+
+export type SystemDiscardJobErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SystemDiscardJobError = SystemDiscardJobErrors[keyof SystemDiscardJobErrors];
+
+export type SystemDiscardJobResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type SystemDiscardJobResponse = SystemDiscardJobResponses[keyof SystemDiscardJobResponses];
+
+export type SystemRetryJobData = {
+    body?: never;
+    path: {
+        /**
+         * Job Id
+         */
+        job_id: number;
+    };
+    query?: never;
+    url: '/api/v1/system/jobs/{job_id}/retry';
+};
+
+export type SystemRetryJobErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SystemRetryJobError = SystemRetryJobErrors[keyof SystemRetryJobErrors];
+
+export type SystemRetryJobResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type SystemRetryJobResponse = SystemRetryJobResponses[keyof SystemRetryJobResponses];
+
 export type SystemListModulesData = {
     body?: never;
     path?: never;
@@ -22982,6 +23601,35 @@ export type SystemListModulesResponses = {
 };
 
 export type SystemListModulesResponse = SystemListModulesResponses[keyof SystemListModulesResponses];
+
+export type SystemSystemStatusData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/system/status';
+};
+
+export type SystemSystemStatusErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SystemSystemStatusError = SystemSystemStatusErrors[keyof SystemSystemStatusErrors];
+
+export type SystemSystemStatusResponses = {
+    /**
+     * Successful Response
+     */
+    200: SystemStatusOut;
+};
+
+export type SystemSystemStatusResponse = SystemSystemStatusResponses[keyof SystemSystemStatusResponses];
 
 export type SystemLivenessData = {
     body?: never;

@@ -9,7 +9,14 @@ import {
   type InvitationOut,
   type MemberOut,
 } from "@agnostic/api";
-import { ORG_ROLE_LABELS, PermissionGate, formatRelative, useMe, withQueryFn } from "@agnostic/core";
+import {
+  ORG_ROLE_LABELS,
+  PermissionGate,
+  formatDate,
+  formatRelative,
+  useMe,
+  withQueryFn,
+} from "@agnostic/core";
 import {
   Button,
   Callout,
@@ -130,8 +137,7 @@ export function InviteDialog({
         {invite.data ? (
           <div className="flex flex-col gap-3">
             <Callout tone="insight" title={`Invited ${invite.data.invitation.email}`}>
-              The link works once and expires on{" "}
-              {new Date(invite.data.invitation.expires_at).toLocaleDateString()}.
+              The link works once and expires on {formatDate(invite.data.invitation.expires_at)}.
             </Callout>
             <CodeBlock title="Invitation link" code={invite.data.accept_url} />
             <DialogFooter>

@@ -26,6 +26,7 @@ class AuditEventRow(AuditBase):
         Index("ix_audit_events_actor_id_occurred_at", "actor_id", "occurred_at"),
         Index("ix_audit_events_action_occurred_at", "action", "occurred_at"),
         Index("ix_audit_events_instance_id_occurred_at", "instance_id", "occurred_at"),
+        Index("ix_audit_events_resource_id_occurred_at", "resource_id", "occurred_at"),
         Index("ix_audit_events_source_source_event_id", "source", "source_event_id"),
     )
 

@@ -267,6 +267,26 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@agnostic/module-help@workspace:*, @agnostic/module-help@workspace:modules/help":
+  version: 0.0.0-use.local
+  resolution: "@agnostic/module-help@workspace:modules/help"
+  dependencies:
+    "@agnostic/api": "workspace:*"
+    "@agnostic/core": "workspace:*"
+    "@agnostic/testing": "workspace:*"
+    "@agnostic/ui": "workspace:*"
+    "@tanstack/react-query": "npm:5.105.0"
+    "@tanstack/react-router": "npm:1.170.46"
+    "@testing-library/jest-dom": "npm:7.0.1"
+    lucide-react: "npm:1.65.0"
+    msw: "npm:3.0.3"
+    react: "npm:19.3.1"
+    react-dom: "npm:19.3.1"
+  peerDependencies:
+    react: 19.3.1
+  languageName: unknown
+  linkType: soft
+
 "@agnostic/module-home@workspace:*, @agnostic/module-home@workspace:modules/home":
   version: 0.0.0-use.local
   resolution: "@agnostic/module-home@workspace:modules/home"
@@ -641,6 +661,25 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@agnostic/module-system@workspace:*, @agnostic/module-system@workspace:modules/system":
+  version: 0.0.0-use.local
+  resolution: "@agnostic/module-system@workspace:modules/system"
+  dependencies:
+    "@agnostic/api": "workspace:*"
+    "@agnostic/core": "workspace:*"
+    "@agnostic/testing": "workspace:*"
+    "@agnostic/ui": "workspace:*"
+    "@tanstack/react-query": "npm:5.105.0"
+    "@testing-library/jest-dom": "npm:7.0.1"
+    lucide-react: "npm:1.65.0"
+    msw: "npm:3.0.3"
+    react: "npm:19.3.1"
+    react-dom: "npm:19.3.1"
+  peerDependencies:
+    react: 19.3.1
+  languageName: unknown
+  linkType: soft
+
 "@agnostic/module-traces@workspace:*, @agnostic/module-traces@workspace:modules/traces":
   version: 0.0.0-use.local
   resolution: "@agnostic/module-traces@workspace:modules/traces"
@@ -757,6 +796,7 @@ __metadata:
     "@agnostic/module-chat": "workspace:*"
     "@agnostic/module-evals": "workspace:*"
     "@agnostic/module-files": "workspace:*"
+    "@agnostic/module-help": "workspace:*"
     "@agnostic/module-home": "workspace:*"
     "@agnostic/module-identity": "workspace:*"
     "@agnostic/module-instances": "workspace:*"
@@ -775,9 +815,11 @@ __metadata:
     "@agnostic/module-studio-agents": "workspace:*"
     "@agnostic/module-studio-teams": "workspace:*"
     "@agnostic/module-studio-workflows": "workspace:*"
+    "@agnostic/module-system": "workspace:*"
     "@agnostic/module-traces": "workspace:*"
     "@agnostic/testing": "workspace:*"
     "@agnostic/ui": "workspace:*"
+    "@axe-core/playwright": "npm:4.14.0"
     "@playwright/test": "npm:1.64.1"
     "@tailwindcss/vite": "npm:4.3.3"
     "@tanstack/react-query": "npm:5.105.0"
@@ -813,6 +855,17 @@ __metadata:
     is-potential-custom-element-name: "npm:^1.0.1"
     lru-cache: "npm:^11.5.3"
   checksum: 10c0/c4995420b8b6af6787a4ece7d7316c8db2adc1cac1e29183b8f3db1f7f2aaa3bab4c35d935445ca6e4a9a7a90fece508ceaa7be462b512d6fb8794dd818c3286
+  languageName: node
+  linkType: hard
+
+"@axe-core/playwright@npm:4.14.0":
+  version: 4.14.0
+  resolution: "@axe-core/playwright@npm:4.14.0"
+  dependencies:
+    axe-core: "npm:~4.14.0"
+  peerDependencies:
+    playwright-core: ">= 1.0.0"
+  checksum: 10c0/a42bca2305bbb80a374be9ff6642cac7b45f5f0aef1be9170ae42617c3423501ab1a33c8581641a71554a0c6a69f6ca512a5cc6e320ed197339a9ac4edfa713c
   languageName: node
   linkType: hard
 
@@ -5286,7 +5339,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axe-core@npm:^4.10.0, axe-core@npm:^4.2.0":
+"axe-core@npm:^4.10.0, axe-core@npm:^4.2.0, axe-core@npm:~4.14.0":
   version: 4.14.0
   resolution: "axe-core@npm:4.14.0"
   checksum: 10c0/8aaa0bf748e0dcf202e8f837951a37b28b4b62d639bed58c07a6890bf035ed6a11ede9f4006db9ca8041db821dc80476c27cff08fd70afa9195ee58fb995a958

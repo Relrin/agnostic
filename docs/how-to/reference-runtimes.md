@@ -1,5 +1,8 @@
 # Run the reference runtimes
 
+For running your own AgentOS with the bridge in production, see [bridge and runtime](../guides/bridge-and-runtime.md);
+this page is about the two development runtimes.
+
 `just runtimes` starts two AgentOS instances from `runtime/` against the dev stack:
 
 | Instance | URL | Database | Redis | Plays | User isolation |

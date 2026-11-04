@@ -144,7 +144,7 @@ export function ServiceAccountsPage() {
         ) : list.isPending ? (
           <LoadingRows label="Loading service accounts" />
         ) : rows.length === 0 ? (
-          <EmptyState title="No service accounts yet.">
+          <EmptyState title="No service accounts yet">
             Create one for each machine caller, so its runs are attributed to it and its scopes stay narrow.
           </EmptyState>
         ) : (

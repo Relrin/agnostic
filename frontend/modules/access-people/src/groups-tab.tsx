@@ -281,7 +281,7 @@ export function GroupsTab({
                 go({ group: group.id, member: undefined });
               }}
               empty={
-                <EmptyState title="No groups yet.">
+                <EmptyState title="No groups yet">
                   Create a group to give several people the same access, or connect SCIM to sync them from
                   your IdP.
                 </EmptyState>

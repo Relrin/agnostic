@@ -6,6 +6,7 @@ import {
   meGetMeOptions,
   meMyAccessOptions,
   orgGetOrgOptions,
+  setInstanceRoutes,
   systemListFeaturesOptions,
   systemListModulesOptions,
   type HealthOut,
@@ -15,6 +16,7 @@ import {
   type OrgOut,
 } from "@agnostic/api";
 import { skipToken, useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 
 import { STALE_TIME } from "./query";
 
@@ -35,7 +37,12 @@ export function useOrg() {
 
 export function useInstances() {
   const options = instancesListInstancesOptions();
-  return useQuery({ ...options, queryFn: options.queryFn ?? skipToken, staleTime: STALE_TIME.list });
+  const query = useQuery({ ...options, queryFn: options.queryFn ?? skipToken, staleTime: STALE_TIME.list });
+  useEffect(() => {
+    // Direct-mode instances are called from the browser itself: tell the API client which ones.
+    if (query.data) setInstanceRoutes(query.data);
+  }, [query.data]);
+  return query;
 }
 
 /** Effective access on an instance (or org-wide when `instance` is undefined); invalidated on access changes. */

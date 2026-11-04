@@ -37,6 +37,7 @@ context.configure(
     include_name=include_name,
     include_object=include_object,
     compare_type=True,
+    on_version_apply=config.attributes.get("on_version_apply"),
 )
 
 with context.begin_transaction():

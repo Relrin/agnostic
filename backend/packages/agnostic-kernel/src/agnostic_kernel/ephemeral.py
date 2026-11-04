@@ -1,6 +1,7 @@
 """Ephemeral key-value state: web sessions, caches, rate-limit counters, one-time tokens.
 
-Nothing stored here is authoritative: losing it signs people out or costs a cache miss, never data. Redis
+Nothing stored here is authoritative: losing it signs people out or costs a cache miss, never data, and an
+unreachable cache degrades (:class:`DegradingStore`) instead of failing requests. Redis
 (or Valkey/Dragonfly) is the production backend; :class:`MemoryStore` keeps the same semantics inside one process
 for SQLite development installs and tests. Only commands all three Redis engines support are used.
 """
@@ -8,10 +9,16 @@ for SQLite development installs and tests. Only commands all three Redis engines
 from __future__ import annotations
 
 import time
-from collections.abc import Iterable
+from collections.abc import Awaitable, Callable, Iterable
 from typing import Protocol, cast
 
 from redis.asyncio import Redis
+from redis.exceptions import RedisError
+
+from agnostic_kernel import metrics
+from agnostic_kernel.logging import get_logger
+
+log = get_logger(__name__)
 
 ACCESS_GENERATION_KEY = "access:gen"
 """Bumped whenever something that affects effective scopes changes (bindings, org roles, org settings). Scope and
@@ -43,8 +50,9 @@ class RedisStore:
         return self._prefix + key
 
     async def get(self, key: str) -> bytes | None:
-        value = await self._redis.get(self._k(key))  # pyright: ignore[reportUnknownMemberType]
-        return cast("bytes | None", value)
+        value = cast("bytes | None", await self._redis.get(self._k(key)))  # pyright: ignore[reportUnknownMemberType]
+        metrics.cache_lookups.labels("miss" if value is None else "hit").inc()
+        return value
 
     async def set(self, key: str, value: bytes, *, ttl: float | None = None) -> None:
         await self._redis.set(self._k(key), value, px=_ms(ttl) if ttl else None)  # pyright: ignore[reportUnknownMemberType]
@@ -71,6 +79,56 @@ class RedisStore:
         await self._redis.pexpire(self._k(key), _ms(ttl))  # pyright: ignore[reportUnknownMemberType]
 
 
+class DegradingStore:
+    """An :class:`EphemeralStore` that treats an unreachable cache as empty instead of failing requests.
+
+    Reads miss, writes are dropped, counters stay at zero (rate limits fail open), ``set_if_absent`` answers
+    ``False`` (single-use tokens and locks stay closed). After a failure the cache is skipped for ``cooldown``
+    seconds, so a frozen cache costs one socket timeout per window, not one per call.
+    """
+
+    def __init__(self, inner: EphemeralStore, *, cooldown: float = 5.0) -> None:
+        self._inner = inner
+        self._cooldown = cooldown
+        self._skip_until = 0.0
+
+    @property
+    def degraded(self) -> bool:
+        return time.monotonic() < self._skip_until
+
+    async def _call[T](self, call: Callable[[], Awaitable[T]], fallback: T) -> T:
+        if self.degraded:
+            return fallback
+        try:
+            return await call()
+        except (RedisError, OSError, TimeoutError) as exc:
+            self._skip_until = time.monotonic() + self._cooldown
+            metrics.cache_lookups.labels("unavailable").inc()
+            log.warning("cache.degraded", error=str(exc) or type(exc).__name__, retry_in=self._cooldown)
+            return fallback
+
+    async def get(self, key: str) -> bytes | None:
+        return await self._call(lambda: self._inner.get(key), None)
+
+    async def set(self, key: str, value: bytes, *, ttl: float | None = None) -> None:
+        await self._call(lambda: self._inner.set(key, value, ttl=ttl), None)
+
+    async def set_if_absent(self, key: str, value: bytes, *, ttl: float) -> bool:
+        return await self._call(lambda: self._inner.set_if_absent(key, value, ttl=ttl), fallback=False)
+
+    async def pop(self, key: str) -> bytes | None:
+        return await self._call(lambda: self._inner.pop(key), None)
+
+    async def delete(self, *keys: str) -> None:
+        await self._call(lambda: self._inner.delete(*keys), None)
+
+    async def incr(self, key: str, *, ttl: float) -> int:
+        return await self._call(lambda: self._inner.incr(key, ttl=ttl), 0)
+
+    async def expire(self, key: str, ttl: float) -> None:
+        await self._call(lambda: self._inner.expire(key, ttl), None)
+
+
 class MemoryStore:
     """In-process store with TTLs. Single process only (SQLite installs, tests)."""
 
@@ -92,7 +150,9 @@ class MemoryStore:
         return self._clock() + ttl if ttl else None
 
     async def get(self, key: str) -> bytes | None:
-        return self._live(key)
+        value = self._live(key)
+        metrics.cache_lookups.labels("miss" if value is None else "hit").inc()
+        return value
 
     async def set(self, key: str, value: bytes, *, ttl: float | None = None) -> None:
         self._data[key] = (value, self._expiry(ttl))

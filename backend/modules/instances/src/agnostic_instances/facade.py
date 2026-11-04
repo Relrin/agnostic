@@ -12,6 +12,7 @@ from typing import Any, Protocol
 from agnostic_agentos_client import AgentOSError
 from agnostic_instances.application.diagnostics import RuntimeAuth
 from agnostic_instances.application.ports import InstanceRepository, RuntimeClient, SnapshotRepository, Target
+from agnostic_instances.application.tls import ConnectionTls, ConnectionTlsFactory, connection_tls
 from agnostic_instances.application.tokens import MintedToken, TokenService
 from agnostic_instances.domain.instances import (
     AuthMode,
@@ -19,6 +20,7 @@ from agnostic_instances.domain.instances import (
     EnvTag,
     Instance,
     InstanceStatus,
+    NetworkMode,
     SubClaimMode,
 )
 from agnostic_kernel.crypto import SecretBox
@@ -27,13 +29,17 @@ __all__ = [
     "AgentOSError",
     "AuthMode",
     "CapabilityStatus",
+    "ConnectionTls",
+    "ConnectionTlsFactory",
     "EnvTag",
     "Instance",
     "InstanceStatus",
     "InstancesFacade",
     "InstancesFacadeImpl",
     "MintedToken",
+    "NetworkMode",
     "SubClaimMode",
+    "connection_tls",
 ]
 
 

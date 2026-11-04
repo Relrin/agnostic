@@ -19,6 +19,7 @@ from fastapi import APIRouter
 from pydantic_settings import BaseSettings
 from sqlalchemy import MetaData
 
+from agnostic_kernel.diagnostics import CheckResult, StatusItem
 from agnostic_kernel.tools import ToolSpec
 
 ENTRY_POINT_GROUP = "agnostic.modules"
@@ -51,6 +52,8 @@ class JobSpec:
 
     The function receives the Procrastinate ``JobContext`` first (use :func:`agnostic_kernel.jobs.job_container`
     to resolve dependencies), then the job's keyword arguments. Periodic jobs also get ``timestamp: int``.
+
+    Jobs must be safe to run twice: a job whose worker dies mid-run is queued again from the start.
     """
 
     name: str
@@ -118,6 +121,20 @@ class CapabilityProbe:
     description: str
 
 
+@dataclass(frozen=True, slots=True)
+class SealedColumn:
+    """A column holding :class:`~agnostic_kernel.crypto.SecretBox` values, re-sealed by ``agnostic secrets rotate``.
+
+    ``json_keys`` marks a JSON column whose listed top-level keys hold sealed strings. Values that aren't sealed
+    (``NULL``, password hashes sharing a column) are left alone.
+    """
+
+    table: str
+    column: str
+    key: str = "id"
+    json_keys: tuple[str, ...] = ()
+
+
 @runtime_checkable
 class Module(Protocol):
     name: ClassVar[str]
@@ -136,7 +153,10 @@ class Module(Protocol):
     def search_providers(self) -> Iterable[SearchProvider]: ...
     def capabilities(self) -> Iterable[CapabilityProbe]: ...
     def assistant_tools(self) -> Iterable[ToolSpec]: ...
+    def sealed_columns(self) -> Iterable[SealedColumn]: ...
     async def features(self, container: AsyncContainer) -> Mapping[str, bool]: ...
+    async def endpoint_checks(self, container: AsyncContainer) -> Sequence[CheckResult]: ...
+    async def system_status(self, container: AsyncContainer) -> Sequence[StatusItem]: ...
     async def on_startup(self, container: AsyncContainer) -> None: ...
     async def on_shutdown(self, container: AsyncContainer) -> None: ...
 
@@ -183,6 +203,22 @@ class BaseModule:
 
     def assistant_tools(self) -> Iterable[ToolSpec]:
         """Read-only tools the assistant may call as the asking person (see :mod:`agnostic_kernel.tools`)."""
+        return ()
+
+    def sealed_columns(self) -> Iterable[SealedColumn]:
+        """Every column of this module that stores sealed secrets (see :class:`SealedColumn`)."""
+        return ()
+
+    async def endpoint_checks(self, container: AsyncContainer) -> Sequence[CheckResult]:  # noqa: ARG002
+        """Probes of the endpoints this module calls (identity providers, instances, archive storage, …).
+
+        Run by ``agnostic config check --connect`` and the System page with a request-scoped ``container``; each
+        probe has its own short timeout and never raises.
+        """
+        return ()
+
+    async def system_status(self, container: AsyncContainer) -> Sequence[StatusItem]:  # noqa: ARG002
+        """Health of this module's background work (delivery backlogs, sync errors) for the System page."""
         return ()
 
     async def features(self, container: AsyncContainer) -> Mapping[str, bool]:  # noqa: ARG002

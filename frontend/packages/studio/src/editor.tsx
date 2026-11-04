@@ -313,7 +313,7 @@ export function StudioEditor({
     </Callout>
   );
 
-  const form = ctx ? renderForm(ctx, doc) : noDraft || <EmptyState title="Nothing to edit." />;
+  const form = ctx ? renderForm(ctx, doc) : noDraft || <EmptyState title="Nothing to edit" />;
   const code = (
     <CodePane
       code={doc.code}

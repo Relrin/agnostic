@@ -3,6 +3,7 @@ import { Dialog as DialogPrimitive } from "radix-ui";
 import type { ComponentProps } from "react";
 
 import { cn } from "../lib/cn";
+import { useReturnFocus } from "../lib/return-focus";
 
 export const Dialog = DialogPrimitive.Root;
 export const DialogTrigger = DialogPrimitive.Trigger;
@@ -25,8 +26,11 @@ export function DialogContent({
   className,
   children,
   showClose = true,
+  onOpenAutoFocus,
+  onCloseAutoFocus,
   ...props
 }: ComponentProps<typeof DialogPrimitive.Content> & { showClose?: boolean }) {
+  const returnFocus = useReturnFocus({ onOpenAutoFocus, onCloseAutoFocus });
   return (
     <DialogPrimitive.Portal>
       <DialogOverlay />
@@ -37,6 +41,7 @@ export function DialogContent({
           className,
         )}
         {...props}
+        {...returnFocus}
       >
         {children}
         {showClose && (

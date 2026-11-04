@@ -69,11 +69,13 @@ export function buildTraceFilter(
   equal("user_id", filters.user);
   equal("session_id", filters.session);
   equal("run_id", filters.runId);
+  // Whole minutes: the filter is part of the list's query key, so a start that moved every millisecond would make
+  // each render a new query (and refetch without end).
   if (supports("start_time", "GTE"))
     conditions.push({
       op: "GTE",
       key: "start_time",
-      value: new Date(now.getTime() - RANGE_MS[filters.range]).toISOString(),
+      value: new Date(Math.floor((now.getTime() - RANGE_MS[filters.range]) / 60_000) * 60_000).toISOString(),
     });
   const text = filters.q?.trim();
   if (text) {

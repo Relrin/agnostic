@@ -229,9 +229,11 @@ test.describe("workflow builder", () => {
     await expect(page.getByText("12 steps · valid")).toBeVisible();
 
     await board.getByRole("button", { name: "Insert step here" }).first().click();
-    await expect(board.getByRole("button", { name: /^Step Step, no executor yet/ })).toBeVisible();
+    const inserted = board.getByRole("button", { name: "Step Step", exact: true });
+    await expect(inserted).toBeVisible();
+    await expect(inserted).toHaveAccessibleDescription(/^no executor yet/);
     await page.getByRole("button", { name: "Undo" }).click();
-    await expect(board.getByRole("button", { name: /^Step Step,/ })).toHaveCount(0);
+    await expect(board.getByRole("button", { name: "Step Step", exact: true })).toHaveCount(0);
 
     await page.getByRole("button", { name: "Run test" }).click();
     const panel = page.getByRole("region", { name: "Run test" });

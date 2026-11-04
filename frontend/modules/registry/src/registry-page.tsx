@@ -214,7 +214,7 @@ export function RegistryPage() {
               void navigate({ to: next === "tool" ? scoped : `${scoped}/${next}` });
             }}
           >
-            <TabsList variant="pill" aria-label="Entry types" className="overflow-x-auto">
+            <TabsList variant="pill" panels={false} aria-label="Entry types" className="overflow-x-auto">
               <TabsTrigger value="all" count={catalog.data?.total ?? 0} className="whitespace-nowrap">
                 All
               </TabsTrigger>
@@ -324,7 +324,7 @@ export function RegistryPage() {
             )}
             {catalog.isSuccess && shown.length === 0 && (
               <div className="p-4">
-                <EmptyState title="No entries match." />
+                <EmptyState title="No entries match" />
               </div>
             )}
           </div>

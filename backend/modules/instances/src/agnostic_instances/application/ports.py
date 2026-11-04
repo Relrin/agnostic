@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Protocol
 
+from agnostic_instances.application.tls import ConnectionTls, connection_tls
 from agnostic_instances.domain.instances import (
     Capability,
     Discovery,
@@ -19,15 +20,14 @@ from agnostic_instances.domain.instances import (
 
 @dataclass(frozen=True, slots=True)
 class Target:
-    """How to reach a runtime: endpoint plus TLS trust."""
+    """How to reach a runtime: endpoint plus TLS (trust and the optional client certificate)."""
 
     endpoint_url: str
-    tls_verify: bool = True
-    ca_bundle_pem: str | None = None
+    tls: ConnectionTls = field(default_factory=ConnectionTls)
 
     @classmethod
     def of(cls, instance: Instance) -> Target:
-        return cls(instance.endpoint_url, instance.tls_verify, instance.ca_bundle_pem)
+        return cls(instance.endpoint_url, connection_tls(instance))
 
 
 class InstanceRepository(Protocol):

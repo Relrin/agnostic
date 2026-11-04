@@ -1,6 +1,7 @@
 // @agnostic/ui: the only place feature code gets UI primitives from (never @radix-ui directly).
 export { cn } from "./lib/cn";
 export * as tokens from "./lib/tokens";
+export { DENSITIES, DensityContext, useDensityContext, type Density } from "./lib/density";
 
 export { Badge, StatusPill, badgeVariants, type BadgeProps, type StatusPillProps } from "./primitives/badge";
 export { Button, buttonVariants, type ButtonProps } from "./primitives/button";
@@ -106,7 +107,8 @@ export {
 export { CodeBlock, StepList, type StepState } from "./patterns/code-block";
 export { Accordion, AccordionSection, type AccordionSectionProps } from "./patterns/accordion";
 export { SortableList, type SortableItemState, type SortableListProps } from "./patterns/sortable-list";
-export { EmptyState, ErrorState, LoadingRows } from "./patterns/states";
+export { EmptyState, ErrorState, LoadingRows, type DocsLink } from "./patterns/states";
+export { Tour, type TourEnd, type TourStep } from "./patterns/tour";
 export {
   ApiHint,
   AttentionCard,
@@ -174,4 +176,4 @@ export {
   type SpanKindName,
   type SpanRowView,
 } from "./domain/trace";
-export { niceTicks, tickLabel, visibleRange } from "./lib/virtual";
+export { ROW_HEIGHTS, niceTicks, tickLabel, visibleRange } from "./lib/virtual";

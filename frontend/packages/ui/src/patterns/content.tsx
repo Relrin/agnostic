@@ -1,7 +1,8 @@
 // Content patterns: MarkdownView (GFM, code highlighted by Shiki on demand), JsonView, JsonEditor, Toaster.
-import { useEffect, useId, useState, type ReactNode } from "react";
+import { useEffect, useId, useState, type CSSProperties, type ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import type { BundledLanguage } from "shiki";
 import { Toaster as Sonner, toast } from "sonner";
 
 import { cn } from "../lib/cn";
@@ -22,29 +23,42 @@ export function Toaster() {
   );
 }
 
-const highlighted = new Map<string, string>();
+type Token = { content: string; color?: string | undefined; fontStyle?: number | undefined };
+type Highlighted = { lines: Token[][]; fg: string | undefined; bg: string | undefined };
 
-/** Highlights with Shiki, loaded on first use (keeps it out of the initial bundle). */
+const highlighted = new Map<string, Highlighted>();
+/** Shiki's font-style bit flags. */
+const ITALIC = 1;
+const BOLD = 2;
+const UNDERLINE = 4;
+
+/**
+ * Highlights with Shiki, loaded on first use (keeps it out of the initial bundle). Tokens are rendered as React
+ * elements, never as an HTML string, so the web app has no HTML sink for Trusted Types to guard.
+ */
 function HighlightedCode({ code, language }: { code: string; language: string }) {
   const cacheKey = `${language}\u0000${code}`;
-  const [html, setHtml] = useState(() => highlighted.get(cacheKey));
+  const [result, setResult] = useState(() => highlighted.get(cacheKey));
   useEffect(() => {
-    if (html !== undefined) return;
+    if (result !== undefined) return;
     let cancelled = false;
     void import("shiki")
-      .then(({ codeToHtml }) => codeToHtml(code, { lang: language, theme: "github-dark-default" }))
-      .then((result) => {
-        highlighted.set(cacheKey, result);
-        if (!cancelled) setHtml(result);
+      .then(({ codeToTokens }) =>
+        codeToTokens(code, { lang: language as BundledLanguage, theme: "github-dark-default" }),
+      )
+      .then((tokens) => {
+        const value: Highlighted = { lines: tokens.tokens, fg: tokens.fg, bg: tokens.bg };
+        highlighted.set(cacheKey, value);
+        if (!cancelled) setResult(value);
       })
       .catch(() => {
-        // Unknown language or no network for the grammar: plain text is fine.
+        // Unknown language or no grammar available: plain text is fine.
       });
     return () => {
       cancelled = true;
     };
-  }, [cacheKey, code, html, language]);
-  if (html === undefined) {
+  }, [cacheKey, code, result, language]);
+  if (result === undefined) {
     return (
       <pre className="overflow-x-auto rounded-tile border border-border bg-inset px-3 py-2.5 font-mono text-[12px]">
         <code>{code}</code>
@@ -52,16 +66,48 @@ function HighlightedCode({ code, language }: { code: string; language: string })
     );
   }
   return (
-    <div
-      className="overflow-x-auto rounded-tile border border-border text-[12px] [&_pre]:!bg-inset [&_pre]:px-3 [&_pre]:py-2.5"
-      // Shiki escapes the source; the HTML is spans with inline colours only.
-      dangerouslySetInnerHTML={{ __html: html }}
-    />
+    <pre
+      className="overflow-x-auto rounded-tile border border-border bg-inset px-3 py-2.5 font-mono text-[12px]"
+      style={{ color: result.fg }}
+    >
+      <code>
+        {result.lines.map((line, index) => (
+          // Lines and tokens never reorder: their position is their identity.
+          <span key={index} className="block">
+            {line.map((token, position) => (
+              <span key={position} style={tokenStyle(token)}>
+                {token.content}
+              </span>
+            ))}
+            {line.length === 0 ? "\n" : null}
+          </span>
+        ))}
+      </code>
+    </pre>
   );
 }
 
+function tokenStyle(token: Token): CSSProperties {
+  const flags = token.fontStyle ?? 0;
+  return {
+    color: token.color,
+    fontStyle: flags & ITALIC ? "italic" : undefined,
+    fontWeight: flags & BOLD ? 600 : undefined,
+    textDecoration: flags & UNDERLINE ? "underline" : undefined,
+  };
+}
+
 /** Rendered model output: GitHub-flavoured Markdown, links open in a new tab, code highlighted. */
-export function MarkdownView({ children, className }: { children: string; className?: string }) {
+export function MarkdownView({
+  children,
+  className,
+  internalLink,
+}: {
+  children: string;
+  className?: string;
+  /** Map a link to a page of the app (opened in place), or `undefined` to open it in a new tab. */
+  internalLink?: (href: string) => string | undefined;
+}) {
   return (
     <div
       className={cn(
@@ -76,11 +122,16 @@ export function MarkdownView({ children, className }: { children: string; classN
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
-          a: ({ href, children: label }) => (
-            <a href={href} target="_blank" rel="noreferrer noopener">
-              {label}
-            </a>
-          ),
+          a: ({ href, children: label }) => {
+            const inside = href ? internalLink?.(href) : undefined;
+            return inside ? (
+              <a href={inside}>{label}</a>
+            ) : (
+              <a href={href} target="_blank" rel="noreferrer noopener">
+                {label}
+              </a>
+            );
+          },
           code: ({ className: languageClass, children: source }) => {
             const language = /language-(\w+)/.exec(languageClass ?? "")?.[1];
             const raw = typeof source === "string" ? source : Array.isArray(source) ? source.join("") : "";

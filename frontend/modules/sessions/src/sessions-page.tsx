@@ -330,8 +330,8 @@ export function SessionsPage() {
           <EmptyState
             title={
               deferredQuery || filters.component || filters.user
-                ? "No sessions match these filters."
-                : "No sessions yet."
+                ? "No sessions match these filters"
+                : "No sessions yet"
             }
             action={
               <Button asChild variant="primary" size="32">

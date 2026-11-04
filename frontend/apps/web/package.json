@@ -8,7 +8,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "e2e:csp": "playwright test --config playwright.csp.config.ts"
   },
   "dependencies": {
     "@agnostic/api": "workspace:*",
@@ -22,6 +23,7 @@
     "@agnostic/module-chat": "workspace:*",
     "@agnostic/module-evals": "workspace:*",
     "@agnostic/module-files": "workspace:*",
+    "@agnostic/module-help": "workspace:*",
     "@agnostic/module-home": "workspace:*",
     "@agnostic/module-identity": "workspace:*",
     "@agnostic/module-instances": "workspace:*",
@@ -40,6 +42,7 @@
     "@agnostic/module-studio-agents": "workspace:*",
     "@agnostic/module-studio-teams": "workspace:*",
     "@agnostic/module-studio-workflows": "workspace:*",
+    "@agnostic/module-system": "workspace:*",
     "@agnostic/module-traces": "workspace:*",
     "@agnostic/ui": "workspace:*",
     "@tanstack/react-query": "5.105.0",
@@ -50,6 +53,7 @@
   },
   "devDependencies": {
     "@agnostic/testing": "workspace:*",
+    "@axe-core/playwright": "4.14.0",
     "@playwright/test": "1.64.1",
     "@tailwindcss/vite": "4.3.3",
     "@vitejs/plugin-react": "6.1.2",

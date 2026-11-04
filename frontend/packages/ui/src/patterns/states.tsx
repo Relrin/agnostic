@@ -1,23 +1,49 @@
 // Empty, error and loading states: one sentence of purpose, one primary action, the request id on errors.
+import { ExternalLink } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { Button } from "../primitives/button";
 import { Skeleton } from "../primitives/small";
 
+export type DocsLink = {
+  href: string;
+  /** "Read the guide" by default. */
+  label?: string;
+};
+
 export function EmptyState({
   title,
   children,
   action,
+  docs,
 }: {
   title: ReactNode;
   children?: ReactNode;
   action?: ReactNode;
+  /** A guide that explains the feature, opened in a new tab. */
+  docs?: DocsLink | undefined;
 }) {
   return (
     <div className="flex flex-col items-center gap-2 rounded-card border border-dashed border-border-dashed px-6 py-10 text-center">
       <div className="text-[14px] font-semibold">{title}</div>
       {children && <p className="max-w-md text-[13px] text-fg-secondary">{children}</p>}
-      {action && <div className="pt-2">{action}</div>}
+      {(action ?? docs) !== undefined && (
+        <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+          {action}
+          {docs && (
+            <a
+              href={docs.href}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1 text-[12.5px]"
+            >
+              {docs.label ?? "Read the guide"}
+              <ExternalLink className="size-3.5" aria-hidden />
+              <span className="sr-only"> (opens in a new tab)</span>
+            </a>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -57,7 +83,7 @@ export function LoadingRows({ rows = 8, label = "Loading" }: { rows?: number; la
   return (
     <div role="status" aria-label={label} className="flex flex-col gap-2">
       {Array.from({ length: rows }, (_, index) => (
-        <Skeleton key={index} className="h-9 w-full" />
+        <Skeleton key={index} className="h-[var(--row-h)] w-full" />
       ))}
     </div>
   );

@@ -3,23 +3,39 @@
 # It runs wherever AgentOS runs, so it supports agno's Pythons rather than the control plane's.
 [project]
 name = "agnostic-bridge"
-version = "0.1.0"
+version = "1.0.0"
 description = "Agnostic control-plane companion routes for Agno AgentOS 3.1.x"
+readme = "README.md"
 requires-python = ">=3.10"
 license = "BSD-3-Clause"
+license-files = ["LICENSE"]
+authors = [{ name = "Valeryi Savich" }]
+keywords = ["agno", "agentos", "agnostic", "control-plane"]
 classifiers = [
+  "Development Status :: 5 - Production/Stable",
   "Framework :: FastAPI",
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Typing :: Typed",
 ]
+# A library installed into customers' AgentOS apps: compatible ranges, not exact pins. The agno range is the
+# minor the bridge is tested against (contract tests), so a new agno minor needs a bridge release.
 dependencies = [
-  "agno[os]==3.1.12",
-  "fastapi==0.162.0",
-  "pydantic==2.14.2",
+  "agno[os]>=3.1.12,<3.2",
+  "fastapi>=0.115,<1",
+  "pydantic>=2.10,<3",
 ]
+
+[project.urls]
+Homepage = "https://github.com/Relrin/agnostic"
+Documentation = "https://github.com/Relrin/agnostic/blob/master/docs/guides/bridge-and-runtime.md"
+Changelog = "https://github.com/Relrin/agnostic/blob/master/bridge/CHANGELOG.md"
+Issues = "https://github.com/Relrin/agnostic/issues"
 
 [dependency-groups]
 dev = [

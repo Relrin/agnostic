@@ -1,6 +1,7 @@
 // "When it runs": the five cron fields (read-only in the detail, editable in the form), the timezone, the cron as a
 // sentence, the next 5 runs in local time and UTC, and daylight-saving notes.
 import { describeError } from "@agnostic/api";
+import { timezones } from "@agnostic/core";
 import {
   CRON_FIELDS,
   Callout,
@@ -14,7 +15,7 @@ import {
 } from "@agnostic/ui";
 import { useMemo } from "react";
 
-import { invalidFields, timezones, wallTime, type Preview } from "./schedules-api";
+import { invalidFields, wallTime, type Preview } from "./schedules-api";
 
 /** The cron fields as a read-only grid (labelled like the editable `CronFields`). */
 export function CronReadout({ cron }: { cron: string }) {

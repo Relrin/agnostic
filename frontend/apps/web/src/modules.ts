@@ -10,6 +10,7 @@ import { auditModule } from "@agnostic/module-audit";
 import { chatModule } from "@agnostic/module-chat";
 import { evalsModule } from "@agnostic/module-evals";
 import { filesModule } from "@agnostic/module-files";
+import { helpModule } from "@agnostic/module-help";
 import { homeModule } from "@agnostic/module-home";
 import { identityModule } from "@agnostic/module-identity";
 import { instancesModule } from "@agnostic/module-instances";
@@ -28,6 +29,7 @@ import { sourcesModule } from "@agnostic/module-sources";
 import { studioAgentsModule } from "@agnostic/module-studio-agents";
 import { studioTeamsModule } from "@agnostic/module-studio-teams";
 import { studioWorkflowsModule } from "@agnostic/module-studio-workflows";
+import { systemModule } from "@agnostic/module-system";
 import { tracesModule } from "@agnostic/module-traces";
 
 export const MODULES: readonly ModuleManifest[] = [
@@ -36,6 +38,8 @@ export const MODULES: readonly ModuleManifest[] = [
   instancesModule,
   settingsModule,
   orgSettingsModule,
+  systemModule,
+  helpModule,
   accessPeopleModule,
   accessRolesModule,
   serviceAccountsModule,

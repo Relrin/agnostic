@@ -1,5 +1,5 @@
 import { describeError, type InstanceOut } from "@agnostic/api";
-import { PermissionGate, useInstances } from "@agnostic/core";
+import { PermissionGate, formatDateTime, useInstances } from "@agnostic/core";
 import { Button, EmptyState, EnvBadge, ErrorState, LoadingRows, PageIntro, StatusPill } from "@agnostic/ui";
 import { Link } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
@@ -16,7 +16,7 @@ function lastSeen(value: string | null): string {
   const seconds = Math.round((Date.now() - new Date(value).getTime()) / 1000);
   if (seconds < 90) return "just now";
   if (seconds < 3600) return `${String(Math.round(seconds / 60))} min ago`;
-  return new Date(value).toLocaleString();
+  return formatDateTime(value);
 }
 
 /** `/instances`: every connected AgentOS, and the way to connect one. */

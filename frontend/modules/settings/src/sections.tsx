@@ -16,7 +16,7 @@ import {
   type ConfigOut,
   type InstanceOut,
 } from "@agnostic/api";
-import { PermissionGate, withQueryFn } from "@agnostic/core";
+import { PermissionGate, formatDateTime, withQueryFn } from "@agnostic/core";
 import {
   Badge,
   Button,
@@ -36,6 +36,8 @@ import {
 } from "@agnostic/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type ReactNode } from "react";
+
+import { ClientCertificateCard, NetworkCard } from "./network-section";
 
 function Card({ title, children, action }: { title: ReactNode; children: ReactNode; action?: ReactNode }) {
   return (
@@ -124,14 +126,18 @@ export function ConnectionSection({
             ],
             ["Version", instance.agno_version ? `agno ${instance.agno_version}` : "—"],
             ["Latency", instance.latency_ms === null ? "—" : `${String(instance.latency_ms)} ms`],
-            ["Last seen", instance.last_seen_at ? new Date(instance.last_seen_at).toLocaleString() : "never"],
+            ["Last seen", instance.last_seen_at ? formatDateTime(instance.last_seen_at) : "never"],
             [
               "TLS",
-              instance.tls_verify
+              (instance.tls_verify
                 ? instance.has_ca_bundle
                   ? "Verified (custom CA)"
                   : "Verified"
-                : "Not verified",
+                : "Not verified") + (instance.has_client_certificate ? ", client certificate" : ""),
+            ],
+            [
+              "Browsers",
+              instance.network_mode === "direct" ? `Direct (${instance.browser_url})` : "Through the gateway",
             ],
           ]}
         />
@@ -206,6 +212,9 @@ export function ConnectionSection({
           </div>
         </Card>
       </PermissionGate>
+
+      <NetworkCard instance={instance} />
+      <ClientCertificateCard instance={instance} />
 
       <Card title="Capabilities">
         {capabilities.length === 0 ? (

@@ -19,6 +19,7 @@ from agnostic_instances.application.ports import (
     Signer,
     SnapshotRepository,
 )
+from agnostic_instances.application.tls import ConnectionTlsFactory
 from agnostic_instances.application.tokens import PrivateKeyCache, TokenPolicy, TokenService
 from agnostic_instances.application.use_cases import (
     CheckHealth,
@@ -50,6 +51,7 @@ from agnostic_instances.settings import InstancesSettings
 from agnostic_kernel.auth import Authorizer
 from agnostic_kernel.crypto import SecretBox
 from agnostic_kernel.ephemeral import EphemeralStore
+from agnostic_kernel.security_headers import ConnectSources
 from agnostic_kernel.settings import Settings
 
 
@@ -83,8 +85,12 @@ class InstancesProvider(Provider):
     refresh = provide(RefreshAllSnapshots)
 
     @provide(scope=Scope.APP)
-    def client(self) -> RuntimeClient:
-        return HttpRuntimeClient()
+    def connection_tls(self, box: SecretBox, kernel: Settings) -> ConnectionTlsFactory:
+        return ConnectionTlsFactory(box, kernel.tls)
+
+    @provide(scope=Scope.APP)
+    def client(self, tls: ConnectionTlsFactory) -> RuntimeClient:
+        return HttpRuntimeClient(tls=tls)
 
     @provide(scope=Scope.APP)
     def token_policy(self, settings: InstancesSettings, kernel: Settings) -> TokenPolicy:
@@ -107,6 +113,8 @@ class InstancesProvider(Provider):
         audit: AuditLog,
         store: EphemeralStore,
         policy: TokenPolicy,
+        kernel: Settings,
+        connect_sources: ConnectSources,
     ) -> InstanceContext:
         return InstanceContext(
             instances=instances,
@@ -121,4 +129,6 @@ class InstancesProvider(Provider):
             audit=audit,
             store=store,
             issuer=policy.issuer,
+            allow_http_direct=kernel.env != "production",
+            connect_sources=connect_sources,
         )

@@ -1,4 +1,11 @@
 // Fixed-height row windowing for long lists (trace waterfalls with thousands of spans) and time-axis ticks.
+import type { Density } from "./density";
+
+/** Row heights of the virtualized trace lists per density; the table row matches --row-h in tokens.css. */
+export const ROW_HEIGHTS: Readonly<Record<Density, { table: number; tree: number }>> = {
+  comfortable: { table: 36, tree: 34 },
+  compact: { table: 28, tree: 28 },
+};
 
 /** Rows `[start, end)` to render for a scroll position, with `overscan` extra rows on each side. */
 export function visibleRange(

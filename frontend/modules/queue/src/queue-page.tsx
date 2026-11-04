@@ -346,7 +346,7 @@ function JobsSection({
           go({ status: value as StatusTab, job: undefined, page: 1 });
         }}
       >
-        <TabsList>
+        <TabsList panels={false}>
           {(["all", ...JOB_STATUSES] as const).map((status) => {
             const count = status === "all" ? undefined : counts?.[status];
             return (
@@ -382,8 +382,8 @@ function JobsSection({
                 <EmptyState
                   title={
                     filters.status === "all"
-                      ? "No jobs in the queue."
-                      : `No ${TAB_LABEL[filters.status].toLowerCase()} jobs.`
+                      ? "No jobs in the queue"
+                      : `No ${TAB_LABEL[filters.status].toLowerCase()} jobs`
                   }
                 />
               }

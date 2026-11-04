@@ -92,7 +92,7 @@ function duration(run: RunState): number | undefined {
 }
 
 function ChatTab({ instance, runs }: { instance: string; runs: readonly RunState[] }) {
-  if (runs.length === 0) return <EmptyState title="No runs in this session yet." />;
+  if (runs.length === 0) return <EmptyState title="No runs in this session yet" />;
   return (
     <div className="flex flex-col gap-4">
       {runs.map((run, index) => {
@@ -155,7 +155,7 @@ function ChatTab({ instance, runs }: { instance: string; runs: readonly RunState
 }
 
 function RunsTab({ instance, runs }: { instance: string; runs: readonly RunState[] }) {
-  if (runs.length === 0) return <EmptyState title="No runs in this session yet." />;
+  if (runs.length === 0) return <EmptyState title="No runs in this session yet" />;
   return (
     <div className="flex flex-col gap-2">
       {[...runs].reverse().map((run) => {
@@ -472,7 +472,7 @@ export function SessionDetailPanel({
               </Provenance>
             </>
           ) : (
-            <EmptyState title="No summary yet.">
+            <EmptyState title="No summary yet">
               Summaries appear when the component enables the session summary manager.
             </EmptyState>
           )}

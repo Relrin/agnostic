@@ -295,7 +295,7 @@ export function RequestsTab({
       ) : requests.isError ? (
         <ErrorState {...describeError(requests.error)} onRetry={() => void requests.refetch()} />
       ) : requests.data.length === 0 ? (
-        <EmptyState title={all ? "No access requests yet." : "Nothing is waiting for a decision."}>
+        <EmptyState title={all ? "No access requests yet" : "Nothing is waiting for a decision"}>
           People ask for temporary access from any “Why can't I?” explanation.
         </EmptyState>
       ) : (

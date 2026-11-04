@@ -8,7 +8,8 @@ from pydantic import BaseModel
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncEngine
 
-from agnostic_kernel.checks import CheckResult, check_cache, check_database, check_migrations
+from agnostic_kernel.checks import check_cache, check_database, check_migrations
+from agnostic_kernel.diagnostics import CheckResult
 from agnostic_kernel.modules import LoadedModules
 from agnostic_kernel.settings import Settings
 
@@ -24,7 +25,9 @@ class ReadinessCheck(BaseModel):
 
 
 class Readiness(BaseModel):
-    status: Literal["ready", "not_ready"]
+    status: Literal["ready", "degraded", "not_ready"]
+    """``degraded``: the cache is down. The replica still serves (caches miss, realtime pauses), so it stays in
+    rotation; alert on it from metrics or logs, not from readiness."""
     checks: list[ReadinessCheck]
 
 
@@ -52,16 +55,16 @@ def health_router() -> APIRouter:
             if settings.cache_backend() == "memory"
             else await check_cache(redis, probe=False)
         )
-        results = [
-            await check_database(engine),
-            cache,
-            await check_migrations(engine, list(modules.installed.values())),
-        ]
-        ready = all(result.ok for result in results)
+        database = await check_database(engine)
+        migrations = await check_migrations(engine, list(modules.installed.values()))
+        results = [database, cache, migrations]
+        # Only what the API can't serve without takes a replica out of rotation: a cache outage would otherwise
+        # drain every replica at once.
+        ready = database.ok and migrations.ok
         if not ready:
             response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
         return Readiness(
-            status="ready" if ready else "not_ready",
+            status="not_ready" if not ready else ("ready" if cache.ok else "degraded"),
             checks=[ReadinessCheck(name=r.name, ok=r.ok, detail=r.detail) for r in results],
         )
 

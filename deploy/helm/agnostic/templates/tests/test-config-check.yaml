@@ -1,0 +1,20 @@
+{{- if .Values.tests.enabled }}
+# `helm test <release>`: probes every configured endpoint from inside the cluster.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ include "agnostic.fullname" . }}-config-check
+  labels:
+    {{- include "agnostic.labels" . | nindent 4 }}
+    app.kubernetes.io/component: test
+  annotations:
+    helm.sh/hook: test
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  restartPolicy: Never
+  {{- include "agnostic.podSpecCommon" . | nindent 2 }}
+  containers:
+    - name: config-check
+      {{- include "agnostic.containerCommon" . | nindent 6 }}
+      args: ["config", "check", "--connect"]
+{{- end }}

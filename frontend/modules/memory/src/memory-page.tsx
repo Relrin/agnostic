@@ -170,13 +170,13 @@ export function MemoryPage() {
           go={go}
         />
       ) : (
-        <main className="flex min-w-0 flex-[3_1_440px] flex-col px-6 pt-5">
+        <section className="flex min-w-0 flex-[3_1_440px] flex-col px-6 pt-5">
           {!users.isPending && (
             <EmptyState title="No memories yet">
               Agents with memory enabled write what they learn about each user here.
             </EmptyState>
           )}
-        </main>
+        </section>
       )}
     </div>
   );
@@ -254,7 +254,7 @@ function UserMemories({
 
   return (
     <>
-      <main className="flex min-w-0 flex-[3_1_440px] flex-col gap-4 overflow-y-auto px-6 pt-5 pb-8">
+      <section className="flex min-w-0 flex-[3_1_440px] flex-col gap-4 overflow-y-auto px-6 pt-5 pb-8">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex min-w-0 flex-col gap-1">
             <h1 className="truncate font-mono text-[20px] font-semibold">{user}</h1>
@@ -373,9 +373,7 @@ function UserMemories({
         ) : memories.isPending ? (
           <LoadingRows rows={5} label="Loading memories" />
         ) : rows.length === 0 ? (
-          <EmptyState
-            title={deferred || filters.topic ? "No memories match." : "No memories for this user."}
-          />
+          <EmptyState title={deferred || filters.topic ? "No memories match" : "No memories for this user"} />
         ) : (
           <>
             <ul aria-label="Memories" className="flex flex-col gap-2">
@@ -400,7 +398,7 @@ function UserMemories({
             </p>
           </>
         )}
-      </main>
+      </section>
 
       {editing && (
         <MemoryEditor

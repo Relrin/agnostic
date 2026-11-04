@@ -21,6 +21,7 @@ dependencies = [
   "opentelemetry-sdk==1.45.2",
   "orjson==3.13.0",
   "procrastinate==3.10.0",
+  "prometheus-client==0.26.0",
   "psycopg[binary]==3.3.6",
   "pydantic==2.14.2",
   "pydantic-settings==2.16.2",

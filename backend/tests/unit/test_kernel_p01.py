@@ -25,8 +25,17 @@ class FakeSmtp:
     def __exit__(self, *_: object) -> None:
         self.calls.append(("quit", None))
 
+    def ehlo(self) -> tuple[int, bytes]:
+        self.calls.append(("ehlo", None))
+        return 250, b"ok"
+
     def has_extn(self, name: str) -> bool:
-        return name == "starttls"
+        # Like smtplib: the server's extensions are only known after EHLO.
+        return name == "starttls" and ("ehlo", None) in self.calls
+
+    def noop(self) -> tuple[int, bytes]:
+        self.calls.append(("noop", None))
+        return 250, b"ok"
 
     def starttls(self, context: ssl.SSLContext) -> None:
         self.calls.append(("starttls", context))
@@ -49,9 +58,9 @@ async def test_smtp_mailer(monkeypatch: pytest.MonkeyPatch) -> None:
     smtp = FakeSmtp.instances[-1]
     assert (smtp.host, smtp.port) == ("mail.corp", 2525)
     kinds = [kind for kind, _ in smtp.calls]
-    assert kinds == ["starttls", "login", "send", "quit"]
-    assert smtp.calls[1][1] == ("user@corp", "p@ss")
-    message = smtp.calls[2][1]
+    assert kinds == ["ehlo", "starttls", "login", "send", "quit"]
+    assert smtp.calls[2][1] == ("user@corp", "p@ss")
+    message = smtp.calls[3][1]
     assert (message["To"], message["From"], message["Subject"]) == (
         "marcus@localhost.company",
         "Agnostic <a@corp>",
@@ -64,6 +73,9 @@ async def test_smtp_mailer(monkeypatch: pytest.MonkeyPatch) -> None:
     assert FakeSmtp.instances[-1].context is not None
     assert isinstance(create_mailer(SmtpSettings()), LogMailer)
     await LogMailer().send(Email(to="x@y.dev", subject="s", text="t"))
+
+    assert await mailer.probe() is True
+    assert [kind for kind, _ in FakeSmtp.instances[-1].calls] == ["ehlo", "starttls", "login", "noop", "quit"]
 
 
 class FakeRedis:
@@ -108,3 +120,31 @@ async def test_redis_store_prefixes_keys() -> None:
     await store.delete("n")
     await store.delete()
     assert list(redis.memory.keys()) == []
+
+
+async def test_degrading_store_treats_an_unreachable_cache_as_empty() -> None:
+    from redis.exceptions import ConnectionError as RedisConnectionError  # noqa: PLC0415
+
+    from agnostic_kernel.ephemeral import DegradingStore  # noqa: PLC0415
+
+    class Down:
+        calls = 0
+
+        async def _fail(self, *_: object, **__: object) -> None:
+            Down.calls += 1
+            raise RedisConnectionError("connection refused")
+
+        get = set = set_if_absent = pop = delete = incr = expire = _fail
+
+    store = DegradingStore(Down(), cooldown=60)  # pyright: ignore[reportArgumentType]
+    assert await store.get("k") is None
+    assert store.degraded
+    assert await store.incr("rate", ttl=60) == 0  # rate limits fail open
+    assert await store.set_if_absent("lock", b"1", ttl=60) is False  # one-time tokens stay closed
+    await store.set("k", b"v")
+    assert Down.calls == 1  # skipped during the cooldown
+
+    healthy = DegradingStore(MemoryStore())
+    await healthy.set("k", b"v")
+    assert await healthy.get("k") == b"v"
+    assert not healthy.degraded

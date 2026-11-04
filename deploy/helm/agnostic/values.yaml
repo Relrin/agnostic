@@ -1,0 +1,154 @@
+# Agnostic Helm chart. It deploys only Agnostic's workloads: PostgreSQL, Redis (or Valkey / DragonflyDB), object
+# storage, the IdP and the AgentOS runtimes are endpoints you configure. No dependency subcharts.
+
+image:
+  repository: ghcr.io/relrin/agnostic
+  # Defaults to the chart's appVersion. Pin a digest for production: `digest: sha256:…`.
+  tag: ""
+  digest: ""
+  pullPolicy: IfNotPresent
+imagePullSecrets: []
+
+# Non-secret settings (AGNOSTIC_* environment variables), rendered into a ConfigMap.
+config:
+  AGNOSTIC_ENV: production
+  AGNOSTIC_HTTP__PUBLIC_URL: https://agnostic.example.com
+  AGNOSTIC_DATABASE__SSLMODE: verify-full
+  AGNOSTIC_LOG__FORMAT: json
+
+# Secret settings: the name of an existing Secret (created by you, External Secrets or the Vault agent) whose keys
+# are AGNOSTIC_* variables, at least AGNOSTIC_DATABASE__URL, AGNOSTIC_REDIS__URL and AGNOSTIC_SECRETS__MASTER_KEY.
+existingSecret: agnostic-env
+# More sources for the environment (e.g. a second Secret with IdP client secrets).
+extraEnvFrom: []
+extraEnv: []
+
+# Files the settings point at (CA bundles, client certificates): mounted read-only under /etc/agnostic/<name>.
+extraSecretMounts: []
+#  - name: postgres-ca
+#    secretName: postgres-ca
+#    mountPath: /etc/agnostic/postgres-ca
+
+api:
+  replicas: 2
+  resources:
+    requests: {cpu: 250m, memory: 384Mi}
+    limits: {memory: 1Gi}
+  autoscaling:
+    enabled: false
+    minReplicas: 2
+    maxReplicas: 8
+    targetCPUUtilizationPercentage: 70
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+  # Streams (chat, run events) are long-lived: give rolling updates time to drain them.
+  terminationGracePeriodSeconds: 60
+  podAnnotations: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  topologySpreadConstraints: []
+
+worker:
+  replicas: 2
+  concurrency: 10
+  # Empty: every queue.
+  queues: []
+  resources:
+    requests: {cpu: 100m, memory: 256Mi}
+    limits: {memory: 1Gi}
+  autoscaling:
+    enabled: false
+    minReplicas: 2
+    maxReplicas: 6
+    targetCPUUtilizationPercentage: 70
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+  terminationGracePeriodSeconds: 120
+  podAnnotations: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  topologySpreadConstraints: []
+
+# The migrate Job runs before every install and upgrade (Helm hook); the release waits for it.
+migrations:
+  enabled: true
+  backoffLimit: 2
+  activeDeadlineSeconds: 900
+  resources:
+    requests: {cpu: 100m, memory: 256Mi}
+    limits: {memory: 512Mi}
+
+service:
+  type: ClusterIP
+  port: 80
+  annotations: {}
+
+ingress:
+  enabled: false
+  className: ""
+  # nginx | traefik | none: adds the annotations that keep server-sent events streaming (no buffering, long reads).
+  controller: nginx
+  annotations: {}
+  hosts:
+    - host: agnostic.example.com
+  tls: []
+  #  - secretName: agnostic-tls
+  #    hosts: [agnostic.example.com]
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+  # Workload identity for a KMS master-key provider (IRSA, GKE workload identity, Azure workload identity).
+
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: false
+    interval: 30s
+    labels: {}
+
+# Egress only to what the control plane needs. Allow your endpoints by CIDR (database, cache, object storage, IdP,
+# SMTP, SIEM, git hosts, KMS) and the AgentOS runtimes, by CIDR or by pod/namespace selector.
+networkPolicy:
+  enabled: false
+  # Who may reach the API (the ingress controller's namespace, Prometheus).
+  ingressFrom:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: ingress-nginx
+  egress:
+    dns: true
+    endpoints: []
+    #  - cidr: 10.0.12.0/24
+    #    ports: [5432, 6379]
+    runtimes: []
+    #  - podSelector: {matchLabels: {app.kubernetes.io/name: agentos}}
+    #    namespaceSelector: {matchLabels: {kubernetes.io/metadata.name: agents}}
+    #    ports: [7777]
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  runAsGroup: 10001
+  fsGroup: 10001
+  seccompProfile:
+    type: RuntimeDefault
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: [ALL]
+
+# Git mirrors of code sources and temporary files. emptyDir by default; a PVC keeps mirrors across restarts.
+dataVolume:
+  persistentVolumeClaim: ""
+  sizeLimit: 2Gi
+
+tests:
+  # `helm test` runs `agnostic config check --connect` against the configured endpoints.
+  enabled: true

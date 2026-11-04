@@ -10,6 +10,7 @@ import {
 } from "@agnostic/api";
 import {
   findInstance,
+  formatCalendarDay,
   formatCount,
   formatMillions,
   formatPercent,
@@ -60,15 +61,11 @@ export function presetRange(preset: Preset, today: Date = new Date()): Range {
 }
 
 function shortDay(iso: string): string {
-  return new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    timeZone: "UTC",
-  });
+  return formatCalendarDay(iso);
 }
 
 function weekday(iso: string): string {
-  return new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-US", { weekday: "short", timeZone: "UTC" });
+  return formatCalendarDay(iso, { weekday: true });
 }
 
 /** "Peak Thu 2.99 M · low Sun 2.00 M". */
@@ -499,7 +496,7 @@ export function MetricsPage() {
                   columns={componentColumns(costs?.byComponent ?? {})}
                   rows={data?.components ?? []}
                   rowKey={(row) => `${row.type}:${row.id}`}
-                  empty={<EmptyState title="No sessions in this range." />}
+                  empty={<EmptyState title="No sessions in this range" />}
                 />
               )}
               <p className="text-[11.5px] text-fg-muted">

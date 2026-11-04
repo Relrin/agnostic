@@ -18,17 +18,10 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from agnostic_agentos_client import AgentOSClient
 from agnostic_agentos_client.auth import Auth, NoAuth
 from agnostic_instances.application.ports import GeneratedKey, Target
+from agnostic_instances.application.tls import ConnectionTlsFactory
 from agnostic_instances.domain.instances import AuthMode, Discovery
 
 PROBE_TIMEOUT = 5.0
-
-
-def tls_verify(target: Target) -> bool | ssl.SSLContext:
-    if not target.tls_verify:
-        return False
-    if target.ca_bundle_pem:
-        return ssl.create_default_context(cadata=target.ca_bundle_pem)
-    return True
 
 
 class _HeaderAuth:
@@ -40,8 +33,18 @@ class _HeaderAuth:
 
 
 class HttpRuntimeClient:
-    def __init__(self, transport: httpx.AsyncBaseTransport | None = None) -> None:
+    def __init__(
+        self, transport: httpx.AsyncBaseTransport | None = None, *, tls: ConnectionTlsFactory | None = None
+    ) -> None:
         self._transport = transport
+        self._tls = tls
+
+    def _verify(self, target: Target) -> bool | ssl.SSLContext:
+        if self._tls is not None:
+            return self._tls.verify(target.tls)
+        if target.tls.tls_verify and target.tls.ca_bundle_pem:
+            return ssl.create_default_context(cadata=target.tls.ca_bundle_pem)
+        return target.tls.tls_verify
 
     def _client(self, target: Target, auth: Auth | None = None) -> AgentOSClient:
         return AgentOSClient(
@@ -49,7 +52,7 @@ class HttpRuntimeClient:
             auth=auth or NoAuth(),
             timeout=PROBE_TIMEOUT,
             retries=0,
-            verify=tls_verify(target),
+            verify=self._verify(target),
             transport=self._transport,
         )
 

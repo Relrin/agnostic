@@ -11,6 +11,7 @@ dependencies = [
   "orjson==3.13.0",
   "procrastinate==3.10.0",
   "pydantic==2.14.2",
+  "starlette==1.10.0",
   "typer==0.27.3",
   "uvicorn[standard]==0.54.0",
   "uvloop==0.23.0; sys_platform != 'win32'",

@@ -263,7 +263,7 @@ function Workspace({
           />
         </nav>
 
-        <main className="flex min-w-0 flex-[2_1_420px] flex-col gap-4 overflow-y-auto px-6 pt-4 pb-8">
+        <section className="flex min-w-0 flex-[2_1_420px] flex-col gap-4 overflow-y-auto px-6 pt-4 pb-8">
           <h1 className="flex flex-wrap items-center gap-1 font-mono text-[15px]">
             {["", ...filters.dir.split("/").filter(Boolean)].map((part, index, parts) => {
               const target = parts.slice(1, index + 1).join("/");
@@ -339,7 +339,7 @@ function Workspace({
                     else go({ file: entry.path, owner: entry.user_id ?? undefined });
                   }}
                   empty={
-                    <EmptyState title={deferred ? "No file contains that text." : "This folder is empty."} />
+                    <EmptyState title={deferred ? "No file contains that text" : "This folder is empty"} />
                   }
                   footer={
                     <span>
@@ -351,7 +351,7 @@ function Workspace({
               </div>
             </div>
           )}
-        </main>
+        </section>
 
         {selected && (
           <Preview

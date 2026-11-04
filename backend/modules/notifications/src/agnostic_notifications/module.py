@@ -2,16 +2,28 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from pathlib import Path
 
-from dishka import Provider
+from dishka import AsyncContainer, Provider
 from pydantic_settings import BaseSettings
 from sqlalchemy import MetaData
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from agnostic_kernel.modules import AuditActionDecl, BaseModule, EventHandlerSpec, JobSpec, RouterSpec, ScopeDecl
+from agnostic_kernel.db import utcnow
+from agnostic_kernel.diagnostics import StatusItem
+from agnostic_kernel.modules import (
+    AuditActionDecl,
+    BaseModule,
+    EventHandlerSpec,
+    JobSpec,
+    RouterSpec,
+    ScopeDecl,
+    SealedColumn,
+)
 from agnostic_notifications import jobs
 from agnostic_notifications.api.router import me_router, router
+from agnostic_notifications.infrastructure.status import delivery_status
 from agnostic_notifications.infrastructure.tables import NotificationsBase
 from agnostic_notifications.providers import NotificationsProvider
 from agnostic_notifications.settings import NotificationsSettings
@@ -27,6 +39,9 @@ class NotificationsModule(BaseModule):
 
     def provide(self) -> Iterable[Provider]:
         return (NotificationsProvider(),)
+
+    def sealed_columns(self) -> Iterable[SealedColumn]:
+        return (SealedColumn("ntf_channels", "config_enc"),)
 
     def routers(self) -> Iterable[RouterSpec]:
         return (
@@ -66,3 +81,6 @@ class NotificationsModule(BaseModule):
             AuditActionDecl("notifications.channel.deleted", "{actor} removed the notification channel {channel}"),
             AuditActionDecl("notifications.defaults.updated", "{actor} changed notification defaults ({events})"),
         )
+
+    async def system_status(self, container: AsyncContainer) -> Sequence[StatusItem]:
+        return await delivery_status(await container.get(AsyncSession), utcnow())

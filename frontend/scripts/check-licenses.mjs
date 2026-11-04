@@ -1,8 +1,9 @@
 // License policy check for frontend dependencies. Walks the production dependency graph of what ships
 // (the @agnostic/web app, through the workspace packages it uses) and checks every package's `license` field.
 // Dev tooling never ships, so devDependencies are skipped. Fails on forbidden or unknown licenses and on weak
-// copyleft that hasn't been reviewed into WEAK_ALLOWED.
-import { readFileSync } from "node:fs";
+// copyleft that hasn't been reviewed into WEAK_ALLOWED. `--write FILE` also writes the third-party notices (name,
+// version, license and the license files each package ships) for the web build; the image carries it in /licenses.
+import { readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -50,7 +51,13 @@ while (queue.length > 0) {
   const manifest = readManifest(directory);
   const id = `${manifest.name}@${manifest.version}`;
   if (seen.has(id)) continue;
-  seen.set(id, { name: manifest.name, license: licenseOf(manifest), private: manifest.private === true });
+  seen.set(id, {
+    name: manifest.name,
+    version: manifest.version,
+    license: licenseOf(manifest),
+    private: manifest.private === true,
+    directory,
+  });
   const dependencies = { ...manifest.dependencies, ...manifest.optionalDependencies };
   for (const name of Object.keys(dependencies)) {
     const resolved = resolvePackage(name, directory);
@@ -82,3 +89,33 @@ console.log(
 );
 for (const problem of problems) console.log(`  - ${problem}`);
 process.exitCode = problems.length > 0 ? 1 : 0;
+
+const LICENSE_FILE = /^(LICEN[CS]E|COPYING|NOTICE)(\.(md|txt))?$/i;
+
+function licenseTexts(directory) {
+  return readdirSync(directory)
+    .filter((file) => LICENSE_FILE.test(file))
+    .sort()
+    .map((file) => readFileSync(join(directory, file), "utf8").trim());
+}
+
+const target = process.argv.indexOf("--write");
+if (target !== -1 && problems.length === 0) {
+  const output = process.argv[target + 1];
+  const lines = [
+    "# Third-party software (web app)",
+    "",
+    "Packages bundled into the web app, with the license each declares and the license files it ships.",
+    "",
+  ];
+  const shipped = [...seen.values()]
+    .filter((entry) => !entry.private && !entry.name.startsWith("@agnostic/"))
+    .sort((a, b) => a.name.localeCompare(b.name));
+  for (const entry of shipped) {
+    lines.push(`## ${entry.name} ${entry.version}`, "", `License: ${entry.license}`);
+    for (const text of licenseTexts(entry.directory)) lines.push("", "```text", text, "```");
+    lines.push("");
+  }
+  writeFileSync(output, lines.join("\n"), "utf8");
+  console.log(`wrote ${output}`);
+}

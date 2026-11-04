@@ -21,6 +21,7 @@ import {
   useSessionActions,
   useSessionRuns,
   useSessions,
+  useTourFromSearch,
   type ComponentSummary,
   type RunFamily,
   type RunStream,
@@ -41,7 +42,9 @@ import {
   SelectTrigger,
   SelectValue,
   SessionList,
+  Tour,
   type AttachmentRule,
+  type TourStep,
 } from "@agnostic/ui";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams, useSearch } from "@tanstack/react-router";
@@ -73,6 +76,24 @@ export const ATTACHMENTS: AttachmentRule = {
     ".xlsx",
   ],
 };
+
+const TOUR: TourStep[] = [
+  {
+    target: "chat-target",
+    title: "Pick who to talk to",
+    body: "Choose an agent, agent team or workflow on this instance, and the version to run (drafts for admins).",
+  },
+  {
+    target: "chat-composer",
+    title: "Send a message",
+    body: "Enter sends, Shift+Enter adds a line. The run streams in with its tool calls; approvals you can decide appear inline.",
+  },
+  {
+    target: "chat-sessions",
+    title: "Pick up where you left off",
+    body: "Every conversation is a session on the instance. Open one to continue it, or start a new session.",
+  },
+];
 
 function isFamily(value: string | undefined): value is RunFamily {
   return value === "agents" || value === "teams" || value === "workflows";
@@ -195,8 +216,15 @@ export function ChatPage() {
   const component = components.data?.find((item) => item.id === componentId);
   useEffect(() => {
     const first = components.data?.[0];
-    if (!componentId && first) void navigate({ to: chatPath(instanceRef, family, first.id), replace: true });
-  }, [componentId, components.data, family, instanceRef, navigate]);
+    // Keeps `?tour=` so a tour opened from Home survives the jump to the first component.
+    if (!componentId && first)
+      void navigate({
+        to: chatPath(instanceRef, family, first.id),
+        search: typeof search.tour === "string" ? { tour: search.tour } : {},
+        replace: true,
+      });
+  }, [componentId, components.data, family, instanceRef, navigate, search.tour]);
+  const tour = useTourFromSearch("chat");
 
   const versionOptions = useVersionOptions(instanceRef, component);
   const requested =
@@ -297,9 +325,12 @@ export function ChatPage() {
 
   return (
     <div className="flex h-full min-h-0 flex-col">
+      <h1 className="sr-only">{componentName ? `Chat with ${componentName}` : "Chat"}</h1>
+      <Tour label="Chat" steps={TOUR} open={tour.open && componentId !== undefined} onEnd={tour.close} />
       <div
         role="toolbar"
         aria-label="Chat target"
+        data-tour="chat-target"
         className="flex flex-wrap items-center gap-2 border-b border-border-subtle px-6 py-2.5"
       >
         <SegmentedControl
@@ -396,14 +427,18 @@ export function ChatPage() {
       ) : components.data?.length === 0 ? (
         <div className="p-6">
           <EmptyState
-            title={`No ${FAMILIES.find((item) => item.value === family)?.label.toLowerCase() ?? "components"} you can run on ${instanceName}.`}
+            title={`No ${FAMILIES.find((item) => item.value === family)?.label.toLowerCase() ?? "components"} you can run on ${instanceName}`}
           >
-            Components appear here when they are registered on the instance and you hold a run grant for them.
+            They appear here once they're registered on the instance and you hold a run grant for them. Ask an
+            administrator, or build one in Studio.
           </EmptyState>
         </div>
       ) : (
         <div className="flex min-h-0 flex-1">
-          <div className="flex w-64 shrink-0 flex-col border-r border-border-subtle px-3 py-3">
+          <div
+            data-tour="chat-sessions"
+            className="flex w-64 shrink-0 flex-col border-r border-border-subtle px-3 py-3"
+          >
             {sessions.isPending && componentId ? (
               <LoadingRows rows={6} label="Loading sessions" />
             ) : (
@@ -472,7 +507,7 @@ export function ChatPage() {
               </div>
             </div>
             <div className="border-t border-border-subtle px-6 py-3">
-              <div className="mx-auto max-w-3xl">
+              <div className="mx-auto max-w-3xl" data-tour="chat-composer">
                 <Composer
                   label={`Message ${componentName}`}
                   placeholder={`Message ${componentName}${versionLabel ? ` ${versionLabel}` : ""}…`}

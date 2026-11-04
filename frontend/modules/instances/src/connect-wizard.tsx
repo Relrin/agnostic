@@ -10,7 +10,7 @@ import {
   type ProblemDetails,
   type StepOut,
 } from "@agnostic/api";
-import { withQueryFn } from "@agnostic/core";
+import { useTourFromSearch, withQueryFn } from "@agnostic/core";
 import {
   Button,
   Callout,
@@ -23,13 +23,33 @@ import {
   StepList,
   Switch,
   Textarea,
+  Tour,
   type Environment,
+  type TourStep,
 } from "@agnostic/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { useState, type SubmitEvent } from "react";
 
 type Stage = "endpoint" | "details" | "trust" | "done";
+
+const TOUR: TourStep[] = [
+  {
+    target: "connect-progress",
+    title: "Four short steps",
+    body: "Give the endpoint, check what Agnostic discovered, hand the runtime its key, and test the connection.",
+  },
+  {
+    target: "connect-endpoint",
+    title: "Where AgentOS listens",
+    body: "The base URL the control plane can reach, e.g. http://agentos:7777. Nothing is saved until the next step.",
+  },
+  {
+    target: "connect-discover",
+    title: "Discover the runtime",
+    body: "Agnostic calls the endpoint and reports its name, Agno version and authorization mode, step by step if anything fails.",
+  },
+];
 
 const STAGES: { id: Stage; label: string }[] = [
   { id: "endpoint", label: "Endpoint" },
@@ -41,7 +61,7 @@ const STAGES: { id: Stage; label: string }[] = [
 function Progress({ stage }: { stage: Stage }) {
   const current = STAGES.findIndex((item) => item.id === stage);
   return (
-    <ol className="flex flex-wrap gap-2" aria-label="Connect steps">
+    <ol className="flex flex-wrap gap-2" aria-label="Connect steps" data-tour="connect-progress">
       {STAGES.map((item, index) => (
         <li
           key={item.id}
@@ -142,6 +162,7 @@ export function ConnectWizard() {
   const [securityKey, setSecurityKey] = useState("");
   const [probe, setProbe] = useState<ProbeOut | undefined>(undefined);
   const [instance, setInstance] = useState<InstanceOut | undefined>(undefined);
+  const tour = useTourFromSearch("connect");
 
   const probeMutation = useMutation({
     ...instancesProbeEndpointMutation(),
@@ -191,27 +212,35 @@ export function ConnectWizard() {
         person gets their own permissions on the runtime.
       </PageIntro>
       <Progress stage={stage} />
+      <Tour
+        label="Connect an instance"
+        steps={TOUR}
+        open={tour.open && stage === "endpoint"}
+        onEnd={tour.close}
+      />
 
       {stage === "endpoint" && (
         <form onSubmit={submitEndpoint} className="flex flex-col gap-4">
-          <Field
-            label="AgentOS endpoint"
-            hint="The base URL, reachable from the control plane: e.g. http://agentos:7777"
-          >
-            {({ id, describedBy }) => (
-              <Input
-                id={id}
-                mono
-                required
-                placeholder="https://agentos.internal:7777"
-                aria-describedby={describedBy}
-                value={endpoint}
-                onChange={(event) => {
-                  setEndpoint(event.target.value);
-                }}
-              />
-            )}
-          </Field>
+          <div data-tour="connect-endpoint">
+            <Field
+              label="AgentOS endpoint"
+              hint="The base URL, reachable from the control plane: e.g. http://agentos:7777"
+            >
+              {({ id, describedBy }) => (
+                <Input
+                  id={id}
+                  mono
+                  required
+                  placeholder="https://agentos.internal:7777"
+                  aria-describedby={describedBy}
+                  value={endpoint}
+                  onChange={(event) => {
+                    setEndpoint(event.target.value);
+                  }}
+                />
+              )}
+            </Field>
+          </div>
           <Switch
             label="Verify TLS certificates"
             description="Turn off only for development runtimes with self-signed certificates."
@@ -230,7 +259,7 @@ export function ConnectWizard() {
               />
             )}
           </Field>
-          <div>
+          <div data-tour="connect-discover" className="self-start">
             <Button type="submit" variant="primary" disabled={probeMutation.isPending || !endpoint}>
               {probeMutation.isPending ? "Discovering…" : "Discover"}
             </Button>

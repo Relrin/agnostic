@@ -128,7 +128,7 @@ fmt:
 
 # Unit tests (no Docker needed: the backend runs on SQLite)
 test:
-    cd backend && uv run pytest -m "not integration and not contract and not assistant_eval" --cov=agnostic_kernel --cov-fail-under=90
+    cd backend && uv run pytest -m "not integration and not contract and not assistant_eval and not chaos" --cov=agnostic_kernel --cov-fail-under=90
     cd runtime && uv run pytest
     cd bridge && uv run pytest
     cd frontend && yarn test
@@ -162,10 +162,11 @@ storybook:
 api-gen:
     cd backend && uv run agnostic openapi --out ../frontend/packages/api/openapi.json
     cd frontend && yarn api:gen
+    python3 scripts/render_api_reference.py
 
-# Fail if the committed client is stale (CI)
+# Fail if the committed client (or the API reference page) is stale (CI)
 api-check: api-gen
-    git diff --exit-code -- frontend/packages/api
+    git diff --exit-code -- frontend/packages/api docs/reference/api.md
 
 # Regenerate the AgentOS client models from the pinned runtime's OpenAPI
 agentos-client-gen:
@@ -201,3 +202,55 @@ audit:
 # Install git hooks (lint on commit, conventional commit messages)
 hooks:
     cd backend && uv run pre-commit install --config ../.pre-commit-config.yaml --hook-type pre-commit --hook-type commit-msg
+
+# ---------------------------------------------------------------- packaging & release
+
+# Build the `agnostic` image (API, worker, migrations and the web app) from the repository root
+image tag="agnostic:dev":
+    docker build -t {{tag}} .
+
+# Lint the Helm chart and render it with every optional part on
+helm-lint:
+    helm lint deploy/helm/agnostic --strict
+    helm template agnostic deploy/helm/agnostic --kube-version 1.30.0 --set ingress.enabled=true \
+        --set networkPolicy.enabled=true --set api.autoscaling.enabled=true > /dev/null
+
+# Third-party notices (Python and web app) into dist/, as the image build writes them
+notices:
+    mkdir -p dist
+    cd backend && uv run python ../scripts/check_python_licenses.py --write ../dist/THIRD_PARTY_LICENSES-python.md
+    cd frontend && node scripts/check-licenses.mjs --write ../dist/THIRD_PARTY_LICENSES-web.md
+
+# The air-gapped kit for a version (image archive, chart, Compose example, guides, licenses, checksums)
+airgap-kit version image="":
+    bash scripts/build_airgap_kit.sh {{version}} {{image}}
+
+# The agnostic-runtime template repository, depending on the published agnostic-bridge
+runtime-template version:
+    bash scripts/export_runtime_template.sh {{version}}
+
+# The production web build under the production CSP and Trusted Types (vite preview)
+test-csp:
+    cd frontend && yarn workspace @agnostic/web e2e:csp
+
+# Chaos scenarios on PostgreSQL + Redis containers (instance flapping, cache loss, failover, worker crash, SIEM)
+test-chaos:
+    cd backend && uv run pytest -m chaos -rxX
+
+# Query plans of the hot list queries at realistic volumes (needs Docker or AGNOSTIC_TEST_DATABASE_URL)
+test-query-plans:
+    cd backend && uv run pytest tests/integration/test_query_plans.py -m integration -rxX
+
+# Upgrade every pre-1.0 milestone's database to the current code (needs `just up`)
+upgrade-drill:
+    AGNOSTIC_DRILL_DATABASE_URL="${AGNOSTIC_DRILL_DATABASE_URL:-postgresql://agnostic:agnostic@localhost:5432/agnostic}" \
+        bash scripts/upgrade_drill.sh
+
+# Back up the dev database, restore it into a copy and verify the copy
+restore-drill:
+    bash scripts/restore_drill.sh
+
+# Start the dev OpenBao (Vault Transit API, key "agnostic") to try the vault master-key provider
+vault-up:
+    {{compose}} --profile vault up -d --wait vault
+    {{compose}} exec -e BAO_TOKEN=dev-root-token vault sh -c 'bao secrets enable transit 2>/dev/null; bao write -f transit/keys/agnostic'

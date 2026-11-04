@@ -15,7 +15,7 @@ from agnostic_directory.api.scim import scim_router
 from agnostic_directory.infrastructure.tables import DirectoryBase
 from agnostic_directory.providers import SCIM_PATH, DirectoryProvider
 from agnostic_directory.settings import DirectorySettings
-from agnostic_kernel.modules import AuditActionDecl, BaseModule, JobSpec, RouterSpec
+from agnostic_kernel.modules import AuditActionDecl, BaseModule, JobSpec, RouterSpec, SealedColumn
 
 
 class DirectoryModule(BaseModule):
@@ -28,6 +28,9 @@ class DirectoryModule(BaseModule):
 
     def provide(self) -> Iterable[Provider]:
         return (DirectoryProvider(),)
+
+    def sealed_columns(self) -> Iterable[SealedColumn]:
+        return (SealedColumn("dir_google_sync", "config_enc"),)
 
     def routers(self) -> Iterable[RouterSpec]:
         return (

@@ -20,6 +20,7 @@ from agnostic_instances.domain.instances import (
     InstanceStatus,
     JwtKey,
     KeyStatus,
+    NetworkMode,
     SubClaimMode,
 )
 from agnostic_instances.infrastructure.tables import CapabilityRow, InstanceRow, JwtKeyRow, SnapshotRow
@@ -54,6 +55,10 @@ def _instance(row: InstanceRow) -> Instance:
         updated_at=aware(row.updated_at),
         version=row.version,
         elevation_enabled=row.elevation_enabled,
+        client_cert_pem=row.client_cert_pem,
+        client_key_sealed=row.client_key_enc,
+        network_mode=NetworkMode(row.network_mode),
+        browser_url=row.browser_url,
     )
 
 
@@ -77,6 +82,10 @@ def _apply(row: InstanceRow, instance: Instance) -> None:
     row.version_changed_at = instance.version_changed_at
     row.updated_at = instance.updated_at
     row.elevation_enabled = instance.elevation_enabled
+    row.client_cert_pem = instance.client_cert_pem
+    row.client_key_enc = instance.client_key_sealed
+    row.network_mode = instance.network_mode.value
+    row.browser_url = instance.browser_url
 
 
 class SqlInstanceRepository:
@@ -89,7 +98,7 @@ class SqlInstanceRepository:
         )
 
     async def add(self, instance: Instance, security_key_sealed: str | None) -> None:
-        row = InstanceRow(id=instance.id, created_at=instance.created_at, version=1, network_mode="gateway")
+        row = InstanceRow(id=instance.id, created_at=instance.created_at, version=1)
         _apply(row, instance)
         row.security_key_enc = security_key_sealed
         self._session.add(row)

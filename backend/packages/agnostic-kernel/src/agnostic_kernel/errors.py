@@ -10,6 +10,7 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
+from sqlalchemy.exc import DBAPIError, InterfaceError, OperationalError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from agnostic_kernel.context import current_request_id
@@ -179,7 +180,28 @@ async def _validation_error(request: Request, exc: Exception) -> ProblemResponse
     )
 
 
+DATABASE_RETRY_AFTER = 5
+
+
+def _database_unavailable(exc: BaseException) -> bool:
+    """The database is down, failing over or not answering (as opposed to a bug in a query)."""
+    if isinstance(exc, OperationalError | InterfaceError | TimeoutError | ConnectionError):
+        return True
+    return isinstance(exc, DBAPIError) and exc.connection_invalidated
+
+
 async def _unhandled_error(request: Request, exc: Exception) -> ProblemResponse:
+    if _database_unavailable(exc):
+        log.warning("database_unavailable", path=request.url.path, error=str(exc).splitlines()[0][:300])
+        response = problem(
+            HTTPStatus.SERVICE_UNAVAILABLE,
+            "database_unavailable",
+            "The database is unavailable",
+            detail="The control plane can't reach its database right now; try again in a few seconds.",
+            instance=request.url.path,
+        )
+        response.headers["Retry-After"] = str(DATABASE_RETRY_AFTER)
+        return response
     log.error("unhandled_error", path=request.url.path, exc_info=exc)
     return problem(HTTPStatus.INTERNAL_SERVER_ERROR, AppError.code, AppError.title, instance=request.url.path)
 

@@ -9,6 +9,7 @@ from typing import Any
 
 from agnostic_instances.application.ports import KeyRepository, Signer
 from agnostic_instances.domain.instances import AuthMode, Instance, KeyStatus
+from agnostic_kernel import metrics
 from agnostic_kernel.crypto import SecretBox, new_token
 from agnostic_kernel.db import utcnow
 from agnostic_kernel.errors import ConflictError
@@ -104,4 +105,5 @@ class TokenService:
             "agnostic": {"via": via, "instance": instance.id, **({"name": name} if name else {})},
             **(extra or {}),
         }
+        metrics.token_mints.labels(via).inc()
         return MintedToken(token=self._signer.sign(pem, kid, claims), kid=kid, jti=jti, expires_at=expires_at)

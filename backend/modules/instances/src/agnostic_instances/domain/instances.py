@@ -42,6 +42,13 @@ class SubClaimMode(StrEnum):
     EMAIL = "email"
 
 
+class NetworkMode(StrEnum):
+    GATEWAY = "gateway"
+    """Browsers reach the runtime only through the control plane's gateway (the default)."""
+    DIRECT = "direct"
+    """Browsers fetch a short-lived token from the control plane and call the runtime themselves."""
+
+
 class KeyStatus(StrEnum):
     ACTIVE = "active"
     NEXT = "next"
@@ -78,6 +85,33 @@ class Instance:
     version: int
     elevation_enabled: bool = True
     """Delegated elevation: typed control-plane actions may act as Instance admin for one request."""
+    client_cert_pem: str | None = None
+    """Certificate chain the control plane presents to the runtime (mutual TLS)."""
+    client_key_sealed: str | None = None
+    """The client certificate's private key, sealed; opened only when a connection is set up."""
+    network_mode: NetworkMode = NetworkMode.GATEWAY
+    browser_url: str | None = None
+    """Where browsers reach the runtime in direct mode, when that differs from ``endpoint_url`` (which may be a
+    cluster-internal address)."""
+
+    @property
+    def has_client_certificate(self) -> bool:
+        return self.client_cert_pem is not None and self.client_key_sealed is not None
+
+    @property
+    def public_url(self) -> str:
+        """The runtime's URL as browsers see it (direct mode)."""
+        return self.browser_url or self.endpoint_url
+
+
+def check_direct_mode(instance: Instance, *, allow_http: bool) -> None:
+    """Direct mode sends people's tokens from browsers to the runtime: only over https outside development."""
+    if (
+        instance.network_mode is NetworkMode.DIRECT
+        and not allow_http
+        and not instance.public_url.startswith("https://")
+    ):
+        raise InstanceRuleError("Direct mode needs the runtime's browser URL to use https.")
 
 
 @dataclass(frozen=True, slots=True)

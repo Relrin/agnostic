@@ -24,7 +24,7 @@ async def search(
     instance: Annotated[str | None, Query(description="Instance id or slug: its components rank first")] = None,
     limit: Annotated[int, Query(ge=1, le=50)] = 20,
 ) -> SearchOut:
-    if await index.count() == 0:
+    if await index.is_empty():
         _ = await reindex(container)  # a fresh install: build the index on first use instead of waiting for the job
     hits = await use_case(principal, q, instance_ref=instance, limit=limit)
     return SearchOut(data=[SearchHitOut.from_hit(hit) for hit in hits])

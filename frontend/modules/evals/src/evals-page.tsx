@@ -226,7 +226,9 @@ export function EvalsPage() {
             )}
             {list.isSuccess && rows.length === 0 && (
               <div className="p-4">
-                <EmptyState title="No evaluations yet." />
+                <EmptyState title="No evaluations yet">
+                  Run one to score a version against a dataset, case by case.
+                </EmptyState>
               </div>
             )}
           </div>

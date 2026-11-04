@@ -1,0 +1,66 @@
+name: air-gapped (egress denied)
+
+# The `agnostic` image on a Docker network without a route out: migrations, the API, a worker, sign-in and the web
+# app must work with no outbound connection at all (no update checks, telemetry, CDN fonts or model calls).
+on:
+  schedule:
+    - cron: "17 4 * * *"
+  workflow_dispatch:
+  pull_request:
+    paths: ["Dockerfile", "deploy/compose/**", ".github/workflows/airgap.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  egress-deny:
+    name: compose on an internal network
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with: { context: ., load: true, tags: "agnostic:airgap", cache-from: type=gha }
+      - name: Start Postgres, Redis and Agnostic on a network with no egress
+        run: |
+          docker network create --internal agnostic-airgap
+          docker run -d --name postgres --network agnostic-airgap -e POSTGRES_USER=agnostic \
+            -e POSTGRES_PASSWORD=agnostic -e POSTGRES_DB=agnostic \
+            pgvector/pgvector:0.8.7-pg18-trixie@sha256:5895949dfcdf308eb0cd31c950c93c14895c77f33fbedfecf1fa511ab1d4bcd2
+          docker run -d --name redis --network agnostic-airgap \
+            redis:8.10.3-alpine@sha256:21090af93f8324db2f0f0f4f38a7c60369d47d917e000c3423d89d2ae2883537
+          until docker exec postgres pg_isready -U agnostic; do sleep 1; done
+          cat > airgap.env <<'ENV'
+          AGNOSTIC_ENV=production
+          AGNOSTIC_HTTP__PUBLIC_URL=http://api:8000
+          AGNOSTIC_DATABASE__URL=postgresql://agnostic:agnostic@postgres:5432/agnostic
+          AGNOSTIC_DATABASE__SSLMODE=disable
+          AGNOSTIC_REDIS__URL=redis://redis:6379/0
+          AGNOSTIC_SECRETS__MASTER_KEY=AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=
+          ENV
+          sed -i 's/^ *//' airgap.env
+          run() { docker run --rm --network agnostic-airgap --env-file airgap.env --read-only --tmpfs /tmp agnostic:airgap "$@"; }
+          run migrate
+          printf '%s\n' "airgap-owner-password" | docker run --rm -i --network agnostic-airgap --env-file airgap.env \
+            --read-only --tmpfs /tmp agnostic:airgap bootstrap --org-name "Air gap" --owner-email owner@airgap.test \
+            --owner-name "Owner" --password-stdin
+          docker run -d --name api --network agnostic-airgap --env-file airgap.env --read-only --tmpfs /tmp agnostic:airgap api
+          docker run -d --name worker --network agnostic-airgap --env-file airgap.env --read-only --tmpfs /tmp agnostic:airgap worker
+      - name: The product works without a route out
+        run: |
+          probe() { docker run --rm --network agnostic-airgap curlimages/curl:8.17.0@sha256:935d9100e9ba842cdb060de42472c7ca90cfe9a7c96e4dacb55e79e560b3ff40 "$@"; }
+          for i in $(seq 60); do probe -fsS http://api:8000/readyz && break; sleep 2; done
+          probe -fsS http://api:8000/ | grep -q '<div id="root">'
+          probe -fsS -c /tmp/jar -H 'Content-Type: application/json' \
+            -d '{"email":"owner@airgap.test","password":"airgap-owner-password"}' http://api:8000/api/v1/auth/login
+          probe -fsS http://api:8000/api/v1/system/docs | grep -q '"available":true'
+          docker run --rm --network agnostic-airgap --env-file airgap.env --read-only --tmpfs /tmp agnostic:airgap \
+            config check --connect
+      - name: Nothing tried to leave the network
+        if: always()
+        run: |
+          docker logs api 2>&1 | tee api.log
+          docker logs worker 2>&1 | tee worker.log
+          if grep -Ei "Temporary failure in name resolution|Network is unreachable|getaddrinfo failed" api.log worker.log; then
+            echo "::error::A process tried to reach an outside host"; exit 1
+          fi

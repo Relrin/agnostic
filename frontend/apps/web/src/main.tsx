@@ -1,7 +1,9 @@
+// First: every later module (and its dependencies) runs under the Trusted Types policy.
+import "./trusted-types";
 import "@agnostic/ui/styles.css";
 
 import { configureApi } from "@agnostic/api";
-import { createQueryClient } from "@agnostic/core";
+import { DensityProvider, createQueryClient } from "@agnostic/core";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider } from "@tanstack/react-router";
 import { StrictMode } from "react";
@@ -20,7 +22,9 @@ if (!container) throw new Error("#root is missing from index.html");
 createRoot(container).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      <DensityProvider>
+        <RouterProvider router={router} />
+      </DensityProvider>
     </QueryClientProvider>
   </StrictMode>,
 );

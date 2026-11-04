@@ -2,6 +2,8 @@
  * Agnostic design tokens, taken from the prototype "AgentOS Control Plane — redesign".
  * Components use semantic tokens only (never raw hex), so a light theme after GA is a second token block
  * (:root[data-theme="light"]) with no component changes. Dark is the only available theme.
+ * Density works the same way: :root[data-density="compact"] below overrides the spacing scale, control heights
+ * and table rows; the app root sets the attribute from the signed-in person's preference.
  */
 :root {
   color-scheme: dark;
@@ -112,6 +114,17 @@
   --motion-panel: 180ms;
   --motion-layout: 240ms;
 
+  /* 2.7 Density (comfortable; compact overrides below). Button and input sizes are named by their comfortable
+     height; --row-h matches the fixed JS row heights of virtualized lists (lib/virtual.ts). */
+  --spacing: 0.25rem;
+  --control-h-36: 36px;
+  --control-h-34: 34px;
+  --control-h-32: 32px;
+  --control-h-30: 30px;
+  --control-h-28: 28px;
+  --cell-py: 10px;
+  --row-h: 36px;
+
   /* shadcn/ui variable names, aliased so `shadcn add <component>` output keeps working */
   --background: var(--bg);
   --foreground: var(--fg);
@@ -129,4 +142,17 @@
   --input: var(--border-input);
   --ring: var(--accent);
   --radius: 8px;
+}
+
+/* A wrapper with the attribute (a story showing both densities) gets the same values as the whole page. */
+:root[data-density="compact"],
+[data-density="compact"] {
+  --spacing: 0.225rem;
+  --control-h-36: 32px;
+  --control-h-34: 30px;
+  --control-h-32: 28px;
+  --control-h-30: 26px;
+  --control-h-28: 24px;
+  --cell-py: 6px;
+  --row-h: 28px;
 }

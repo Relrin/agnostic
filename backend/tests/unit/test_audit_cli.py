@@ -36,3 +36,19 @@ def test_audit_commands() -> None:
     malformed = runner.invoke(app, ["audit", "restore", "August"])
     assert malformed.exit_code == 1
     assert "expected a month like 2025-08" in malformed.output
+
+
+def test_archive_commands() -> None:
+    assert runner.invoke(app, ["db", "upgrade"]).exit_code == 0
+
+    listed = runner.invoke(app, ["audit", "archives", "list"])
+    assert listed.exit_code == 0, listed.output
+    assert "events" not in listed.stdout  # nothing archived yet
+
+    missing = runner.invoke(app, ["audit", "archives", "verify", "2025-08"])
+    assert missing.exit_code == 1
+    assert "No archive for 2025-08" in missing.output
+
+    assert runner.invoke(app, ["audit", "archives", "verify"]).exit_code == 2
+    nothing = runner.invoke(app, ["audit", "archives", "verify", "--all"])
+    assert nothing.exit_code == 0, nothing.output

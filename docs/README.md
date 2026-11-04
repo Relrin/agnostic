@@ -2,8 +2,16 @@
 
 ## Start here
 
-- [Getting started](getting-started.md): run the stack, find your way around, make a first change.
+- [Install Agnostic](guides/admin/install.md): requirements, Compose or Helm, the first Owner, the first instance.
+- [Getting started](getting-started.md) (contributors): run the stack, find your way around, make a first change.
 - [Architecture overview](architecture/overview.md): what runs where and why.
+
+## Guides for administrators, builders and operators
+
+The guides under [`guides/`](guides/README.md) ship in the `agnostic` image and open in the product (Help), so they
+work without internet access: installation, upgrades, backups and disaster recovery, key management, hardening,
+direct mode, observability, the System page, audit integrity, the builder and operator guides, runbooks, and the
+security whitepaper.
 
 ## Architecture
 
@@ -34,7 +42,7 @@
 | [Background jobs](how-to/background-jobs.md) | Procrastinate tasks, periodic jobs, progress |
 | [Configuration and endpoints](how-to/configuration.md) | env vars, TOML, TLS, PostgreSQL vs SQLite |
 | [Regenerate API clients](how-to/api-clients.md) | OpenAPI → TypeScript, AgentOS OpenAPI → Python models |
-| [Run the reference runtimes](how-to/reference-runtimes.md) | two AgentOS instances for development, JWT trust, `just seed`, the bridge |
+| [Run the reference runtimes](how-to/reference-runtimes.md) | two AgentOS instances for development, JWT trust, `just seed`, the bridge (for your own runtime: [bridge and runtime](guides/bridge-and-runtime.md)) |
 | [Sign-in providers](how-to/sign-in-providers.md) | local accounts, GitHub, GitLab, Google, Okta, any OIDC or SAML provider, enforcing SSO, MFA |
 | [Okta](how-to/idp/okta.md), [Entra ID](how-to/idp/entra-id.md), [Keycloak](how-to/idp/keycloak.md), [Google Workspace](how-to/idp/google-workspace.md) | SSO with each identity provider, SCIM provisioning, group sync |
 | [SIEM streaming and the audit archive](how-to/audit-siem-and-archive.md) | webhook, syslog and OTLP destinations, retention, the S3 archive, restore, the hash chain |
@@ -50,6 +58,13 @@
 - [CLI](reference/cli.md): every `agnostic` command.
 - [Configuration](reference/configuration.md): every setting and its environment variable.
 - [API conventions](reference/api-conventions.md): errors (problem+json), ids, pagination, request ids.
+- [API reference](reference/api.md): every control-plane route (generated from the OpenAPI document).
+- [Compatibility](reference/compatibility.md): Agno/AgentOS, bridge, PostgreSQL, Redis-compatible caches, KMS, platforms.
+
+## Releases
+
+- [Release checklist](release/checklist.md) and [release notes](release-notes/1.0.0.md).
+- [Security policy](../SECURITY.md): reporting vulnerabilities, supported versions.
 
 ## Decisions
 

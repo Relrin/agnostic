@@ -1,7 +1,7 @@
 // New / Edit schedule: name, target (an agent, team or workflow run, or a custom endpoint for Instance admins),
 // "When it runs" with a live preview, and the request (payload, timeout, retries, retry delay).
 import { describeError, type Method, type ScheduleIn, type SchedulePatch } from "@agnostic/api";
-import { useComponents } from "@agnostic/core";
+import { localTimezone, useComponents } from "@agnostic/core";
 import {
   Button,
   Callout,
@@ -32,7 +32,6 @@ import {
   NAME_PATTERN,
   fieldErrors,
   invalidFields,
-  localTimezone,
   useEndpointCheck,
   usePreview,
   useScheduleActions,

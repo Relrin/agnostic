@@ -73,10 +73,17 @@ def create_engine(settings: DatabaseSettings) -> AsyncEngine:
         pool_size=settings.pool_size,
         max_overflow=settings.max_overflow,
         pool_pre_ping=True,
+        pool_timeout=settings.pool_timeout,
+        pool_recycle=1800,
         connect_args={
             "ssl": asyncpg_ssl(settings.sslmode, settings.tls),
             "timeout": settings.connect_timeout,
-            "server_settings": {"application_name": APPLICATION_NAME},
+            "command_timeout": settings.command_timeout,
+            "server_settings": {
+                "application_name": APPLICATION_NAME,
+                "statement_timeout": str(settings.statement_timeout_ms),
+                "idle_in_transaction_session_timeout": "60000",
+            },
         },
     )
 
@@ -121,6 +128,10 @@ def psycopg_conninfo(settings: DatabaseSettings, *, search_path: str | None = No
     params = libpq_tls_params(settings.sslmode, settings.tls)
     params["application_name"] = APPLICATION_NAME
     params["connect_timeout"] = str(max(1, int(settings.connect_timeout)))
+    # TCP keepalives: the worker's LISTEN connection notices a primary that vanished without closing the socket.
+    params |= {"keepalives": "1", "keepalives_idle": "10", "keepalives_interval": "5", "keepalives_count": "3"}
+    options = [f"-c statement_timeout={settings.statement_timeout_ms}"]
     if search_path:
-        params["options"] = f"-c search_path={search_path}"
+        options.append(f"-c search_path={search_path}")
+    params["options"] = " ".join(options)
     return make_conninfo(url.render_as_string(hide_password=False), **params)

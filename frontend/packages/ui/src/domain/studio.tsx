@@ -39,7 +39,6 @@ export function LineLinkBadge({
     <button
       type="button"
       data-slot="line-link-badge"
-      aria-label={`Show line ${String(line)} in the code`}
       aria-pressed={active}
       onClick={onClick}
       className={cn(
@@ -48,6 +47,7 @@ export function LineLinkBadge({
       )}
     >
       {text}
+      <span className="sr-only">: show line {line} in the code</span>
     </button>
   );
 }

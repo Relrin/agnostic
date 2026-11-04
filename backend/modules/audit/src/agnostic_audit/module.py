@@ -2,21 +2,28 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from pathlib import Path
 
-from dishka import Provider
+from dishka import AsyncContainer, Provider
 from pydantic_settings import BaseSettings
 from sqlalchemy import MetaData
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from agnostic_audit import jobs
 from agnostic_audit.api.governance import router as governance_router
 from agnostic_audit.api.router import router
 from agnostic_audit.api.tools import TOOLS
+from agnostic_audit.application.checks import archive_checks
+from agnostic_audit.application.policy import PolicyService
+from agnostic_audit.application.ports import ObjectStores
+from agnostic_audit.infrastructure.status import audit_status
 from agnostic_audit.infrastructure.tables import AuditBase
 from agnostic_audit.providers import AuditProvider
 from agnostic_audit.settings import AuditSettings
-from agnostic_kernel.modules import AuditActionDecl, BaseModule, JobSpec, RouterSpec, ScopeDecl
+from agnostic_kernel.db import utcnow
+from agnostic_kernel.diagnostics import CheckResult, StatusItem
+from agnostic_kernel.modules import AuditActionDecl, BaseModule, JobSpec, RouterSpec, ScopeDecl, SealedColumn
 from agnostic_kernel.tools import ToolSpec
 
 
@@ -30,6 +37,12 @@ class AuditModule(BaseModule):
 
     def provide(self) -> Iterable[Provider]:
         return (AuditProvider(),)
+
+    def sealed_columns(self) -> Iterable[SealedColumn]:
+        return (
+            SealedColumn("audit_policy", "secret_enc"),
+            SealedColumn("audit_sinks", "config_enc"),
+        )
 
     def routers(self) -> Iterable[RouterSpec]:
         return (
@@ -68,6 +81,7 @@ class AuditModule(BaseModule):
             AuditActionDecl("audit.export", "{actor} exported {count} audit events as {format}"),
             AuditActionDecl("audit.export.requested", "{actor} started a background export of audit events"),
             AuditActionDecl("audit.restore", "{actor} restored the archived audit events of {month}"),
+            AuditActionDecl("audit.archive_verify", "{actor} verified the audit archive of {month}: {result}"),
             AuditActionDecl("audit.policy.update", "{actor} changed the audit retention and archive policy"),
             AuditActionDecl("audit.sinks.create", "{actor} added the SIEM sink {resource}"),
             AuditActionDecl("audit.sinks.update", "{actor} changed the SIEM sink {resource}"),
@@ -77,3 +91,9 @@ class AuditModule(BaseModule):
 
     def assistant_tools(self) -> Iterable[ToolSpec]:
         return TOOLS
+
+    async def system_status(self, container: AsyncContainer) -> Sequence[StatusItem]:
+        return await audit_status(await container.get(AsyncSession), utcnow())
+
+    async def endpoint_checks(self, container: AsyncContainer) -> Sequence[CheckResult]:
+        return await archive_checks(await container.get(PolicyService), await container.get(ObjectStores))

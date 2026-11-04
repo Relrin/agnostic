@@ -1,0 +1,25 @@
+# Build context of the `agnostic` image (Dockerfile at the repository root): sources and lockfiles only.
+**/.venv
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/.ruff_cache
+**/.hypothesis
+**/.import_linter_cache
+**/.coverage
+**/node_modules
+**/.tsbuild
+**/dist
+**/storybook-static
+**/playwright-report*
+**/test-results
+backend/var
+backend/tests
+runtime
+plans
+perf
+.git
+.github
+.env
+**/.env
+**/.jwt

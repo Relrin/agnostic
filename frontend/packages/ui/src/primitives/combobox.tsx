@@ -80,7 +80,7 @@ export function Combobox<T extends string = string>({
           data-slot="combobox-trigger"
           data-placeholder={selected ? undefined : ""}
           className={cn(
-            "flex h-[34px] w-full cursor-pointer items-center justify-between gap-2 rounded-button border border-border-input bg-surface px-2.5 text-left text-[13px] text-fg focus-visible:border-accent focus-visible:outline-none disabled:cursor-not-allowed disabled:text-fg-disabled aria-invalid:border-danger data-[placeholder]:text-fg-muted",
+            "flex h-[var(--control-h-34)] w-full cursor-pointer items-center justify-between gap-2 rounded-button border border-border-input bg-surface px-2.5 text-left text-[13px] text-fg focus-visible:border-accent focus-visible:outline-none disabled:cursor-not-allowed disabled:text-fg-disabled aria-invalid:border-danger data-[placeholder]:text-fg-muted",
             className,
           )}
           {...aria}

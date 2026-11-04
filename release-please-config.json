@@ -1,0 +1,43 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "include-component-in-tag": true,
+  "separate-pull-requests": false,
+  "packages": {
+    ".": {
+      "component": "agnostic",
+      "release-type": "simple",
+      "release-as": "1.0.0",
+      "changelog-path": "CHANGELOG.md",
+      "exclude-paths": [
+        "bridge"
+      ],
+      "extra-files": [
+        {
+          "type": "toml",
+          "path": "backend/apps/agnostic-server/pyproject.toml",
+          "jsonpath": "$.project.version"
+        },
+        {
+          "type": "generic",
+          "path": "backend/apps/agnostic-server/src/agnostic_server/__init__.py"
+        },
+        {
+          "type": "yaml",
+          "path": "deploy/helm/agnostic/Chart.yaml",
+          "jsonpath": "$.version"
+        },
+        {
+          "type": "yaml",
+          "path": "deploy/helm/agnostic/Chart.yaml",
+          "jsonpath": "$.appVersion"
+        }
+      ]
+    },
+    "bridge": {
+      "component": "agnostic-bridge",
+      "release-type": "python",
+      "package-name": "agnostic-bridge",
+      "changelog-path": "CHANGELOG.md"
+    }
+  }
+}

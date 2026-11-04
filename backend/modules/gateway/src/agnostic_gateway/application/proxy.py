@@ -51,6 +51,7 @@ from agnostic_gateway.domain.policies import (
     scopes_for_token,
 )
 from agnostic_instances.facade import AuthMode, Instance, InstancesFacade, InstanceStatus, SubClaimMode
+from agnostic_kernel import metrics
 from agnostic_kernel.auth import Principal
 from agnostic_kernel.context import current_client, current_request_id
 from agnostic_kernel.db import utcnow
@@ -222,6 +223,7 @@ class Gateway:
     async def handle(  # noqa: C901, PLR0912, PLR0915  (one linear pipeline; each step is a guard clause)
         self, principal: Principal, instance_ref: str, request: ProxyRequest
     ) -> ProxyResponse:
+        started = time.perf_counter()
         instance = await self._instance_cache.get(instance_ref, self._instances)
         if instance is None:
             raise NotFoundError(f"There is no instance {instance_ref!r}.")
@@ -279,14 +281,19 @@ class Gateway:
             headers["X-Forwarded-For"] = client_ip
         if request.host:
             headers["X-Forwarded-Host"] = request.host
+        forwarded = time.perf_counter()
+        metrics.gateway_overhead.labels(instance.slug).observe(forwarded - started)
         try:
             response = await self._upstream.send(
                 instance, request.method, path, params=request.params, headers=headers, body=request.body
             )
         except InstanceUnreachableError as exc:
             self._breaker.failure(instance.id)
+            metrics.gateway_upstream.labels(instance.slug, "unreachable").observe(time.perf_counter() - forwarded)
             raise GatewayUnreachableError(f"{instance.display_name} didn't answer: {exc}") from exc
         self._breaker.success(instance.id)
+        outcome = "error" if response.status_code >= 500 else "ok"  # noqa: PLR2004
+        metrics.gateway_upstream.labels(instance.slug, outcome).observe(time.perf_counter() - forwarded)
 
         if response.status_code in {401, 503}:
             await self._raise_upstream_problem(instance, response)
@@ -313,6 +320,7 @@ class Gateway:
                 "only Instance admins can use it through the gateway. " + text
             )
         await self._record(principal, instance, policy, path, required, 403, "denied", missing, reason=text)
+        metrics.gateway_denials.labels(instance.slug, "scope_missing").inc()
         raise GatewayScopeMissingError(
             text,
             extra={
@@ -335,6 +343,7 @@ class Gateway:
         window = int(time.time() // 60)
         key = f"rl:gw:{principal.id}:{instance.id}:{policy.rate_bucket}:{window}"
         if await self._store.incr(key, ttl=70) > limit:
+            metrics.gateway_denials.labels(instance.slug, "rate_limited").inc()
             raise RateLimitedError(
                 f"More than {limit} {policy.rate_bucket} calls a minute to {instance.display_name}. Slow down.",
                 extra={"retry_after": 60 - int(time.time()) % 60},
@@ -479,7 +488,7 @@ class Gateway:
         if streaming:
             headers["Cache-Control"] = "no-cache"
             headers["X-Accel-Buffering"] = "no"
-            body = with_heartbeats(response.aiter_raw(), self._config.heartbeat_seconds)
+            body = _counted_stream(with_heartbeats(response.aiter_raw(), self._config.heartbeat_seconds), instance.slug)
             return ProxyResponse(response.status_code, headers, body, response.aclose)
 
         if cache_key is not None and response.status_code == 200:  # noqa: PLR2004
@@ -494,6 +503,17 @@ class Gateway:
                 await self._store.set(cache_key, orjson.dumps(entry), ttl=policy.cache_ttl_s)
             return ProxyResponse(200, headers, _once(content), _noop)
         return ProxyResponse(response.status_code, headers, response.aiter_raw(), response.aclose)
+
+
+async def _counted_stream(body: AsyncIterator[bytes], instance: str) -> AsyncIterator[bytes]:
+    """``body`` while counting it as an open SSE stream of ``instance``."""
+    gauge = metrics.sse_streams.labels(instance)
+    gauge.inc()
+    try:
+        async for chunk in body:
+            yield chunk
+    finally:
+        gauge.dec()
 
 
 async def _once(content: bytes) -> AsyncIterator[bytes]:

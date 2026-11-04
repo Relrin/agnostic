@@ -795,7 +795,7 @@ export function TracesPage() {
               {list.isSuccess && rows.length === 0 && (
                 <div className="p-4">
                   <EmptyState
-                    title={`No traces ${active ? "match these filters" : `in the ${RANGE_LABEL[search.range].toLowerCase()}`}.`}
+                    title={`No traces ${active ? "match these filters" : `in the ${RANGE_LABEL[search.range].toLowerCase()}`}`}
                   />
                 </div>
               )}

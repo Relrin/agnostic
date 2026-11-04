@@ -20,14 +20,17 @@ from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
 from agnostic_kernel.cache import create_redis
-from agnostic_kernel.crypto import SecretBox, load_master_key
+from agnostic_kernel.crypto import SecretBox
 from agnostic_kernel.db import create_engine, create_sessionmaker
 from agnostic_kernel.domain_events import DomainEvents, kernel_jobs
-from agnostic_kernel.ephemeral import EphemeralStore, MemoryStore, RedisStore
+from agnostic_kernel.ephemeral import DegradingStore, EphemeralStore, MemoryStore, RedisStore
 from agnostic_kernel.events import EventBus, MemoryEventBus, RedisEventBus
+from agnostic_kernel.job_admin import JobAdmin
 from agnostic_kernel.jobs import JobProgressReporter, JobQueue, create_jobs_app, register_jobs
+from agnostic_kernel.keys import load_secret_box
 from agnostic_kernel.mail import Mailer, create_mailer
 from agnostic_kernel.modules import LoadedModules
+from agnostic_kernel.security_headers import ConnectSources
 from agnostic_kernel.settings import Settings
 from agnostic_kernel.telemetry import instrument_engine
 
@@ -68,7 +71,7 @@ class KernelProvider(Provider):
     def ephemeral(self, settings: Settings, redis: Redis) -> EphemeralStore:
         if settings.cache_backend() == "memory":
             return MemoryStore()
-        return RedisStore(redis)
+        return DegradingStore(RedisStore(redis))
 
     @provide(scope=Scope.APP)
     def event_bus(self, settings: Settings, redis: Redis) -> EventBus:
@@ -77,8 +80,12 @@ class KernelProvider(Provider):
         return RedisEventBus(redis)
 
     @provide(scope=Scope.APP)
-    def secret_box(self, settings: Settings) -> SecretBox:
-        return SecretBox(load_master_key(settings.secrets, environment=settings.env))
+    async def secret_box(self, settings: Settings) -> SecretBox:
+        return await load_secret_box(settings.secrets, settings.tls, environment=settings.env)
+
+    @provide(scope=Scope.APP)
+    def connect_sources(self, settings: Settings) -> ConnectSources:
+        return ConnectSources(settings.http.csp_extra_connect)
 
     @provide(scope=Scope.APP)
     def mailer(self, settings: Settings) -> Mailer:
@@ -92,6 +99,7 @@ class KernelProvider(Provider):
             yield app
 
     job_queue = provide(JobQueue, scope=Scope.APP)
+    job_admin = provide(JobAdmin, scope=Scope.APP)
     domain_events = provide(DomainEvents, scope=Scope.APP)
     job_progress = provide(JobProgressReporter, scope=Scope.APP)
 

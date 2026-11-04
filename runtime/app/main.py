@@ -15,7 +15,7 @@ prod runtime (``dev-prod``) and follows ``RUNTIME_USER_ISOLATION`` elsewhere.
 from agno.db.postgres import PostgresDb
 from agno.os import AgentOS, QueueConfig
 from agno.os.authz import Authorization
-from agnostic_bridge import install
+from agnostic_bridge import direct_mode_cors, install
 
 from app.agents import AGENTS
 from app.registry import build_registry
@@ -29,7 +29,11 @@ def build_authorization(settings: RuntimeSettings) -> Authorization | bool:
         return False
     # Keys come from JWT_VERIFICATION_KEY / JWT_JWKS_FILE (agno reads them); verify-only, no role store.
     return Authorization(
-        algorithm="RS256", verify_audience=True, audience=settings.id, issuer=settings.jwt_issuer or None
+        algorithm="RS256",
+        verify_audience=True,
+        audience=settings.id,
+        issuer=settings.jwt_issuer or None,
+        audit=settings.authz_audit,
     )
 
 
@@ -52,6 +56,7 @@ def build_agent_os(settings: RuntimeSettings) -> AgentOS:
         authorization=build_authorization(settings),
         user_isolation=settings.user_isolation_enabled,
         telemetry=False,
+        cors=direct_mode_cors(settings.cors_origin_list) if settings.cors_origin_list else None,
     )
 
 

@@ -2,9 +2,12 @@ import { Tabs as TabsPrimitive } from "radix-ui";
 import { createContext, use, type ComponentProps } from "react";
 
 import { cn } from "../lib/cn";
+import { groupDigits } from "../lib/format";
 
 type TabsVariant = "underline" | "pill";
 const VariantContext = createContext<TabsVariant>("underline");
+/** False for tabs that filter the content below instead of switching between TabsContent panels. */
+const PanelsContext = createContext(true);
 
 export function Tabs({ className, ...props }: ComponentProps<typeof TabsPrimitive.Root>) {
   return <TabsPrimitive.Root data-slot="tabs" className={cn("flex flex-col gap-3", className)} {...props} />;
@@ -13,20 +16,27 @@ export function Tabs({ className, ...props }: ComponentProps<typeof TabsPrimitiv
 export function TabsList({
   className,
   variant = "underline",
+  panels = true,
   ...props
-}: ComponentProps<typeof TabsPrimitive.List> & { variant?: TabsVariant }) {
+}: ComponentProps<typeof TabsPrimitive.List> & {
+  variant?: TabsVariant;
+  /** `false` when the tabs filter one view (a table) and render no TabsContent: triggers then control nothing. */
+  panels?: boolean;
+}) {
   return (
-    <VariantContext value={variant}>
-      <TabsPrimitive.List
-        data-slot="tabs-list"
-        className={cn(
-          "flex items-center",
-          variant === "underline" ? "gap-5 border-b border-border-subtle" : "gap-1.5",
-          className,
-        )}
-        {...props}
-      />
-    </VariantContext>
+    <PanelsContext value={panels}>
+      <VariantContext value={variant}>
+        <TabsPrimitive.List
+          data-slot="tabs-list"
+          className={cn(
+            "flex items-center",
+            variant === "underline" ? "gap-5 border-b border-border-subtle" : "gap-1.5",
+            className,
+          )}
+          {...props}
+        />
+      </VariantContext>
+    </PanelsContext>
   );
 }
 
@@ -41,6 +51,7 @@ export function TabsTrigger({
   countTone?: "muted" | "warning" | "danger";
 }) {
   const variant = use(VariantContext);
+  const panels = use(PanelsContext);
   return (
     <TabsPrimitive.Trigger
       data-slot="tabs-trigger"
@@ -52,6 +63,8 @@ export function TabsTrigger({
         className,
       )}
       {...props}
+      // Radix points every trigger at its panel; with no panels that id doesn't exist.
+      {...(panels ? {} : { "aria-controls": undefined })}
     >
       {children}
       {count !== undefined && (
@@ -63,7 +76,7 @@ export function TabsTrigger({
             countTone === "muted" && "bg-surface-hover text-fg-muted",
           )}
         >
-          {count.toLocaleString("en-US")}
+          {groupDigits(count)}
         </span>
       )}
     </TabsPrimitive.Trigger>

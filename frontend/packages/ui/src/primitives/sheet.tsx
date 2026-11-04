@@ -3,6 +3,7 @@ import { Dialog as SheetPrimitive } from "radix-ui";
 import type { ComponentProps } from "react";
 
 import { cn } from "../lib/cn";
+import { useReturnFocus } from "../lib/return-focus";
 
 export const Sheet = SheetPrimitive.Root;
 export const SheetTrigger = SheetPrimitive.Trigger;
@@ -21,8 +22,11 @@ export function SheetContent({
   className,
   children,
   side = "right",
+  onOpenAutoFocus,
+  onCloseAutoFocus,
   ...props
 }: ComponentProps<typeof SheetPrimitive.Content> & { side?: keyof typeof SIDES }) {
+  const returnFocus = useReturnFocus({ onOpenAutoFocus, onCloseAutoFocus });
   return (
     <SheetPrimitive.Portal>
       <SheetPrimitive.Overlay className="bg-black/50 fixed inset-0 z-50 data-[state=open]:animate-in data-[state=open]:fade-in-0" />
@@ -34,6 +38,7 @@ export function SheetContent({
           className,
         )}
         {...props}
+        {...returnFocus}
       >
         {children}
         <SheetPrimitive.Close

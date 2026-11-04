@@ -1,0 +1,14 @@
+Agnostic {{ .Chart.AppVersion }} is installed as {{ include "agnostic.fullname" . }}.
+
+1. Check every endpoint from inside the cluster:
+     helm test {{ .Release.Name }} --namespace {{ .Release.Namespace }} --logs
+
+2. Create the org and its first Owner (prints a one-time sign-up link):
+     kubectl --namespace {{ .Release.Namespace }} exec deploy/{{ include "agnostic.fullname" . }}-api -- agnostic bootstrap --org-name "Your company"
+
+3. Open {{ index .Values.config "AGNOSTIC_HTTP__PUBLIC_URL" }} and follow the link.
+{{- if not .Values.existingSecret }}
+
+WARNING: existingSecret is empty: AGNOSTIC_DATABASE__URL, AGNOSTIC_REDIS__URL and AGNOSTIC_SECRETS__MASTER_KEY must
+come from extraEnvFrom or extraEnv.
+{{- end }}

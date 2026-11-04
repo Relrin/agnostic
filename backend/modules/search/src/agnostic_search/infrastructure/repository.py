@@ -65,8 +65,9 @@ class SqlSearchIndex:
         if rows:
             _ = await self._session.execute(insert(SearchDocumentRow), list(rows.values()))
 
-    async def count(self) -> int:
-        return int(await self._session.scalar(select(func.count()).select_from(SearchDocumentRow)) or 0)
+    async def is_empty(self) -> bool:
+        # An existence check, not a count: it runs on every palette keystroke.
+        return await self._session.scalar(select(SearchDocumentRow.id).limit(1)) is None
 
     async def query(self, text: str, *, instance_id: str | None, limit: int) -> list[Hit]:
         if self._session.get_bind().dialect.name == "postgresql":

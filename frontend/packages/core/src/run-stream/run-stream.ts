@@ -3,7 +3,7 @@
 // `last_event_index` when the stream ends before the run settles: a browser refresh, a gateway or API replica
 // restart (unless the stream is not `resumable`). Cancel and continue (agents `tools`, teams `requirements`, workflows `step_requirements`) go through the
 // same object.
-import { describeError, gatewayFetch, gatewayUrl, isProblem, writeHeaders } from "@agnostic/api";
+import { describeError, gatewayFetch, instanceRequest, isProblem, writeHeaders } from "@agnostic/api";
 import { fetchEventSource, type EventSourceMessage } from "@microsoft/fetch-event-source";
 import { createStore, type StoreApi } from "zustand/vanilla";
 
@@ -140,10 +140,6 @@ export class RunStream {
     return `${this.target.family}/${encodeURIComponent(this.target.componentId)}/runs`;
   }
 
-  private gateway(path: string): string {
-    return gatewayUrl(this.target.instance, path);
-  }
-
   /**
    * Start a run: multipart for agents and teams (files allowed), a form for workflows, and JSON
    * (`message`, `version`, `session_id`) to a custom `endpoint`, which takes no files.
@@ -167,7 +163,7 @@ export class RunStream {
     };
     if (this.submitUrl) {
       const json = { message: input.message, version: input.version, session_id: input.sessionId };
-      await this.open(this.submitUrl, JSON.stringify(json), {
+      await this.open({ url: this.submitUrl }, JSON.stringify(json), {
         "Content-Type": "application/json",
         "Idempotency-Key": this.key,
       });
@@ -181,7 +177,7 @@ export class RunStream {
       for (const file of input.files ?? []) multipart.append("files", file, file.name);
       body = multipart;
     }
-    await this.open(this.gateway(this.base()), body, { "Idempotency-Key": this.key });
+    await this.open({ path: this.base() }, body, { "Idempotency-Key": this.key });
   }
 
   /**
@@ -213,7 +209,7 @@ export class RunStream {
     }
     const last = this.getState().lastEventIndex;
     await this.open(
-      this.gateway(`${this.base()}/${encodeURIComponent(state.runId)}/resume`),
+      { path: `${this.base()}/${encodeURIComponent(state.runId)}/resume` },
       form({ last_event_index: last >= 0 ? String(last) : undefined, session_id: state.sessionId }),
     );
   }
@@ -244,7 +240,7 @@ export class RunStream {
     if (!state.runId) return;
     this.set({ status: "running", pause: undefined, lastEventIndex: -1 });
     await this.open(
-      this.gateway(`${this.base()}/${encodeURIComponent(state.runId)}/continue`),
+      { path: `${this.base()}/${encodeURIComponent(state.runId)}/continue` },
       form({ ...fields, session_id: state.sessionId, stream: "true", background: "true" }),
     );
   }
@@ -263,22 +259,31 @@ export class RunStream {
 
   // ------------------------------------------------------------ transport
 
-  private async open(url: string, body: BodyInit, extra: Record<string, string> = {}): Promise<void> {
+  /** POST and read the event stream: an AgentOS route (`path`, gateway or direct) or a control-plane `url`. */
+  private async open(
+    where: { path: string } | { url: string },
+    body: BodyInit,
+    extra: Record<string, string> = {},
+  ): Promise<void> {
     if (this.disposed) return;
     clearTimeout(this.retryTimer);
     this.controller?.abort();
     const controller = new AbortController();
     this.controller = controller;
     this.set({ phase: this.getState().attempts > 0 ? "reconnecting" : "connecting" });
-    const headers = writeHeaders("POST", { Accept: "text/event-stream", ...extra });
+    const init = { Accept: "text/event-stream", ...extra };
     let fatal = false;
     this.openError = undefined;
     try {
-      await fetchEventSource(url, {
+      const target =
+        "path" in where
+          ? await instanceRequest(this.target.instance, where.path, "POST", init)
+          : { url: where.url, headers: writeHeaders("POST", init), credentials: "same-origin" as const };
+      await fetchEventSource(target.url, {
         method: "POST",
-        headers: Object.fromEntries(headers.entries()),
+        headers: Object.fromEntries(target.headers.entries()),
         body,
-        credentials: "same-origin",
+        credentials: target.credentials,
         signal: controller.signal,
         openWhenHidden: true,
         ...(this.fetchImpl ? { fetch: this.fetchImpl } : {}),

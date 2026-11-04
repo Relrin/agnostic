@@ -2,7 +2,7 @@
 // labels for Router choices and Condition lanes, the "+" insert affordance and palette items. Presentational: the
 // canvas maps the workflow tree to these props and does the layout.
 import { AlertTriangle, Check, CircleDashed, LoaderCircle, Pause, Plus, X } from "lucide-react";
-import type { CSSProperties, DragEvent, ReactNode } from "react";
+import { useId, type CSSProperties, type DragEvent, type ReactNode } from "react";
 
 import { cn } from "../lib/cn";
 
@@ -92,21 +92,21 @@ export function NodeCard({
   style,
 }: NodeCardProps) {
   const color = NODE_COLORS[type];
-  const label = [
-    `${type} ${title}`,
+  // The name is the visible type and title ("Step Classify ticket"); the rest, some of it only icons, describes it.
+  const descriptionId = useId();
+  const details = [
     chip,
     status !== "idle" ? STATUS_TEXT[status] : undefined,
     problems ? `${String(problems)} problem${problems === 1 ? "" : "s"}` : undefined,
-  ]
-    .filter(Boolean)
-    .join(", ");
+    meta,
+  ].filter(Boolean);
   return (
     <button
       type="button"
       data-slot="node-card"
       data-status={status}
       aria-pressed={selected}
-      aria-label={label}
+      aria-describedby={details.length > 0 ? descriptionId : undefined}
       onClick={onSelect}
       className={cn(
         "flex w-full flex-col gap-1.5 rounded-card border bg-surface px-3 py-2.5 text-left transition-colors",
@@ -127,18 +127,30 @@ export function NodeCard({
         </span>
         <span className="flex-1" />
         {problems > 0 && (
-          <span className="inline-flex items-center gap-1 text-[11px] text-danger">
+          <span aria-hidden className="inline-flex items-center gap-1 text-[11px] text-danger">
             <AlertTriangle aria-hidden className="size-3" />
             {problems}
           </span>
         )}
-        {meta && <span className="text-[11px] text-fg-muted">{meta}</span>}
+        {meta && (
+          <span aria-hidden className="text-[11px] text-fg-muted">
+            {meta}
+          </span>
+        )}
         {status !== "idle" && STATUS_ICON[status]}
-      </span>
+      </span>{" "}
       <span className="truncate text-[13.5px] font-medium text-fg">{title || "Untitled"}</span>
       {chip && (
-        <span className="max-w-full self-start truncate rounded-type border border-border px-1.5 py-0.5 font-mono text-[11.5px] text-fg-secondary">
+        <span
+          aria-hidden
+          className="max-w-full self-start truncate rounded-type border border-border px-1.5 py-0.5 font-mono text-[11.5px] text-fg-secondary"
+        >
           {chip}
+        </span>
+      )}
+      {details.length > 0 && (
+        <span id={descriptionId} hidden>
+          {details.join(", ")}
         </span>
       )}
     </button>
@@ -239,12 +251,13 @@ export function PaletteItem({
   onAdd: () => void;
   onDragStart: (event: DragEvent<HTMLButtonElement>) => void;
 }) {
+  const descriptionId = useId();
   return (
     <button
       type="button"
       draggable
       data-slot="palette-item"
-      aria-label={kind ? `Add a step running ${kind} ${name}` : `Add a ${name}`}
+      aria-describedby={description ? descriptionId : undefined}
       onClick={onAdd}
       onDragStart={onDragStart}
       className="flex w-full cursor-grab items-center gap-2.5 rounded-control px-2 py-1.5 text-left hover:bg-surface-hover focus-visible:ring-1 focus-visible:ring-accent focus-visible:outline-none active:cursor-grabbing"
@@ -254,15 +267,24 @@ export function PaletteItem({
       ) : (
         <span aria-hidden className="size-[7px] shrink-0 rounded-[2px]" style={{ backgroundColor: color }} />
       )}
+      <span className="sr-only">{kind ? `Add a step running ${kind}` : "Add a"}</span>{" "}
       <span className="flex min-w-0 flex-1 flex-col">
         <span
           className={cn("truncate text-[13px] font-medium", kind && "font-mono text-[12.5px] font-normal")}
         >
           {name}
         </span>
-        {description && <span className="truncate text-[11.5px] text-fg-muted">{description}</span>}
+        {description && (
+          <span id={descriptionId} aria-hidden className="truncate text-[11.5px] text-fg-muted">
+            {description}
+          </span>
+        )}
       </span>
-      {kind && <span className="text-[11px] text-fg-muted">{kind}</span>}
+      {kind && (
+        <span aria-hidden className="text-[11px] text-fg-muted">
+          {kind}
+        </span>
+      )}
     </button>
   );
 }

@@ -237,7 +237,7 @@ export function RolesPage() {
   } else if (!current) {
     body = (
       <div className="flex-1 p-6">
-        <EmptyState title={requested ? "There is no such role." : "No access roles yet."}>
+        <EmptyState title={requested ? "There is no such role" : "No access roles yet"}>
           {requested
             ? "It may have been deleted. Pick a role on the left."
             : "Create one to grant scopes on AgentOS instances."}

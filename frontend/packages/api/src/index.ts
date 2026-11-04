@@ -107,9 +107,109 @@ export function writeHeaders(method: string, init?: HeadersInit): Headers {
   return headers;
 }
 
+// ---------------------------------------------------------------- direct mode
+
+/** What the instance list says about how browsers reach a runtime. */
+export type InstanceRoute = {
+  id: string;
+  slug: string;
+  network_mode?: "gateway" | "direct";
+  browser_url?: string;
+};
+
+type DirectToken = {
+  token: string;
+  baseUrl: string;
+  expiresAt: number;
+};
+
+/** Refresh a direct-mode token this long before it expires. */
+const TOKEN_REFRESH_MS = 30_000;
+const directBases = new Map<string, string>();
+const directTokens = new Map<string, Promise<DirectToken>>();
+
+/** Remember which instances are in direct mode (the shell calls it whenever the instance list loads). */
+export function setInstanceRoutes(instances: readonly InstanceRoute[]): void {
+  directBases.clear();
+  for (const instance of instances) {
+    if (instance.network_mode === "direct" && instance.browser_url) {
+      const base = instance.browser_url.replace(/\/+$/, "");
+      directBases.set(instance.id, base);
+      directBases.set(instance.slug, base);
+    }
+  }
+}
+
+async function fetchDirectToken(instance: string): Promise<DirectToken> {
+  const response = await fetch(apiUrl(`/api/v1/instances/${encodeURIComponent(instance)}/token`), {
+    method: "POST",
+    headers: writeHeaders("POST"),
+    credentials: "same-origin",
+  });
+  const body: unknown = await response.json().catch(() => undefined);
+  if (!response.ok) {
+    // eslint-disable-next-line @typescript-eslint/only-throw-error
+    throw isProblem(body) ? body : new AgentOSHttpError("POST", "token", response.status, undefined);
+  }
+  const token = body as { token: string; expires_at: string; base_url: string };
+  return {
+    token: token.token,
+    baseUrl: token.base_url.replace(/\/+$/, ""),
+    expiresAt: Date.parse(token.expires_at),
+  };
+}
+
+async function directToken(instance: string, fresh = false): Promise<DirectToken> {
+  const cached = fresh ? undefined : directTokens.get(instance);
+  if (cached) {
+    const token = await cached.catch(() => undefined);
+    if (token && token.expiresAt - Date.now() > TOKEN_REFRESH_MS) return token;
+  }
+  const pending = fetchDirectToken(instance);
+  directTokens.set(instance, pending);
+  pending.catch(() => directTokens.delete(instance));
+  return pending;
+}
+
+/** Where a call to an AgentOS route goes, and with what credentials. */
+export type InstanceRequest = {
+  url: string;
+  headers: Headers;
+  credentials: RequestCredentials;
+  /** `true` when the browser calls the runtime itself (direct mode). */
+  direct: boolean;
+};
+
 /**
- * Call an AgentOS route on an instance through the gateway, as the signed-in person (scoped JWT, audited).
- * Throws the problem body (403 `scope_missing` with an explanation, 503 `capability_disabled`, …) on errors.
+ * Resolve an AgentOS route on `instance`: through the gateway (session cookie, CSRF), or straight to the runtime
+ * with a short-lived token when the instance is in direct mode.
+ */
+export async function instanceRequest(
+  instance: string,
+  path: string,
+  method = "GET",
+  init?: HeadersInit,
+  options: { freshToken?: boolean } = {},
+): Promise<InstanceRequest> {
+  const relative = path.replace(/^\/+/, "");
+  if (!directBases.has(instance)) {
+    return {
+      url: gatewayUrl(instance, relative),
+      headers: writeHeaders(method, init),
+      credentials: "same-origin",
+      direct: false,
+    };
+  }
+  const token = await directToken(instance, options.freshToken);
+  const headers = new Headers(init);
+  headers.set("Authorization", `Bearer ${token.token}`);
+  return { url: `${token.baseUrl}/${relative}`, headers, credentials: "omit", direct: true };
+}
+
+/**
+ * Call an AgentOS route on an instance as the signed-in person: through the gateway (scoped JWT, audited), or
+ * directly with a short-lived token in direct mode. Throws the problem body (403 `scope_missing` with an
+ * explanation, 503 `capability_disabled`, …) or an `AgentOSHttpError` on errors.
  */
 export async function gatewayFetch(
   instance: string,
@@ -117,13 +217,23 @@ export async function gatewayFetch(
   init: RequestInit = {},
 ): Promise<Response> {
   const method = (init.method ?? "GET").toUpperCase();
-  const headers = writeHeaders(method, init.headers);
-  const response = await fetch(gatewayUrl(instance, path), {
+  let target = await instanceRequest(instance, path, method, init.headers);
+  let response = await fetch(target.url, {
     ...init,
     method,
-    headers,
-    credentials: "same-origin",
+    headers: target.headers,
+    credentials: target.credentials,
   });
+  if (target.direct && response.status === 401) {
+    // The token expired or the runtime rotated keys: one retry with a fresh token.
+    target = await instanceRequest(instance, path, method, init.headers, { freshToken: true });
+    response = await fetch(target.url, {
+      ...init,
+      method,
+      headers: target.headers,
+      credentials: target.credentials,
+    });
+  }
   if (!response.ok) {
     let body: unknown = undefined;
     try {

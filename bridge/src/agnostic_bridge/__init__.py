@@ -27,6 +27,7 @@ from agnostic_bridge._components import (
     NormalizedConfig,
     ValidationResult,
 )
+from agnostic_bridge._direct import direct_mode_cors
 from agnostic_bridge._evals import BridgeEvalRun, BridgeEvalRunInput
 from agnostic_bridge._events import EVENTS_PATH, BridgeEvent, EventsResponse
 from agnostic_bridge._files import FileEvent, FileProvenanceResponse
@@ -66,5 +67,6 @@ __all__ = [
     "WorkersScheduler",
     "__version__",
     "create_router",
+    "direct_mode_cors",
     "install",
 ]

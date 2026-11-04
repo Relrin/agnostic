@@ -137,7 +137,8 @@ async def migrate(settings: Settings) -> None:
 
 @asynccontextmanager
 async def running_stack(database_url: str, **overrides: Any) -> AsyncGenerator[Stack]:
-    settings = make_settings(database_url, http={"public_url": PUBLIC_URL}, **overrides)
+    http = {"public_url": PUBLIC_URL, **overrides.pop("http", {})}
+    settings = make_settings(database_url, http=http, **overrides)
     await migrate(settings)
     routes = Routes()
     mailer = CapturingMailer()

@@ -16,7 +16,7 @@ from typing import Any, cast
 import procrastinate
 from procrastinate.types import JSONValue
 
-from agnostic_kernel.jobs import JobQueue, job_container
+from agnostic_kernel.jobs import RETRY_STALLED_TASK, JobQueue, job_container, retry_stalled_jobs
 from agnostic_kernel.logging import get_logger
 from agnostic_kernel.modules import JobSpec, LoadedModules
 
@@ -57,4 +57,7 @@ async def dispatch(context: procrastinate.JobContext, event: str, payload: dict[
 
 
 def kernel_jobs() -> tuple[JobSpec, ...]:
-    return (JobSpec(name=DISPATCH_TASK, func=dispatch, queue="default"),)
+    return (
+        JobSpec(name=DISPATCH_TASK, func=dispatch, queue="default"),
+        JobSpec(name=RETRY_STALLED_TASK, func=retry_stalled_jobs, queue="default", periodic="* * * * *"),
+    )

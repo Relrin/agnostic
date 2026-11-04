@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import asyncio
+import smtplib
 from collections.abc import Sequence
-from dataclasses import dataclass, field
 
 import httpx
+from dishka import AsyncContainer
 from redis.asyncio import Redis
 from redis.exceptions import RedisError
 from sqlalchemy import text
@@ -14,22 +15,18 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncEngine
 
 from agnostic_kernel.cache import create_redis, detect_server, probe_commands
+from agnostic_kernel.crypto import SecretsConfigError
 from agnostic_kernel.db import create_engine
+from agnostic_kernel.diagnostics import CheckResult
+from agnostic_kernel.keys import create_key_provider, load_secret_box
+from agnostic_kernel.mail import SmtpMailer
 from agnostic_kernel.migrations_runner import state
-from agnostic_kernel.modules import Module
-from agnostic_kernel.settings import OtelSettings, Settings
+from agnostic_kernel.modules import LoadedModules, Module
+from agnostic_kernel.settings import OtelSettings, Settings, SmtpSettings
 
 REQUIRED_EXTENSIONS = ("citext", "pg_trgm")
 MIN_POSTGRES_MAJOR = 17
 CHECK_TIMEOUT = 5.0
-
-
-@dataclass(slots=True)
-class CheckResult:
-    name: str
-    ok: bool
-    detail: str = ""
-    facts: dict[str, str] = field(default_factory=dict)
 
 
 async def check_database(engine: AsyncEngine) -> CheckResult:
@@ -126,18 +123,72 @@ async def check_otel(settings: OtelSettings) -> CheckResult | None:
     return CheckResult("otel", ok=True, detail="reachable", facts={"status": str(response.status_code)})
 
 
+async def check_key_provider(settings: Settings) -> CheckResult:
+    """The master key loads (and unwraps through the KMS) and every stored key id is known."""
+    facts: dict[str, str] = {"provider": settings.secrets.provider}
+    try:
+        provider = create_key_provider(settings.secrets, settings.tls)
+        facts |= provider.describe()
+        await provider.aclose()
+        async with asyncio.timeout(CHECK_TIMEOUT * 3):
+            box = await load_secret_box(settings.secrets, settings.tls, environment=settings.env)
+    except (SecretsConfigError, TimeoutError, OSError) as exc:
+        return CheckResult("master key", ok=False, detail=str(exc) or "timed out", facts=facts)
+    facts |= {"key_id": box.key_id, "previous": ",".join(box.key_ids[1:]) or "none"}
+    return CheckResult("master key", ok=True, detail="ok", facts=facts)
+
+
+async def check_smtp(settings: SmtpSettings) -> CheckResult | None:
+    if settings.url is None:
+        return None
+    mailer = SmtpMailer(settings)
+    try:
+        async with asyncio.timeout(settings.timeout + 1):
+            encrypted = await mailer.probe()
+    except (OSError, TimeoutError, smtplib.SMTPException) as exc:
+        return CheckResult("smtp", ok=False, detail=f"unreachable: {exc}")
+    return CheckResult("smtp", ok=True, detail="ok", facts={"tls": "on" if encrypted else "off"})
+
+
 async def run_endpoint_checks(settings: Settings, modules: Sequence[Module]) -> list[CheckResult]:
-    """Probe every configured endpoint with fresh connections (used by the CLI)."""
+    """Probe every kernel endpoint with fresh connections (database, cache, migrations, OTLP, SMTP, master key)."""
     engine = create_engine(settings.database)
     redis = create_redis(settings.redis)
     try:
         results = [await check_database(engine), await check_cache(redis)]
         if results[0].ok:
             results.append(await check_migrations(engine, modules))
-        otel = await check_otel(settings.otel)
-        if otel is not None:
-            results.append(otel)
+        results.append(await check_key_provider(settings))
+        optional = (await check_otel(settings.otel), await check_smtp(settings.smtp))
+        results.extend(result for result in optional if result is not None)
         return results
     finally:
         await redis.aclose()
         await engine.dispose()
+
+
+async def run_module_checks(container: AsyncContainer, modules: Sequence[Module]) -> list[CheckResult]:
+    """Every enabled module's own endpoint probes; a module whose probes crash reports that as a failure."""
+    results: list[CheckResult] = []
+    async with container() as request:
+        for module in modules:
+            try:
+                results.extend(await module.endpoint_checks(request))
+            except Exception as exc:  # noqa: BLE001  (one broken probe must not hide the others)
+                results.append(CheckResult(module.name, ok=False, detail=f"probe failed: {exc}"))
+    return results
+
+
+async def run_all_checks(settings: Settings, modules: LoadedModules) -> list[CheckResult]:
+    """Kernel endpoints, then (when the database is usable) every module's endpoints."""
+    from agnostic_kernel.container import build_container  # noqa: PLC0415  (the container imports this module)
+
+    results = await run_endpoint_checks(settings, list(modules.installed.values()))
+    if not all(result.ok for result in results if result.name in {"database", "migrations", "master key"}):
+        return results
+    container = build_container(settings, modules)
+    try:
+        results.extend(await run_module_checks(container, modules.enabled))
+    finally:
+        await container.close()
+    return results

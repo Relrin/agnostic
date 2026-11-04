@@ -115,6 +115,9 @@ function instance(
     tls_verify: true,
     has_ca_bundle: false,
     has_security_key: false,
+    has_client_certificate: false,
+    network_mode: "gateway",
+    browser_url: `http://${slug}.internal:7777`,
     version_drift: null,
     created_at: T,
     updated_at: T,
@@ -239,6 +242,8 @@ export const ownerAccess: MyAccessOut = {
     "studio:sources:write",
     "studio:sources:delete",
     "assistant:use",
+    "org:system:read",
+    "org:system:manage",
   ],
   grants: [],
 };
@@ -310,6 +315,7 @@ export function p01Handlers() {
     http.get(`${API}/system/features`, () => HttpResponse.json({ features: {} })),
     http.get(`${API}/system/modules`, () => HttpResponse.json({ enabled: [], disabled: [] })),
     http.get(`${API}/org`, () => HttpResponse.json(sampleOrg)),
+    http.get(`${API}/auth/providers`, () => HttpResponse.json({ local_login: true, providers: [] })),
     http.get(`${API}/instances`, () => HttpResponse.json(sampleInstances)),
     http.get(`${API}/instances/:instance`, ({ params }) => {
       const found = sampleInstances.find(

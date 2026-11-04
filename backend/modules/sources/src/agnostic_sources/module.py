@@ -6,13 +6,16 @@ merge field by field. Nothing moves until someone pulls or commits.
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from pathlib import Path
 
 from dishka import AsyncContainer, Provider
 from pydantic_settings import BaseSettings
 from sqlalchemy import MetaData
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from agnostic_kernel.db import utcnow
+from agnostic_kernel.diagnostics import StatusItem
 from agnostic_kernel.ephemeral import EphemeralStore
 from agnostic_kernel.logging import get_logger
 from agnostic_kernel.modules import (
@@ -22,6 +25,7 @@ from agnostic_kernel.modules import (
     JobSpec,
     RouterSpec,
     ScopeDecl,
+    SealedColumn,
 )
 from agnostic_sources import jobs
 from agnostic_sources.api.hooks import hooks_router
@@ -29,6 +33,7 @@ from agnostic_sources.api.router import org_router, router
 from agnostic_sources.application import tasks
 from agnostic_sources.application.local_watch import LocalWatchSupervisor
 from agnostic_sources.application.ports import GitRepo, SourceLimits
+from agnostic_sources.infrastructure.status import webhook_status
 from agnostic_sources.infrastructure.tables import SourcesBase
 from agnostic_sources.providers import SourcesProvider
 from agnostic_sources.settings import SourcesSettings
@@ -50,6 +55,12 @@ class SourcesModule(BaseModule):
 
     def provide(self) -> Iterable[Provider]:
         return (SourcesProvider(),)
+
+    def sealed_columns(self) -> Iterable[SealedColumn]:
+        return (
+            SealedColumn("src_connections", "config_enc"),
+            SealedColumn("src_sources", "webhook_secret_enc"),
+        )
 
     def routers(self) -> Iterable[RouterSpec]:
         return (
@@ -126,3 +137,6 @@ class SourcesModule(BaseModule):
         if self._watch is not None:
             await self._watch.stop()
             self._watch = None
+
+    async def system_status(self, container: AsyncContainer) -> Sequence[StatusItem]:
+        return await webhook_status(await container.get(AsyncSession), utcnow())

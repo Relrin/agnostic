@@ -1,0 +1,56 @@
+# Agnostic with Docker Compose: the `agnostic` image only. PostgreSQL 17/18, Redis 7.4+/8 (or Valkey 8+ /
+# DragonflyDB 1.x), object storage, the reverse proxy and the IdP are yours; point the settings in `.env` at them.
+#
+#   cp .env.example .env    # fill in the endpoints and the master key
+#   docker compose up -d    # runs the migrations once, then the API and a worker
+#
+# The API listens on :8000 (plain HTTP); put your TLS-terminating reverse proxy in front of it, or set
+# AGNOSTIC_HTTP__* to serve TLS from certificate files. See the install guide (docs/guides/admin/install.md).
+name: agnostic
+
+x-agnostic: &agnostic
+  image: ${AGNOSTIC_IMAGE:-ghcr.io/relrin/agnostic:latest}
+  env_file: .env
+  read_only: true
+  tmpfs:
+    - /tmp
+  volumes:
+    - agnostic-data:/var/lib/agnostic
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+  restart: unless-stopped
+
+services:
+  migrate:
+    <<: *agnostic
+    command: ["migrate"]
+    restart: "no"
+    healthcheck:
+      disable: true
+
+  api:
+    <<: *agnostic
+    command: ["api"]
+    ports:
+      - "${AGNOSTIC_PORT:-8000}:8000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  worker:
+    <<: *agnostic
+    command: ["worker"]
+    healthcheck:
+      # The worker has no HTTP API; its metrics endpoint shows it is alive.
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:9464/metrics', timeout=2)"]
+      interval: 30s
+      timeout: 3s
+      retries: 5
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+volumes:
+  agnostic-data:

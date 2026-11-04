@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "agnostic.fullname" . }}
+  labels:
+    {{- include "agnostic.labels" . | nindent 4 }}
+    app.kubernetes.io/component: api
+  {{- with .Values.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    {{- include "agnostic.selector" (dict "root" . "component" "api") | nindent 4 }}
+  ports:
+    - name: http
+      port: {{ .Values.service.port }}
+      targetPort: http
+    {{- if .Values.metrics.enabled }}
+    - name: metrics
+      port: 9464
+      targetPort: metrics
+    {{- end }}
+{{- if .Values.metrics.enabled }}
+---
+# Workers have no HTTP API; this headless Service lets Prometheus find their metrics port.
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "agnostic.fullname" . }}-worker-metrics
+  labels:
+    {{- include "agnostic.labels" . | nindent 4 }}
+    app.kubernetes.io/component: worker
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    {{- include "agnostic.selector" (dict "root" . "component" "worker") | nindent 4 }}
+  ports:
+    - name: metrics
+      port: 9464
+      targetPort: metrics
+{{- end }}

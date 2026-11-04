@@ -22,6 +22,9 @@ TOML files (`AGNOSTIC_CONFIG_FILE`) use the same names as sections and keys. Sou
 | `AGNOSTIC_DATABASE__POOL_SIZE` | `10` | connections per process |
 | `AGNOSTIC_DATABASE__MAX_OVERFLOW` | `10` | extra connections under load |
 | `AGNOSTIC_DATABASE__CONNECT_TIMEOUT` | `5` | seconds |
+| `AGNOSTIC_DATABASE__COMMAND_TIMEOUT` | `15` | seconds a query may wait for the server: a frozen or unreachable primary fails requests (503 `database_unavailable`) instead of hanging |
+| `AGNOSTIC_DATABASE__STATEMENT_TIMEOUT_MS` | `30000` | server-side cap on one statement; `0` for none |
+| `AGNOSTIC_DATABASE__POOL_TIMEOUT` | `10` | seconds a request waits for a free pooled connection |
 | `AGNOSTIC_DATABASE__ECHO` | `false` | log SQL |
 
 ## Cache
@@ -52,13 +55,37 @@ TOML files (`AGNOSTIC_CONFIG_FILE`) use the same names as sections and keys. Sou
 | `AGNOSTIC_HTTP__CORS_ORIGINS` | — | allowed origins (not needed same-origin) |
 | `AGNOSTIC_HTTP__PUBLIC_URL` | `http://{host}:{port}` | the URL people open (behind the proxy): email links, SSO callback URLs, the JWT issuer |
 | `AGNOSTIC_HTTP__SECURE_COOKIES` | on unless `PUBLIC_URL` is `http://` | mark the session and CSRF cookies `Secure` |
+| `AGNOSTIC_HTTP__WEB_DIR` | — (image: `/opt/agnostic-web`) | serve the built web app on the API's origin |
+| `AGNOSTIC_HTTP__DOCS_DIR` | — (image: `/opt/agnostic-docs`) | user guides shown by the in-product help (Markdown) |
+| `AGNOSTIC_HTTP__CSP_REPORT_ONLY` | `false` | send the content security policy as report-only ([ADR-030](../adr/0030-content-security-policy.md)) |
+| `AGNOSTIC_HTTP__CSP_EXTRA_CONNECT` | — | extra `connect-src` origins (CSV); direct-mode runtimes are added automatically |
+| `AGNOSTIC_HTTP__HSTS_MAX_AGE` | `31536000` | `Strict-Transport-Security` max-age when `PUBLIC_URL` is https; `0` leaves it to the proxy |
+| `AGNOSTIC_TLS__CA_FILE` | — | extra CA certificates trusted for outbound HTTPS (runtimes, IdPs, object storage, SIEM, KMS, git hosts) |
+
+## Metrics
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `AGNOSTIC_METRICS__ENABLED` | `true` | Prometheus metrics on the metrics port of `agnostic api` and `agnostic worker` |
+| `AGNOSTIC_METRICS__PORT` | `9464` | the metrics listener (`GET /metrics`); an ingress doesn't route it, protect it with a network policy |
+| `AGNOSTIC_METRICS__TOKEN` | — | also serve `GET /metrics` on the API's main port, to scrapes sending `Authorization: Bearer <token>` |
 
 ## Secrets and email
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `AGNOSTIC_SECRETS__MASTER_KEY` | — | base64 of 32 random bytes: the key-encryption key for secrets at rest (instance private keys, security keys). Required in production; development uses a fixed insecure key with a warning |
+| `AGNOSTIC_SECRETS__PROVIDER` | `local` | `local`, `vault`, `aws-kms`, `azure-key-vault` or `gcp-kms` ([key management](../guides/admin/key-management.md)) |
+| `AGNOSTIC_SECRETS__MASTER_KEY` | — | `local`: base64 of 32 random bytes; KMS providers: that key wrapped by the KMS (`agnostic secrets generate-key`). The key-encryption key for every secret at rest. Required in production; development uses a fixed insecure key with a warning |
 | `AGNOSTIC_SECRETS__MASTER_KEY_FILE` | — | read the master key from a file instead |
+| `AGNOSTIC_SECRETS__PREVIOUS_KEYS` / `__PREVIOUS_KEYS_FILE` | — | retired master keys (CSV, or one per line in the file) that still open old values until `agnostic secrets rotate` |
+| `AGNOSTIC_SECRETS__VAULT__ADDRESS` / `__NAMESPACE` / `__MOUNT` / `__KEY_NAME` | `VAULT_ADDR` / — / `transit` / `agnostic` | Vault (or OpenBao) Transit key |
+| `AGNOSTIC_SECRETS__VAULT__AUTH` | `token` | `token` (`__TOKEN`, `__TOKEN_FILE` or `VAULT_TOKEN`), `kubernetes` (`__ROLE`, `__KUBERNETES_TOKEN_FILE`) or `approle` (`__ROLE_ID`, `__SECRET_ID` / `__SECRET_ID_FILE`); `__AUTH_MOUNT` overrides the mount |
+| `AGNOSTIC_SECRETS__AWS__KEY_ID` / `__REGION` / `__ENDPOINT` | — | KMS key (id, ARN or alias ARN); region defaults to `AWS_REGION` or the ARN's |
+| `AGNOSTIC_SECRETS__AWS__ACCESS_KEY_ID` / `__SECRET_ACCESS_KEY` / `__SESSION_TOKEN` | `AWS_*` variables | static credentials; otherwise web identity (`__ROLE_ARN` + `__WEB_IDENTITY_TOKEN_FILE`, or IRSA's `AWS_ROLE_ARN` + `AWS_WEB_IDENTITY_TOKEN_FILE`; `__STS_ENDPOINT`) |
+| `AGNOSTIC_SECRETS__AZURE__VAULT_URL` / `__KEY_NAME` / `__KEY_VERSION` / `__ALGORITHM` | — / — / latest / `RSA-OAEP-256` | Key Vault or Managed HSM RSA key |
+| `AGNOSTIC_SECRETS__AZURE__TENANT_ID` / `__CLIENT_ID` / `__CLIENT_SECRET` / `__FEDERATED_TOKEN_FILE` / `__MANAGED_IDENTITY` / `__AUTHORITY_HOST` | `AZURE_*` variables | client secret, workload identity or managed identity |
+| `AGNOSTIC_SECRETS__GCP__KEY_NAME` / `__CREDENTIALS_FILE` / `__ENDPOINT` | — / `GOOGLE_APPLICATION_CREDENTIALS` / Cloud KMS | crypto key (`projects/…/cryptoKeys/…`); without a key file, the metadata server's token |
+| `AGNOSTIC_SECRETS__<PROVIDER>__TLS__CA_FILE` / `__CERT_FILE` / `__KEY_FILE` | — | TLS material for the KMS endpoint (adds to `AGNOSTIC_TLS__CA_FILE`) |
 | `AGNOSTIC_SMTP__URL` | — | `smtp://user:pass@host:587` (STARTTLS when offered) or `smtps://host:465`; without it, emails (invitations, password resets) are written to the log |
 | `AGNOSTIC_SMTP__SENDER` | `Agnostic <agnostic@localhost>` | `From:` address |
 | `AGNOSTIC_SMTP__TLS__CA_FILE` / `__CERT_FILE` / `__KEY_FILE` | — | TLS material |

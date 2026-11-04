@@ -20,7 +20,7 @@ import {
   type SchedulePatch,
   type SchedulesPageOut,
 } from "@agnostic/api";
-import { STALE_TIME, toDate } from "@agnostic/core";
+import { STALE_TIME } from "@agnostic/core";
 import { toast } from "@agnostic/ui";
 import { skipToken, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -219,55 +219,6 @@ export function useScheduleActions(instance: string) {
   return { setEnabled, trigger, create, update, remove };
 }
 
-type ZoneParts = { weekday: string; day: string; month: string; year: string; hour: string; minute: string };
-
-function zoneParts(date: Date, timeZone: string): ZoneParts {
-  let format: Intl.DateTimeFormat;
-  try {
-    format = new Intl.DateTimeFormat("en-GB", {
-      timeZone,
-      weekday: "short",
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      hourCycle: "h23",
-    });
-  } catch {
-    return zoneParts(date, "UTC");
-  }
-  const parts = format.formatToParts(date);
-  const get = (type: Intl.DateTimeFormatPartTypes) => parts.find((part) => part.type === type)?.value ?? "";
-  return {
-    weekday: get("weekday"),
-    day: get("day"),
-    month: get("month"),
-    year: get("year"),
-    hour: get("hour"),
-    minute: get("minute"),
-  };
-}
-
-const dayKey = (parts: ZoneParts) => `${parts.year}-${parts.month}-${parts.day}`;
-
-/** "Today 18:00", "Tomorrow 08:00", "Sun 1 Nov, 03:00": a moment as wall time in the schedule's timezone. */
-export function formatInZone(
-  value: string | null | undefined,
-  timeZone: string,
-  now: Date = new Date(),
-): string {
-  const date = toDate(value);
-  if (!date) return "—";
-  const parts = zoneParts(date, timeZone);
-  const time = `${parts.hour}:${parts.minute}`;
-  const key = dayKey(parts);
-  if (key === dayKey(zoneParts(now, timeZone))) return `Today ${time}`;
-  if (key === dayKey(zoneParts(new Date(now.getTime() + 86_400_000), timeZone))) return `Tomorrow ${time}`;
-  if (key === dayKey(zoneParts(new Date(now.getTime() - 86_400_000), timeZone))) return `Yesterday ${time}`;
-  return `${parts.weekday} ${parts.day} ${parts.month}, ${time}`;
-}
-
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -294,40 +245,4 @@ export function targetLabel(schedule: Pick<Schedule, "target_kind" | "target_id"
   return schedule.target_kind === "custom"
     ? "Custom endpoint"
     : `${schedule.target_kind} · ${schedule.target_id ?? "—"}`;
-}
-
-/** Every IANA timezone the browser knows (a short list where `Intl.supportedValuesOf` is missing). */
-export function timezones(current: string): string[] {
-  const fallback = [
-    "UTC",
-    "Europe/London",
-    "Europe/Berlin",
-    "Europe/Paris",
-    "America/New_York",
-    "America/Chicago",
-    "America/Denver",
-    "America/Los_Angeles",
-    "America/Sao_Paulo",
-    "Asia/Tokyo",
-    "Asia/Singapore",
-    "Asia/Kolkata",
-    "Australia/Sydney",
-  ];
-  let zones: string[] = fallback;
-  try {
-    const supported = (Intl as { supportedValuesOf?: (key: string) => string[] }).supportedValuesOf;
-    if (supported) zones = supported("timeZone");
-  } catch {
-    zones = fallback;
-  }
-  return [...new Set(["UTC", current, ...zones])].filter(Boolean);
-}
-
-/** The browser's timezone, the default for a new schedule. */
-export function localTimezone(): string {
-  try {
-    return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
-  } catch {
-    return "UTC";
-  }
 }

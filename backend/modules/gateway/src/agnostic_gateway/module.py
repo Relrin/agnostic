@@ -47,6 +47,7 @@ class GatewayModule(BaseModule):
             AuditActionDecl("gateway.request", "{actor} called {route} on {instance}"),
             AuditActionDecl("gateway.denied", "{actor} was denied {route} on {instance}: missing {scope}"),
             AuditActionDecl("gateway.elevated", "{actor} called {route} on {instance} as Instance admin ({scope})"),
+            AuditActionDecl("gateway.direct_token", "{actor} got a direct-mode token for {instance}"),
             AuditActionDecl("agentos.access", "{actor} called {route} on {instance}"),
             AuditActionDecl("agentos.role.created", "{actor} created an AgentOS role on {instance}"),
             AuditActionDecl("agentos.role.updated", "{actor} changed an AgentOS role on {instance}"),

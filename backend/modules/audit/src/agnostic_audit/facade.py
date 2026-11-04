@@ -24,6 +24,8 @@ from agnostic_kernel.errors import ServiceUnavailableError
 __all__ = [
     "ANONYMOUS",
     "Actor",
+    "ArchiveReport",
+    "ArchivedMonthInfo",
     "AuditAdmin",
     "AuditAdminImpl",
     "AuditEntry",
@@ -105,12 +107,35 @@ class RestoredMonth:
     restore_expires_at: datetime | None
 
 
+@dataclass(frozen=True, slots=True)
+class ArchivedMonthInfo:
+    month: str
+    event_count: int
+    bytes: int
+    archived_at: datetime
+    restore_expires_at: datetime | None
+
+
+@dataclass(frozen=True, slots=True)
+class ArchiveReport:
+    month: str
+    ok: bool
+    event_count: int
+    chained: int
+    problems: tuple[str, ...]
+
+
 class AuditAdmin(Protocol):
     """Operator actions for the command line (run as the system, outside any request)."""
 
     async def verify(self, since: datetime | None = None, until: datetime | None = None) -> ChainResult: ...
     async def restore(self, month: str) -> RestoredMonth:
         """Re-import an archived month (``YYYY-MM``) for 7 days of searching."""
+        ...
+
+    async def archives(self) -> list[ArchivedMonthInfo]: ...
+    async def verify_archive(self, month: str) -> ArchiveReport:
+        """Download one archived month and check it against its manifest (nothing is restored)."""
         ...
 
 
@@ -140,6 +165,31 @@ class AuditAdminImpl:
             )
         )
         return RestoredMonth(restored.month, restored.event_count, restored.restore_expires_at)
+
+    async def archives(self) -> list[ArchivedMonthInfo]:
+        return [
+            ArchivedMonthInfo(item.month, item.event_count, item.bytes, item.archived_at, item.restore_expires_at)
+            for item in await self._archives.list()
+        ]
+
+    async def verify_archive(self, month: str) -> ArchiveReport:
+        try:
+            check = await self._archives.verify(month)
+        except ObjectStoreError as exc:
+            raise ServiceUnavailableError(f"The archive storage failed: {exc}") from exc
+        _ = await self._record.now(
+            AuditEntry(
+                action="audit.archive_verify",
+                actor=actor_of(SYSTEM_PRINCIPAL),
+                resource_kind="audit_archive",
+                resource_id=month,
+                resource_display=month,
+                via="cli",
+                decision="allowed" if check.ok else "denied",
+                fields={"month": month, "result": "intact" if check.ok else "damaged"},
+            )
+        )
+        return ArchiveReport(month, check.ok, check.event_count, check.chained, check.problems)
 
 
 class AuditReader(Protocol):

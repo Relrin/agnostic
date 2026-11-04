@@ -18,9 +18,14 @@ class TokenHashing:
     pepper: str
     touch_every_seconds: float = 60.0
     """``last_used_at`` is written at most this often per token."""
+    previous_peppers: tuple[str, ...] = ()
+    """Peppers derived from retired master keys: tokens hashed with them still resolve and are re-hashed."""
 
     def hash(self, token: str) -> str:
         return hash_token(self.pepper, token)
+
+    def previous_hashes(self, token: str) -> list[str]:
+        return [hash_token(pepper, token) for pepper in self.previous_peppers if pepper != self.pepper]
 
 
 class GatewayTokenResolver:
@@ -35,7 +40,14 @@ class GatewayTokenResolver:
         if not looks_like_gateway_token(token):
             return None
         now = utcnow()
-        found = await self._accounts.gateway_token_by_hash(self._hashing.hash(token))
+        current = self._hashing.hash(token)
+        found = await self._accounts.gateway_token_by_hash(current)
+        if found is None:
+            for previous in self._hashing.previous_hashes(token):
+                found = await self._accounts.gateway_token_by_hash(previous)
+                if found is not None:
+                    await self._accounts.rehash_gateway(found.id, current)
+                    break
         if found is None or not found.valid(now):
             return None
         account = await self._accounts.get(found.account_id)

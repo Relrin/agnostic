@@ -1,7 +1,7 @@
 // The detail aside of a schedule: actions with the scopes they need, a note (failing, paused by a person, or
 // disabled by AgentOS), "When it runs", the request it sends, and its run history.
 import { describeError } from "@agnostic/api";
-import { formatDuration, formatRelative } from "@agnostic/core";
+import { formatDuration, formatInZone, formatRelative } from "@agnostic/core";
 import {
   Badge,
   Button,
@@ -18,13 +18,7 @@ import { Link } from "@tanstack/react-router";
 import { Fragment, useState, type ReactNode } from "react";
 
 import { DeleteDialog, ScopeHint } from "./schedule-actions";
-import {
-  formatInZone,
-  usePreview,
-  useScheduleActions,
-  useScheduleRuns,
-  type Schedule,
-} from "./schedules-api";
+import { usePreview, useScheduleActions, useScheduleRuns, type Schedule } from "./schedules-api";
 import { CronReadout, RunPreview } from "./when-it-runs";
 
 type Tone = "error" | "info" | "muted";

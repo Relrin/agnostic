@@ -1,14 +1,16 @@
 """HTTP routes: ``ANY /api/v1/instances/{instance}/os/{path}`` (passthrough) and ``/api/v1/gateway/policies``."""
 
 from collections.abc import AsyncIterator
+from datetime import datetime
 
 from dishka.integrations.fastapi import DishkaRoute, FromDishka
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Response
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.background import BackgroundTask
 
+from agnostic_gateway.application.direct import DirectTokens
 from agnostic_gateway.application.ports import RoutePolicyRepository
 from agnostic_gateway.application.proxy import Gateway, GatewaySettingsView, PolicyTableCache, ProxyRequest
 from agnostic_gateway.application.streaming import PayloadTooLargeError, limited
@@ -74,6 +76,21 @@ async def passthrough(
         headers=response.headers,
         background=BackgroundTask(response.close),
     )
+
+
+class DirectTokenOut(BaseModel):
+    token: str
+    expires_at: datetime
+    base_url: str
+
+
+@router.post("/{instance}/token", summary="Direct mode: a short-lived token to call the runtime from the browser")
+async def direct_token(
+    instance: str, response: Response, principal: FromDishka[Principal], tokens: FromDishka[DirectTokens]
+) -> DirectTokenOut:
+    issued = await tokens.issue(principal, instance)
+    response.headers["Cache-Control"] = "no-store"
+    return DirectTokenOut(token=issued.token, expires_at=issued.expires_at, base_url=issued.base_url)
 
 
 class RoutePolicyOut(BaseModel):

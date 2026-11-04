@@ -86,6 +86,12 @@
       "path": "modules/org-settings"
     },
     {
+      "path": "modules/system"
+    },
+    {
+      "path": "modules/help"
+    },
+    {
       "path": "packages/studio"
     },
     {

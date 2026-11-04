@@ -1,4 +1,6 @@
 // Accordion: stacked sections behind 42px header buttons (chevron, title, a one-line summary on the right).
+// The adornment sits beside the button, not in it, since it can be a control of its own (a LineLinkBadge); the
+// button's ::after covers the rest of the row, so a click anywhere else still toggles.
 // Sections open independently; each is controlled (`open` + `onOpenChange`) or keeps its own state (`defaultOpen`).
 import { ChevronRight } from "lucide-react";
 import { useId, useState, type ComponentProps, type ReactNode } from "react";
@@ -55,14 +57,15 @@ export function AccordionSection({
   };
   return (
     <section data-slot="accordion-section" data-state={open ? "open" : "closed"} className={className}>
-      <h3 className="flex">
+      <h3 className="relative flex h-[42px] items-center gap-2 px-3 text-[13px] font-medium text-fg hover:bg-surface-hover has-[button:focus-visible]:bg-surface-hover">
         <button
           type="button"
           id={`${base}-header`}
           aria-expanded={open}
           aria-controls={`${base}-panel`}
+          aria-describedby={summary ? `${base}-summary` : undefined}
           onClick={toggle}
-          className="flex h-[42px] w-full min-w-0 cursor-pointer items-center gap-2 px-3 text-left text-[13px] font-medium text-fg hover:bg-surface-hover focus-visible:bg-surface-hover focus-visible:outline-none"
+          className="flex shrink-0 cursor-pointer items-center gap-2 text-left after:absolute after:inset-0 after:content-[''] focus-visible:outline-none"
         >
           <ChevronRight
             aria-hidden
@@ -71,14 +74,17 @@ export function AccordionSection({
               open && "rotate-90",
             )}
           />
-          <span className="shrink-0">{title}</span>
-          {adornment && <span className="flex shrink-0 items-center">{adornment}</span>}
-          {summary && (
-            <span className="ml-auto min-w-0 truncate pl-4 text-[12.5px] font-normal text-fg-muted">
-              {summary}
-            </span>
-          )}
+          <span>{title}</span>
         </button>
+        {adornment && <span className="relative z-10 flex shrink-0 items-center">{adornment}</span>}
+        {summary && (
+          <span
+            id={`${base}-summary`}
+            className="ml-auto min-w-0 truncate pl-4 text-[12.5px] font-normal text-fg-muted"
+          >
+            {summary}
+          </span>
+        )}
       </h3>
       <div
         id={`${base}-panel`}

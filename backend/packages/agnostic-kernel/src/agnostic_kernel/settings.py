@@ -59,6 +59,13 @@ class DatabaseSettings(BaseModel):
     pool_size: int = Field(default=10, ge=1)
     max_overflow: int = Field(default=10, ge=0)
     connect_timeout: float = Field(default=5.0, gt=0)
+    command_timeout: float = Field(default=15.0, gt=0)
+    """Seconds a query may wait for the server: a frozen or unreachable primary fails requests fast instead of
+    hanging until the operating system gives up on the socket."""
+    statement_timeout_ms: int = Field(default=30_000, ge=0)
+    """Server-side cap on one statement (``0``: none). Maintenance jobs lift it for their own session."""
+    pool_timeout: float = Field(default=10.0, gt=0)
+    """Seconds a request waits for a free pooled connection."""
     echo: bool = False
 
     @field_validator("url")
@@ -118,8 +125,42 @@ class HttpSettings(BaseModel):
     URIs and the JWT issuer. Defaults to ``http://{host}:{port}``."""
     secure_cookies: bool | None = None
     """Mark session cookies ``Secure``. Defaults to on unless ``public_url`` is plain ``http://``."""
+    web_dir: Path | None = None
+    """The built web app (``frontend/apps/web/dist``). When set, the API serves it on the same origin; the
+    ``agnostic`` image sets it."""
+    docs_dir: Path | None = None
+    """User guides (Markdown) served read-only to the in-product help; the ``agnostic`` image sets it."""
+    csp_report_only: bool = False
+    """Send the content security policy as ``Content-Security-Policy-Report-Only`` (while trying a new setup)."""
+    csp_extra_connect: Annotated[list[str], NoDecode] = []
+    """Extra ``connect-src`` origins for the web app. Direct-mode instances are added automatically."""
+    hsts_max_age: int = Field(default=31_536_000, ge=0)
+    """``Strict-Transport-Security`` max-age when ``public_url`` is https; ``0`` leaves the header to the proxy."""
 
-    _split_origins = field_validator("cors_origins", mode="before")(_split_csv)
+    _split_origins = field_validator("cors_origins", "csp_extra_connect", mode="before")(_split_csv)
+
+
+class OutboundTlsSettings(BaseModel):
+    """Trust for outbound HTTPS (AgentOS instances, object storage, SIEM, KMS, IdPs, git hosts).
+
+    ``ca_file`` adds the organization's CA certificates to the system trust store, for endpoints behind a private
+    CA or a TLS-inspecting proxy. Per-instance CA bundles and client certificates add to it.
+    """
+
+    ca_file: Path | None = None
+
+
+class MetricsSettings(BaseModel):
+    """Prometheus metrics of the control plane itself.
+
+    ``agnostic api`` and ``agnostic worker`` serve them on ``port``, a listener of its own that an ingress doesn't
+    route to (protect it with a network policy). With a ``token``, the API also answers ``GET /metrics`` on its
+    main port, for scrapes that send ``Authorization: Bearer <token>``.
+    """
+
+    enabled: bool = True
+    token: SecretStr | None = None
+    port: int = Field(default=9464, ge=1, le=65535)
 
 
 class ModulesSettings(BaseModel):
@@ -157,16 +198,110 @@ class CacheSettings(BaseModel):
     mode: Literal["auto", "redis", "memory"] = "auto"
 
 
+type KeyProviderName = Literal["local", "vault", "aws-kms", "azure-key-vault", "gcp-kms"]
+
+
+class VaultKeySettings(BaseModel):
+    """HashiCorp Vault (or OpenBao) Transit engine that wraps the master key."""
+
+    address: str | None = None
+    """``https://vault.example.com:8200``"""
+    namespace: str | None = None
+    mount: str = "transit"
+    key_name: str = "agnostic"
+    auth: Literal["token", "kubernetes", "approle"] = "token"
+    auth_mount: str | None = None
+    """Mount path of the auth method; defaults to ``kubernetes`` or ``approle``."""
+    token: SecretStr | None = None
+    token_file: Path | None = None
+    role: str | None = None
+    """Kubernetes auth role."""
+    kubernetes_token_file: Path = Path("/var/run/secrets/kubernetes.io/serviceaccount/token")
+    role_id: str | None = None
+    secret_id: SecretStr | None = None
+    secret_id_file: Path | None = None
+    tls: TlsOptions = TlsOptions()
+
+
+class AwsKmsSettings(BaseModel):
+    """AWS KMS key that wraps the master key.
+
+    Credentials: ``access_key_id``/``secret_access_key`` (or the standard ``AWS_*`` variables), or web identity
+    (IRSA on EKS: ``AWS_ROLE_ARN`` and ``AWS_WEB_IDENTITY_TOKEN_FILE``).
+    """
+
+    key_id: str | None = None
+    """Key id, key ARN or alias ARN."""
+    region: str | None = None
+    endpoint: str | None = None
+    """Overrides ``https://kms.<region>.amazonaws.com`` (VPC endpoints, FIPS endpoints)."""
+    access_key_id: str | None = None
+    secret_access_key: SecretStr | None = None
+    session_token: SecretStr | None = None
+    role_arn: str | None = None
+    web_identity_token_file: Path | None = None
+    sts_endpoint: str | None = None
+    tls: TlsOptions = TlsOptions()
+
+
+class AzureKeyVaultSettings(BaseModel):
+    """Azure Key Vault (or Managed HSM) RSA key that wraps the master key.
+
+    Credentials: a client secret, workload identity (``AZURE_FEDERATED_TOKEN_FILE``) or a managed identity.
+    """
+
+    vault_url: str | None = None
+    """``https://<vault>.vault.azure.net``"""
+    key_name: str | None = None
+    key_version: str | None = None
+    """Pinned key version for wrapping; unwrapping uses the version recorded with the wrapped key."""
+    algorithm: Literal["RSA-OAEP-256", "RSA-OAEP"] = "RSA-OAEP-256"
+    tenant_id: str | None = None
+    client_id: str | None = None
+    client_secret: SecretStr | None = None
+    federated_token_file: Path | None = None
+    managed_identity: bool = False
+    authority_host: str = "https://login.microsoftonline.com"
+    tls: TlsOptions = TlsOptions()
+
+
+class GcpKmsSettings(BaseModel):
+    """Google Cloud KMS key that wraps the master key.
+
+    Credentials: a service-account key file (or ``GOOGLE_APPLICATION_CREDENTIALS``), otherwise the metadata server
+    (GKE workload identity, Compute Engine).
+    """
+
+    key_name: str | None = None
+    """``projects/<p>/locations/<l>/keyRings/<r>/cryptoKeys/<k>``"""
+    credentials_file: Path | None = None
+    endpoint: str = "https://cloudkms.googleapis.com"
+    tls: TlsOptions = TlsOptions()
+
+
 class SecretsSettings(BaseModel):
     """Key-encryption key for secrets at rest (envelope encryption, AES-256-GCM).
 
-    ``master_key`` (or the file it is read from) holds 32 random bytes, base64-encoded:
-    ``python -c "import os, base64; print(base64.b64encode(os.urandom(32)).decode())"``. Outside production a fixed
-    development key is used when neither is set, with a warning.
+    With the ``local`` provider, ``master_key`` (or the file it is read from) holds 32 random bytes,
+    base64-encoded (``agnostic secrets generate-key``). With a KMS provider it holds that key wrapped by the KMS key,
+    and the API and worker unwrap it once when they start. Outside production a fixed development key is used when
+    neither is set, with a warning.
+
+    ``previous_keys`` keeps retired master keys (same encoding, one per line in the file) so values sealed with them
+    still open until ``agnostic secrets rotate`` has re-sealed everything with the current key.
     """
 
+    provider: KeyProviderName = "local"
     master_key: SecretStr | None = None
     master_key_file: Path | None = None
+    previous_keys: Annotated[list[SecretStr], NoDecode] = []
+    previous_keys_file: Path | None = None
+    vault: VaultKeySettings = VaultKeySettings()
+    aws: AwsKmsSettings = AwsKmsSettings()
+    azure: AzureKeyVaultSettings = AzureKeyVaultSettings()
+    gcp: GcpKmsSettings = GcpKmsSettings()
+
+    _split_previous = field_validator("previous_keys", mode="before")(_split_csv)
 
 
 class SmtpSettings(BaseModel):
@@ -203,6 +338,8 @@ class Settings(BaseSettings):
     cache: CacheSettings = CacheSettings()
     secrets: SecretsSettings = SecretsSettings()
     smtp: SmtpSettings = SmtpSettings()
+    tls: OutboundTlsSettings = OutboundTlsSettings()
+    metrics: MetricsSettings = MetricsSettings()
 
     @classmethod
     @override

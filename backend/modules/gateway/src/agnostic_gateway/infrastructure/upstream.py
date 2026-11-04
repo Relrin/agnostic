@@ -15,7 +15,7 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 from agnostic_agentos_client import AgentOSClient
 from agnostic_gateway.domain.policies import AuditLevel, RateBucket, RoutePolicy
-from agnostic_instances.facade import Instance
+from agnostic_instances.facade import ConnectionTlsFactory, Instance, connection_tls
 from agnostic_kernel.db import JsonDocument, make_metadata
 
 
@@ -26,21 +26,29 @@ class UpstreamPool:
         read_timeout: float,
         max_connections: int = 200,
         transport: httpx.AsyncBaseTransport | None = None,
+        tls: ConnectionTlsFactory | None = None,
     ) -> None:
         self._transport = transport
+        self._tls = tls
         self._clients: dict[str, AgentOSClient] = {}
+        self._retired: list[AgentOSClient] = []
+        """Clients replaced after a TLS or endpoint change; closed on shutdown (streams may still use them)."""
         self._timeout = httpx.Timeout(connect=5.0, read=read_timeout, write=60.0, pool=10.0)
         self._max_connections = max_connections
 
     def _client(self, instance: Instance) -> AgentOSClient:
-        fingerprint = hashlib.sha256(
-            f"{instance.endpoint_url}|{instance.tls_verify}|{instance.ca_bundle_pem or ''}".encode()
-        ).hexdigest()[:16]
+        tls = connection_tls(instance)
+        fingerprint = hashlib.sha256(f"{instance.endpoint_url}|{tls.fingerprint}".encode()).hexdigest()[:16]
         key = f"{instance.id}:{fingerprint}"
         client = self._clients.get(key)
         if client is None:
+            stale = [name for name in self._clients if name.startswith(f"{instance.id}:")]
+            for name in stale:
+                self._retired.append(self._clients.pop(name))
             verify: bool | ssl.SSLContext = instance.tls_verify
-            if instance.tls_verify and instance.ca_bundle_pem:
+            if self._tls is not None:
+                verify = self._tls.verify(tls)
+            elif instance.tls_verify and instance.ca_bundle_pem:
                 verify = ssl.create_default_context(cadata=instance.ca_bundle_pem)
             client = AgentOSClient(
                 instance.endpoint_url,
@@ -68,9 +76,10 @@ class UpstreamPool:
         )
 
     async def aclose(self) -> None:
-        for client in self._clients.values():
+        for client in (*self._clients.values(), *self._retired):
             await client.aclose()
         self._clients.clear()
+        self._retired.clear()
 
 
 class GatewayBase(DeclarativeBase):

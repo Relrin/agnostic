@@ -1,12 +1,12 @@
 // AgentOS knowledge routes through the gateway (as the signed-in person), plus the control plane's knowledge helpers.
 // Query keys are `[instance, "agentos", "knowledge", …]` so an ingest or edit refreshes every knowledge view.
 import {
-  csrfToken,
   gatewayJson,
-  gatewayUrl,
+  instanceRequest,
   isProblem,
   jsonBody,
   type AgentOS,
+  type InstanceRequest,
   type ContentPageOut,
 } from "@agnostic/api";
 import { STALE_TIME } from "@agnostic/core";
@@ -103,12 +103,23 @@ export function uploadFile(
   const form = new FormData();
   form.set("file", file, file.name);
   commonFields(form, { ...common, name: common.name || file.name });
+  // XMLHttpRequest, not fetch: only it reports upload progress.
+  const target = instanceRequest(instance, `knowledge/content${query({ knowledge_id: kb })}`, "POST");
+  return target.then((resolved) => send(resolved, form, onProgress));
+}
+
+function send(
+  target: InstanceRequest,
+  form: FormData,
+  onProgress: (fraction: number) => void,
+): Promise<ContentRow> {
   return new Promise((resolve, reject) => {
     const request = new XMLHttpRequest();
-    request.open("POST", gatewayUrl(instance, `knowledge/content${query({ knowledge_id: kb })}`));
-    request.withCredentials = true;
-    const token = csrfToken();
-    if (token) request.setRequestHeader("X-CSRF-Token", token);
+    request.open("POST", target.url);
+    request.withCredentials = target.credentials !== "omit";
+    target.headers.forEach((value, name) => {
+      request.setRequestHeader(name, value);
+    });
     request.upload.onprogress = (event) => {
       if (event.lengthComputable) onProgress(event.loaded / event.total);
     };

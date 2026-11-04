@@ -25,7 +25,7 @@ from agnostic_assistant.infrastructure.tables import AssistantBase
 from agnostic_assistant.providers import AssistantProvider
 from agnostic_assistant.settings import AssistantSettings
 from agnostic_kernel.logging import get_logger
-from agnostic_kernel.modules import AuditActionDecl, BaseModule, JobSpec, RouterSpec, ScopeDecl
+from agnostic_kernel.modules import AuditActionDecl, BaseModule, JobSpec, RouterSpec, ScopeDecl, SealedColumn
 
 log = get_logger(__name__)
 
@@ -40,6 +40,9 @@ class AssistantModule(BaseModule):
 
     def provide(self) -> Iterable[Provider]:
         return (AssistantProvider(),)
+
+    def sealed_columns(self) -> Iterable[SealedColumn]:
+        return (SealedColumn("asst_settings", "api_key_enc"),)
 
     def routers(self) -> Iterable[RouterSpec]:
         return (

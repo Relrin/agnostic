@@ -42,7 +42,7 @@ from agnostic_instances.application.use_cases import (
     UpdateInstance,
     VerifyToken,
 )
-from agnostic_instances.domain.instances import EnvTag, SubClaimMode
+from agnostic_instances.domain.instances import EnvTag, NetworkMode, SubClaimMode
 from agnostic_kernel.auth import Principal
 
 router = APIRouter(route_class=DishkaRoute)
@@ -58,7 +58,14 @@ async def list_instances(principal: FromDishka[Principal], use_case: FromDishka[
 async def probe_endpoint(
     body: ProbeIn, principal: FromDishka[Principal], use_case: FromDishka[ProbeEndpoint]
 ) -> ProbeOut:
-    result = await use_case(principal, body.endpoint_url, tls_verify=body.tls_verify, ca_bundle_pem=body.ca_bundle_pem)
+    result = await use_case(
+        principal,
+        body.endpoint_url,
+        tls_verify=body.tls_verify,
+        ca_bundle_pem=body.ca_bundle_pem,
+        client_cert_pem=body.client_cert_pem,
+        client_key_pem=body.client_key_pem,
+    )
     return ProbeOut.from_result(result)
 
 
@@ -79,6 +86,8 @@ async def connect_instance(
             ca_bundle_pem=body.ca_bundle_pem,
             security_key=body.security_key,
             sub_claim_mode=SubClaimMode(body.sub_claim_mode),
+            client_cert_pem=body.client_cert_pem,
+            client_key_pem=body.client_key_pem,
         ),
     )
     return ConnectedOut(
@@ -94,7 +103,9 @@ async def get_instance(
     return InstanceOut.from_domain(await use_case(principal, instance))
 
 
-@router.patch("/{instance}", summary="Change an instance's name, environment, endpoint, TLS, security key or elevation")
+@router.patch(
+    "/{instance}", summary="Change an instance's name, environment, endpoint, TLS, keys, network mode or elevation"
+)
 async def update_instance(
     instance: str, body: InstanceUpdate, principal: FromDishka[Principal], use_case: FromDishka[UpdateInstance]
 ) -> InstanceOut:
@@ -109,6 +120,10 @@ async def update_instance(
         security_key=body.security_key,
         status=body.status,
         elevation_enabled=body.elevation_enabled,
+        client_cert_pem=body.client_cert_pem,
+        client_key_pem=body.client_key_pem,
+        network_mode=NetworkMode(body.network_mode) if body.network_mode else None,
+        browser_url=body.browser_url,
     )
     return InstanceOut.from_domain(await use_case(principal, instance, changes, body.version))
 

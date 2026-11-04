@@ -227,7 +227,7 @@ function KnowledgeBaseView({
 
   return (
     <div className="flex h-full min-h-0 flex-wrap">
-      <main className="flex min-w-0 flex-[3_1_560px] flex-col gap-5 overflow-y-auto px-6 pt-5 pb-8">
+      <section className="flex min-w-0 flex-[3_1_560px] flex-col gap-5 overflow-y-auto px-6 pt-5 pb-8">
         {bases.length > 1 && (
           <SegmentedControl
             label="Knowledge base"
@@ -391,7 +391,7 @@ function KnowledgeBaseView({
                 empty={
                   <EmptyState
                     title={
-                      filters.status || filters.type || deferred ? "No content matches." : "No content yet."
+                      filters.status || filters.type || deferred ? "No content matches" : "No content yet"
                     }
                   >
                     Add files, pages, text or a remote source on the right.
@@ -424,7 +424,7 @@ function KnowledgeBaseView({
         )}
 
         <TestRetrieval instance={instance} kb={base.id} searchTypes={searchTypes} />
-      </main>
+      </section>
 
       <AddContent instance={instance} base={base} settings={settings.data} />
 

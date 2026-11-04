@@ -41,6 +41,11 @@ class InstanceOut(BaseModel):
     )
     has_ca_bundle: bool
     has_security_key: bool
+    has_client_certificate: bool = Field(description="A client certificate is presented to the runtime (mutual TLS)")
+    network_mode: Literal["gateway", "direct"] = Field(
+        description="gateway: browsers go through the control plane; direct: browsers call the runtime with a token"
+    )
+    browser_url: str = Field(description="Where browsers reach the runtime in direct mode")
     version_drift: str | None = Field(description='e.g. "agno 3.1.12 → 3.2.0", when the minor version changed')
     created_at: datetime
     updated_at: datetime
@@ -72,6 +77,9 @@ class InstanceOut(BaseModel):
             elevation_enabled=instance.elevation_enabled,
             has_ca_bundle=instance.ca_bundle_pem is not None,
             has_security_key=instance.has_security_key,
+            has_client_certificate=instance.has_client_certificate,
+            network_mode=instance.network_mode.value,
+            browser_url=instance.public_url,
             version_drift=drift,
             created_at=instance.created_at,
             updated_at=instance.updated_at,
@@ -126,6 +134,12 @@ class ProbeIn(BaseModel):
     endpoint_url: str = Field(max_length=2048, examples=["http://127.0.0.1:7777"])
     tls_verify: bool = True
     ca_bundle_pem: str | None = Field(default=None, max_length=65536)
+    client_cert_pem: str | None = Field(
+        default=None, max_length=65536, description="Client certificate chain (PEM) for mutual TLS"
+    )
+    client_key_pem: str | None = Field(
+        default=None, max_length=65536, description="Its private key (PEM, unencrypted); stored sealed, never returned"
+    )
 
 
 class ProbeOut(BaseModel):
@@ -166,6 +180,14 @@ class InstanceUpdate(BaseModel):
     security_key: str | None = Field(default=None, max_length=4096, description="Empty string removes it")
     status: Literal["disabled", "enabled"] | None = None
     elevation_enabled: bool | None = None
+    client_cert_pem: str | None = Field(
+        default=None, max_length=65536, description="With client_key_pem; empty strings remove the client certificate"
+    )
+    client_key_pem: str | None = Field(default=None, max_length=65536, description="Write-only")
+    network_mode: Literal["gateway", "direct"] | None = None
+    browser_url: str | None = Field(
+        default=None, max_length=2048, description="Direct mode: the runtime's URL for browsers; empty string resets it"
+    )
     version: int | None = Field(default=None, description="Expected version (optimistic concurrency)")
 
 

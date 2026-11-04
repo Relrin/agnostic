@@ -3444,6 +3444,42 @@
         "title": "BulkOutcomeOut",
         "type": "object"
       },
+      "CacheOut": {
+        "properties": {
+          "backend": {
+            "title": "Backend",
+            "type": "string"
+          },
+          "hit_ratio": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Since this API process started",
+            "title": "Hit Ratio"
+          },
+          "hits": {
+            "title": "Hits",
+            "type": "integer"
+          },
+          "misses": {
+            "title": "Misses",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "backend",
+          "hits",
+          "misses",
+          "hit_ratio"
+        ],
+        "title": "CacheOut",
+        "type": "object"
+      },
       "CanvasLayoutIn": {
         "properties": {
           "layout": {
@@ -4687,6 +4723,37 @@
           }
         },
         "title": "ChannelPatch",
+        "type": "object"
+      },
+      "CheckOut": {
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "facts": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Facts",
+            "type": "object"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "ok": {
+            "title": "Ok",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "ok",
+          "detail",
+          "facts"
+        ],
+        "title": "CheckOut",
         "type": "object"
       },
       "CheckpointOut": {
@@ -6040,6 +6107,32 @@
               }
             ],
             "title": "Ca Bundle Pem"
+          },
+          "client_cert_pem": {
+            "anyOf": [
+              {
+                "maxLength": 65536,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Client certificate chain (PEM) for mutual TLS",
+            "title": "Client Cert Pem"
+          },
+          "client_key_pem": {
+            "anyOf": [
+              {
+                "maxLength": 65536,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Its private key (PEM, unencrypted); stored sealed, never returned",
+            "title": "Client Key Pem"
           },
           "display_name": {
             "anyOf": [
@@ -7742,6 +7835,30 @@
         "title": "DiffOut",
         "type": "object"
       },
+      "DirectTokenOut": {
+        "properties": {
+          "base_url": {
+            "title": "Base Url",
+            "type": "string"
+          },
+          "expires_at": {
+            "format": "date-time",
+            "title": "Expires At",
+            "type": "string"
+          },
+          "token": {
+            "title": "Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "token",
+          "expires_at",
+          "base_url"
+        ],
+        "title": "DirectTokenOut",
+        "type": "object"
+      },
       "DirectorySettingsIn": {
         "properties": {
           "deprovision": {
@@ -8866,6 +8983,55 @@
           "last_used_at"
         ],
         "title": "FactorOut",
+        "type": "object"
+      },
+      "FailedJobOut": {
+        "properties": {
+          "argument_names": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Argument Names",
+            "type": "array"
+          },
+          "attempts": {
+            "title": "Attempts",
+            "type": "integer"
+          },
+          "failed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failed At"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "queue": {
+            "title": "Queue",
+            "type": "string"
+          },
+          "task": {
+            "title": "Task",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "queue",
+          "task",
+          "attempts",
+          "failed_at",
+          "argument_names"
+        ],
+        "title": "FailedJobOut",
         "type": "object"
       },
       "FeatureModels": {
@@ -10273,6 +10439,45 @@
         "title": "GroupUpdate",
         "type": "object"
       },
+      "GuideEntry": {
+        "properties": {
+          "path": {
+            "title": "Path",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "title"
+        ],
+        "title": "GuideEntry",
+        "type": "object"
+      },
+      "GuideIndex": {
+        "properties": {
+          "available": {
+            "title": "Available",
+            "type": "boolean"
+          },
+          "guides": {
+            "items": {
+              "$ref": "#/components/schemas/GuideEntry"
+            },
+            "title": "Guides",
+            "type": "array"
+          }
+        },
+        "required": [
+          "available",
+          "guides"
+        ],
+        "title": "GuideIndex",
+        "type": "object"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -10573,6 +10778,11 @@
             "title": "Auth Mode",
             "type": "string"
           },
+          "browser_url": {
+            "description": "Where browsers reach the runtime in direct mode",
+            "title": "Browser Url",
+            "type": "string"
+          },
           "created_at": {
             "format": "date-time",
             "title": "Created At",
@@ -10596,6 +10806,11 @@
           },
           "has_ca_bundle": {
             "title": "Has Ca Bundle",
+            "type": "boolean"
+          },
+          "has_client_certificate": {
+            "description": "A client certificate is presented to the runtime (mutual TLS)",
+            "title": "Has Client Certificate",
             "type": "boolean"
           },
           "has_security_key": {
@@ -10628,6 +10843,15 @@
               }
             ],
             "title": "Latency Ms"
+          },
+          "network_mode": {
+            "description": "gateway: browsers go through the control plane; direct: browsers call the runtime with a token",
+            "enum": [
+              "gateway",
+              "direct"
+            ],
+            "title": "Network Mode",
+            "type": "string"
           },
           "os_id": {
             "anyOf": [
@@ -10729,6 +10953,9 @@
           "elevation_enabled",
           "has_ca_bundle",
           "has_security_key",
+          "has_client_certificate",
+          "network_mode",
+          "browser_url",
           "version_drift",
           "created_at",
           "updated_at",
@@ -10789,6 +11016,64 @@
         "title": "InstanceOutcomeOut",
         "type": "object"
       },
+      "InstancePollOut": {
+        "properties": {
+          "display_name": {
+            "title": "Display Name",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "last_seen_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Seen At"
+          },
+          "latency_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latency Ms"
+          },
+          "network_mode": {
+            "title": "Network Mode",
+            "type": "string"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "display_name",
+          "status",
+          "last_seen_at",
+          "latency_ms",
+          "network_mode"
+        ],
+        "title": "InstancePollOut",
+        "type": "object"
+      },
       "InstanceRefOut": {
         "properties": {
           "display_name": {
@@ -10814,6 +11099,19 @@
       },
       "InstanceUpdate": {
         "properties": {
+          "browser_url": {
+            "anyOf": [
+              {
+                "maxLength": 2048,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Direct mode: the runtime's URL for browsers; empty string resets it",
+            "title": "Browser Url"
+          },
           "ca_bundle_pem": {
             "anyOf": [
               {
@@ -10826,6 +11124,32 @@
             ],
             "description": "Empty string removes it",
             "title": "Ca Bundle Pem"
+          },
+          "client_cert_pem": {
+            "anyOf": [
+              {
+                "maxLength": 65536,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "With client_key_pem; empty strings remove the client certificate",
+            "title": "Client Cert Pem"
+          },
+          "client_key_pem": {
+            "anyOf": [
+              {
+                "maxLength": 65536,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Write-only",
+            "title": "Client Key Pem"
           },
           "display_name": {
             "anyOf": [
@@ -10871,6 +11195,21 @@
                 "type": "null"
               }
             ]
+          },
+          "network_mode": {
+            "anyOf": [
+              {
+                "enum": [
+                  "gateway",
+                  "direct"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Network Mode"
           },
           "security_key": {
             "anyOf": [
@@ -14985,6 +15324,32 @@
             ],
             "title": "Ca Bundle Pem"
           },
+          "client_cert_pem": {
+            "anyOf": [
+              {
+                "maxLength": 65536,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Client certificate chain (PEM) for mutual TLS",
+            "title": "Client Cert Pem"
+          },
+          "client_key_pem": {
+            "anyOf": [
+              {
+                "maxLength": 65536,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Its private key (PEM, unencrypted); stored sealed, never returned",
+            "title": "Client Key Pem"
+          },
           "endpoint_url": {
             "examples": [
               "http://127.0.0.1:7777"
@@ -16721,6 +17086,47 @@
           "access"
         ],
         "title": "QueueJobsPageOut",
+        "type": "object"
+      },
+      "QueueOut": {
+        "properties": {
+          "failed": {
+            "title": "Failed",
+            "type": "integer"
+          },
+          "oldest_wait_seconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Age of the oldest due job not picked up yet",
+            "title": "Oldest Wait Seconds"
+          },
+          "queue": {
+            "title": "Queue",
+            "type": "string"
+          },
+          "running": {
+            "title": "Running",
+            "type": "integer"
+          },
+          "waiting": {
+            "title": "Waiting",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "queue",
+          "waiting",
+          "running",
+          "failed",
+          "oldest_wait_seconds"
+        ],
+        "title": "QueueOut",
         "type": "object"
       },
       "QueueOverviewOut": {
@@ -20812,6 +21218,47 @@
         "title": "SpanTypeStatOut",
         "type": "object"
       },
+      "StatusItemOut": {
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "facts": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Facts",
+            "type": "object"
+          },
+          "group": {
+            "title": "Group",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "ok",
+              "warning",
+              "error"
+            ],
+            "title": "State",
+            "type": "string"
+          }
+        },
+        "required": [
+          "group",
+          "name",
+          "state",
+          "detail",
+          "facts"
+        ],
+        "title": "StatusItemOut",
+        "type": "object"
+      },
       "StatusName": {
         "enum": [
           "pending",
@@ -21482,6 +21929,36 @@
         "title": "SystemFeatures",
         "type": "object"
       },
+      "SystemInfo": {
+        "properties": {
+          "docs_available": {
+            "description": "User guides are bundled (in-product help works offline)",
+            "title": "Docs Available",
+            "type": "boolean"
+          },
+          "environment": {
+            "title": "Environment",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "string"
+          },
+          "web_app": {
+            "description": "The API serves the web app on this origin",
+            "title": "Web App",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "version",
+          "environment",
+          "docs_available",
+          "web_app"
+        ],
+        "title": "SystemInfo",
+        "type": "object"
+      },
       "SystemModules": {
         "properties": {
           "disabled": {
@@ -21504,6 +21981,51 @@
           "disabled"
         ],
         "title": "SystemModules",
+        "type": "object"
+      },
+      "SystemStatusOut": {
+        "properties": {
+          "cache": {
+            "$ref": "#/components/schemas/CacheOut"
+          },
+          "environment": {
+            "title": "Environment",
+            "type": "string"
+          },
+          "instances": {
+            "items": {
+              "$ref": "#/components/schemas/InstancePollOut"
+            },
+            "title": "Instances",
+            "type": "array"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/StatusItemOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "queues": {
+            "items": {
+              "$ref": "#/components/schemas/QueueOut"
+            },
+            "title": "Queues",
+            "type": "array"
+          },
+          "versions": {
+            "$ref": "#/components/schemas/VersionsOut"
+          }
+        },
+        "required": [
+          "environment",
+          "versions",
+          "queues",
+          "cache",
+          "instances",
+          "items"
+        ],
+        "title": "SystemStatusOut",
         "type": "object"
       },
       "TargetIn": {
@@ -22730,6 +23252,42 @@
           "config"
         ],
         "title": "VersionOut",
+        "type": "object"
+      },
+      "VersionsOut": {
+        "properties": {
+          "cache": {
+            "title": "Cache",
+            "type": "string"
+          },
+          "database": {
+            "title": "Database",
+            "type": "string"
+          },
+          "modules": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Modules",
+            "type": "object"
+          },
+          "python": {
+            "title": "Python",
+            "type": "string"
+          },
+          "server": {
+            "title": "Server",
+            "type": "string"
+          }
+        },
+        "required": [
+          "server",
+          "python",
+          "database",
+          "cache",
+          "modules"
+        ],
+        "title": "VersionsOut",
         "type": "object"
       },
       "ViewOut": {
@@ -29159,7 +29717,7 @@
             "description": "Server error"
           }
         },
-        "summary": "Change an instance's name, environment, endpoint, TLS, security key or elevation",
+        "summary": "Change an instance's name, environment, endpoint, TLS, keys, network mode or elevation",
         "tags": [
           "instances"
         ]
@@ -38257,6 +38815,60 @@
         ]
       }
     },
+    "/api/v1/instances/{instance}/token": {
+      "post": {
+        "operationId": "gateway_direct_token",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DirectTokenOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Direct mode: a short-lived token to call the runtime from the browser",
+        "tags": [
+          "gateway"
+        ]
+      }
+    },
     "/api/v1/instances/{instance}/traces/span-stats": {
       "get": {
         "operationId": "observe_span_stats",
@@ -41874,6 +42486,151 @@
         ]
       }
     },
+    "/api/v1/system/checks": {
+      "post": {
+        "operationId": "system_run_checks",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CheckOut"
+                  },
+                  "title": "Response System Run Checks",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Probe every endpoint now (database, cache, master key, SMTP, IdPs, runtimes, …)",
+        "tags": [
+          "system"
+        ]
+      }
+    },
+    "/api/v1/system/docs": {
+      "get": {
+        "operationId": "system_list_guides",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuideIndex"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "The user guides bundled with this installation",
+        "tags": [
+          "system"
+        ]
+      }
+    },
+    "/api/v1/system/docs/{path}": {
+      "get": {
+        "operationId": "system_read_guide",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "path",
+            "required": true,
+            "schema": {
+              "title": "Path",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/markdown": {},
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/problem+json": {},
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/problem+json": {},
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "One bundled guide (Markdown)",
+        "tags": [
+          "system"
+        ]
+      }
+    },
     "/api/v1/system/features": {
       "get": {
         "operationId": "system_list_features",
@@ -41917,6 +42674,222 @@
         ]
       }
     },
+    "/api/v1/system/info": {
+      "get": {
+        "operationId": "system_system_info",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SystemInfo"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Version and what this installation bundles",
+        "tags": [
+          "system"
+        ]
+      }
+    },
+    "/api/v1/system/jobs/failed": {
+      "get": {
+        "operationId": "system_list_failed_jobs",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Page: jobs with a smaller id",
+            "in": "query",
+            "name": "before",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Page: jobs with a smaller id",
+              "title": "Before"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/FailedJobOut"
+                  },
+                  "title": "Response System List Failed Jobs",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Failed background jobs (newest first)",
+        "tags": [
+          "system"
+        ]
+      }
+    },
+    "/api/v1/system/jobs/{job_id}": {
+      "delete": {
+        "operationId": "system_discard_job",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "title": "Job Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Discard a failed job",
+        "tags": [
+          "system"
+        ]
+      }
+    },
+    "/api/v1/system/jobs/{job_id}/retry": {
+      "post": {
+        "operationId": "system_retry_job",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "title": "Job Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Run a failed job again",
+        "tags": [
+          "system"
+        ]
+      }
+    },
     "/api/v1/system/modules": {
       "get": {
         "operationId": "system_list_modules",
@@ -41955,6 +42928,49 @@
           }
         },
         "summary": "Enabled and disabled modules with what they contribute",
+        "tags": [
+          "system"
+        ]
+      }
+    },
+    "/api/v1/system/status": {
+      "get": {
+        "operationId": "system_system_status",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SystemStatusOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "System overview: versions, job queues, cache, instance polling, backlogs",
         "tags": [
           "system"
         ]

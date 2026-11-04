@@ -51,21 +51,38 @@ class SmtpMailer:
             context.load_cert_chain(str(tls.cert_file), str(tls.key_file) if tls.key_file else None)
         return context
 
-    def _send_sync(self, message: EmailMessage) -> None:
+    def _connect(self) -> smtplib.SMTP:
         host = self._url.hostname or "localhost"
         timeout = self._settings.timeout
         if self._url.scheme == "smtps":
-            client: smtplib.SMTP = smtplib.SMTP_SSL(
-                host, self._url.port or 465, timeout=timeout, context=self._context()
-            )
-        else:
-            client = smtplib.SMTP(host, self._url.port or 587, timeout=timeout)
-        with client:
-            if self._url.scheme == "smtp" and client.has_extn("starttls"):
-                client.starttls(context=self._context())
-            if self._url.username:
-                client.login(unquote(self._url.username), unquote(self._url.password or ""))
+            return smtplib.SMTP_SSL(host, self._url.port or 465, timeout=timeout, context=self._context())
+        return smtplib.SMTP(host, self._url.port or 587, timeout=timeout)
+
+    def _session(self, client: smtplib.SMTP) -> bool:
+        """STARTTLS when offered, then log in; ``True`` when the connection is encrypted."""
+        encrypted = self._url.scheme == "smtps"
+        _ = client.ehlo()  # has_extn() only knows the server's extensions after EHLO
+        if self._url.scheme == "smtp" and client.has_extn("starttls"):
+            client.starttls(context=self._context())
+            encrypted = True
+        if self._url.username:
+            client.login(unquote(self._url.username), unquote(self._url.password or ""))
+        return encrypted
+
+    def _send_sync(self, message: EmailMessage) -> None:
+        with self._connect() as client:
+            _ = self._session(client)
             client.send_message(message)
+
+    def _probe_sync(self) -> bool:
+        with self._connect() as client:
+            encrypted = self._session(client)
+            _ = client.noop()
+            return encrypted
+
+    async def probe(self) -> bool:
+        """Connect, negotiate TLS and log in without sending anything; ``True`` when TLS is on."""
+        return await asyncio.to_thread(self._probe_sync)
 
     async def send(self, email: Email) -> None:
         message = EmailMessage()

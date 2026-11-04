@@ -9,6 +9,7 @@ import {
   type PrimitiveOut,
 } from "@agnostic/api";
 import {
+  formatCalendarDay,
   formatCount,
   formatDuration,
   formatPercent,
@@ -44,6 +45,8 @@ import { skipToken, useMutation, useQuery, useQueryClient } from "@tanstack/reac
 import { Link, useParams } from "@tanstack/react-router";
 import { RefreshCw } from "lucide-react";
 import { useState } from "react";
+
+import { GetStarted } from "./get-started";
 
 type Range = "24h" | "7d" | "30d";
 
@@ -178,11 +181,7 @@ function Kpis({ overview, range }: { overview: OverviewOut | undefined; range: R
 }
 
 function shortDay(iso: string): string {
-  return new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    timeZone: "UTC",
-  });
+  return formatCalendarDay(iso);
 }
 
 function Unavailable({ reason }: { reason: string | undefined }) {
@@ -396,6 +395,8 @@ export function HomePage() {
         </div>
       </div>
 
+      <GetStarted instance={instanceRef} />
+
       {overview.isError ? (
         <ErrorState
           {...describeError(overview.error)}
@@ -493,7 +494,11 @@ export function HomePage() {
                 columns={primitiveColumns(instanceRef)}
                 rows={data.primitives.slice(0, 8)}
                 rowKey={(row) => `${row.type}:${row.id}`}
-                empty={<EmptyState title="No agents, teams or workflows on this instance yet." />}
+                empty={
+                  <EmptyState title="No agents, teams or workflows on this instance yet">
+                    Register one in the runtime&apos;s code, or build one in Studio.
+                  </EmptyState>
+                }
               />
             ) : (
               <Unavailable reason={unavailable.primitives} />

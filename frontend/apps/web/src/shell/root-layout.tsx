@@ -2,9 +2,11 @@ import {
   activeNavId,
   buildNavigation,
   collectCommands,
+  configureFormatting,
   decide,
   featuresOn,
   findInstance,
+  formatDateTime,
   moduleAvailable,
   ORG_ROLE_LABELS,
   RealtimeProvider,
@@ -196,7 +198,7 @@ function UnreachableBanner({ instance, health }: { instance: InstanceOut | undef
         {disabled
           ? "The gateway won't call it until it's enabled again."
           : `Pages that read from it fail until it's back.${
-              instance.last_seen_at ? ` Last seen ${new Date(instance.last_seen_at).toLocaleString()}.` : ""
+              instance.last_seen_at ? ` Last seen ${formatDateTime(instance.last_seen_at)}.` : ""
             }`}
       </Callout>
     </div>
@@ -228,6 +230,9 @@ export function RootLayout() {
   const navigate = useNavigate();
   const [paletteOpen, setPaletteOpen] = useState(false);
   const me = useMe();
+  // Before the pages below render, so their first paint already uses the profile's locale and time zone (an
+  // empty time zone means the browser's). The router loads `me` before this layout renders.
+  configureFormatting({ locale: me.data?.locale, timeZone: me.data?.timezone });
   const org = useOrg();
   const instances = useInstances();
 

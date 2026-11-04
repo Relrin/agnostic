@@ -1,0 +1,39 @@
+{{- if .Values.ingress.enabled }}
+{{- /* Server-sent events (chat, run events, realtime) need unbuffered, long-lived responses. */ -}}
+{{- $sse := dict }}
+{{- if eq .Values.ingress.controller "nginx" }}
+{{- $sse = dict "nginx.ingress.kubernetes.io/proxy-buffering" "off" "nginx.ingress.kubernetes.io/proxy-read-timeout" "3600" "nginx.ingress.kubernetes.io/proxy-send-timeout" "3600" "nginx.ingress.kubernetes.io/proxy-body-size" "64m" }}
+{{- end }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "agnostic.fullname" . }}
+  labels:
+    {{- include "agnostic.labels" . | nindent 4 }}
+  {{- $annotations := merge (deepCopy .Values.ingress.annotations) $sse }}
+  {{- with $annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- with .Values.ingress.className }}
+  ingressClassName: {{ . }}
+  {{- end }}
+  {{- with .Values.ingress.tls }}
+  tls:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  rules:
+    {{- range .Values.ingress.hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "agnostic.fullname" $ }}
+                port:
+                  name: http
+    {{- end }}
+{{- end }}

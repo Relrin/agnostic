@@ -209,6 +209,12 @@ class SqlServiceAccountRepository:
         )
         await self._session.commit()
 
+    async def rehash_gateway(self, token_id: str, token_hash: str) -> None:
+        _ = await self._session.execute(
+            update(GatewayTokenRow).where(GatewayTokenRow.id == token_id).values(token_hash=token_hash)
+        )
+        await self._session.commit()
+
     async def commit(self) -> None:
         await self._session.commit()
 

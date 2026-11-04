@@ -169,7 +169,7 @@ export function DataTable<T>({
                 key={column.id}
                 scope="col"
                 className={cn(
-                  "px-4 py-2.5 font-medium",
+                  "px-4 py-[var(--cell-py)] font-medium",
                   column.align === "right" && "text-right",
                   column.className,
                 )}
@@ -203,7 +203,7 @@ export function DataTable<T>({
                   <td
                     key={column.id}
                     className={cn(
-                      "px-4 py-2.5 align-top",
+                      "px-4 py-[var(--cell-py)] align-top",
                       column.align === "right" && "text-right tabular-nums",
                       column.className,
                     )}

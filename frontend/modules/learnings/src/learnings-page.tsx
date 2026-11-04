@@ -132,7 +132,7 @@ export function LearningsPage() {
         }}
       >
         <div className="flex flex-wrap items-end justify-between gap-2 border-b border-border-subtle">
-          <TabsList className="border-0">
+          <TabsList panels={false} className="border-0">
             {LEARNING_TYPES.map((type) => {
               const count = counts.data?.counts[type];
               return (
@@ -225,7 +225,7 @@ export function LearningsPage() {
         <LoadingRows label="Loading learnings" />
       ) : rows.length === 0 ? (
         <EmptyState
-          title={`No ${filters.type} records${filters.user || filters.agent || filters.namespace ? " match" : " yet"}.`}
+          title={`No ${filters.type} records${filters.user || filters.agent || filters.namespace ? " match" : " yet"}`}
         >
           Agents with a learning machine write these between runs.
         </EmptyState>

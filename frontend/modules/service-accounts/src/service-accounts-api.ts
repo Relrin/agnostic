@@ -7,7 +7,7 @@ import {
   type ServiceAccountIn,
   type ServiceAccountOut,
 } from "@agnostic/api";
-import { toDate } from "@agnostic/core";
+import { formatDate as formatCoreDate } from "@agnostic/core";
 import type { QueryClient } from "@tanstack/react-query";
 
 export type Expiry = NonNullable<ServiceAccountIn["expires_in"]>;
@@ -48,9 +48,7 @@ export async function refreshAccounts(client: QueryClient): Promise<void> {
 
 /** "30 Jan 2027". */
 export function formatDate(value: string | Date | null | undefined): string {
-  const date = value instanceof Date ? value : toDate(value);
-  if (!date) return "—";
-  return date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+  return formatCoreDate(value);
 }
 
 /** The expiry date a choice gives, from now. */

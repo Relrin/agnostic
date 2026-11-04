@@ -11,7 +11,7 @@ import {
   type MemberOut,
   type RoleOut,
 } from "@agnostic/api";
-import { STALE_TIME, toDate, useInstances, useOrg, withQueryFn } from "@agnostic/core";
+import { STALE_TIME, formatDate, useInstances, useOrg, withQueryFn } from "@agnostic/core";
 import type { QueryClient } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate, useSearch } from "@tanstack/react-router";
@@ -143,12 +143,9 @@ export function roleColor(roleId: string | null, roles: readonly RoleOut[]): str
   return roles.find((item) => item.id === roleId)?.color ?? null;
 }
 
-const DAY_MONTH = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short" });
-
 /** "30 Nov". */
 export function formatDay(value: string | null | undefined): string {
-  const date = toDate(value);
-  return date ? DAY_MONTH.format(date) : "—";
+  return formatDate(value, { year: false });
 }
 
 /** "ends 30 Nov" for a binding that expires. */

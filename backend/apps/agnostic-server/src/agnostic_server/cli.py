@@ -12,9 +12,9 @@ import typer
 import uvicorn
 import watchfiles
 
-from agnostic_kernel import migrations_runner
+from agnostic_kernel import metrics, migrations_runner
 from agnostic_kernel.bootstrap import Bootstrapper, BootstrapResult, OwnerAccount
-from agnostic_kernel.checks import run_endpoint_checks
+from agnostic_kernel.checks import run_all_checks
 from agnostic_kernel.container import build_container
 from agnostic_kernel.db import create_engine
 from agnostic_kernel.errors import AppError
@@ -23,6 +23,7 @@ from agnostic_kernel.modules import ModuleGraphError, discover_modules, load_mod
 from agnostic_kernel.settings import Settings
 from agnostic_server import loops
 from agnostic_server.audit_cli import audit_app
+from agnostic_server.secrets_cli import secrets_app
 from agnostic_server.tokens import tokens_app
 from agnostic_server.worker import WorkerUnavailableError, run_worker
 
@@ -37,6 +38,7 @@ app.add_typer(config_app, name="config")
 app.add_typer(modules_app, name="modules")
 app.add_typer(tokens_app, name="tokens")
 app.add_typer(audit_app, name="audit")
+app.add_typer(secrets_app, name="secrets")
 
 
 def _source_dirs() -> list[Path]:
@@ -51,8 +53,10 @@ def api(
     port: Annotated[int | None, typer.Option(help="Port (default: AGNOSTIC_HTTP__PORT)")] = None,
     reload: Annotated[bool, typer.Option(help="Restart on code changes (development)")] = False,
 ) -> None:
-    """Serve the HTTP API."""
+    """Serve the HTTP API (and Prometheus metrics on AGNOSTIC_METRICS__PORT)."""
     settings = Settings()
+    if not reload:
+        metrics.serve_metrics(settings.metrics)
     uvicorn.run(
         "agnostic_server.app:create_app",
         factory=True,
@@ -124,11 +128,46 @@ async def _migrate(operation: str, revision: str) -> None:
     typer.echo("status:  " + ("up to date" if state.up_to_date else "pending migrations"))
 
 
+async def _check_upgrade(revision: str) -> list[migrations_runner.AppliedRevision]:
+    engine = create_engine(Settings().database)
+    try:
+        return await migrations_runner.check_upgrade(engine, list(discover_modules()), revision)
+    finally:
+        await engine.dispose()
+
+
 @db_app.command("upgrade")
-def db_upgrade(revision: Annotated[str, typer.Argument(help="Target revision")] = "heads") -> None:
+def db_upgrade(
+    revision: Annotated[str, typer.Argument(help="Target revision")] = "heads",
+    check: Annotated[
+        bool, typer.Option("--check", help="Apply in one transaction, report timings, then roll back")
+    ] = False,
+) -> None:
     """Apply migrations of the kernel and every installed module."""
     configure_logging(Settings().log)
-    loops.run(lambda: _migrate("upgrade", revision))
+    if not check:
+        loops.run(lambda: _migrate("upgrade", revision))
+        return
+    if Settings().database.backend != "postgresql":
+        typer.secho(
+            "--check needs PostgreSQL: SQLite commits schema changes right away.", fg=typer.colors.RED, err=True
+        )
+        raise typer.Exit(2)
+    try:
+        applied = loops.run(lambda: _check_upgrade(revision))
+    except Exception as exc:
+        typer.secho(f"upgrade check failed: {exc}", fg=typer.colors.RED, err=True)
+        raise typer.Exit(1) from exc
+    for step in applied:
+        typer.echo(f"{step.revision:<40} {step.seconds * 1000:>9.1f} ms")
+    typer.echo(f"{len(applied)} revision(s) would be applied; rolled back, nothing changed")
+
+
+@app.command()
+def migrate() -> None:
+    """Apply every pending migration (the same as `agnostic db upgrade`; the image's one-shot command)."""
+    configure_logging(Settings().log)
+    loops.run(lambda: _migrate("upgrade", "heads"))
 
 
 @db_app.command("downgrade")
@@ -160,11 +199,11 @@ def config_check(
     if not connect:
         return
 
-    results = loops.run(lambda: run_endpoint_checks(settings, list(modules.installed.values())))
+    results = loops.run(lambda: run_all_checks(settings, modules))
     for result in results:
         mark = typer.style("ok  ", fg=typer.colors.GREEN) if result.ok else typer.style("FAIL", fg=typer.colors.RED)
         facts = ", ".join(f"{key}={value}" for key, value in result.facts.items())
-        typer.echo(f"[{mark}] {result.name:<10} {result.detail}" + (f"  ({facts})" if facts else ""))
+        typer.echo(f"[{mark}] {result.name:<24} {result.detail}" + (f"  ({facts})" if facts else ""))
     if not all(result.ok for result in results):
         raise typer.Exit(1)
 

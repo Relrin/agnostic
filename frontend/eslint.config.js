@@ -16,6 +16,22 @@ const noRadixDirect = {
   group: ["@radix-ui/*", "radix-ui"],
   message: "Use the primitives from @agnostic/ui instead of Radix directly.",
 };
+// Dates and numbers follow the signed-in person's locale and time zone only when they go through the formatters in
+// @agnostic/core (format.ts, costs.ts).
+const formatMessage =
+  "Format with the helpers in @agnostic/core (formatDateTime, formatDate, formatCount, …).";
+const noAdHocFormatting = [
+  "error",
+  { selector: "CallExpression[callee.property.name=/^toLocale(Date|Time)?String$/]", message: formatMessage },
+  {
+    selector: "NewExpression[callee.object.name='Intl'][callee.property.name=/Format$/]",
+    message: formatMessage,
+  },
+  {
+    selector: "CallExpression[callee.object.name='Intl'][callee.property.name=/Format$/]",
+    message: formatMessage,
+  },
+];
 
 export default tseslint.config(
   {
@@ -49,7 +65,12 @@ export default tseslint.config(
       "@typescript-eslint/consistent-type-definitions": ["error", "type"],
       "@typescript-eslint/restrict-template-expressions": ["error", { allowNumber: true }],
       "no-restricted-imports": ["error", { patterns: [noApp, noRadixDirect] }],
+      "no-restricted-syntax": noAdHocFormatting,
     },
+  },
+  {
+    files: ["packages/core/src/format.ts", "packages/core/src/costs.ts"],
+    rules: { "no-restricted-syntax": "off" },
   },
   jsxA11y.flatConfigs.recommended,
   {

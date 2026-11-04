@@ -24,6 +24,7 @@ from agnostic_instances.application.ports import (
     SnapshotRepository,
     Target,
 )
+from agnostic_instances.application.tls import ConnectionTls, check_client_certificate
 from agnostic_instances.application.tokens import PrivateKeyCache
 from agnostic_instances.domain.instances import (
     INSTANCE_ID_PREFIX,
@@ -36,8 +37,10 @@ from agnostic_instances.domain.instances import (
     InstanceStatus,
     JwtKey,
     KeyStatus,
+    NetworkMode,
     Step,
     SubClaimMode,
+    check_direct_mode,
     check_slug,
     clean_endpoint,
     config_snippet,
@@ -51,6 +54,7 @@ from agnostic_kernel.ephemeral import EphemeralStore, bump_access_generation
 from agnostic_kernel.errors import AppError, ConflictError, NotFoundError, ValidationFailedError
 from agnostic_kernel.ids import new_id
 from agnostic_kernel.logging import get_logger
+from agnostic_kernel.security_headers import ConnectSources
 
 log = get_logger(__name__)
 
@@ -80,6 +84,10 @@ class InstanceContext:
     audit: AuditLog
     store: EphemeralStore
     issuer: str
+    allow_http_direct: bool = False
+    connect_sources: ConnectSources | None = None
+    """Told when a runtime enters or leaves direct mode (the web app's content security policy names it)."""
+    """Development installs may switch plain-http runtimes to direct mode."""
 
 
 class _UseCase:
@@ -91,6 +99,24 @@ class _UseCase:
         if instance is None:
             raise NotFoundError(f"There is no instance {ref!r}.")
         return instance
+
+    def _client_tls(
+        self, tls_verify: bool, ca_bundle_pem: str | None, cert_pem: str | None, key_pem: str | None
+    ) -> ConnectionTls:
+        """TLS for a runtime that isn't stored yet (wizard); the client key is sealed right away."""
+        sealed = self._seal_client_key(cert_pem, key_pem)
+        return ConnectionTls(tls_verify, ca_bundle_pem, cert_pem if sealed else None, sealed)
+
+    def _seal_client_key(self, cert_pem: str | None, key_pem: str | None) -> str | None:
+        if not cert_pem and not key_pem:
+            return None
+        if not cert_pem or not key_pem:
+            raise ValidationFailedError("Mutual TLS needs both the client certificate and its private key.")
+        try:
+            check_client_certificate(cert_pem, key_pem)
+        except ValueError as exc:
+            raise ValidationFailedError(str(exc)) from exc
+        return self.c.box.seal(key_pem.encode())
 
     async def _new_key(self, instance_id: str, status: KeyStatus) -> JwtKey:
         generated = self.c.signer.generate()
@@ -131,7 +157,14 @@ class ProbeEndpoint(_UseCase):
     """Wizard step 1: what is at this URL? Nothing is stored."""
 
     async def __call__(
-        self, principal: Principal, endpoint_url: str, *, tls_verify: bool, ca_bundle_pem: str | None
+        self,
+        principal: Principal,
+        endpoint_url: str,
+        *,
+        tls_verify: bool,
+        ca_bundle_pem: str | None,
+        client_cert_pem: str | None = None,
+        client_key_pem: str | None = None,
     ) -> ProbeResult:
         _ = await self.c.authorizer.require(principal, WRITE)
         try:
@@ -139,7 +172,8 @@ class ProbeEndpoint(_UseCase):
         except InstanceRuleError as exc:
             raise ValidationFailedError(str(exc)) from exc
         diagnosis = Diagnosis()
-        discovery = await diagnose_reachability(self.c.client, Target(endpoint, tls_verify, ca_bundle_pem), diagnosis)
+        tls = self._client_tls(tls_verify, ca_bundle_pem, client_cert_pem, client_key_pem)
+        discovery = await diagnose_reachability(self.c.client, Target(endpoint, tls), diagnosis)
         return ProbeResult(diagnosis, discovery)
 
 
@@ -153,6 +187,8 @@ class ConnectRequest:
     ca_bundle_pem: str | None = None
     security_key: str | None = None
     sub_claim_mode: SubClaimMode = SubClaimMode.USER_ID
+    client_cert_pem: str | None = None
+    client_key_pem: str | None = None
 
 
 class ConnectInstance(_UseCase):
@@ -165,9 +201,10 @@ class ConnectInstance(_UseCase):
         except InstanceRuleError as exc:
             raise ValidationFailedError(str(exc)) from exc
         diagnosis = Diagnosis()
-        discovery = await diagnose_reachability(
-            self.c.client, Target(endpoint, request.tls_verify, request.ca_bundle_pem), diagnosis
+        tls = self._client_tls(
+            request.tls_verify, request.ca_bundle_pem, request.client_cert_pem, request.client_key_pem
         )
+        discovery = await diagnose_reachability(self.c.client, Target(endpoint, tls), diagnosis)
         if discovery is None or not diagnosis.ok:
             raise DiscoveryFailedError(
                 next((s.detail for s in diagnosis.steps if s.status == "failed"), "Discovery failed."),
@@ -208,6 +245,8 @@ class ConnectInstance(_UseCase):
             created_at=now,
             updated_at=now,
             version=1,
+            client_cert_pem=tls.client_cert_pem,
+            client_key_sealed=tls.client_key_sealed,
         )
         sealed = self.c.box.seal(request.security_key.encode()) if request.security_key else None
         await self.c.instances.add(instance, sealed)
@@ -344,10 +383,16 @@ class InstanceChanges:
     security_key: str | None = None
     status: Literal["disabled", "enabled"] | None = None
     elevation_enabled: bool | None = None
+    client_cert_pem: str | None = None
+    """With ``client_key_pem``; empty strings remove the client certificate."""
+    client_key_pem: str | None = None
+    network_mode: NetworkMode | None = None
+    browser_url: str | None = None
+    """Empty string: browsers use ``endpoint_url``."""
 
 
 class UpdateInstance(_UseCase):
-    async def __call__(  # noqa: C901, PLR0912  (one branch per optional field)
+    async def __call__(  # noqa: C901, PLR0912, PLR0915  (one branch per optional field)
         self, principal: Principal, ref: str, changes: InstanceChanges, expected_version: int | None
     ) -> Instance:
         _ = await self.c.authorizer.require(principal, WRITE)
@@ -375,6 +420,19 @@ class UpdateInstance(_UseCase):
             updated = replace(updated, ca_bundle_pem=changes.ca_bundle_pem or None)
         if changes.elevation_enabled is not None:
             updated = replace(updated, elevation_enabled=changes.elevation_enabled)
+        if changes.client_cert_pem is not None or changes.client_key_pem is not None:
+            sealed_key = self._seal_client_key(changes.client_cert_pem or None, changes.client_key_pem or None)
+            updated = replace(updated, client_cert_pem=changes.client_cert_pem or None, client_key_sealed=sealed_key)
+        try:
+            if changes.browser_url is not None:
+                updated = replace(
+                    updated, browser_url=clean_endpoint(changes.browser_url) if changes.browser_url else None
+                )
+            if changes.network_mode is not None:
+                updated = replace(updated, network_mode=changes.network_mode)
+            check_direct_mode(updated, allow_http=self.c.allow_http_direct)
+        except InstanceRuleError as exc:
+            raise ValidationFailedError(str(exc)) from exc
         if changes.status == "disabled":
             updated = replace(updated, status=InstanceStatus.DISABLED)
         elif changes.status == "enabled" and instance.status is InstanceStatus.DISABLED:
@@ -392,6 +450,8 @@ class UpdateInstance(_UseCase):
             "tls_verify",
             "status",
             "elevation_enabled",
+            "network_mode",
+            "browser_url",
         )
         diff = {
             name: {"before": str(getattr(instance, name)), "after": str(getattr(updated, name))}
@@ -402,9 +462,19 @@ class UpdateInstance(_UseCase):
             diff["ca_bundle_pem"] = {"before": "…", "after": "…"}
         if changes.security_key is not None:
             diff["security_key"] = {"before": "***", "after": "***"}
+        if (
+            instance.client_cert_pem != updated.client_cert_pem
+            or instance.client_key_sealed != updated.client_key_sealed
+        ):
+            diff["client_certificate"] = {
+                "before": "set" if instance.has_client_certificate else "none",
+                "after": "set" if updated.has_client_certificate else "none",
+            }
         if not diff:
             return instance
         saved = await self.c.instances.save(replace(updated, updated_at=utcnow()), expected_version=expected_version)
+        if self.c.connect_sources is not None and ({"network_mode", "browser_url", "endpoint_url"} & diff.keys()):
+            self.c.connect_sources.invalidate()
         _ = await self.c.audit.record(
             AuditEntry(
                 action="instances.update",

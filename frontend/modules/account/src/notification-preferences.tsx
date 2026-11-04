@@ -7,7 +7,7 @@ import {
   type PersonalChannelName,
   type PreferencesOut,
 } from "@agnostic/api";
-import { withQueryFn } from "@agnostic/core";
+import { formattingTimeZone, withQueryFn } from "@agnostic/core";
 import { Button, Callout, ErrorState, Input, LoadingRows, Switch, toast } from "@agnostic/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useId, useState } from "react";
@@ -29,7 +29,7 @@ function QuietHours({
 }) {
   const [start, setStart] = useState(value?.start ?? "22:00");
   const [end, setEnd] = useState(value?.end ?? "07:00");
-  const zone = value?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const zone = value?.timezone ?? formattingTimeZone();
   const fromId = useId();
   const toId = useId();
   return (

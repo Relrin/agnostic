@@ -39,6 +39,16 @@ describe("buildTraceFilter", () => {
     });
   });
 
+  it("keeps the same start for every render within a minute", () => {
+    const at = (iso: string) => buildTraceFilter({ range: "24h" }, undefined, new Date(iso));
+    expect(at("2026-11-01T10:00:01.250Z")).toEqual(at("2026-11-01T10:00:59.999Z"));
+    expect(at("2026-11-01T10:00:59.999Z")).toEqual({
+      op: "GTE",
+      key: "start_time",
+      value: "2026-10-31T10:00:00.000Z",
+    });
+  });
+
   it("only uses what the filter schema offers", () => {
     const schema: AgentOS.FilterSchemaResponse = {
       fields: [{ key: "name", label: "Name", type: "string", operators: ["contains"] }],

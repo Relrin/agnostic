@@ -414,7 +414,7 @@ export function MembersTab({
                 go({ member: member.user_id, group: undefined });
               }}
               empty={
-                <EmptyState title={hasFilters ? "No members match." : "No members yet."}>
+                <EmptyState title={hasFilters ? "No members match" : "No members yet"}>
                   {hasFilters ? "Try another search or clear the filters." : "Invite people to get started."}
                 </EmptyState>
               }

@@ -2,18 +2,21 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from pathlib import Path
 
-from dishka import Provider
+from dishka import AsyncContainer, Provider
 from pydantic_settings import BaseSettings
 from sqlalchemy import MetaData
 
 from agnostic_identity.api.router import admin_router, auth_router, me_router, mfa_router
+from agnostic_identity.application.ports import SignInClients
+from agnostic_identity.infrastructure.checks import provider_checks
 from agnostic_identity.infrastructure.tables import IdentityBase
 from agnostic_identity.providers import IdentityProvider
 from agnostic_identity.settings import IdentitySettings
-from agnostic_kernel.modules import AuditActionDecl, BaseModule, RouterSpec
+from agnostic_kernel.diagnostics import CheckResult
+from agnostic_kernel.modules import AuditActionDecl, BaseModule, RouterSpec, SealedColumn
 
 
 class IdentityModule(BaseModule):
@@ -26,6 +29,12 @@ class IdentityModule(BaseModule):
 
     def provide(self) -> Iterable[Provider]:
         return (IdentityProvider(),)
+
+    def sealed_columns(self) -> Iterable[SealedColumn]:
+        return (
+            SealedColumn("identity_credentials", "secret_hash"),
+            SealedColumn("identity_login_providers", "config", json_keys=("client_secret",)),
+        )
 
     def routers(self) -> Iterable[RouterSpec]:
         return (
@@ -60,3 +69,6 @@ class IdentityModule(BaseModule):
             AuditActionDecl("auth.providers.delete", "{actor} deleted the sign-in provider {provider}"),
             AuditActionDecl("auth.policy.update", "{actor} changed the authentication policy: {changes}"),
         )
+
+    async def endpoint_checks(self, container: AsyncContainer) -> Sequence[CheckResult]:
+        return await provider_checks(await container.get(SignInClients))

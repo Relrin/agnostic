@@ -294,7 +294,7 @@ export function ApprovalsPage() {
             go({ status: value as StatusName, page: 1, approval: undefined, intent: undefined });
           }}
         >
-          <TabsList>
+          <TabsList panels={false}>
             {STATUSES.map((status) => {
               const count = counts.data?.[status];
               return (
@@ -403,10 +403,10 @@ export function ApprovalsPage() {
           <EmptyState
             title={
               hasFilters
-                ? `No ${state.status} approvals match.`
+                ? `No ${state.status} approvals match`
                 : state.status === "pending"
-                  ? "Nothing is waiting for a decision."
-                  : `No ${state.status} approvals.`
+                  ? "Nothing is waiting for a decision"
+                  : `No ${state.status} approvals`
             }
           >
             {state.status === "pending"
