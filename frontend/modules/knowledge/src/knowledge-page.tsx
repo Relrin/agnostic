@@ -127,7 +127,7 @@ function columns(): Column<ContentRow>[] {
   ];
 }
 
-/** `/i/:instance/knowledge?kb=&status=&type=&q=&page=&content=` (design spec B §2). */
+/** `/i/:instance/knowledge?kb=&status=&type=&q=&page=&content=`. */
 export function KnowledgePage() {
   const params = useParams({ strict: false }) as unknown as Record<string, string | undefined>;
   const search = useSearch({ strict: false }) as unknown as Record<string, unknown>;

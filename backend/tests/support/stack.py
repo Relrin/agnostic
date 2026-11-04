@@ -52,8 +52,13 @@ class FakeDnsRuntimeClient(HttpRuntimeClient):
 @dataclass
 class CapturingMailer:
     sent: list[Email] = field(default_factory=list[Email])
+    configured: bool = True
+    failing: bool = False
+    """Raise on send, like an SMTP server that refuses the message."""
 
     async def send(self, email: Email) -> None:
+        if self.failing:
+            raise OSError("SMTP server refused the message")
         self.sent.append(email)
 
 

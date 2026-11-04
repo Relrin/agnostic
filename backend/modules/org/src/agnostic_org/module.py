@@ -59,6 +59,7 @@ class OrgModule(BaseModule):
             AuditActionDecl("members.bulk_add_to_group", "{actor} added {count} members to a group"),
             AuditActionDecl("invitations.create", "{actor} invited {email} as {role}"),
             AuditActionDecl("invitations.resend", "{actor} resent the invitation to {email}"),
+            AuditActionDecl("invitations.link", "{actor} created a new invitation link for {email}"),
             AuditActionDecl("invitations.revoke", "{actor} revoked the invitation to {email}"),
             AuditActionDecl("invitations.accept", "{actor} accepted the invitation and joined as {role}"),
         )

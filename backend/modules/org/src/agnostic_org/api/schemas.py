@@ -31,6 +31,7 @@ class OrgOut(BaseModel):
     member_count: int
     pending_invitations: int
     viewer_role: OrgRoleName | None
+    email_delivery: bool = Field(description="Email is configured, so invitations can be sent by email")
     settings: OrgSettingsOut
     updated_at: datetime
 
@@ -46,6 +47,7 @@ class OrgOut(BaseModel):
             member_count=view.member_count,
             pending_invitations=view.pending_invitations,
             viewer_role=view.viewer_role.value if view.viewer_role else None,
+            email_delivery=view.email_delivery,
             settings=OrgSettingsOut(
                 require_explicit_bindings=view.settings.require_explicit_bindings,
                 audit_log_all_reads=view.settings.audit_log_all_reads,
@@ -130,6 +132,9 @@ class InvitationCreate(BaseModel):
     bindings: list[InitialBindingIn] = Field(default_factory=list[InitialBindingIn], max_length=50)
     access_ends_at: AwareDatetime | None = None
     group_ids: list[str] = Field(default_factory=list[str], max_length=50, description="Manual groups to join")
+    delivery: Literal["email", "link"] = Field(
+        default="email", description="email: send the link by email too; link: only return it, to share yourself"
+    )
 
 
 class InitialBindingOut(BaseModel):
@@ -167,11 +172,16 @@ class InvitationOut(BaseModel):
 
 class IssuedInvitationOut(BaseModel):
     invitation: InvitationOut
-    accept_url: str = Field(description="Shown once; share it yourself when email isn't configured")
+    accept_url: str = Field(description="Shown once: only its hash is stored. A new link replaces it.")
+    email_sent: bool = Field(description="The link also went out by email")
 
     @classmethod
     def from_issued(cls, issued: IssuedInvitation) -> IssuedInvitationOut:
-        return cls(invitation=InvitationOut.from_domain(issued.invitation), accept_url=issued.accept_url)
+        return cls(
+            invitation=InvitationOut.from_domain(issued.invitation),
+            accept_url=issued.accept_url,
+            email_sent=issued.email_sent,
+        )
 
 
 class InvitationPreviewOut(BaseModel):

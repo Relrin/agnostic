@@ -14,15 +14,14 @@ This guide gets you from nothing to chatting with an agent, signed in through yo
 | PostgreSQL | 17 or 18, with the `citext` and `pg_trgm` extensions available | everything (the only stateful dependency that matters) |
 | Cache | Redis 7.4+ or 8, Valkey 8+, DragonflyDB 1.x; TLS (`rediss://`) and Sentinel supported | sessions, caches, rate limits, realtime |
 | Object storage | any S3-compatible service (AWS S3, MinIO, Ceph, SeaweedFS, R2…) | the audit archive (optional) |
-| SMTP | STARTTLS on 587 or implicit TLS on 465 | invitations and password resets (without it, emails go to the log) |
+| SMTP | STARTTLS on 587 or implicit TLS on 465 | invitation and password-reset emails (without it, invitations are links you share and reset emails go to the log) |
 | OTLP/HTTP collector | OpenTelemetry Collector or compatible | traces of the control plane itself (optional) |
 | Identity provider | OIDC (Okta, Entra ID, Google, Keycloak, GitLab…), SAML 2.0, GitHub | SSO (local accounts work without one) |
 | AgentOS | Agno AgentOS 3.1.x | the runtimes you manage (see [Bridge and runtime](../bridge-and-runtime.md)) |
 | Kubernetes or Docker | Kubernetes 1.27+ with Helm 3, or Docker Compose v2 | running the image |
 
-Size for a start: two API replicas (0.25 CPU, 384 MiB each) and two workers (0.1 CPU, 256 MiB), growing with
-concurrent users and streams. Add API replicas as concurrent chat streams grow (the release notes give the
-measured capacity per replica).
+Size for a start: two API replicas (0.25 CPU, 384 MiB each) and two workers (0.1 CPU, 256 MiB). Add API replicas as
+concurrent chat streams grow; the release notes give the measured capacity per replica.
 
 ## Before you start
 
@@ -140,13 +139,14 @@ kubectl exec deploy/agnostic-api -- agnostic bootstrap --org-name "Northwind Lab
 ```
 
 This prints a one-time link, valid for 24 hours, where the first Owner creates their account. With
-`--owner-email` it creates the Owner directly and asks for the password.
+`--owner-email` it creates the Owner directly and asks for the password (`--password-stdin` reads it from stdin).
 
 ## From install to chat
 
 1. **Sign in** with the link from bootstrap.
-2. **Connect your IdP** in *Organization › Authentication* (OIDC or SAML), invite yourself or turn on JIT
-   provisioning for your domain, then sign out and back in through it. See [Sign-in, SSO and SCIM](sso-and-scim.md).
+2. **Connect your IdP** in *Organization › Authentication* (OIDC or SAML) and turn on JIT provisioning for your
+   domain, or invite people (*People & groups › Invite people*, by email or as a link to share). Sign out and back
+   in through the IdP. See [Sign-in, SSO and SCIM](sso-and-scim.md).
 3. **Connect an instance**: *Instances › Connect* asks for the AgentOS URL, discovers it, and shows the public key to
    add to the runtime (`JWT_VERIFICATION_KEY`). Restart the runtime, then *Test connection*. See
    [Instances and keys](instances-and-keys.md).

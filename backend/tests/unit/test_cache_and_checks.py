@@ -2,9 +2,10 @@
 
 import pytest
 from redis.asyncio import Redis
+from sqlalchemy import text
 
 from agnostic_kernel.cache import classify_server, create_redis
-from agnostic_kernel.checks import check_cache, check_database, check_otel, run_endpoint_checks
+from agnostic_kernel.checks import check_cache, check_database, check_migrations, check_otel, run_endpoint_checks
 from agnostic_kernel.db import create_engine, psycopg_conninfo
 from agnostic_kernel.settings import DatabaseSettings, OtelSettings, RedisSettings
 from agnostic_kernel.testing import UNREACHABLE_REDIS, make_settings
@@ -64,6 +65,17 @@ async def test_run_endpoint_checks_on_sqlite(sqlite_database: str) -> None:
     assert by_name["database"].ok
     assert not by_name["cache"].ok
     assert not by_name["migrations"].ok  # nothing applied yet
+
+
+async def test_migrations_check_reports_unknown_revisions(sqlite_database: str) -> None:
+    engine = create_engine(DatabaseSettings(url=sqlite_database))  # pyright: ignore[reportArgumentType]
+    async with engine.begin() as connection:
+        _ = await connection.execute(text("CREATE TABLE alembic_version (version_num VARCHAR(32) PRIMARY KEY)"))
+        _ = await connection.execute(text("INSERT INTO alembic_version VALUES ('z9999_gone')"))
+    result = await check_migrations(engine, [])
+    await engine.dispose()
+    assert not result.ok
+    assert result.detail.startswith("unknown revision in the database")
 
 
 async def test_otel_check() -> None:

@@ -72,7 +72,7 @@ function readFilters(search: Record<string, unknown>): Filters {
   return { user: text("user"), memory: text("memory"), topic: text("topic"), db: text("db") };
 }
 
-/** `/i/:instance/memory?user=&memory=&topic=&db=` (design spec B §1). */
+/** `/i/:instance/memory?user=&memory=&topic=&db=`. */
 export function MemoryPage() {
   const params = useParams({ strict: false }) as unknown as Record<string, string | undefined>;
   const search = useSearch({ strict: false }) as unknown as Record<string, unknown>;

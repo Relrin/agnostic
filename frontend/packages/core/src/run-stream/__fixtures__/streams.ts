@@ -1,4 +1,4 @@
-// SSE event sequences for the RunStream reducer tests, in the shapes AgentOS 3.1 emits (runtime-api §4.6).
+// SSE event sequences for the RunStream reducer tests, in the shapes AgentOS 3.1 emits.
 // Hand-written from the documented payloads for exact assertions; `recorded/` holds real runs captured with
 // `scripts/record_sse_fixtures.py` (re-record them for a new agno minor).
 import type { RunEvent } from "../events";

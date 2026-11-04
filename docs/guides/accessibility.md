@@ -1,7 +1,7 @@
 # Accessibility
 
-Agnostic targets **WCAG 2.2 level AA**. The UI ships dark-only and in English
-([ADR-010](../adr/0010-theming-and-language.md)); everything below applies to that theme. This page covers what is
+Agnostic targets **WCAG 2.2 level AA**. The UI ships with one theme (dark) and in English only, so there is one set
+of colour pairs and one set of strings to check; everything below applies to that theme. This page covers what is
 checked automatically, the manual screen-reader pass to run before a release, and the scope for an external audit.
 
 ## What is checked automatically
@@ -14,12 +14,9 @@ checked automatically, the manual screen-reader pass to run before a release, an
 | Page a11y | `frontend/apps/web/e2e/a11y.spec.ts`: every route, plus compact density and an open tour step | `yarn e2e` | violations on whole pages (landmarks, headings, duplicate ids, contrast in context) |
 | Keyboard flows | `frontend/apps/web/e2e/keyboard.spec.ts` | `yarn e2e` | chat and approve a paused tool call, decide an approval, publish an agent, edit a role, without a mouse |
 
-The page check renders each route against the shared e2e stubs (`e2e/stubs.ts`). Calls the stubs don't cover
-answer 404, so many pages are scanned in their error state. The flows in the other e2e suites reach the populated
-states. A new page needs its path added to `a11y.spec.ts`.
-
-axe finds roughly a third of WCAG failures. Focus order, reading order, whether a label makes sense, and what a
-screen reader announces during streaming all need a person.
+The page check renders each route against the shared e2e stubs, so many pages are scanned in their error state;
+the other e2e suites reach the populated states. axe finds roughly a third of WCAG failures: focus order, reading
+order, whether a label makes sense, and what a screen reader announces during streaming all need a person.
 
 ## Manual screen-reader checklist
 
@@ -103,8 +100,8 @@ including density and notification preferences. Both densities.
 **Sample**: every page above in its empty, populated and error states, plus every dialog and sheet they open.
 
 **Out of scope**: AgentOS itself and anything it renders (agent output is shown as Markdown in our viewer, which is
-in scope); the generated API reference; the CLI; email and Slack notification templates; a light theme and other
-languages, which don't exist yet.
+in scope); the generated API reference; the CLI; email and Slack notification templates; other themes and
+languages, which the UI doesn't offer.
 
 **Known limits to tell the auditor**: the workflow builder canvas is a pointer-first editor. The audit should list
 any canvas action without a keyboard path (through the inspector, the palette or the code view). Virtualized lists

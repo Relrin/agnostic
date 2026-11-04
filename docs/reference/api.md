@@ -208,7 +208,7 @@ they're described by the runtime's own OpenAPI document and not repeated here.
 | `GET` | `/api/v1/instances/{instance}` | One instance (by id or slug) |
 | `PATCH` | `/api/v1/instances/{instance}` | Change an instance's name, environment, endpoint, TLS, keys, network mode or elevation |
 | `DELETE` | `/api/v1/instances/{instance}` | Delete the instance record (the runtime keeps running; its tokens stop being minted) |
-| `GET` | `/api/v1/instances/{instance}/capabilities` | The capability matrix (07 §3) |
+| `GET` | `/api/v1/instances/{instance}/capabilities` | The capability matrix |
 | `GET` | `/api/v1/instances/{instance}/config` | The runtime's /config, as last fetched (needs config:read there) |
 | `POST` | `/api/v1/instances/{instance}/discover` | Read /info again (version, auth mode, isolation) |
 | `GET` | `/api/v1/instances/{instance}/health` | Reachability, latency, version drift and capabilities |
@@ -222,8 +222,9 @@ they're described by the runtime's own OpenAPI document and not repeated here.
 | Method | Path | Does |
 |---|---|---|
 | `GET` | `/api/v1/invitations` | Pending invitations |
-| `POST` | `/api/v1/invitations` | Invite someone by email |
+| `POST` | `/api/v1/invitations` | Invite someone: email the link, or only return it to share |
 | `DELETE` | `/api/v1/invitations/{invitation_id}` | Revoke an invitation |
+| `POST` | `/api/v1/invitations/{invitation_id}/link` | A new link to share yourself, without an email (the previous link stops working) |
 | `POST` | `/api/v1/invitations/{invitation_id}/resend` | Send the invitation again with a fresh link |
 | `POST` | `/api/v1/invitations/{token}/accept` | Accept an invitation with a password; signs you in |
 | `GET` | `/api/v1/invitations/{token}/preview` | What an invitation link is for (no sign-in needed) |

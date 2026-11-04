@@ -11,7 +11,7 @@ import type {
 import { http, HttpResponse } from "msw";
 
 import { API } from "./base";
-import { PROD } from "./p01";
+import { PROD } from "./sample-org";
 
 const T = "2026-11-03T14:52:00Z";
 

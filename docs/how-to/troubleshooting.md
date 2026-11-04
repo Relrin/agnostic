@@ -26,6 +26,14 @@
 ## Backend
 
 - **`/readyz` says "pending migrations".** Run `just migrate`.
+- **"unknown revision in the database"** (`/readyz`, `config check --connect`, or an error from `db current`). The
+  database was migrated by a pre-release build whose revisions this code doesn't ship. Recreate it:
+  `just nuke && just up && just migrate` ([migrations](migrations.md#pre-release-databases)).
+- **`test_migrations_schema.py` fails.** The migrated schema and the table models differ; the assertion lists the
+  differences ([migrations](migrations.md#guard-tests)).
+- **Invitation emails never arrive.** Without `AGNOSTIC_SMTP__URL` they go to the API log; with it, a failed send
+  returns `email_sent: false` and the link (shown once in the dialog) still works. Later, *Copy new link* on the
+  pending invitation issues a fresh one to share.
 - **`cannot disable unknown module(s)`.** A name in `AGNOSTIC_MODULES__DISABLED` isn't installed; check
   `agnostic modules list`.
 - **`A separate worker needs PostgreSQL`.** You're on SQLite; jobs already run inside `agnostic api`.
@@ -47,7 +55,7 @@
 
 ## Frontend
 
-- **"All versions satisfying … are quarantined".** The version was published less than 24 hours ago; pin the
-  previous release.
+- **"All versions satisfying … are quarantined".** The version was published too recently; pin the previous
+  release.
 - **Stale API types after a backend change.** `just api-gen`.
 - **Playwright can't find a browser.** `cd frontend && yarn workspace @agnostic/web playwright install chromium`.

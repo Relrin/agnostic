@@ -184,7 +184,7 @@ async def get_health(instance: str, principal: FromDishka[Principal], use_case: 
     return HealthOut.from_view(await use_case(principal, instance))
 
 
-@router.get("/{instance}/capabilities", summary="The capability matrix (07 §3)")
+@router.get("/{instance}/capabilities", summary="The capability matrix")
 async def get_capabilities(
     instance: str, principal: FromDishka[Principal], use_case: FromDishka[GetHealth]
 ) -> list[CapabilityOut]:

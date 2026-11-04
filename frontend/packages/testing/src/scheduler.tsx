@@ -13,8 +13,8 @@ import type {
 import { http, HttpResponse } from "msw";
 
 import { API } from "./base";
-import { MARCUS, PROD } from "./p01";
-import { GATEWAY } from "./p02";
+import { MARCUS, PROD } from "./sample-org";
+import { GATEWAY } from "./operate";
 
 const SCHEDULES = `${API}/instances/:instance/schedules`;
 const CREATED = "2026-10-18T10:00:00Z";

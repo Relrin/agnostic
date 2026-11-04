@@ -35,7 +35,9 @@ URL into Agnostic.
 3. *Provisioning › To App*: enable Create Users, Update User Attributes and Deactivate Users.
 4. *Push Groups*: push the groups that should exist in Agnostic (e.g. `support-ai`, `billing`).
 
-People pushed by Okta join the org as Members (or with the role of a pending invitation). Give access by binding
+People pushed by Okta join the org as Members, or with the role of a pending invitation to their email (an
+invitation sent by email or created as a link only; with SSO enforced it is accepted by signing in through Okta, not
+with a password). Give access by binding
 roles to the synced groups (*People & groups › Groups*), or carry an Okta group into a manual group with a mapping
 rule (*Directory sync › Mapping rules*).
 

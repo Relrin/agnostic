@@ -45,7 +45,7 @@ const notes = defineModule({
 });
 
 describe("buildNavigation", () => {
-  it("groups catalog and module entries in prototype order", () => {
+  it("groups catalog and module entries in catalog order", () => {
     const nav = buildNavigation(catalog, [notes]);
     expect(nav.groups.map((g) => g.label)).toEqual([
       undefined,

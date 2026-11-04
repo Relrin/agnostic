@@ -5,13 +5,13 @@ it: it signs a short-lived JWT for every call, carrying exactly the caller's sco
 
 ## Connect a runtime
 
-*Instances › Connect* walks through four steps:
+*Instances › Connect* walks through the steps:
 
-1. **Probe** the URL: DNS, TCP, TLS, then `GET /info` (AgentOS id, agno version, auth mode, user isolation).
-2. **Connect** registers the instance and generates an RS256 key pair (3072-bit). The private key is sealed with
-   the master key and never leaves the API; only signed tokens do.
-3. **Trust**: give the runtime the public key and the expected audience and issuer. *Settings › Connection* shows
-   the snippet:
+1. **Endpoint** and **Discovery**: the URL is probed (DNS, TCP, TLS, then `GET /info`: AgentOS id, agno version, auth
+   mode, user isolation), and connecting registers the instance with an RS256 key pair (3072-bit). The private key is
+   sealed with the master key and never leaves the API; only signed tokens do.
+2. **Key & test**: give the runtime the public key and the expected audience and issuer. The wizard, and later
+   *Settings › Authorization › JWT verification*, show the snippet:
 
    ```python
    Authorization(algorithm="RS256", verify_audience=True, audience="<os_id>", issuer="<public url>")
@@ -19,7 +19,7 @@ it: it signs a short-lived JWT for every call, carrying exactly the caller's sco
 
    with `JWT_VERIFICATION_KEY` set to the public key (or `JWT_JWKS_FILE`). The reference runtime takes
    `JWT_VERIFICATION_KEY` and `RUNTIME_JWT_ISSUER` (see [Bridge and runtime](../bridge-and-runtime.md)).
-4. **Test connection** repeats the probe, then sends a `config:read` token (a 401 means a key or audience mismatch,
+   *Test connection* then repeats the probe, sends a `config:read` token (a 401 means a key or audience mismatch,
    and the step says which) and a token with no scopes (it must be refused, or AgentOS isn't enforcing scopes).
 
 Tokens live 5 minutes by default (`AGNOSTIC_INSTANCES__TOKEN_TTL_SECONDS`, 30–3600) and carry `iss` (the public URL,
@@ -34,17 +34,18 @@ gateway.
 
 Rotation is two steps, so the runtime never sees a token it can't verify:
 
-1. *Settings › Keys › Rotate* stages a **next** key. The JWKS document at
+1. *Settings › Authorization › Rotate key pair* stages a **next** key. The JWKS document at
    `/.well-known/agnostic/instances/<id>/jwks.json` now lists the active and the next key.
-2. Make the runtime trust the next key: with `agnostic-bridge` it reads the JWKS document; without it, add the next
-   public key to `JWT_VERIFICATION_KEY` and restart.
-3. *Activate* the next key. Tokens are signed with it from now on; the old key is retired.
+2. Make the runtime trust both keys: save the JWKS document as the file `JWT_JWKS_FILE` points to and restart the
+   runtime. (Replacing `JWT_VERIFICATION_KEY` with the next key alone would reject tokens until you activate it.)
+3. *Activate next key*. Tokens are signed with it from now on; the old key is retired.
 
 *Cancel* drops a staged key. See also the [key rotation runbook](../runbooks/key-rotation.md).
 
 ## TLS to runtimes
 
-Each instance has its own TLS options in *Settings › Connection*:
+Each instance has its own TLS options, set when connecting or through `PATCH /api/v1/instances/{id}`
+(`tls_verify`, `ca_bundle_pem`); *Settings › Connection* shows the TLS mode and holds the client certificate:
 
 | Option | Does |
 |---|---|

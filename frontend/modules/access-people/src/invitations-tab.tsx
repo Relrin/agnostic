@@ -1,12 +1,14 @@
-// Invitations: pending invitations with the access they carry (roles per instance, groups, when access ends), resend
-// and revoke; and the invite dialog.
+// Invitations: pending invitations with the access they carry (roles per instance, groups, when access ends), resend,
+// a new link to share, revoke; and the invite dialog (send the link by email, or only create it).
 import {
   describeError,
   invitationsCreateInvitationMutation,
   invitationsListInvitationsOptions,
+  invitationsRenewInvitationLinkMutation,
   invitationsResendInvitationMutation,
   invitationsRevokeInvitationMutation,
   type InvitationOut,
+  type IssuedInvitationOut,
   type MemberOut,
 } from "@agnostic/api";
 import {
@@ -15,6 +17,7 @@ import {
   formatDate,
   formatRelative,
   useMe,
+  useOrg,
   withQueryFn,
 } from "@agnostic/core";
 import {
@@ -32,6 +35,7 @@ import {
   Field,
   Input,
   LoadingRows,
+  RadioCards,
   Select,
   SelectContent,
   SelectItem,
@@ -41,6 +45,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type SubmitEvent } from "react";
 
+import { ConfirmDialog } from "./confirm-dialog";
 import {
   ALL,
   endOfDay,
@@ -52,9 +57,44 @@ import {
 } from "./people-api";
 
 type OrgRole = MemberOut["org_role"];
+type Delivery = "email" | "link";
+
+const DELIVERY_OPTIONS = [
+  { value: "email", label: "Send by email", description: "They get the link by email; you can copy it too." },
+  { value: "link", label: "Create link only", description: "No email: share the link yourself." },
+] as const;
 
 export function useInvitations() {
   return useQuery(withQueryFn(invitationsListInvitationsOptions()));
+}
+
+/** Whether invitations can go out by email here (SMTP configured). */
+function useEmailDelivery(): boolean {
+  return useOrg().data?.email_delivery ?? false;
+}
+
+/** The link just issued, and what happened to the email. Only the link's hash is stored: it's shown once. */
+function IssuedLink({ issued, emailRequested }: { issued: IssuedInvitationOut; emailRequested: boolean }) {
+  const { email, expires_at: expiresAt } = issued.invitation;
+  const expiry = `It works once and expires on ${formatDate(expiresAt)}.`;
+  return (
+    <div className="flex flex-col gap-3">
+      {issued.email_sent ? (
+        <Callout tone="insight" title={`Invited ${email}`}>
+          We emailed them the link. {expiry} You can also share it yourself.
+        </Callout>
+      ) : emailRequested ? (
+        <Callout tone="warning" title="The email didn't go out">
+          Share the link with {email} yourself. {expiry}
+        </Callout>
+      ) : (
+        <Callout tone="insight" title={`Invitation link for ${email}`}>
+          Share it with them yourself; it isn't shown again. {expiry}
+        </Callout>
+      )}
+      <CodeBlock title="Invitation link" code={issued.accept_url} />
+    </div>
+  );
 }
 
 /** "Operator on prod-agentos · via Billing ops · access ends 30 Nov". */
@@ -91,6 +131,9 @@ export function InviteDialog({
   const [drafts, setDrafts] = useState<DraftBinding[]>([]);
   const [groupIds, setGroupIds] = useState<string[]>([]);
   const [endsAt, setEndsAt] = useState("");
+  const canEmail = useEmailDelivery();
+  const [chosen, setChosen] = useState<Delivery>("email");
+  const delivery: Delivery = canEmail ? chosen : "link";
   const invite = useMutation({
     ...invitationsCreateInvitationMutation(),
     onSuccess: () => refreshDirectory(client),
@@ -101,6 +144,7 @@ export function InviteDialog({
     setDrafts([]);
     setGroupIds([]);
     setEndsAt("");
+    setChosen("email");
     invite.reset();
   };
   const submit = (event: SubmitEvent<HTMLFormElement>) => {
@@ -115,6 +159,7 @@ export function InviteDialog({
         })),
         group_ids: groupIds,
         access_ends_at: endOfDay(endsAt),
+        delivery,
       },
     });
   };
@@ -132,14 +177,15 @@ export function InviteDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Invite people</DialogTitle>
-          <DialogDescription>They get an email link; you can also copy it.</DialogDescription>
+          <DialogDescription>
+            {canEmail
+              ? "Send the link by email, or create it and share it yourself."
+              : "Email isn't set up here: you get a link to share yourself."}
+          </DialogDescription>
         </DialogHeader>
         {invite.data ? (
           <div className="flex flex-col gap-3">
-            <Callout tone="insight" title={`Invited ${invite.data.invitation.email}`}>
-              The link works once and expires on {formatDate(invite.data.invitation.expires_at)}.
-            </Callout>
-            <CodeBlock title="Invitation link" code={invite.data.accept_url} />
+            <IssuedLink issued={invite.data} emailRequested={invite.variables.body.delivery === "email"} />
             <DialogFooter>
               <Button onClick={reset}>Invite someone else</Button>
               <Button
@@ -302,10 +348,18 @@ export function InviteDialog({
                 />
               )}
             </Field>
+            {canEmail && (
+              <RadioCards
+                legend="Delivery"
+                value={delivery}
+                onValueChange={setChosen}
+                options={DELIVERY_OPTIONS}
+              />
+            )}
             {invite.error && <Callout tone="danger">{describeError(invite.error).reason}</Callout>}
             <DialogFooter>
               <Button type="submit" variant="primary" disabled={invite.isPending}>
-                Send invitation
+                {delivery === "email" ? "Send invitation" : "Create link"}
               </Button>
             </DialogFooter>
           </form>
@@ -318,8 +372,25 @@ export function InviteDialog({
 export function InvitationsTab({ directory }: { directory: Directory }) {
   const client = useQueryClient();
   const invitations = useInvitations();
+  const canEmail = useEmailDelivery();
   const refresh = () => refreshDirectory(client);
-  const resend = useMutation({ ...invitationsResendInvitationMutation(), onSuccess: refresh });
+  const [issued, setIssued] = useState<{ value: IssuedInvitationOut; emailRequested: boolean } | null>(null);
+  const [renewing, setRenewing] = useState<InvitationOut | null>(null);
+  const resend = useMutation({
+    ...invitationsResendInvitationMutation(),
+    onSuccess: (value) => {
+      setIssued({ value, emailRequested: true });
+      return refresh();
+    },
+  });
+  const renew = useMutation({
+    ...invitationsRenewInvitationLinkMutation(),
+    onSuccess: (value) => {
+      setIssued({ value, emailRequested: false });
+      setRenewing(null);
+      return refresh();
+    },
+  });
   const revoke = useMutation({ ...invitationsRevokeInvitationMutation(), onSuccess: refresh });
   if (invitations.isPending) return <LoadingRows rows={2} label="Loading invitations" />;
   if (invitations.isError)
@@ -332,7 +403,7 @@ export function InvitationsTab({ directory }: { directory: Directory }) {
       </EmptyState>
     );
   }
-  const error = resend.error ?? revoke.error;
+  const error = resend.error ?? renew.error ?? revoke.error;
   return (
     <div className="flex flex-col gap-3">
       <ul
@@ -353,13 +424,25 @@ export function InvitationsTab({ directory }: { directory: Directory }) {
               <Button
                 size="30"
                 variant="outline"
-                disabled={resend.isPending}
+                disabled={renew.isPending}
                 onClick={() => {
-                  resend.mutate({ path: { invitation_id: invitation.id } });
+                  setRenewing(invitation);
                 }}
               >
-                Resend
+                Copy new link
               </Button>
+              {canEmail && (
+                <Button
+                  size="30"
+                  variant="outline"
+                  disabled={resend.isPending}
+                  onClick={() => {
+                    resend.mutate({ path: { invitation_id: invitation.id } });
+                  }}
+                >
+                  Resend
+                </Button>
+              )}
               <Button
                 size="30"
                 variant="destructive-text"
@@ -374,10 +457,23 @@ export function InvitationsTab({ directory }: { directory: Directory }) {
           </li>
         ))}
       </ul>
-      {resend.data && (
-        <CodeBlock title={`New link for ${resend.data.invitation.email}`} code={resend.data.accept_url} />
-      )}
+      {issued && <IssuedLink issued={issued.value} emailRequested={issued.emailRequested} />}
       {error && <Callout tone="danger">{describeError(error).reason}</Callout>}
+      <ConfirmDialog
+        open={renewing !== null}
+        onOpenChange={(next) => {
+          if (!next) setRenewing(null);
+        }}
+        title="Create a new invitation link?"
+        confirmLabel="Create new link"
+        pending={renew.isPending}
+        onConfirm={() => {
+          if (renewing) renew.mutate({ path: { invitation_id: renewing.id } });
+        }}
+      >
+        The current link for {renewing?.email} stops working. No email is sent: you share the new link
+        yourself.
+      </ConfirmDialog>
     </div>
   );
 }

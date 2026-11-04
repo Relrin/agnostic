@@ -10,7 +10,7 @@ import type {
 import { http, HttpResponse } from "msw";
 
 import { API } from "./base";
-import { PROD } from "./p01";
+import { PROD } from "./sample-org";
 
 const NOW = Date.now();
 const secondsAgo = (seconds: number) => new Date(NOW - seconds * 1000).toISOString();

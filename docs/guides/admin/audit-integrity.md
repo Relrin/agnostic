@@ -5,9 +5,9 @@ month comes with a manifest that pins its content. This guide verifies both and 
 
 ## The hash chain
 
-With *Hash chain* on (*Organization › Audit retention*), every new event stores the hash of the previous one and its
-own hash, `sha256(previous hash + the event's canonical JSON)`. Changing, inserting or removing an event breaks the
-link at that point.
+With *Hash chain* on (*Organization › Audit retention & archive*; off by default), every new event stores the hash
+of the previous one and its own hash, `sha256(previous hash + the event's canonical JSON)`. Changing, inserting or
+removing an event breaks the link at that point.
 
 ```bash
 agnostic audit verify                                   # the whole chain
@@ -21,8 +21,8 @@ is broken. Run it on a schedule and after restores.
 
 With the archive on, months leaving the hot window are written to your bucket as zstd-compressed JSONL with a
 manifest (`audit-events-YYYY-MM.manifest.json`: event count, size, SHA-256, chain head, creation time), read back and
-checked, and only then dropped from the database. See the SIEM and archive settings in *Organization › Audit
-retention*.
+checked, and only then dropped from the database. The archive is configured in *Organization › Audit retention &
+archive*.
 
 ```bash
 agnostic audit archives list

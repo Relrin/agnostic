@@ -140,7 +140,7 @@ function InstanceMenu({
       </Button>
     );
   }
-  // Switching keeps the current page when it's an instance page (03 §3).
+  // Switching keeps the current page when it's an instance page.
   const switchTo = (slug: string) => {
     const rest = pathname.startsWith("/i/") ? pathname.split("/").slice(3).join("/") : "settings";
     void navigate({ to: `/i/${encodeURIComponent(slug)}/${rest}` });

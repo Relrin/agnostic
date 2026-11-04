@@ -256,11 +256,11 @@ class KeysOut(BaseModel):
     def from_view(cls, view: KeysView) -> KeysOut:
         staged = any(key.status.value == "next" for key in view.keys)
         note = (
-            "A next key is staged. With agnostic-bridge, the runtime picks it up from the JWKS document; without it, "
-            "add the next public key to the runtime (JWT_JWKS_FILE with both keys, or restart with the new "
-            "JWT_VERIFICATION_KEY), then activate it here."
+            "A next key is staged. The runtime loads its keys only at startup: save the JWKS document (active and "
+            "next key) as the file JWT_JWKS_FILE points to and restart the runtime. Then activate the next key here; "
+            "activating first makes the runtime refuse every token."
             if staged
-            else "Rotate in two steps: stage a next key, make the runtime trust it, then activate it."
+            else "Rotate in two steps: stage a next key, restart the runtime trusting both keys, then activate it."
         )
         return cls(
             keys=[KeyOut.from_domain(key) for key in view.keys],

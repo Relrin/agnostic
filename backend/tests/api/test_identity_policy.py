@@ -262,6 +262,14 @@ async def test_enforce_sso_and_break_glass(stack: Stack, idp: TestIdp, monkeypat
     assert enforced.json()["session_idle_minutes"] == 60
     assert (await stack.client().get("/api/v1/auth/providers")).json()["sso_enforced"] is True
 
+    # An invite link can be forwarded: under enforced SSO the invitee joins through the IdP, not with a password.
+    invited = await owner.post("/api/v1/invitations", json={"email": "jonas@localhost.company", "delivery": "link"})
+    token = invited.json()["accept_url"].rsplit("/", 1)[1]
+    by_password = await stack.client().post(
+        f"/api/v1/invitations/{token}/accept", json={"display_name": None, "password": "jonas's long password"}
+    )
+    assert (by_password.status_code, by_password.json()["code"]) == (403, "sso_required")
+
     refused = await stack.client().post(
         "/api/v1/auth/login", json={"email": "marcus@localhost.company", "password": "marcus's long password"}
     )

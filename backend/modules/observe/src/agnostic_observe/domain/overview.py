@@ -1,4 +1,4 @@
-"""Home overview arithmetic: ranges, KPI deltas, runs per day, model usage, latency percentiles. Pure Python.
+"""Home overview arithmetic: ranges, KPI deltas, runs per day, model usage, latency percentiles. No I/O.
 
 Sources are AgentOS payloads (daily ``/metrics`` rows, ``/traces`` summaries, ``/config``); everything here is
 tolerant of missing fields because the runtime's shapes vary across agno minors.

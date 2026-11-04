@@ -558,7 +558,7 @@ class GetKeys(_UseCase):
 
 
 class RotateKeys(GetKeys):
-    """Two-step rotation: stage the next key (publish it in JWKS / add it to the runtime), then activate it."""
+    """Two-step rotation: stage the next key (the runtime must trust it before activation), then activate it."""
 
     async def __call__(  # pyright: ignore[reportIncompatibleMethodOverride]
         self, principal: Principal, ref: str, action: Literal["stage", "activate", "cancel"]
@@ -594,7 +594,7 @@ class RotateKeys(GetKeys):
 
 
 class Jwks(_UseCase):
-    """Public: current and next keys, for the bridge's JWKS refresh (zero-downtime rotation)."""
+    """Public: the active and the next key, as the JWKS file a runtime loads (``JWT_JWKS_FILE``) to rotate."""
 
     async def __call__(self, ref: str) -> dict[str, list[dict[str, str]]]:
         instance = await self._instance(ref)

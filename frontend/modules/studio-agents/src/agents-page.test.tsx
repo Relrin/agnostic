@@ -1,6 +1,6 @@
 import {
   API,
-  p01Handlers,
+  sampleOrgHandlers,
   renderPage,
   studioHandlers,
   triageDetail,
@@ -33,7 +33,7 @@ function AgentsPage() {
 }
 
 let calls: StudioCalls = { saves: [], publishes: [], promotions: [] };
-const handlers = () => [...p01Handlers(), ...studioHandlers(calls)];
+const handlers = () => [...sampleOrgHandlers(), ...studioHandlers(calls)];
 const server = setupServer(...handlers());
 
 beforeAll(() => {

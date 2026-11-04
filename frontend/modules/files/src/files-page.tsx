@@ -59,7 +59,7 @@ function readFilters(search: Record<string, unknown>): Filters {
   return { ns: text("ns"), dir: text("dir") ?? "", file: text("file"), owner: text("owner") };
 }
 
-/** `/i/:instance/files?ns=&dir=&file=&owner=` (design spec B §4). */
+/** `/i/:instance/files?ns=&dir=&file=&owner=`. */
 export function FilesPage() {
   const params = useParams({ strict: false }) as unknown as Record<string, string | undefined>;
   const search = useSearch({ strict: false }) as unknown as Record<string, unknown>;

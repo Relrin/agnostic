@@ -237,7 +237,7 @@ class Gateway:
             log.warning("gateway.unknown_route", method=request.method, path=path, instance=instance.id)
         required = list(policy.required(params))
         if instance.auth_mode in {AuthMode.NONE, AuthMode.SECURITY_KEY}:
-            # No per-user permissions on such runtimes: only Instance admins (06 §4).
+            # No per-user permissions on such runtimes: only Instance admins.
             required = [ADMIN_SCOPE]
 
         kind: PrincipalKind = "service_account" if principal.kind == "service_account" else "user"

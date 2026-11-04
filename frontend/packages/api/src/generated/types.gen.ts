@@ -5976,6 +5976,12 @@ export type InvitationCreate = {
      */
     bindings?: Array<InitialBindingIn>;
     /**
+     * Delivery
+     *
+     * email: send the link by email too; link: only return it, to share yourself
+     */
+    delivery?: 'email' | 'link';
+    /**
      * Email
      */
     email: string;
@@ -6065,9 +6071,15 @@ export type IssuedInvitationOut = {
     /**
      * Accept Url
      *
-     * Shown once; share it yourself when email isn't configured
+     * Shown once: only its hash is stored. A new link replaces it.
      */
     accept_url: string;
+    /**
+     * Email Sent
+     *
+     * The link also went out by email
+     */
+    email_sent: boolean;
     invitation: InvitationOut;
 };
 
@@ -7487,6 +7499,12 @@ export type OptimizedMemoryOut = {
  * OrgOut
  */
 export type OrgOut = {
+    /**
+     * Email Delivery
+     *
+     * Email is configured, so invitations can be sent by email
+     */
+    email_delivery: boolean;
     /**
      * Logo Url
      */
@@ -9073,7 +9091,7 @@ export type Readiness = {
     /**
      * Status
      */
-    status: 'ready' | 'not_ready';
+    status: 'ready' | 'degraded' | 'not_ready';
 };
 
 /**
@@ -21276,6 +21294,40 @@ export type InvitationsRevokeInvitationResponses = {
 };
 
 export type InvitationsRevokeInvitationResponse = InvitationsRevokeInvitationResponses[keyof InvitationsRevokeInvitationResponses];
+
+export type InvitationsRenewInvitationLinkData = {
+    body?: never;
+    path: {
+        /**
+         * Invitation Id
+         */
+        invitation_id: string;
+    };
+    query?: never;
+    url: '/api/v1/invitations/{invitation_id}/link';
+};
+
+export type InvitationsRenewInvitationLinkErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type InvitationsRenewInvitationLinkError = InvitationsRenewInvitationLinkErrors[keyof InvitationsRenewInvitationLinkErrors];
+
+export type InvitationsRenewInvitationLinkResponses = {
+    /**
+     * Successful Response
+     */
+    200: IssuedInvitationOut;
+};
+
+export type InvitationsRenewInvitationLinkResponse = InvitationsRenewInvitationLinkResponses[keyof InvitationsRenewInvitationLinkResponses];
 
 export type InvitationsResendInvitationData = {
     body?: never;

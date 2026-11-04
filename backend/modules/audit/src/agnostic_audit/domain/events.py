@@ -1,4 +1,4 @@
-"""Audit events and their deterministic summaries. Pure Python."""
+"""Audit events and their deterministic summaries. No I/O."""
 
 from __future__ import annotations
 

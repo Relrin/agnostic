@@ -1,4 +1,4 @@
-// Data display patterns (04 §3.2): Card, KpiTile, AttentionCard, DataTable, FilterChip, KeyValueList, ApiHint,
+// Data display patterns: Card, KpiTile, AttentionCard, DataTable, FilterChip, KeyValueList, ApiHint,
 // Provenance. Presentational only: pages pass formatted values.
 import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, CircleAlert, Clock, OctagonX } from "lucide-react";
 import type { ComponentProps, ReactNode } from "react";
@@ -42,7 +42,7 @@ export type KpiDelta = {
   /** "↑ 12%", "↑ 0.4 pt", "↓ 0.8 s". */
   label: string;
   direction: "up" | "down" | "flat";
-  /** Colour follows good/bad, not the arrow (04 §3.2). */
+  /** Colour follows good/bad, not the arrow. */
   sentiment: "good" | "bad" | "neutral";
   /** " vs previous 7 days". */
   context?: string;

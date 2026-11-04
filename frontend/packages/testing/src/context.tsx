@@ -13,8 +13,8 @@ import type {
 import { http, HttpResponse } from "msw";
 
 import { API } from "./base";
-import { PROD } from "./p01";
-import { GATEWAY } from "./p02";
+import { PROD } from "./sample-org";
+import { GATEWAY } from "./operate";
 
 const NOW = Date.now();
 const ago = (minutes: number) => new Date(NOW - minutes * 60_000).toISOString();

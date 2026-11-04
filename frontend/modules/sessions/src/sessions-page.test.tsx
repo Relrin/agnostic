@@ -1,4 +1,4 @@
-import { GATEWAY, p01Handlers, p02Handlers, renderPage } from "@agnostic/testing";
+import { GATEWAY, sampleOrgHandlers, operateHandlers, renderPage } from "@agnostic/testing";
 import { TooltipProvider } from "@agnostic/ui";
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -18,7 +18,7 @@ function SessionsPage() {
   );
 }
 
-const handlers = () => [...p01Handlers(), ...p02Handlers()];
+const handlers = () => [...sampleOrgHandlers(), ...operateHandlers()];
 const server = setupServer(...handlers());
 
 beforeAll(() => {

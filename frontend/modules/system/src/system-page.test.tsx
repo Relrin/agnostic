@@ -1,4 +1,4 @@
-import { API, p01Handlers, renderPage } from "@agnostic/testing";
+import { API, sampleOrgHandlers, renderPage } from "@agnostic/testing";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
@@ -47,7 +47,7 @@ const failed = [
 
 let retried: string[] = [];
 const handlers = () => [
-  ...p01Handlers(),
+  ...sampleOrgHandlers(),
   http.get(`${API}/system/status`, () => HttpResponse.json(status)),
   http.get(`${API}/system/jobs/failed`, () => HttpResponse.json(failed)),
   http.post(`${API}/system/jobs/:id/retry`, ({ params }) => {

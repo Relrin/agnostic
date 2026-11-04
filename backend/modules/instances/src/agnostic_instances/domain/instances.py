@@ -1,4 +1,4 @@
-"""AgentOS instances, their trust keys, diagnostics and capabilities. Pure Python."""
+"""AgentOS instances, their trust keys, diagnostics and capabilities. No I/O."""
 
 from __future__ import annotations
 
@@ -247,7 +247,7 @@ def check_auth_mode(env: EnvTag, auth_mode: AuthMode) -> str | None:
 
 
 def config_snippet(*, os_id: str, issuer: str, public_pem: str, user_isolation: bool) -> tuple[str, str]:
-    """``(environment, python)`` snippets for the AgentOS app (06 §4)."""
+    """``(environment, python)`` snippets for the AgentOS app."""
     env = "JWT_VERIFICATION_KEY=" + '"' + public_pem.strip().replace("\n", "\\n") + '"'
     python = (
         "from agno.os import AgentOS\n"

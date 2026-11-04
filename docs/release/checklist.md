@@ -15,14 +15,14 @@ Record links to the runs and documents.
   - [ ] `helm`: lint, kubeconform on Kubernetes 1.30, the schema refuses secrets in `config`
   - [ ] API client drift, licenses, security audits and gitleaks
 - [ ] `contract` (live AgentOS) is green for the supported agno versions.
-- [ ] `perf` (nightly) is within budget on the release commit: gateway overhead p95 under 25 ms, 1,000 streams per
-      API replica.
+- [ ] Gateway overhead and stream capacity measured on the release candidate (targets: p95 overhead under 25 ms,
+      1,000 streams per API replica); the numbers are in the release notes.
 - [ ] `air-gapped (egress denied)` is green.
 
 ## Drills
 
-- [ ] **Upgrade drill**: `upgrade & restore drills › upgrade-drill` passes from every milestone in
-      `deploy/upgrade-milestones.txt`. Add the previous release's commit to that file.
+- [ ] **Upgrade drill**: `upgrade & restore drills › upgrade-drill` passes from every released version in
+      `deploy/upgrade-milestones.txt` (for the first release the list is empty and the drill reports no milestones).
 - [ ] **Restore drill**: `upgrade & restore drills › restore-drill` passes, and the production-like drill in the
       staging environment was run ([runbook](../guides/runbooks/restore-drill.md)). Date and duration:
 - [ ] `agnostic db upgrade --check` against an anonymized production-sized copy: no failures, slowest migration:
@@ -67,3 +67,5 @@ Record links to the runs and documents.
       agnostic-bridge==<version>` works in a clean environment.
 - [ ] The runtime template is exported (`scripts/export_runtime_template.sh <version>`) and pushed.
 - [ ] Release notes in `docs/release-notes/<version>.md`, linked from the GitHub release.
+- [ ] The release commit is added to `deploy/upgrade-milestones.txt` (one line: commit, then the version), so the
+      next release is drilled from it.

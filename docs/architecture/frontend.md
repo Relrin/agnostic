@@ -1,105 +1,59 @@
 # Frontend
 
-TypeScript (strict), React 19, Vite 8, Tailwind CSS v4, Radix (through `@agnostic/ui`), TanStack Router and
-Query, Yarn 4 workspaces. The shell composes feature modules that register through manifests.
+`frontend/`: TypeScript (strict), React 19, Vite 8, Tailwind CSS v4, Radix (through `@agnostic/ui`), TanStack Router
+and Query, Yarn 4 workspaces. The shell composes feature modules that register through manifests.
 
 ## Workspaces
 
 | Package | Role | May import |
 |---|---|---|
-| `apps/web` (`@agnostic/web`) | shell: router assembly, sidebar, header, command palette, providers | everything |
-| `packages/ui` (`@agnostic/ui`) | design system: tokens, primitives, patterns, Storybook | nothing internal |
-| `packages/core` (`@agnostic/core`) | module SDK, navigation, query defaults, run streaming and `RunView` | packages |
-| `packages/editor` (`@agnostic/editor`) | code views and editors on CodeMirror 6, loaded on demand: `CodeView` (read-only), `CodeEditor` (editable, diagnostics, code-owned lines), `CelEditor` (one expression, completion and hover) | `@agnostic/ui` |
-| `packages/studio` (`@agnostic/studio`) | Studio editor building blocks: draft document, form, code and test panes, versions, publish and promote dialogs ([Studio](studio.md)) | packages |
-| `packages/api` (`@agnostic/api`) | generated client + TanStack Query options | packages |
-| `packages/testing` (`@agnostic/testing`) | render helpers, MSW handlers with sample data | packages |
-| `modules/*` (`@agnostic/module-*`) | feature modules | packages only, never another module |
+| `apps/web` | shell: routes, sidebar, header, palette, bell, providers | everything |
+| `packages/ui` | design system: tokens, primitives, patterns, domain widgets, Storybook | nothing internal |
+| `packages/core` | module SDK, navigation, permissions, query defaults, run streaming, realtime | packages |
+| `packages/api` | generated client, TanStack Query options, AgentOS types | packages |
+| `packages/editor` | CodeMirror 6 on demand: `CodeView`, `CodeEditor`, `CelEditor` | packages |
+| `packages/studio`, `packages/assistant` | [Studio](studio.md) and [assistant](assistant.md) building blocks | packages |
+| `packages/testing` | render helpers, MSW handlers (`sampleOrgHandlers`, `operateHandlers`, …) | packages |
+| `modules/*` | 30 feature modules (`@agnostic/module-*`) | packages, never another module |
 
-ESLint (`no-restricted-imports` per workspace) and TypeScript project references (`tsc -b`) both enforce the
-table. Feature code never imports Radix directly; it uses `@agnostic/ui`.
+ESLint `no-restricted-imports` and `tsc -b` project references enforce the table; feature code never imports Radix.
 
 ## Module SDK
 
 ```ts
 export const settingsModule = defineModule({
   id: "settings",
-  scope: "instance",                       // lives under /i/:instance/… ("org" at the root, "public" outside the shell)
-  routes: [
-    { path: "settings", component: SettingsPage },
-    { path: "settings/$section", component: SettingsPage },
-  ],
+  scope: "instance",                       // under /i/:instance/… ("org" at the root, "public" outside the shell)
+  routes: [{ path: "settings", component: SettingsPage }, { path: "settings/$section", component: SettingsPage }],
   nav: [{ id: "settings", group: "footer", label: "Settings", icon: Settings, path: "settings", order: 10 }],
   commands: [{ id: "settings.keys", label: "Rotate the instance key pair", path: "settings/authorization" }],
 });
 ```
 
-The shell lists modules in `apps/web/src/modules.ts`, then:
+`apps/web/src/modules.ts` lists the modules (static imports, so each stays code-split). The shell mounts instance
+modules under `/i/$instance` and org modules at the root inside the signed-in shell, public ones outside; builds the
+sidebar from `shell/nav-catalog.ts` merged with module entries; and builds ⌘K from nav entries and commands. A
+catalog entry no visible module claims opens the "unavailable" page (`shell/not-found.tsx`).
 
-- builds routes: instance-scoped modules under `/i/$instance`, org-scoped ones at the root, both inside the
-  signed-in shell (anonymous visitors go to `/login`); public ones (sign-in, invitations, first run) outside it;
-- builds the sidebar from the **nav catalog** (`apps/web/src/shell/nav-catalog.ts`, the prototype's full
-  navigation) merged with module nav entries. Catalog entries no module implements yet open a "not built yet"
-  page naming the phase that ships them;
-- builds the ⌘K palette from nav entries and module commands.
-
-`requires.capabilities` hides an instance module's nav entry when the active instance lacks the capability
-(from its health/capability matrix); `requires.anyScope` hides it when the person holds none of the scopes. Inside pages, `useCan(scope, instance)` and `<PermissionGate>` from `@agnostic/core` hide or disable actions, and `<WhyVisible>` says which grant allows them.
+`requires` hides a module by `capabilities` (the instance's capability matrix), `anyScope` and `features`
+(`GET /api/v1/system/features`). In pages, `useCan`, `<PermissionGate>` and `<WhyVisible>` handle actions.
 
 ## Data layer
 
-- `yarn api:gen` generates `packages/api/src/generated` from `packages/api/openapi.json` (written by
-  `agnostic openapi`). Use the generated `…Options()` and `…Mutation()` helpers with TanStack Query.
-- `configureApi()` sets the base URL (same origin) and throws on errors; errors are problem bodies, so
-  `describeError()` gives the human reason and the request id for `ErrorState`.
-- `createQueryClient()` (core): 15 s default staleness, no retries on 4xx.
+- `yarn api:gen` generates `packages/api/src/generated` from `openapi.json` (`agnostic openapi`); use the generated
+  `…Options()` / `…Mutation()` helpers. Errors are problem bodies; `describeError()` gives reason and request id.
+- `createQueryClient()`: 15 s staleness, no retries on 4xx.
+- AgentOS is read through the gateway with `@agnostic/core` helpers (`useComponents`, `useSessions`, …); runs render
+  from one `RunState` with `RunView`. `RealtimeProvider` keeps the cache current
+  ([operate](operate-and-realtime.md)).
 
 ## Design system
 
-Tokens come from the prototype ("AgentOS Control Plane — redesign") and live in
-`packages/ui/src/styles/tokens.css` as CSS variables, mapped into Tailwind with `@theme inline`. Components use
-semantic classes (`bg-surface`, `text-fg-muted`, `border-border-input`, `rounded-control`), never raw hex. Dark is
-the only theme through GA; a light theme later is a second token block.
+Tokens are CSS variables in `packages/ui/src/styles/tokens.css`, mapped into Tailwind with `@theme inline`;
+components use semantic classes, never raw hex. Dark is the only theme. Fonts are self-hosted
+(`@fontsource-variable`), no runtime CDN calls. Storybook (`just storybook`) shows every component; stories run
+through axe in CI, and a unit test checks WCAG contrast of token pairs and the TypeScript token mirror.
 
-Primitives: `Button` (10 variants, 5 sizes), `Badge`/`StatusPill`, `Input`, `Select`, `SegmentedControl`, `Tabs`
-(underline and pill), `Tooltip`, `Dialog`, `Sheet`, `DropdownMenu`, `Command`, `Sidebar` parts, `Breadcrumb`,
-`Kbd`, `Avatar`, `Skeleton`, `Callout`. Patterns: `AppShell`, `AppSidebar`, `PageHeader`, `PageIntro`,
-`InstanceSwitcher`, `EnvBadge`, `HealthIndicator`, `OrgBadge`, `EmptyState`, `ErrorState`, `LoadingRows`, `Card`,
-`KpiTile`, `AttentionCard`, `DataTable`/`Pager`, `FilterChip`, `KeyValueList`, `ApiHint`, `MarkdownView` (Shiki on
-demand), `JsonView`, `JsonEditor`, `StackedBarChart` (with "View as table"), `ShareList`, `Toaster`. Domain widgets:
-`RunBlock`, `ToolCallChip`, `ApprovalCard`, `StepTimeline`, `StepHitlForm`, `Composer`, `SessionList`, `RunCard`,
-`RunTimelineSeparator`, `UserBubble`, `EntitySquare`. For the Studio editors: `SortableList` (@dnd-kit, grip handle and
-keyboard sorting), `Accordion`/`AccordionSection`, `Checkbox`, `Combobox` (Popover + `Command`), `LineLinkBadge` and
-`GateResultList`.
-
-`@agnostic/editor` holds `CodeView`: read-only Python or JSON on CodeMirror 6, themed from the `--syntax-*` tokens,
-with a 3px change-mark strip (added/modified) beside the line numbers, a focused line (accent background, scrolled
-into view), inline notes under a line with a wavy underline on their columns, and an `onCursor` callback for linking
-lines back to form fields. CodeMirror loads in its own chunk on first render (`CodeViewSkeleton` meanwhile;
-`preloadCodeView()` fetches it early). `CodeEditor` is the editable variant the Studio code pane uses (history and
-keys, `onChange` for the person's edits only, diagnostics in the lint gutter, code-owned lines tinted, a focused line
-range); `CelEditor` edits one CEL expression with completion and hover docs for its context and an `insert()` handle
-for variable chips.
-
-The workflow builder (`modules/studio-workflows`) draws the step tree with `@xyflow/react`, laid out by ELK in a worker
-(`elk-api` talking to `elk-worker`, main thread as the fallback); edits are tree operations recorded as immer patches
-in a zustand store, so each one undoes. Its node cards, branch labels, insert buttons and palette items are
-`@agnostic/ui` widgets (`NodeCard`, `BranchLabel`, `InsertButton`, `PaletteItem`) coloured from the node tokens.
-
-Fonts (Geist, Geist Mono) are self-hosted through `@fontsource-variable`; there are no runtime CDN calls.
-
-Storybook (`just storybook`) has a **Tokens** page, every primitive, and the shell with the prototype's sample
-data. Every story runs through axe in CI; a unit test checks the WCAG contrast of the text/background pairs the
-design relies on and that the TypeScript token mirror matches `tokens.css`.
-
-## Operate pages
-
-Home, Chat and Sessions (`modules/home`, `modules/chat`, `modules/sessions`) read AgentOS through the gateway with the
-helpers in `@agnostic/core` (`useComponents`, `useSessions`, `useSessionRuns`, `useSessionActions`) and render runs
-from one `RunState`, whether live (`RunStream`) or stored (`fromStoredRun`), with `RunView` from `@agnostic/core`
-(inline approvals and step HITL included). `RunStream` can submit to another endpoint (`endpoint.submit`, e.g. a
-draft test run) and skip `/resume` reconnects (`resumable: false`); `RunState.structured` holds the parsed output of
-components with an output schema. `RealtimeProvider` (mounted by the shell)
-holds the realtime connection and updates the query cache; the approvals nav badge comes from `useApprovalsCount`.
-Catalog entries without a module are splat routes, so links below them (`traces/<id>`) land on the placeholder. See
-[Operate and realtime](operate-and-realtime.md).
+`@agnostic/editor` loads CodeMirror in its own chunk, themed from `--syntax-*` tokens. The workflow builder
+(`modules/studio-workflows`) draws with `@xyflow/react`, laid out by ELK in a worker; edits are immer patches in a
+zustand store, so each undoes.

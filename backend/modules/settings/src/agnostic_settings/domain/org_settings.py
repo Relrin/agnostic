@@ -1,4 +1,4 @@
-"""Org-wide settings: a typed set of known keys with defaults. Pure Python."""
+"""Org-wide settings: a typed set of known keys with defaults. No I/O."""
 
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ class InvalidSettingError(ValueError):
 class OrgSettings:
     require_explicit_bindings: bool = False
     """Owners and Administrators need a binding (audited) to read runtime data, instead of implicit full access
-    on every instance (06 §3.1, decision Q2)."""
+    on every instance."""
     audit_log_all_reads: bool = False
     """Record every gateway read in the audit log, not a sample (regulated orgs)."""
     approval_ttl_hours: int = 0

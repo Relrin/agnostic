@@ -180,7 +180,7 @@ show_missing = true
 skip_covered = true
 exclude_also = ["if TYPE_CHECKING:", "raise NotImplementedError", '\.\.\.$']
 
-# ---------------------------------------------------------------- boundaries (02 §2.2)
+# ---------------------------------------------------------------- boundaries
 [tool.importlinter]
 root_packages = ["agnostic_kernel", "agnostic_server", "agnostic_agentos_client", "agnostic_spec", "agnostic_cel", "agnostic_codegen", "agnostic_audit", "agnostic_settings", "agnostic_identity", "agnostic_org", "agnostic_instances", "agnostic_access", "agnostic_gateway", "agnostic_approvals", "agnostic_notifications", "agnostic_observe", "agnostic_search", "agnostic_evals", "agnostic_context", "agnostic_scheduler", "agnostic_queue", "agnostic_directory", "agnostic_service_accounts", "agnostic_studio", "agnostic_sources", "agnostic_assistant", "agnostic_system"]
 include_external_packages = true

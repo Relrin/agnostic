@@ -1,7 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
-// E2E skeleton: runs against the Vite dev server; API calls are stubbed per test (the full-stack suite lands
-// with P01's compose stack). `yarn e2e` starts the server unless one is already running.
+// E2E: runs against the Vite dev server with API calls stubbed per test. `yarn e2e` starts the server unless
+// one is already running.
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,

@@ -1,9 +1,8 @@
 # Security whitepaper
 
 Agnostic is a self-hosted control plane for Agno AgentOS. It runs inside the customer's network, stores its state
-in the customer's PostgreSQL, and calls only endpoints the customer configured. This document describes how it is
-built to be safe: its architecture and data flows, identity and authorization, cryptography, the threat model and
-the supply chain.
+in the customer's PostgreSQL, and calls only endpoints the customer configured. This document covers its
+architecture and data flows, identity and authorization, cryptography, the threat model and the supply chain.
 
 ## Architecture
 
@@ -49,6 +48,10 @@ instance.
   SSO enforcement with one break-glass Owner; SCIM 2.0 deprovisioning ends sessions and removes bindings at once.
 - **Sessions**: opaque random cookies, stored as SHA-256 hashes; 12-hour sliding and 7-day absolute lifetime;
   revocable per browser.
+- **Invitations**: emailed or created as a link to share, shown once (only the token's hash is stored), single use,
+  expiring after 7 days; a new link replaces the old one; every step is audited. A forwarded link proves nothing, so
+  under enforced SSO (or with local login off) accepting with a password is refused and the invitee joins through
+  the IdP, matched by verified email.
 - **Two scope tiers**: control-plane scopes (`org:*`, `os:*`, `audit:*`, `settings:*`, `studio:*`,
   `org:system:*`…) carried by org roles (Owner, Administrator, Member); runtime scopes (agno's `agents:run`,
   `sessions:read`…) carried by access roles bound to people, groups or service accounts per instance or org-wide.

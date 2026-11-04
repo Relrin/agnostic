@@ -54,7 +54,7 @@ class SnapshotRow(InstancesBase):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     instance_id: Mapped[str] = mapped_column(ForeignKey("inst_instances.id", ondelete="CASCADE"))
     kind: Mapped[str] = mapped_column(String(20))
-    payload: Mapped[Any] = mapped_column(JsonDocument)
+    payload: Mapped[Any] = mapped_column(JsonDocument, nullable=True)
     hash: Mapped[str] = mapped_column(String(64))
     fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 

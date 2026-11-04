@@ -1,16 +1,16 @@
 # Compatibility
 
-What each Agnostic release works with. Rows marked "CI" are tested on every change (`.github/workflows/ci.yml`,
-`contract.yml`); the others are supported and checked by `agnostic config check --connect`.
+What each Agnostic release works with. The "CI" column is what `.github/workflows/ci.yml` and `contract.yml` test on
+every change; the rest is supported and checked by `agnostic config check --connect`.
 
 ## Agnostic × AgentOS × bridge
 
 | Agnostic | Agno / AgentOS | agnostic-bridge | Notes |
 |---|---|---|---|
-| 1.0.x | 3.1.x (3.1.12+), CI against the pinned 3.1.12 and the latest 3.1 | 1.0.x | Studio needs a sync `PostgresDb` on the runtime; per-user permissions need `authorization=True` with the control plane's public key |
+| 1.0.x | 3.1.x (3.1.12+); CI runs the contract suite against the pinned 3.1.12 | 1.0.x | Studio needs a sync `PostgresDb` on the runtime; per-user permissions need `authorization=True` with the control plane's public key |
 
-- The bridge is optional; without it, the features that need its routes (component validation, file provenance,
-  worker details, events, code introspection, CEL preview) show as unavailable for that instance.
+- The bridge is optional. Without it, the features that need its routes (component validation, file provenance,
+  worker details, the event feed, code introspection, CEL preview) show as unavailable for that instance.
 - A new Agno minor needs a bridge release (its `agno` range is the tested minor) and a contract run.
 - The control plane warns on an instance whose Agno minor changed ("version drift") and keeps working with the
   routes it knows.
@@ -36,7 +36,7 @@ Managed services and their quirks (extension allow-lists, TLS bundles, disabled 
 | Artifact | Platforms |
 |---|---|
 | `agnostic` image | linux/amd64, linux/arm64; any OCI runtime; read-only root filesystem, uid 10001 |
-| Helm chart | Kubernetes 1.27+ (validated against 1.30); Helm 3.12+ |
+| Helm chart | Kubernetes 1.27+ (`kubeVersion`; CI renders and validates against 1.30); Helm 3.12+ |
 | Compose example | Docker Compose v2 |
-| agnostic-bridge | Python 3.10–3.13, wherever the AgentOS runs |
+| agnostic-bridge | Python 3.10–3.13, wherever the AgentOS runs (CI tests 3.13) |
 | Web app | current Chrome, Edge, Firefox and Safari (Trusted Types are enforced where the browser supports them) |

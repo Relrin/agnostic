@@ -115,7 +115,7 @@ class SearchProvider:
 
 @dataclass(frozen=True, slots=True)
 class CapabilityProbe:
-    """An AgentOS capability a module needs (probed by ``instances`` in P01)."""
+    """An AgentOS capability a module needs (probed by the ``instances`` module)."""
 
     name: str
     description: str

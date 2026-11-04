@@ -1,5 +1,5 @@
-// The prototype's full navigation (Sidebar.dc.html), in order. Modules take over entries as phases ship them;
-// until then each entry opens a "not built yet" page that says which phase delivers it.
+// The shell's full navigation, in order. Each module takes over its entry; an entry no visible module claims
+// (disabled, or the instance lacks the capability) opens an "unavailable" page.
 import type { CatalogEntry } from "@agnostic/core";
 import {
   BadgeCheck,
@@ -27,9 +27,7 @@ import {
   Workflow,
 } from "lucide-react";
 
-export type CatalogEntryWithPhase = CatalogEntry & { phase: string };
-
-export const NAV_CATALOG: readonly CatalogEntryWithPhase[] = [
+export const NAV_CATALOG: readonly CatalogEntry[] = [
   {
     id: "home",
     group: "main",
@@ -38,7 +36,6 @@ export const NAV_CATALOG: readonly CatalogEntryWithPhase[] = [
     path: "home",
     order: 10,
     scope: "instance",
-    phase: "P02",
   },
   {
     id: "chat",
@@ -48,7 +45,6 @@ export const NAV_CATALOG: readonly CatalogEntryWithPhase[] = [
     path: "chat",
     order: 20,
     scope: "instance",
-    phase: "P02",
   },
 
   {
@@ -59,7 +55,6 @@ export const NAV_CATALOG: readonly CatalogEntryWithPhase[] = [
     path: "studio/agents",
     order: 10,
     scope: "instance",
-    phase: "P07",
   },
   {
     id: "teams",
@@ -69,7 +64,6 @@ export const NAV_CATALOG: readonly CatalogEntryWithPhase[] = [
     path: "studio/teams",
     order: 20,
     scope: "instance",
-    phase: "P07",
   },
   {
     id: "workflows",
@@ -79,7 +73,6 @@ export const NAV_CATALOG: readonly CatalogEntryWithPhase[] = [
     path: "studio/workflows",
     order: 30,
     scope: "instance",
-    phase: "P08",
   },
   {
     id: "registry",
@@ -89,7 +82,6 @@ export const NAV_CATALOG: readonly CatalogEntryWithPhase[] = [
     path: "studio/registry",
     order: 40,
     scope: "instance",
-    phase: "P07",
   },
   {
     id: "sources",
@@ -99,7 +91,6 @@ export const NAV_CATALOG: readonly CatalogEntryWithPhase[] = [
     path: "studio/sources",
     order: 50,
     scope: "instance",
-    phase: "P09",
   },
 
   {
@@ -110,7 +101,6 @@ export const NAV_CATALOG: readonly CatalogEntryWithPhase[] = [
     path: "sessions",
     order: 10,
     scope: "instance",
-    phase: "P02",
   },
   {
     id: "traces",
@@ -120,7 +110,6 @@ export const NAV_CATALOG: readonly CatalogEntryWithPhase[] = [
     path: "traces",
     order: 20,
     scope: "instance",
-    phase: "P03",
   },
   {
     id: "metrics",
@@ -130,7 +119,6 @@ export const NAV_CATALOG: readonly CatalogEntryWithPhase[] = [
     path: "metrics",
     order: 30,
     scope: "instance",
-    phase: "P03",
   },
   {
     id: "evals",
@@ -140,7 +128,6 @@ export const NAV_CATALOG: readonly CatalogEntryWithPhase[] = [
     path: "evals",
     order: 40,
     scope: "instance",
-    phase: "P03",
   },
 
   {
@@ -151,7 +138,6 @@ export const NAV_CATALOG: readonly CatalogEntryWithPhase[] = [
     path: "memory",
     order: 10,
     scope: "instance",
-    phase: "P04",
   },
   {
     id: "knowledge",
@@ -161,7 +147,6 @@ export const NAV_CATALOG: readonly CatalogEntryWithPhase[] = [
     path: "knowledge",
     order: 20,
     scope: "instance",
-    phase: "P04",
   },
   {
     id: "learnings",
@@ -171,7 +156,6 @@ export const NAV_CATALOG: readonly CatalogEntryWithPhase[] = [
     path: "learnings",
     order: 30,
     scope: "instance",
-    phase: "P04",
   },
   {
     id: "files",
@@ -181,7 +165,6 @@ export const NAV_CATALOG: readonly CatalogEntryWithPhase[] = [
     path: "files",
     order: 40,
     scope: "instance",
-    phase: "P04",
   },
 
   {
@@ -192,7 +175,6 @@ export const NAV_CATALOG: readonly CatalogEntryWithPhase[] = [
     path: "approvals",
     order: 10,
     scope: "instance",
-    phase: "P05",
   },
   {
     id: "scheduler",
@@ -202,7 +184,6 @@ export const NAV_CATALOG: readonly CatalogEntryWithPhase[] = [
     path: "scheduler",
     order: 20,
     scope: "instance",
-    phase: "P05",
   },
   {
     id: "queue",
@@ -212,7 +193,6 @@ export const NAV_CATALOG: readonly CatalogEntryWithPhase[] = [
     path: "queue",
     order: 30,
     scope: "instance",
-    phase: "P05",
   },
 
   {
@@ -223,7 +203,6 @@ export const NAV_CATALOG: readonly CatalogEntryWithPhase[] = [
     path: "access/people",
     order: 10,
     scope: "org",
-    phase: "P01",
   },
   {
     id: "roles",
@@ -233,7 +212,6 @@ export const NAV_CATALOG: readonly CatalogEntryWithPhase[] = [
     path: "access/roles",
     order: 20,
     scope: "org",
-    phase: "P06",
   },
   {
     id: "tokens",
@@ -243,7 +221,6 @@ export const NAV_CATALOG: readonly CatalogEntryWithPhase[] = [
     path: "access/service-accounts",
     order: 30,
     scope: "org",
-    phase: "P06",
   },
   {
     id: "audit",
@@ -253,7 +230,6 @@ export const NAV_CATALOG: readonly CatalogEntryWithPhase[] = [
     path: "access/audit",
     order: 40,
     scope: "org",
-    phase: "P01",
   },
 
   {
@@ -264,7 +240,6 @@ export const NAV_CATALOG: readonly CatalogEntryWithPhase[] = [
     path: "settings",
     order: 10,
     scope: "instance",
-    phase: "P01",
   },
 ];
 

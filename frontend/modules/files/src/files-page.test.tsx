@@ -1,4 +1,4 @@
-import { contextHandlers, p01Handlers, p02Handlers, renderPage } from "@agnostic/testing";
+import { contextHandlers, sampleOrgHandlers, operateHandlers, renderPage } from "@agnostic/testing";
 import { TooltipProvider } from "@agnostic/ui";
 import { screen, within } from "@testing-library/react";
 import { setupServer } from "msw/node";
@@ -16,7 +16,7 @@ function FilesPage() {
   );
 }
 
-const handlers = () => [...contextHandlers(), ...p01Handlers(), ...p02Handlers()];
+const handlers = () => [...contextHandlers(), ...sampleOrgHandlers(), ...operateHandlers()];
 const server = setupServer(...handlers());
 
 beforeAll(() => {

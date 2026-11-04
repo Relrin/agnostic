@@ -1,5 +1,5 @@
 // Feature modules compiled into the shell. Adding a module = adding its workspace package and one line here
-// (03 §2: a static import list, so every module stays code-split and tree-shaken).
+// (a static import list, so every module stays code-split and tree-shaken).
 import type { ModuleManifest } from "@agnostic/core";
 import { accessPeopleModule } from "@agnostic/module-access-people";
 import { accessRolesModule } from "@agnostic/module-access-roles";

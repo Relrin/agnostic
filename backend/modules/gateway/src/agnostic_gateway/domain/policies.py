@@ -226,7 +226,7 @@ def is_upload(method: str, path: str) -> bool:
 
 
 def fallback(method: str, path: str) -> RoutePolicy:
-    """Unknown route: fail closed (07 §2)."""
+    """Unknown route: fail closed."""
     return RoutePolicy(method=method, pattern=path, scopes=(ADMIN,), audit_level="full", source="fallback")
 
 
@@ -310,7 +310,7 @@ MAX_TOKEN_SCOPE_BYTES = 8 * 1024
 
 
 def scopes_for_token(scopes: Sequence[str], family: str) -> tuple[list[str], bool]:
-    """Keep the JWT small (06 §3.4): past 8 KB, only the requested route family's scopes go in. Never widens."""
+    """Keep the JWT small: past 8 KB, only the requested route family's scopes go in. Never widens."""
     if sum(len(scope) + 3 for scope in scopes) <= MAX_TOKEN_SCOPE_BYTES:
         return list(scopes), False
     relevant = [scope for scope in scopes if scope == ADMIN or scope.split(":", 1)[0] == family]

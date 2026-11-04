@@ -1,4 +1,10 @@
-import { API, p01Handlers, renderPage, sampleSchedulerStatus, schedulerHandlers } from "@agnostic/testing";
+import {
+  API,
+  sampleOrgHandlers,
+  renderPage,
+  sampleSchedulerStatus,
+  schedulerHandlers,
+} from "@agnostic/testing";
 import { TooltipProvider } from "@agnostic/ui";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -17,7 +23,7 @@ function SchedulerPage() {
   );
 }
 
-const handlers = () => [...p01Handlers(), ...schedulerHandlers()];
+const handlers = () => [...sampleOrgHandlers(), ...schedulerHandlers()];
 const server = setupServer(...handlers());
 const open = (url = "/i/prod-agentos/scheduler") =>
   renderPage(SchedulerPage, { path: "/i/$instance/scheduler", url });

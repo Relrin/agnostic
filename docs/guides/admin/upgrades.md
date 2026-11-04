@@ -14,9 +14,8 @@ against the upgraded schema.
    AGNOSTIC_DATABASE__URL=postgresql://…/agnostic_copy agnostic db upgrade --check
    ```
 
-   It applies every pending migration inside one transaction, prints the time each one took, and rolls everything
-   back. A migration that fails or takes too long shows up here instead of during the rollout. SQLite can't do this:
-   its driver commits schema changes right away.
+   It applies every pending migration in one transaction, prints the time each took, and rolls everything back, so
+   a migration that fails or is slow shows up here instead of during the rollout.
 3. Take a backup or confirm your PITR is current.
 
 ## With Helm
@@ -51,9 +50,15 @@ Roll back the image (`helm rollback`, or the previous `AGNOSTIC_IMAGE`). Don't d
 release works with it. `agnostic db downgrade` exists for development and should only be used in production on the
 advice of the release notes.
 
+## Pre-release databases
+
+Databases created by a pre-release build aren't upgraded: create a fresh database and run `agnostic migrate` and
+`agnostic bootstrap` again (in development: `just nuke && just up && just migrate`). `/readyz` and
+`config check --connect` report "unknown revision in the database" when they find one.
+
 ## How upgrades are tested
 
-The upgrade drill (`scripts/upgrade_drill.sh`, nightly in CI) builds a database the way each pre-1.0 milestone left
-it, migrated and bootstrapped with that milestone's code, then upgrades it with the current code and checks it with
-`db upgrade --check`, `migrate`, `config check --connect`, `audit verify` and `secrets status`. The milestones are
-listed in `deploy/upgrade-milestones.txt`.
+The upgrade drill (`scripts/upgrade_drill.sh`, nightly in CI) takes every released version listed in
+`deploy/upgrade-milestones.txt`, migrates and bootstraps a database with that version's code, upgrades it with the
+current code and checks it with `db upgrade --check`, `migrate`, `db current`, `config check --connect`,
+`audit verify` and `secrets status`. The list starts with the first release.

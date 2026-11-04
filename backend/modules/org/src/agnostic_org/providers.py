@@ -21,6 +21,7 @@ from agnostic_org.application.invitations import (
     InvitePerson,
     ListInvitations,
     PreviewInvitation,
+    RenewInvitationLink,
     ResendInvitation,
     RevokeInvitation,
 )
@@ -92,6 +93,7 @@ class OrgProvider(Provider):
 
     invite = provide(InvitePerson)
     resend = provide(ResendInvitation)
+    renew_link = provide(RenewInvitationLink)
     revoke = provide(RevokeInvitation)
     list_invitations = provide(ListInvitations)
     preview = provide(PreviewInvitation)

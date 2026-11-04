@@ -3,8 +3,8 @@ import {
   assistantCalls,
   assistantHandlers,
   GATEWAY,
-  p01Handlers,
-  p02Handlers,
+  sampleOrgHandlers,
+  operateHandlers,
   renderPage,
   sampleMe,
   sampleOrg,
@@ -18,7 +18,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { HomePage, kpiDelta } from "./home-page";
 
-const handlers = () => [...p01Handlers(), ...p02Handlers()];
+const handlers = () => [...sampleOrgHandlers(), ...operateHandlers()];
 const server = setupServer(...handlers());
 
 beforeAll(() => {

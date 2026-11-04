@@ -1,4 +1,4 @@
-import { API, p01Handlers, renderPage, serviceAccountsHandlers } from "@agnostic/testing";
+import { API, sampleOrgHandlers, renderPage, serviceAccountsHandlers } from "@agnostic/testing";
 import { TooltipProvider } from "@agnostic/ui";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -18,7 +18,7 @@ function ServiceAccountsPage() {
 }
 
 // The service-account handlers go first: they also answer /me/access with service_accounts:manage.
-const handlers = () => [...serviceAccountsHandlers(), ...p01Handlers()];
+const handlers = () => [...serviceAccountsHandlers(), ...sampleOrgHandlers()];
 const server = setupServer(...handlers());
 
 beforeAll(() => {

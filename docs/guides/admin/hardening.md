@@ -66,7 +66,7 @@ in the Helm chart. Keep those settings.
 
 ## Audit
 
-- Turn on the hash chain (*Organization › Audit retention*) and verify it regularly: [Audit integrity](audit-integrity.md).
+- Turn on the hash chain (*Organization › Audit retention & archive*) and verify it regularly: [Audit integrity](audit-integrity.md).
 - Stream the audit log to your SIEM, and archive to a bucket with Object Lock in compliance mode.
 
 ## Verify the image

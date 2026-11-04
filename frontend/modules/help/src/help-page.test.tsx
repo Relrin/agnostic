@@ -1,4 +1,4 @@
-import { API, p01Handlers, renderPage } from "@agnostic/testing";
+import { API, sampleOrgHandlers, renderPage } from "@agnostic/testing";
 import { screen } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
@@ -7,7 +7,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { HelpPage } from "./help-page";
 
 const handlers = () => [
-  ...p01Handlers(),
+  ...sampleOrgHandlers(),
   http.get(`${API}/system/docs`, () =>
     HttpResponse.json({
       available: true,

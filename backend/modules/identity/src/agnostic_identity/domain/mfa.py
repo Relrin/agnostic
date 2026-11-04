@@ -1,4 +1,4 @@
-"""Second factors: authenticator apps (TOTP), security keys and passkeys (WebAuthn), recovery codes. Pure Python."""
+"""Second factors: authenticator apps (TOTP), security keys and passkeys (WebAuthn), recovery codes. No I/O."""
 
 from __future__ import annotations
 

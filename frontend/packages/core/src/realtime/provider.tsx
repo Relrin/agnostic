@@ -23,7 +23,7 @@ function hasId(query: Query, ids: readonly string[]): boolean {
   return typeof first === "object" && first !== null && "_id" in first && ids.includes(String(first._id));
 }
 
-/** Query-cache effects of each event type (03 §4). */
+/** Query-cache effects of each event type. */
 export function applyRealtimeEvent(
   client: ReturnType<typeof useQueryClient>,
   message: RealtimeMessage,

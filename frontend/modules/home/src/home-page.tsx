@@ -309,7 +309,7 @@ function AskCard({
   );
 }
 
-/** `/i/:instance/home`: what needs attention, how the instance is doing, and what changed (design spec A §1). */
+/** `/i/:instance/home`: what needs attention, how the instance is doing, and what changed. */
 export function HomePage() {
   const params = useParams({ strict: false }) as unknown as Record<string, string | undefined>;
   const instanceRef = params.instance ?? "";

@@ -8,7 +8,9 @@ still sign in and groups are managed by hand.
 
 In Google Cloud, *APIs & Services › Credentials › Create credentials › OAuth client ID* (Web application), redirect
 URI `https://<agnostic>/api/v1/auth/sso/google/callback`. Add the provider in Agnostic (preset Google, id `google`)
-and list your Workspace domain under *Allowed email domains* if people may join without an invitation.
+and list your Workspace domain under *Allowed email domains* if people may join without an invitation. Invited
+people (by email or with a copied invite link) join by signing in with Google: the invitation is matched by their
+verified email, and accepting with a password is refused while SSO is enforced.
 
 ## 2. Group sync (optional)
 

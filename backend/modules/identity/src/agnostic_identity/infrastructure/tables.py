@@ -103,7 +103,7 @@ class PreferenceRow(IdentityBase):
 
     user_id: Mapped[str] = mapped_column(ForeignKey("identity_users.id", ondelete="CASCADE"), primary_key=True)
     key: Mapped[str] = mapped_column(String(64), primary_key=True)
-    value: Mapped[Any] = mapped_column(JsonDocument)
+    value: Mapped[Any] = mapped_column(JsonDocument, nullable=True)
 
 
 class LoginProviderRow(IdentityBase):

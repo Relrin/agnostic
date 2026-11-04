@@ -1,4 +1,4 @@
-// Test helpers shared by modules and the app: render with providers, MSW handlers with the prototype's sample org.
+// Test helpers shared by modules and the app: render with providers, MSW handlers with the sample org.
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, type RenderResult } from "@testing-library/react";
 import type { ReactElement } from "react";
@@ -6,9 +6,9 @@ import type { ReactElement } from "react";
 import { API, configureTestApi } from "./base";
 
 export { API, configureTestApi };
-export * from "./p01";
+export * from "./sample-org";
 export * from "./studio-workflows";
-export * from "./p02";
+export * from "./operate";
 export * from "./observe";
 export * from "./context";
 export * from "./approvals";

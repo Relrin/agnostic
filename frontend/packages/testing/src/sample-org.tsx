@@ -1,4 +1,4 @@
-// P01 fixtures (the prototype's sample org) and MSW handlers for identity, org, instances, access and audit.
+// The sample org every page test starts from: fixtures and MSW handlers for identity, org, instances, access, audit.
 import type {
   AuditEventOut,
   BindingOut,
@@ -86,6 +86,7 @@ export const sampleOrg: OrgOut = {
   member_count: 2,
   pending_invitations: 1,
   viewer_role: "owner",
+  email_delivery: true,
   settings: { require_explicit_bindings: false, audit_log_all_reads: false, approval_ttl_hours: 0 },
   updated_at: T,
 };
@@ -295,8 +296,8 @@ export const sampleEvents: AuditEventOut[] = [
   },
 ];
 
-/** MSW handlers for the P01 API with the sample org; override any with `server.use(...)`. */
-export function p01Handlers() {
+/** MSW handlers for identity, org, instances, access and audit with the sample org; override any with `server.use(...)`. */
+export function sampleOrgHandlers() {
   return [
     http.get(`${API}/me`, () => HttpResponse.json(sampleMe)),
     http.get(`${API}/me/access`, ({ request }) => {

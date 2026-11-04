@@ -54,6 +54,8 @@ export function InvitePage() {
     accept.mutate({ path: { token }, body: { display_name: name || null, password } });
   };
   const providers = options.data?.providers ?? [];
+  // Under enforced SSO (or with passwords off) people join through the identity provider.
+  const passwordAllowed = options.data?.local_login !== false && options.data?.sso_enforced !== true;
 
   return (
     <PublicPage
@@ -72,7 +74,7 @@ export function InvitePage() {
         <Callout tone="availability">
           An account for {invitation.email} exists. <a href="/login">Sign in</a> to accept.
         </Callout>
-      ) : options.data?.local_login !== false ? (
+      ) : passwordAllowed ? (
         <form onSubmit={submit} className="flex flex-col gap-4">
           <Field label="Your name">
             {({ id }) => (

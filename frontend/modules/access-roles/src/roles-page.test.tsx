@@ -2,7 +2,7 @@ import {
   API,
   SUPPORT_LEAD_ROLE,
   emptyRolesRecord,
-  p01Handlers,
+  sampleOrgHandlers,
   renderPage,
   rolesHandlers,
   type RolesRecord,
@@ -16,8 +16,8 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { RolesPage } from "./roles-page";
 
 let record: RolesRecord = emptyRolesRecord();
-// The roles handlers go first: p01 serves a plainer role list.
-const handlers = () => [...rolesHandlers(record), ...p01Handlers()];
+// The roles handlers go first: the sample-org handlers serve a plainer role list.
+const handlers = () => [...rolesHandlers(record), ...sampleOrgHandlers()];
 const server = setupServer(...handlers());
 
 beforeAll(() => {

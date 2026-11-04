@@ -1,4 +1,4 @@
-import { p01Handlers, renderPage, studioHandlers } from "@agnostic/testing";
+import { sampleOrgHandlers, renderPage, studioHandlers } from "@agnostic/testing";
 import { TooltipProvider } from "@agnostic/ui";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -15,7 +15,7 @@ function TeamEditorPage() {
   );
 }
 
-const handlers = () => [...p01Handlers(), ...studioHandlers()];
+const handlers = () => [...sampleOrgHandlers(), ...studioHandlers()];
 const server = setupServer(...handlers());
 
 beforeAll(() => {

@@ -48,7 +48,7 @@ function readFilters(search: Record<string, unknown>): Filters {
   };
 }
 
-/** `/i/:instance/learnings?type=&user=&agent=&namespace=&entityType=&record=&page=` (design spec B §3). */
+/** `/i/:instance/learnings?type=&user=&agent=&namespace=&entityType=&record=&page=`. */
 export function LearningsPage() {
   const params = useParams({ strict: false }) as unknown as Record<string, string | undefined>;
   const search = useSearch({ strict: false }) as unknown as Record<string, unknown>;

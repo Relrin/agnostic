@@ -1,4 +1,4 @@
-"""The ``agnostic`` command line (02 §10)."""
+"""The ``agnostic`` command line."""
 
 from __future__ import annotations
 
@@ -253,7 +253,7 @@ def bootstrap(
         bool, typer.Option("--password-stdin", help="Read the Owner's password from stdin")
     ] = False,
 ) -> None:
-    """Set up the org and its first Owner (02 §10).
+    """Set up the org and its first Owner.
 
     Without --owner-email, prints a one-time link (valid 24 h) where the first Owner signs up in the browser.
     """

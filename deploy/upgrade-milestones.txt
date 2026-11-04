@@ -1,12 +1,3 @@
-# Pre-1.0 milestones every upgrade is tested from (scripts/upgrade_drill.sh): a database migrated and bootstrapped
+# Released versions every upgrade is tested from (scripts/upgrade_drill.sh): a database migrated and bootstrapped
 # at each commit must upgrade to the current code. One commit per line; text after the commit is a label.
-4599162c0f3db409023428dbcdcd0c7b5a6a652e  identity, instances, gateway
-3241f1b4305cef6512e04155ddb69c5a685e46dd  chat and sessions
-e9563bad26722e4606570bfdef92ffccfa586d8f  traces, metrics, evals
-2eb73199796d22d2f7bfddf2a28d0dc884e1d58b  memory, knowledge, learnings, files
-52c340cd37203fac535b25dc0606330d60098abb  approvals, scheduler, queue
-eea9d4170793f4fd792cbfba2151115f68d74916  access governance
-b8928546298628cff7ea3b3691b962986d7eb721  Studio agents, teams, registry
-c8c4b85e1f35067cace2de91bfb6013e0a23f764  Studio workflows
-9e191b08b41a62f0b98a23c49a29e094b88b7ad2  code sources and git sync
-243a3adca58cb1f7c3f28c080369fe3fe67d1c9a  assistant
+# The list starts with the first release; pre-release databases are recreated, not upgraded.

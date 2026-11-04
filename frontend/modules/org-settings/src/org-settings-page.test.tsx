@@ -4,7 +4,7 @@ import {
   assistantCalls,
   assistantHandlers,
   orgSettingsHandlers,
-  p01Handlers,
+  sampleOrgHandlers,
   renderPage,
 } from "@agnostic/testing";
 import { screen, waitFor, within } from "@testing-library/react";
@@ -15,7 +15,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { OrgSettingsPage } from "./org-settings-page";
 
-const handlers = () => [...orgSettingsHandlers(), ...p01Handlers()];
+const handlers = () => [...orgSettingsHandlers(), ...sampleOrgHandlers()];
 const server = setupServer(...handlers());
 
 beforeAll(() => {

@@ -11341,6 +11341,16 @@
             "title": "Bindings",
             "type": "array"
           },
+          "delivery": {
+            "default": "email",
+            "description": "email: send the link by email too; link: only return it, to share yourself",
+            "enum": [
+              "email",
+              "link"
+            ],
+            "title": "Delivery",
+            "type": "string"
+          },
           "email": {
             "maxLength": 320,
             "title": "Email",
@@ -11484,9 +11494,14 @@
       "IssuedInvitationOut": {
         "properties": {
           "accept_url": {
-            "description": "Shown once; share it yourself when email isn't configured",
+            "description": "Shown once: only its hash is stored. A new link replaces it.",
             "title": "Accept Url",
             "type": "string"
+          },
+          "email_sent": {
+            "description": "The link also went out by email",
+            "title": "Email Sent",
+            "type": "boolean"
           },
           "invitation": {
             "$ref": "#/components/schemas/InvitationOut"
@@ -11494,7 +11509,8 @@
         },
         "required": [
           "invitation",
-          "accept_url"
+          "accept_url",
+          "email_sent"
         ],
         "title": "IssuedInvitationOut",
         "type": "object"
@@ -14132,6 +14148,11 @@
       },
       "OrgOut": {
         "properties": {
+          "email_delivery": {
+            "description": "Email is configured, so invitations can be sent by email",
+            "title": "Email Delivery",
+            "type": "boolean"
+          },
           "logo_url": {
             "anyOf": [
               {
@@ -14209,6 +14230,7 @@
           "member_count",
           "pending_invitations",
           "viewer_role",
+          "email_delivery",
           "settings",
           "updated_at"
         ],
@@ -17401,6 +17423,7 @@
           "status": {
             "enum": [
               "ready",
+              "degraded",
               "not_ready"
             ],
             "title": "Status",
@@ -30981,7 +31004,7 @@
             "description": "Server error"
           }
         },
-        "summary": "The capability matrix (07 §3)",
+        "summary": "The capability matrix",
         "tags": [
           "instances"
         ]
@@ -39093,7 +39116,7 @@
             "description": "Server error"
           }
         },
-        "summary": "Invite someone by email",
+        "summary": "Invite someone: email the link, or only return it to share",
         "tags": [
           "invitations"
         ]
@@ -39141,6 +39164,60 @@
           }
         },
         "summary": "Revoke an invitation",
+        "tags": [
+          "invitations"
+        ]
+      }
+    },
+    "/api/v1/invitations/{invitation_id}/link": {
+      "post": {
+        "operationId": "invitations_renew_invitation_link",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "invitation_id",
+            "required": true,
+            "schema": {
+              "title": "Invitation Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssuedInvitationOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "A new link to share yourself, without an email (the previous link stops working)",
         "tags": [
           "invitations"
         ]

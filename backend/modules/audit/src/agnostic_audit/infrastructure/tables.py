@@ -9,7 +9,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import Boolean, DateTime, Index, Integer, LargeBinary, String, Text, func
+from sqlalchemy import Boolean, DateTime, ForeignKey, Index, Integer, LargeBinary, String, Text, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 from agnostic_kernel.db import JsonDocument, make_metadata
@@ -148,7 +148,7 @@ class SinkRow(AuditBase):
 class SinkCursorRow(AuditBase):
     __tablename__ = "audit_sink_cursors"
 
-    sink_id: Mapped[str] = mapped_column(String(40), primary_key=True)
+    sink_id: Mapped[str] = mapped_column(String(40), ForeignKey("audit_sinks.id", ondelete="CASCADE"), primary_key=True)
     last_occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     last_event_id: Mapped[str] = mapped_column(String(40))
 

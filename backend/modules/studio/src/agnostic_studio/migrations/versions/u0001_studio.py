@@ -1,4 +1,4 @@
-"""studio: component and version metadata, registry used-by index, promotions.
+"""studio: component and version metadata, canvas layouts, code documents, registry used-by index, promotions.
 
 Revision ID: u0001_studio
 Revises:
@@ -28,6 +28,9 @@ def upgrade() -> None:
         sa.Column("owner_group_id", sa.String(40)),
         sa.Column("labels", JSON, nullable=False),
         sa.Column("last_known_current_version", sa.Integer()),
+        sa.Column("source_binding_id", sa.String(40)),
+        sa.Column("code_path", sa.String(500)),
+        sa.Column("convention", JSON),
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.current_timestamp()),
         sa.PrimaryKeyConstraint("instance_id", "component_id", name="pk_studio_component_meta"),
         schema="agnostic",
@@ -92,8 +95,35 @@ def upgrade() -> None:
         schema="agnostic",
     )
 
+    op.create_table(
+        "studio_canvas_layouts",
+        sa.Column("instance_id", sa.String(40), nullable=False),
+        sa.Column("component_id", sa.String(200), nullable=False),
+        sa.Column("version", sa.Integer(), nullable=False),
+        sa.Column("layout", JSON, nullable=False),
+        sa.Column("updated_by", sa.String(40)),
+        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.current_timestamp()),
+        sa.PrimaryKeyConstraint("instance_id", "component_id", "version", name="pk_studio_canvas_layouts"),
+        schema="agnostic",
+    )
+    op.create_table(
+        "studio_code_documents",
+        sa.Column("instance_id", sa.String(40), nullable=False),
+        sa.Column("component_id", sa.String(200), nullable=False),
+        sa.Column("version", sa.Integer(), nullable=False),
+        sa.Column("code", sa.Text(), nullable=False),
+        sa.Column("config_hash", sa.String(64), nullable=False),
+        sa.Column("updated_by", sa.String(40)),
+        sa.Column("updated_by_name", sa.String(200)),
+        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.current_timestamp()),
+        sa.PrimaryKeyConstraint("instance_id", "component_id", "version", name="pk_studio_code_documents"),
+        schema="agnostic",
+    )
+
 
 def downgrade() -> None:
+    op.drop_table("studio_code_documents", schema="agnostic")
+    op.drop_table("studio_canvas_layouts", schema="agnostic")
     op.drop_index("ix_studio_promotions_component", table_name="studio_promotions", schema="agnostic")
     op.drop_table("studio_promotions", schema="agnostic")
     op.drop_table("studio_registry_index", schema="agnostic")

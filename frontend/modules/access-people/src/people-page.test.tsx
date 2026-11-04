@@ -3,9 +3,10 @@ import {
   PEOPLE,
   PEOPLE_GROUPS,
   PROD,
-  p01Handlers,
+  sampleOrgHandlers,
   peopleGroupsHandlers,
   renderPage,
+  sampleOrg,
 } from "@agnostic/testing";
 import { TooltipProvider } from "@agnostic/ui";
 import { screen, waitFor, within } from "@testing-library/react";
@@ -26,7 +27,7 @@ function PeoplePage() {
 }
 
 // People & groups handlers go first: they extend the base sample org's members, bindings and invitations.
-const handlers = () => [...peopleGroupsHandlers(), ...p01Handlers()];
+const handlers = () => [...peopleGroupsHandlers(), ...sampleOrgHandlers()];
 const server = setupServer(...handlers());
 
 beforeAll(() => {
@@ -327,6 +328,7 @@ describe("PeoplePage", () => {
           created_at: "2026-11-03T09:00:00Z",
         },
         accept_url: "http://agnostic.test/invite/tok",
+        email_sent: true,
       }),
       201,
     );
@@ -341,6 +343,7 @@ describe("PeoplePage", () => {
     await user.click(within(dialog).getByRole("checkbox", { name: "Research" }));
     await user.click(within(dialog).getByRole("button", { name: "Send invitation" }));
     expect(await screen.findByText("http://agnostic.test/invite/tok")).toBeInTheDocument();
+    expect(screen.getByText("Invited rui@localhost.company")).toBeInTheDocument();
     expect(sent).toEqual([
       {
         email: "rui@localhost.company",
@@ -348,7 +351,85 @@ describe("PeoplePage", () => {
         bindings: [],
         group_ids: [PEOPLE_GROUPS.research],
         access_ends_at: null,
+        delivery: "email",
       },
     ]);
   });
+
+  it("creates an invitation link without sending an email", async () => {
+    const sent = capture(
+      "post",
+      "/invitations",
+      () => ({ invitation: issuedInvitation("rui@localhost.company"), accept_url: LINK, email_sent: false }),
+      201,
+    );
+    const user = userEvent.setup();
+    renderPage(PeoplePage, { path: PATH, url: `${PATH}?tab=invitations` });
+    await user.click(await screen.findByRole("button", { name: "Invite people" }));
+    const dialog = await screen.findByRole("dialog", { name: "Invite people" });
+    await user.type(within(dialog).getByLabelText("Email"), "rui@localhost.company");
+    await user.click(within(dialog).getByRole("radio", { name: /Create link only/ }));
+    await user.click(within(dialog).getByRole("button", { name: "Create link" }));
+    expect(await screen.findByText(LINK)).toBeInTheDocument();
+    expect(screen.getByText("Invitation link for rui@localhost.company")).toBeInTheDocument();
+    expect(sent).toEqual([expect.objectContaining({ email: "rui@localhost.company", delivery: "link" })]);
+  });
+
+  it("copies a new link for a pending invitation after confirming", async () => {
+    const renewed: string[] = [];
+    server.use(
+      http.post(`${API}/invitations/:id/link`, ({ params }) => {
+        renewed.push(String(params.id));
+        return HttpResponse.json({
+          invitation: issuedInvitation("rafael@localhost.company"),
+          accept_url: LINK,
+          email_sent: false,
+        });
+      }),
+    );
+    const user = userEvent.setup();
+    renderPage(PeoplePage, { path: PATH, url: `${PATH}?tab=invitations` });
+    const list = await screen.findByRole("list", { name: "Invitations" });
+    const rafael = within(list).getByText("rafael@localhost.company").closest("li");
+    if (!rafael) throw new Error("no invitation row for Rafael");
+    await user.click(within(rafael).getByRole("button", { name: "Copy new link" }));
+    const confirm = await screen.findByRole("dialog", { name: "Create a new invitation link?" });
+    expect(
+      within(confirm).getByText(/current link for rafael@localhost.company stops working/),
+    ).toBeInTheDocument();
+    await user.click(within(confirm).getByRole("button", { name: "Create new link" }));
+    expect(await screen.findByText(LINK)).toBeInTheDocument();
+    expect(renewed).toEqual(["inv_01M6A0EEZEQ373S26F2014RAFA"]);
+  });
+
+  it("offers only links when email isn't configured", async () => {
+    server.use(http.get(`${API}/org`, () => HttpResponse.json({ ...sampleOrg, email_delivery: false })));
+    const user = userEvent.setup();
+    renderPage(PeoplePage, { path: PATH, url: `${PATH}?tab=invitations` });
+    const list = await screen.findByRole("list", { name: "Invitations" });
+    await waitFor(() => {
+      expect(within(list).queryByRole("button", { name: "Resend" })).not.toBeInTheDocument();
+    });
+    await user.click(screen.getByRole("button", { name: "Invite people" }));
+    const dialog = await screen.findByRole("dialog", { name: "Invite people" });
+    expect(within(dialog).queryByRole("radio")).not.toBeInTheDocument();
+    expect(within(dialog).getByRole("button", { name: "Create link" })).toBeInTheDocument();
+  });
 });
+
+const LINK = "http://agnostic.test/invite/new-token";
+
+function issuedInvitation(email: string) {
+  return {
+    id: "inv_1",
+    email,
+    org_role: "member",
+    bindings: [],
+    group_ids: [],
+    access_ends_at: null,
+    invited_by: PEOPLE.daniel,
+    expires_at: "2026-11-10T09:00:00Z",
+    status: "pending",
+    created_at: "2026-11-03T09:00:00Z",
+  };
+}

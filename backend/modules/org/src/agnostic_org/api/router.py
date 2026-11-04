@@ -29,6 +29,7 @@ from agnostic_org.application.invitations import (
     InvitePerson,
     ListInvitations,
     PreviewInvitation,
+    RenewInvitationLink,
     ResendInvitation,
     RevokeInvitation,
 )
@@ -130,7 +131,9 @@ async def list_invitations(
     return [InvitationOut.from_domain(item) for item in await use_case(principal)]
 
 
-@invitations_router.post("", status_code=status.HTTP_201_CREATED, summary="Invite someone by email")
+@invitations_router.post(
+    "", status_code=status.HTTP_201_CREATED, summary="Invite someone: email the link, or only return it to share"
+)
 async def create_invitation(
     body: InvitationCreate, principal: FromDishka[Principal], use_case: FromDishka[InvitePerson]
 ) -> IssuedInvitationOut:
@@ -141,6 +144,7 @@ async def create_invitation(
         [InitialBinding(role_id=b.role_id, instance_id=b.instance_id) for b in body.bindings],
         body.access_ends_at,
         body.group_ids,
+        send_email=body.delivery == "email",
     )
     return IssuedInvitationOut.from_issued(issued)
 
@@ -148,6 +152,15 @@ async def create_invitation(
 @invitations_router.post("/{invitation_id}/resend", summary="Send the invitation again with a fresh link")
 async def resend_invitation(
     invitation_id: str, principal: FromDishka[Principal], use_case: FromDishka[ResendInvitation]
+) -> IssuedInvitationOut:
+    return IssuedInvitationOut.from_issued(await use_case(principal, invitation_id))
+
+
+@invitations_router.post(
+    "/{invitation_id}/link", summary="A new link to share yourself, without an email (the previous link stops working)"
+)
+async def renew_invitation_link(
+    invitation_id: str, principal: FromDishka[Principal], use_case: FromDishka[RenewInvitationLink]
 ) -> IssuedInvitationOut:
     return IssuedInvitationOut.from_issued(await use_case(principal, invitation_id))
 

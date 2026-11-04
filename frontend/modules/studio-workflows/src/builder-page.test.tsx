@@ -2,7 +2,7 @@
 // a step from a connector and from the palette, the router's CEL checked and tried in the inspector, the executor
 // picker, delete with undo from the keyboard, the code view highlighting the selected step, and the Runs tab.
 import {
-  p01Handlers,
+  sampleOrgHandlers,
   renderPage,
   studioHandlers,
   workflowCalls,
@@ -28,7 +28,7 @@ function WorkflowBuilderPage() {
 
 let calls: StudioCalls = { saves: [], publishes: [], promotions: [] };
 let flows: WorkflowCalls = workflowCalls();
-const handlers = () => [...p01Handlers(), ...workflowHandlers(flows), ...studioHandlers(calls)];
+const handlers = () => [...sampleOrgHandlers(), ...workflowHandlers(flows), ...studioHandlers(calls)];
 const server = setupServer(...handlers());
 
 beforeAll(() => {

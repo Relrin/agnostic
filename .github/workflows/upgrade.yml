@@ -1,6 +1,6 @@
 name: upgrade & restore drills
 
-# Every database left by a pre-1.0 milestone must upgrade to the current code, and a backup restored with the
+# Every database left by a released version must upgrade to the current code, and a backup restored with the
 # customer's own tooling (pg_dump/pg_restore) must come back complete. Nightly, on release branches, and by hand.
 on:
   schedule:
@@ -23,7 +23,7 @@ env:
 
 jobs:
   upgrade-drill:
-    name: upgrade from every pre-1.0 milestone
+    name: upgrade from every released milestone
     runs-on: ubuntu-24.04
     services:
       postgres:

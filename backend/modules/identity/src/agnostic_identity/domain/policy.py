@@ -1,4 +1,4 @@
-"""The org's authentication policy: enforced SSO with a break-glass Owner, session lifetimes, MFA. Pure Python.
+"""The org's authentication policy: enforced SSO with a break-glass Owner, session lifetimes, MFA. No I/O.
 
 MFA policy semantics (second factors only apply to email + password sign-in; SSO sign-ins rely on the IdP's MFA):
 

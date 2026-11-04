@@ -8,13 +8,13 @@ name, never as code.
 
 ## The registry
 
-*Studio › Registry* lists what the instance registered: tools (with their parameters and whether they need
-approval), models (presets with their parameters), output schemas, knowledge bases, functions and more, and which
-components use each entry. A tool AgentOS only discovered on a component defined in code shows as **Discovered** and
-can't be attached; register it to use it in Studio. *Refresh registry* re-reads it after a deploy.
+*Studio › Registry* lists what the instance registered (tools with their parameters and whether they need approval,
+model presets, output schemas, knowledge bases, functions…) and which components use each entry. A tool AgentOS
+only discovered on a component defined in code shows as **Discovered** and can't be attached until it is registered.
+*Refresh registry* re-reads it after a deploy.
 
-Model parameters (temperature, max tokens…) come from registered model presets: register
-`OpenAIChat(id="gpt-precise", temperature=0.2)` and pick it in the form. Each preset needs its own id.
+Model parameters (temperature, max tokens…) come from registered presets, each with its own id: register
+`OpenAIChat(id="gpt-precise", temperature=0.2)` and pick it in the form.
 
 ## Editing
 
@@ -32,9 +32,9 @@ Model parameters (temperature, max tokens…) come from registered model presets
 
 ## Testing
 
-The *Test* pane runs the draft (AgentOS runs drafts only for their owner or an admin, so the control plane uses a
-single-use elevated token whose subject is still you, and audits it). *Compare with vN* runs the current version
-side by side. Elevation can be turned off per instance, which disables draft testing there.
+The *Test* pane runs the draft through a single-use elevated token whose subject is still you (AgentOS runs drafts
+only for their owner or an admin), and audits it. *Compare with vN* runs the current version side by side. Turning
+delegated elevation off for an instance disables draft testing there.
 
 ## Validating and publishing
 

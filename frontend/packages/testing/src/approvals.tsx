@@ -16,7 +16,7 @@ import type {
 import { http, HttpResponse } from "msw";
 
 import { API } from "./base";
-import { DANIEL, MARCUS, PROD, sampleMembers, sampleRoles } from "./p01";
+import { DANIEL, MARCUS, PROD, sampleMembers, sampleRoles } from "./sample-org";
 
 const NOW = Date.now();
 const MINUTE = 60_000;
@@ -382,7 +382,7 @@ function routeOut(body: RouteIn, id: string, instanceId: string | null): RouteOu
   };
 }
 
-/** The approvals API on prod with the sample inbox; put these before `p02Handlers()` (it has a simpler decide). */
+/** The approvals API on prod with the sample inbox; put these before `operateHandlers()` (it has a simpler decide). */
 export function approvalsHandlers() {
   let preferences = sampleApprovalPreferences(false);
   let routes = [...sampleRoutes];

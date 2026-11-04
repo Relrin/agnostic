@@ -59,7 +59,7 @@ const FAMILIES: readonly { value: RunFamily; label: string; kind: "agent" | "tea
   { value: "workflows", label: "Workflows", kind: "workflow" },
 ];
 
-/** Attachment limits (04 §3.3): what AgentOS media handling accepts without a custom reader. */
+/** Attachment limits: what AgentOS media handling accepts without a custom reader. */
 export const ATTACHMENTS: AttachmentRule = {
   maxBytes: 20 * 1024 * 1024,
   maxFiles: 5,
@@ -198,7 +198,7 @@ function LiveRun({
   );
 }
 
-/** `/i/:instance/chat/:kind/:componentId/:sessionId?version=` (design spec A §2). */
+/** `/i/:instance/chat/:kind/:componentId/:sessionId?version=`. */
 export function ChatPage() {
   const params = useParams({ strict: false }) as unknown as Record<string, string | undefined>;
   const search = useSearch({ strict: false }) as unknown as Record<string, unknown>;

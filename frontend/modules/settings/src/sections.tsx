@@ -1,4 +1,4 @@
-// Instance settings sections (03 §3: /i/:instance/settings/:section).
+// Instance settings sections (/i/:instance/settings/:section).
 import {
   describeError,
   gatewayFetch,
@@ -22,6 +22,12 @@ import {
   Button,
   Callout,
   CodeBlock,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
   EmptyState,
   EnvBadge,
   Field,
@@ -272,6 +278,7 @@ export function AuthorizationSection({ instance }: { instance: InstanceOut }) {
   const invalidate = useInvalidateInstance(instance);
   const elevation = useMutation({ ...instancesUpdateInstanceMutation(), onSuccess: invalidate });
   const [token, setToken] = useState("");
+  const [activating, setActivating] = useState(false);
   const mode = MODE_TEXT[instance.auth_mode];
   const staged = keys.data?.keys.some((key) => key.status === "next") ?? false;
 
@@ -346,7 +353,7 @@ export function AuthorizationSection({ instance }: { instance: InstanceOut }) {
                     size="30"
                     variant="primary"
                     onClick={() => {
-                      rotate.mutate({ path: { instance: instance.id }, body: { action: "activate" } });
+                      setActivating(true);
                     }}
                   >
                     Activate next key
@@ -420,6 +427,38 @@ export function AuthorizationSection({ instance }: { instance: InstanceOut }) {
           </>
         )}
         {rotate.error && <Callout tone="danger">{describeError(rotate.error).reason}</Callout>}
+        <Dialog open={activating} onOpenChange={setActivating}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Activate the next key?</DialogTitle>
+              <DialogDescription>
+                Tokens are signed with the next key from now on. The runtime must already trust it: save the
+                JWKS document as its <code className="font-mono">JWT_JWKS_FILE</code> and restart it first, or
+                it refuses every request until you do.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setActivating(false);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                disabled={rotate.isPending}
+                onClick={() => {
+                  setActivating(false);
+                  rotate.mutate({ path: { instance: instance.id }, body: { action: "activate" } });
+                }}
+              >
+                Activate next key
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </Card>
 
       <Card title="Verify a token">

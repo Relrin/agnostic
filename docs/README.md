@@ -38,7 +38,7 @@ security whitepaper.
 |---|---|
 | [Add a backend module](how-to/add-backend-module.md) | a new bounded context with routes, tables, jobs |
 | [Add a frontend module](how-to/add-frontend-module.md) | a new page in the shell, its nav entry and commands |
-| [Write migrations](how-to/migrations.md) | Alembic branches per module, upgrade/downgrade |
+| [Write migrations](how-to/migrations.md) | one Alembic branch per module, adding a revision, the schema guard tests |
 | [Background jobs](how-to/background-jobs.md) | Procrastinate tasks, periodic jobs, progress |
 | [Configuration and endpoints](how-to/configuration.md) | env vars, TOML, TLS, PostgreSQL vs SQLite |
 | [Regenerate API clients](how-to/api-clients.md) | OpenAPI → TypeScript, AgentOS OpenAPI → Python models |
@@ -65,7 +65,3 @@ security whitepaper.
 
 - [Release checklist](release/checklist.md) and [release notes](release-notes/1.0.0.md).
 - [Security policy](../SECURITY.md): reporting vulnerabilities, supported versions.
-
-## Decisions
-
-[Architecture decision records](adr/README.md): the decisions this code depends on, with context and consequences.

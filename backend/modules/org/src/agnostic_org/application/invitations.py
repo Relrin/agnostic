@@ -1,4 +1,8 @@
-"""Inviting people: email link with an org role and optional initial access-role bindings."""
+"""Inviting people: a link with an org role and optional initial access-role bindings.
+
+The link goes out by email or the inviter shares it. Only its hash is stored, so a link is shown once; a new one
+replaces it.
+"""
 
 from __future__ import annotations
 
@@ -14,6 +18,7 @@ from agnostic_kernel.db import utcnow
 from agnostic_kernel.ephemeral import EphemeralStore, bump_access_generation
 from agnostic_kernel.errors import ConflictError, NotFoundError, ValidationFailedError
 from agnostic_kernel.ids import new_id
+from agnostic_kernel.logging import get_logger
 from agnostic_kernel.mail import Email, Mailer
 from agnostic_org.application.members import WRITE_SCOPE, actor_role
 from agnostic_org.application.ports import (
@@ -36,12 +41,15 @@ from agnostic_org.domain.org import (
 
 INVITATION_TTL = timedelta(days=7)
 
+log = get_logger(__name__)
+
 
 @dataclass(frozen=True, slots=True)
 class IssuedInvitation:
     invitation: Invitation
     accept_url: str
-    """Shown once to the inviter too, so invitations work without SMTP (copy the link)."""
+    """Shown once to the inviter, who can share it instead of (or as well as) the email."""
+    email_sent: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -86,20 +94,49 @@ class _Invitations:
     def _accept_url(self, token: str) -> str:
         return f"{self._public_url}/invite/{token}"
 
-    async def _send(self, invitation: Invitation, token: str, inviter: str) -> None:
+    async def _send(self, invitation: Invitation, token: str, inviter: str) -> bool:
+        """Email the link; ``False`` when mail isn't configured or the server refused (the inviter shares it)."""
+        if not self._mailer.configured:
+            return False
         profile = await self._org.get()
         org_name = profile.name if profile else "Agnostic"
-        await self._mailer.send(
-            Email(
-                to=invitation.email,
-                subject=f"{inviter} invited you to {org_name} on Agnostic",
-                text=(
-                    f"{inviter} invited you to join {org_name} as {invitation.org_role.value}.\n\n"
-                    f"Accept the invitation (valid until {invitation.expires_at:%d %b %Y}):\n\n"
-                    f"{self._accept_url(token)}\n"
-                ),
+        try:
+            await self._mailer.send(
+                Email(
+                    to=invitation.email,
+                    subject=f"{inviter} invited you to {org_name} on Agnostic",
+                    text=(
+                        f"{inviter} invited you to join {org_name} as {invitation.org_role.value}.\n\n"
+                        f"Accept the invitation (valid until {invitation.expires_at:%d %b %Y}):\n\n"
+                        f"{self._accept_url(token)}\n"
+                    ),
+                )
+            )
+        except OSError as exc:  # smtplib errors included; the invitation is already saved
+            log.warning("invitations.email_failed", invitation_id=invitation.id, error=str(exc))
+            return False
+        return True
+
+    async def _rotate(self, principal: Principal, invitation_id: str, action: str) -> tuple[Invitation, str]:
+        """A new link (the old one stops working) and a fresh expiry; audited and committed."""
+        _ = await self._authorizer.require(principal, WRITE_SCOPE)
+        invitation = await self._invitations.get(invitation_id)
+        if invitation is None or invitation.status is not InvitationStatus.PENDING:
+            raise NotFoundError(f"Invitation {invitation_id} isn't pending.")
+        token = new_token(32)
+        renewed = await self._invitations.renew(invitation.id, hash_token(token), utcnow() + INVITATION_TTL)
+        _ = await self._audit.record(
+            AuditEntry(
+                action=action,
+                actor=actor_of(principal),
+                resource_kind="invitation",
+                resource_id=invitation.id,
+                resource_display=invitation.email,
+                fields={"email": invitation.email},
             )
         )
+        await self._org.commit()
+        return renewed, token
 
 
 class InvitePerson(_Invitations):
@@ -111,6 +148,8 @@ class InvitePerson(_Invitations):
         bindings: Sequence[InitialBinding],
         access_ends_at: datetime | None,
         group_ids: Sequence[str] = (),
+        *,
+        send_email: bool = True,
     ) -> IssuedInvitation:
         _ = await self._authorizer.require(principal, WRITE_SCOPE)
         try:
@@ -164,30 +203,24 @@ class InvitePerson(_Invitations):
             )
         )
         await self._org.commit()
-        await self._send(invitation, token, principal.display_name)
-        return IssuedInvitation(invitation, self._accept_url(token))
+        sent = await self._send(invitation, token, principal.display_name) if send_email else False
+        return IssuedInvitation(invitation, self._accept_url(token), email_sent=sent)
 
 
 class ResendInvitation(_Invitations):
+    """Email a new link; the previous one stops working."""
+
     async def __call__(self, principal: Principal, invitation_id: str) -> IssuedInvitation:
-        _ = await self._authorizer.require(principal, WRITE_SCOPE)
-        invitation = await self._invitations.get(invitation_id)
-        if invitation is None or invitation.status is not InvitationStatus.PENDING:
-            raise NotFoundError(f"Invitation {invitation_id} isn't pending.")
-        token = new_token(32)
-        renewed = await self._invitations.renew(invitation.id, hash_token(token), utcnow() + INVITATION_TTL)
-        _ = await self._audit.record(
-            AuditEntry(
-                action="invitations.resend",
-                actor=actor_of(principal),
-                resource_kind="invitation",
-                resource_id=invitation.id,
-                resource_display=invitation.email,
-                fields={"email": invitation.email},
-            )
-        )
-        await self._org.commit()
-        await self._send(renewed, token, principal.display_name)
+        renewed, token = await self._rotate(principal, invitation_id, "invitations.resend")
+        sent = await self._send(renewed, token, principal.display_name)
+        return IssuedInvitation(renewed, self._accept_url(token), email_sent=sent)
+
+
+class RenewInvitationLink(_Invitations):
+    """A new link to share by hand, without an email; the previous one stops working."""
+
+    async def __call__(self, principal: Principal, invitation_id: str) -> IssuedInvitation:
+        renewed, token = await self._rotate(principal, invitation_id, "invitations.link")
         return IssuedInvitation(renewed, self._accept_url(token))
 
 

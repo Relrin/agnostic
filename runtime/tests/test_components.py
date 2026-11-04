@@ -1,4 +1,5 @@
-"""The sample components P02 runs against: refunds pause, tasks-mode teams, workflow loops and step/route HITL."""
+"""The sample components the control plane is tested against: refunds pause, tasks-mode teams, workflow loops and
+step/route HITL."""
 
 from collections import Counter
 from pathlib import Path

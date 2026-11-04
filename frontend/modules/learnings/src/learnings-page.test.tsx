@@ -1,4 +1,4 @@
-import { API, contextHandlers, p01Handlers, p02Handlers, renderPage } from "@agnostic/testing";
+import { API, contextHandlers, sampleOrgHandlers, operateHandlers, renderPage } from "@agnostic/testing";
 import { TooltipProvider } from "@agnostic/ui";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -17,7 +17,7 @@ function LearningsPage() {
   );
 }
 
-const handlers = () => [...contextHandlers(), ...p01Handlers(), ...p02Handlers()];
+const handlers = () => [...contextHandlers(), ...sampleOrgHandlers(), ...operateHandlers()];
 const server = setupServer(...handlers());
 
 beforeAll(() => {

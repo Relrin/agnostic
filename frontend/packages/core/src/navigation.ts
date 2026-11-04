@@ -1,6 +1,5 @@
-// Builds the sidebar from the shell's nav catalog (the prototype's full navigation) plus module manifests.
-// Catalog entries no module implements yet stay visible and route to a "not built yet" page, so the shell
-// matches the prototype from day one.
+// Builds the sidebar from the shell's nav catalog plus module manifests. Catalog entries no visible module
+// implements stay listed and route to an "unavailable" page, so the sidebar keeps the same shape everywhere.
 import type { CommandDefinition, ModuleManifest, ModuleScope, NavEntry, NavGroupId } from "./module";
 
 export const NAV_GROUPS: readonly { id: NavGroupId; label?: string }[] = [

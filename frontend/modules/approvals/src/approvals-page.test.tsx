@@ -1,4 +1,4 @@
-import { API, approvalsHandlers, p01Handlers, p02Handlers, renderPage } from "@agnostic/testing";
+import { API, approvalsHandlers, sampleOrgHandlers, operateHandlers, renderPage } from "@agnostic/testing";
 import { TooltipProvider } from "@agnostic/ui";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -17,8 +17,8 @@ function ApprovalsPage() {
   );
 }
 
-// The approvals handlers go first: p02 has a simpler decide handler for the chat page.
-const handlers = () => [...approvalsHandlers(), ...p01Handlers(), ...p02Handlers()];
+// The approvals handlers go first: the operate handlers have a simpler decide handler for the chat page.
+const handlers = () => [...approvalsHandlers(), ...sampleOrgHandlers(), ...operateHandlers()];
 const server = setupServer(...handlers());
 
 beforeAll(() => {

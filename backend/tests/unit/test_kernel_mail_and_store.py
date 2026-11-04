@@ -1,4 +1,4 @@
-"""Kernel pieces added in P01 that the API tests don't reach: SMTP delivery and the Redis-backed store."""
+"""Kernel pieces the API tests don't reach: SMTP delivery and the Redis-backed store."""
 
 import ssl
 from email.message import EmailMessage

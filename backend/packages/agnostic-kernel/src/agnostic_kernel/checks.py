@@ -7,6 +7,7 @@ import smtplib
 from collections.abc import Sequence
 
 import httpx
+from alembic.script.revision import RevisionError
 from dishka import AsyncContainer
 from redis.asyncio import Redis
 from redis.exceptions import RedisError
@@ -105,6 +106,9 @@ async def check_migrations(engine: AsyncEngine, modules: Sequence[Module]) -> Ch
             current = await state(engine, modules)
     except (OSError, TimeoutError, SQLAlchemyError) as exc:
         return CheckResult("migrations", ok=False, detail=f"cannot read migration state: {exc}")
+    except RevisionError as exc:
+        # The database was migrated by a version whose revisions this one doesn't ship (a pre-release database).
+        return CheckResult("migrations", ok=False, detail=f"unknown revision in the database: {exc}")
     facts = {"current": ",".join(current.current) or "none", "pending": ",".join(current.pending) or "none"}
     if current.up_to_date:
         return CheckResult("migrations", ok=True, detail="ok", facts=facts)

@@ -29,7 +29,7 @@ import type {
 import { http, HttpResponse } from "msw";
 
 import { API } from "./base";
-import { DANIEL, MARCUS, ownerAccess, sampleOrg } from "./p01";
+import { DANIEL, MARCUS, ownerAccess, sampleOrg } from "./sample-org";
 
 const T = "2026-11-01T09:00:00Z";
 const minutesAgo = (minutes: number) => new Date(Date.now() - minutes * 60_000).toISOString();
@@ -336,7 +336,7 @@ function providerFrom(body: ProviderCreate): ProviderOut {
   };
 }
 
-/** The org settings APIs with the fixtures above (stateful); put them before `p01Handlers()`. */
+/** The org settings APIs with the fixtures above (stateful); put them before `sampleOrgHandlers()`. */
 export function orgSettingsHandlers() {
   let providers = [...orgAuthProviders];
   let policy = { ...orgAuthPolicy };

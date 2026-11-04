@@ -1,9 +1,9 @@
-// P02 fixtures: a Home overview, AgentOS sessions/runs/approvals behind the gateway, search hits, and MSW handlers.
+// Operate fixtures: a Home overview, AgentOS sessions/runs/approvals behind the gateway, search hits, and MSW handlers.
 import type { AgentOS, DecideOut, OverviewOut, SearchOut } from "@agnostic/api";
 import { http, HttpResponse } from "msw";
 
 import { API } from "./base";
-import { PROD } from "./p01";
+import { PROD } from "./sample-org";
 
 export const GATEWAY = `${API}/instances/:instance/os`;
 
@@ -150,7 +150,7 @@ function page<T>(items: readonly T[]) {
   return { data: items, meta: { page: 1, limit: 20, total_pages: 1, total_count: items.length } };
 }
 
-export function p02Handlers() {
+export function operateHandlers() {
   return [
     http.get(`${API}/instances/:instance/overview`, () => HttpResponse.json(sampleOverview)),
     http.get(`${API}/instances/:instance/approvals/count`, () =>

@@ -6,19 +6,18 @@ master key yearly, when someone who had it leaves, or when it may have leaked.
 
 ## An instance's JWT key
 
-1. *Settings › Keys › Rotate* stages a next key. The JWKS document
+1. *Settings › Authorization › Rotate key pair* stages a next key. The JWKS document
    (`/.well-known/agnostic/instances/<id>/jwks.json`) lists the active and the next key.
-2. Make the runtime trust both:
-   - with agnostic-bridge reading the JWKS document: nothing to do;
-   - otherwise add the next public key to `JWT_VERIFICATION_KEY` (or the JWKS file) and restart the runtime.
+2. Make the runtime trust both: save the JWKS document as the runtime's `JWT_JWKS_FILE` and restart it.
 3. *Test connection* still passes (tokens are still signed with the active key).
-4. *Activate*. Tokens are signed with the new key from now on.
-5. *Test connection*. Then remove the old public key from the runtime's configuration.
+4. *Activate next key*. Tokens are signed with the new key from now on.
+5. *Test connection*. Then configure the runtime with the new key only (`JWT_VERIFICATION_KEY`, or the JWKS file
+   saved again) and restart it.
 
 If the old key leaked: activate right after the runtime trusts the new key, and remove the old key from the runtime
 at once. Tokens signed with it expire within 5 minutes anyway.
 
-**Verify**: *Settings › Keys* shows one active key; `agnostic_gateway_upstream_duration_seconds_count{outcome="error"}`
+**Verify**: *Settings › Authorization* shows one active key; `agnostic_gateway_upstream_duration_seconds_count{outcome="error"}`
 doesn't rise; the audit log has `instances.keys.stage` and `instances.keys.activate`.
 
 ## The master key

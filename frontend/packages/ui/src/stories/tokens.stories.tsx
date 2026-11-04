@@ -43,9 +43,7 @@ function TokensPage() {
     <div className="flex max-w-5xl flex-col gap-8">
       <header className="flex flex-col gap-1">
         <h1 className="text-[22px] font-semibold">Tokens</h1>
-        <p className="text-[13.5px] text-fg-secondary">
-          Values from the prototype (04-design-system §2). Components use these semantic tokens only.
-        </p>
+        <p className="text-[13.5px] text-fg-secondary">Components use these semantic tokens only.</p>
       </header>
       <Swatches title="Surfaces" values={surfaces} />
       <Swatches title="Lines" values={lines} />

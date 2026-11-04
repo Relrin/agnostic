@@ -27,7 +27,7 @@
 | Connect | the runtime is down, a firewall or NetworkPolicy blocks it | start the runtime; allow the API and workers to reach it (the chart's `networkPolicy.egress.runtimes`) |
 | TLS | an untrusted or expired certificate; the proxy wants a client certificate | add the CA bundle (instance) or `AGNOSTIC_TLS__CA_FILE` (org); renew; add a [client certificate](../admin/instances-and-keys.md) |
 | AgentOS | the URL points at something else, or AgentOS fails to start | check the runtime's logs and `GET /health` |
-| Token (401) | the runtime doesn't trust the current key, or audience/issuer differ | copy `JWT_VERIFICATION_KEY` and the audience/issuer from *Settings › Connection*; finish or cancel a staged key rotation |
+| Token (401) | the runtime doesn't trust the current key, or audience/issuer differ | copy `JWT_VERIFICATION_KEY` and the audience/issuer from *Settings › Authorization*; finish or cancel a staged key rotation |
 | Scopes | the runtime accepts tokens without scopes | turn `authorization` on in AgentOS |
 | Version | the agno minor changed | re-run *Test connection*; check the release notes for supported versions |
 

@@ -14,7 +14,7 @@ import type {
 import { http, HttpResponse } from "msw";
 
 import { API } from "./base";
-import { DANIEL, MARCUS, PROD, STAGING, ownerAccess, sampleMembers, sampleRoles } from "./p01";
+import { DANIEL, MARCUS, PROD, STAGING, ownerAccess, sampleMembers, sampleRoles } from "./sample-org";
 
 const T = "2026-11-01T09:00:00Z";
 const PER_COMPONENT = new Set(["agents", "teams", "workflows"]);
@@ -189,7 +189,7 @@ const COUNTS: Record<string, Pick<RoleOut, "people" | "groups" | "service_accoun
   viewer: { people: 6, groups: 0, service_accounts: 0, version: 3 },
 };
 
-/** `GET /access/roles`: p01's built-ins with their matrices (Viewer was edited: it can also write knowledge). */
+/** `GET /access/roles`: the sample org's built-ins with their matrices (Viewer was edited: it can also write knowledge). */
 export const rolesSampleRoles: RoleOut[] = [
   ...sampleRoles.map((role) => {
     const defaults = DEFAULTS[role.slug];

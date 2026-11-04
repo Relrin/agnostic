@@ -9,6 +9,10 @@
 set -euo pipefail
 
 root="$(cd "$(dirname "$0")/.." && pwd)"
+if ! grep -qvE '^[[:space:]]*(#|$)' "${root}/deploy/upgrade-milestones.txt"; then
+  echo "no milestones in deploy/upgrade-milestones.txt: nothing to upgrade from"
+  exit 0
+fi
 admin_url="${AGNOSTIC_DRILL_DATABASE_URL:?set AGNOSTIC_DRILL_DATABASE_URL to a PostgreSQL URL with CREATEDB rights}"
 work="${root}/.drill"
 mkdir -p "${work}"

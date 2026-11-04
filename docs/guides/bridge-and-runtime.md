@@ -64,7 +64,7 @@ as a dependency).
 | `RUNTIME_REDIS_URL` | the runtime's Redis (queue coordination) |
 | `JWT_VERIFICATION_KEY` or `JWT_JWKS_FILE` | turns per-user authorization on: Agnostic's public key for this instance |
 | `RUNTIME_JWT_ISSUER` | require this `iss`: Agnostic's public URL |
-| `RUNTIME_USER_ISOLATION` | each user sees only their own sessions and memories |
+| `RUNTIME_USER_ISOLATION` | each user sees only their own sessions and memories (unset: on only for the id `dev-prod`) |
 | `RUNTIME_INTERNAL_SERVICE_TOKEN` | the scheduler's token for calling the runtime itself |
 | `RUNTIME_MAX_CONCURRENCY` | runs a worker executes at once |
 | `RUNTIME_CORS_ORIGINS` | direct mode: Agnostic's origin(s), comma-separated |
@@ -80,7 +80,8 @@ docker build -t my-agentos .
 
 1. Deploy the runtime and make it reachable from the Agnostic API (and from browsers, for direct mode).
 2. *Instances › Connect* with its URL. Agnostic discovers it and generates its key pair.
-3. Set `JWT_VERIFICATION_KEY` (and `RUNTIME_JWT_ISSUER`) from *Settings › Connection* on the runtime and restart it.
+3. Set `JWT_VERIFICATION_KEY` (and `RUNTIME_JWT_ISSUER`) on the runtime from the connect wizard or *Settings ›
+   Authorization*, and restart it.
 4. *Test connection*.
 
 Details, key rotation and TLS: [Instances and keys](admin/instances-and-keys.md).

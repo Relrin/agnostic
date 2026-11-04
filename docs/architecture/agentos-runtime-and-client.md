@@ -2,106 +2,63 @@
 
 ## `agnostic-runtime` (reference AgentOS)
 
-`runtime/` is a small AgentOS app on agno 3.1.12 (Python 3.13, agno's supported range). It serves three purposes:
-a target for our contract tests, a demo with the prototype's sample domain, and a template for customers who
-don't run AgentOS yet. It's never shipped with Agnostic.
+`runtime/` is a small AgentOS app on agno 3.1.12 (Python 3.13): the contract-test target, a demo, and a template
+for customers. It isn't shipped with Agnostic. `just runtimes` starts two ([guide](../how-to/reference-runtimes.md)).
 
-It follows the recommended production recipe:
-
-| Setting | Value |
-|---|---|
-| database | sync `PostgresDb` (Studio needs a sync db) in its own database, with pgvector available |
-| `tracing` | on |
-| `scheduler` | on, with a shared `internal_service_token` |
-| `queue` | `QueueConfig(durable=True, redis=…)` |
-| `registry` | `app/registry.py`: tools, mock model presets (ids `mock-precise`, `mock-creative`), the `TriageResult` and `RefundRequest` schemas (`app/schemas.py`), the `support-memory` memory manager, the database |
-| `user_isolation` | on for `dev-prod`; elsewhere `RUNTIME_USER_ISOLATION` (default off) |
-| `authorization` | `Authorization(verify_audience=True, audience=<runtime id>, issuer=RUNTIME_JWT_ISSUER)` when `JWT_VERIFICATION_KEY` (or `JWT_JWKS_FILE`) is set; otherwise `auth_mode=none` for development |
-| `telemetry` | off |
-| bridge | `agnostic-bridge` installed (`app = install(agent_os)`): every route in [the bridge table](#agnostic-bridge) |
-
-Sample components (one file each, matching the Sources path mapping):
-
-- agents: `support-triage`, `billing-agent`, `kb-researcher`, `qa-reviewer`, `web-researcher`, `summarizer`
-  (`app/agents/`);
-- teams: `research-team` (coordinate), `escalation-team` (route) (`app/teams/`);
-- workflows: `ticket-router` (triage, then a CEL `Router`), `daily-brief`, `refund-review` (`app/workflows/`);
-- step functions Studio workflows can run as executors, evaluators or selectors: `check_status`, `send_reply`,
-  `needs_escalation` (`app/functions.py`, registered with `Registry(functions=...)`).
-
-`refund_customer` is decorated with `@approval`: a run that calls it pauses (`PAUSED`) and an approval appears in
-`/approvals`.
-
-### The mock model
-
-`app/models/mock.py` is a deterministic model, so tests and demos never call an LLM:
-
-- the same input always gives the same answer, prefixed with the agent's persona;
-- if the user message names a tool the agent has (`refund`, `order`, `search`, `web`), it calls it with
-  arguments parsed from the message (`refund 19.99 to cus_42` → `{"customer_id": "cus_42", "amount": 19.99}`);
-- after a tool result it replies `Done. <result>`;
-- streaming yields the same text word by word.
-
-Run two instances with `just runtimes` ([guide](../how-to/reference-runtimes.md)).
+- Sync `PostgresDb` (Studio needs one) with pgvector; tracing, scheduler and a durable Redis queue on; telemetry off.
+- `app/registry.py`: tools, mock model presets (`mock-precise`, `mock-creative`), schemas, the `support-memory`
+  memory manager, step functions (`app/functions.py`).
+- `user_isolation` on for `dev-prod`, else `RUNTIME_USER_ISOLATION`; JWT `Authorization(verify_audience=True, …)`
+  when `JWT_VERIFICATION_KEY` or `JWT_JWKS_FILE` is set, else no auth.
+- Components, one file each: agents `support-triage`, `billing-agent`, `kb-researcher`, `qa-reviewer`,
+  `web-researcher`, `summarizer`; teams `research-team`, `escalation-team`, `onboarding-team`; workflows
+  `ticket-router`, `daily-brief`, `refund-review`. `refund_customer` is an `@approval` tool.
+- `app/models/mock.py` is deterministic: the same input gives the same answer, a message naming a tool calls it with
+  parsed arguments (`refund 19.99 to cus_42`), and streaming yields the text word by word.
+- `app = install(agent_os)` installs the bridge.
 
 ## `agnostic-bridge`
 
-`bridge/` is the optional companion customers add to their own AgentOS (`pip install agnostic-bridge`; Python
-3.10-3.13, agno 3.1.x). `install(agent_os)` returns `agent_os.get_app()` with routes under `/agnostic/v1`:
+`bridge/` is an optional package customers add to their AgentOS (`pip install agnostic-bridge`; Python ≥ 3.10,
+`agno[os]>=3.1.12,<3.2`). `install(agent_os)` adds routes under `/agnostic/v1`, mounted ahead of AgentOS's MCP
+catch-all and protected by AgentOS's own auth (their scopes go into `app.state.scope_mappings`). It keeps no state.
 
-- placed ahead of the first mount, so AgentOS's MCP catch-all (`mcp=True` mounts its app at `/`) never shadows them;
-- protected by AgentOS's own auth layer: their scopes are added to `app.state.scope_mappings`, the route → scopes
-  table AgentOS's auth middleware reads, so JWTs, service-account tokens and `agent_os:admin` behave as on built-in
-  routes;
-- stateless: the bridge keeps nothing of its own; only the eval route calls models, and it stores its result in
-  the AgentOS db.
-
-| Route | Scopes | What it does |
+| Route | Scopes | Returns |
 |---|---|---|
-| `GET /agnostic/v1/capabilities` | `config:read` | Bridge, agno and Python versions, `os_id`, a replica id (`AGNOSTIC_BRIDGE_REPLICA_ID`, else `<hostname>:<pid>`), the features the AgentOS object runs and the bridge's endpoints |
-| `POST /agnostic/v1/evals/run` | `evals:write` | `POST /eval-runs` against a chosen config version of an agent or team, drafts included |
-| `GET /agnostic/v1/files/provenance` | `filesystem:read`, `traces:read` | File-tool calls on one workspace path, from the stored traces |
-| `GET /agnostic/v1/workers` | `agent_os:admin` | The answering replica's queue and scheduler |
-| `GET /agnostic/v1/events` | `approvals:read`, `schedules:read` | New approvals and failed schedule runs since a point in time |
-| `POST /agnostic/v1/components/validate` | `components:read` | `{kind, config}` → `{valid, errors: [{path, message}]}`: a strict `from_dict` against the registry and db |
-| `POST /agnostic/v1/components/normalize` | `components:read` | `{kind, config}` → `{config}`: a lenient `from_dict`, then `to_dict()`; 422 with `{valid, errors}` when it can't be built |
-| `GET /agnostic/v1/introspect/components` | `components:read` | Code-defined agents, teams and workflows: `[{id, kind, name, module, file, line, config}]` |
-| `POST /agnostic/v1/cel/evaluate` | `components:read` | `{expression, context: condition\|router\|loop, …sample}` → `{result, type}`: agno's own evaluation of a workflow CEL expression; 503 without cel-python (`agno[cel]`), which `features.cel` reports |
-| `GET /agnostic/v1/registry/{type}/{name}/source` | `registry:read` | `{type, name, module, file, line, declared, requires_confirmation, approval_type}` for one registry entry; 404 when it isn't registered |
+| `GET /capabilities` | `config:read` | versions, `os_id`, replica id, enabled features, endpoints |
+| `POST /evals/run` | `evals:write` | an eval run against a chosen config version, drafts included |
+| `GET /files/provenance` | `filesystem:read`, `traces:read` | file-tool calls on a path, from stored traces |
+| `GET /workers` | `agent_os:admin` | this replica's queue and scheduler |
+| `GET /events` | `approvals:read`, `schedules:read` | new approvals and failed schedule runs since a time |
+| `POST /components/validate`, `/normalize` | `components:read` | strict `from_dict` errors; lenient `from_dict` → `to_dict()` |
+| `GET /introspect/components` | `components:read` | code-defined components with module, file, line, config |
+| `POST /cel/evaluate` | `components:read` | agno's evaluation of a CEL expression (503 without `agno[cel]`) |
+| `GET /registry/{type}/{name}/source` | `registry:read` | where a registry entry is defined, `declared`, approval flags |
 
-The component routes need a synchronous db (503 otherwise) and store nothing. Source locations are best-effort and
-null when `inspect` can't find them. The control plane's capability probe marks the bridge available on a `2xx` from
-`/capabilities`. `app.dump_openapi` leaves the bridge's paths out of the pinned AgentOS OpenAPI snapshot.
+Component routes need a sync db. The control plane marks the bridge available on a `2xx` from `/capabilities`.
+`direct_mode_cors(origins)` is the CORS config for [direct mode](identity-access-gateway.md#the-gateway).
 
-### Golden configs
-
-`app/dump_golden.py` (`just golden`) writes `to_dict()` of every runtime agent and team, plus two fixtures that set
-every field Studio edits, to `backend/tests/golden/agno-3.1/{agents,teams}/<id>.json`. `contract.yml` regenerates
-them and fails when they differ from the committed files, so a change in how agno serializes a config is reviewed
-with the agno upgrade.
+`app/dump_golden.py` (`just golden`) writes `to_dict()` of every runtime component to `backend/tests/golden/agno-3.1/`;
+`contract.yml` regenerates them and fails on a diff, so agno serialization changes are reviewed with the upgrade.
 
 ## `agnostic-agentos-client`
 
-`backend/packages/agnostic-agentos-client` is the typed async client the control plane uses for every AgentOS.
+`backend/packages/agnostic-agentos-client`: the typed async client for every AgentOS. It doesn't depend on agno (only
+the `assistant` module does).
 
-- **Transport**: httpx with HTTP/2 and one pool per instance; idempotent GETs retry on connection errors and
-  502/503/504 with exponential backoff.
-- **Auth**: `NoAuth`, `SecurityKeyAuth` (`OS_SECURITY_KEY`), or `BearerAuth(token_provider)` for minted JWTs.
-- **Errors**: `InstanceUnreachableError`, `InstanceAuthFailedError` (401), `ForbiddenError` (403),
-  `NotFoundError` (404), `CapabilityDisabledError` (503: feature not enabled on that runtime),
-  `UnexpectedResponseError` (anything else, or a body that doesn't match the pinned schema).
-- **Models**: generated with datamodel-code-generator from `openapi/agentos-3.1.12.json`, the OpenAPI document of
-  the pinned runtime (`_generated/models.py`). AgentOS publishes `/config` as a free-form object, so `OsConfig`
-  types the sections the control plane relies on and keeps the rest as extra fields.
-- **Methods (v0)**: `health()`, `info()`, `config()`. Later phases add one method per endpoint they need.
-
-We don't reuse agno's own client in the control plane: it would pull agno into the Python 3.15 process.
+- **Transport**: httpx, HTTP/2, one pool per instance; idempotent GETs retry on connection errors and 502/503/504.
+- **Auth**: `NoAuth`, `SecurityKeyAuth`, `StaticBearerAuth`, `BearerAuth(token_provider)`.
+- **Errors**: `InstanceUnreachableError`, `InstanceAuthFailedError` (401), `ForbiddenError` (403), `NotFoundError`
+  (404), `CapabilityDisabledError` (503), `UnexpectedResponseError`.
+- **Models**: generated from `openapi/agentos-3.1.12.json` (`just agentos-client-gen`); `OsConfig` types the `/config`
+  sections the control plane uses and keeps the rest.
+- **Methods**: `health()`, `info()`, `config()`; `get_json()` / `request_json()` for other routes (mapped errors,
+  only GETs retried); `probe()` → `(status, body excerpt)` without mapping; `open_stream()` → the unread response for
+  the gateway passthrough (no mapping, no retries).
 
 ## Contract tests
 
-`backend/tests/contract/` checks the client and its models against a live runtime: `/health`, `/info` (agno
-version equals the pinned one, component counts) and `/config` (the sample components, queue and tracing
-sections). Run them with `just test-contract`; CI runs them in `contract.yml` on changes and nightly.
-
-Upgrading agno: bump it in `runtime/pyproject.toml`, `uv lock`, run `just agentos-client-gen`, review the model
-diff, run the contract suite. Renovate holds agno upgrades for approval for this reason.
+`backend/tests/contract/` runs against a live runtime (`just test-contract`; CI `contract.yml` on changes and
+nightly): `test_agentos_runtime.py`, `test_inline_approvals.py`, `test_studio_configs.py`. To upgrade agno: bump
+`runtime/pyproject.toml`, `uv lock`, `just agentos-client-gen`, review the model diff, run the suite. Renovate holds
+agno upgrades for approval.

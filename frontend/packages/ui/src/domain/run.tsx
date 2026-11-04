@@ -1,4 +1,4 @@
-// Run widgets (04 §3.3): EntitySquare, ToolCallChip, RunBlock, UserBubble, ApprovalCard, StepTimeline, StepHitlForm,
+// Run widgets: EntitySquare, ToolCallChip, RunBlock, UserBubble, ApprovalCard, StepTimeline, StepHitlForm,
 // RunTimelineSeparator, RunCard. Presentational: pages map RunState to these props.
 import {
   Check,

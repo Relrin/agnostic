@@ -1,4 +1,4 @@
-import { API, notificationsHandlers, p01Handlers, renderWithProviders } from "@agnostic/testing";
+import { API, notificationsHandlers, sampleOrgHandlers, renderWithProviders } from "@agnostic/testing";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
@@ -7,7 +7,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { NotificationPreferences } from "./notification-preferences";
 
-const handlers = () => [...p01Handlers(), ...notificationsHandlers()];
+const handlers = () => [...sampleOrgHandlers(), ...notificationsHandlers()];
 const server = setupServer(...handlers());
 
 beforeAll(() => {

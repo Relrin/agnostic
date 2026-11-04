@@ -215,6 +215,52 @@ async def test_invite_accept_and_org_roles(stack: Stack) -> None:
         assert action in actions
 
 
+async def test_invite_link_without_email(stack: Stack) -> None:
+    owner = await stack.owner()
+    assert (await owner.get("/api/v1/org")).json()["email_delivery"] is True
+
+    created = await owner.post("/api/v1/invitations", json={"email": "jonas@localhost.company", "delivery": "link"})
+    assert created.status_code == 201, created.text
+    assert created.json()["email_sent"] is False
+    assert stack.mailer.sent == []
+    invitation_id = created.json()["invitation"]["id"]
+    first = created.json()["accept_url"].rsplit("/", 1)[1]
+
+    renewed = await owner.post(f"/api/v1/invitations/{invitation_id}/link")
+    assert renewed.status_code == 200, renewed.text
+    assert renewed.json()["email_sent"] is False
+    assert stack.mailer.sent == []
+    second = renewed.json()["accept_url"].rsplit("/", 1)[1]
+    anonymous = stack.client()
+    assert (await anonymous.get(f"/api/v1/invitations/{first}/preview")).status_code == 404
+    assert (await anonymous.get(f"/api/v1/invitations/{second}/preview")).status_code == 200
+
+    resent = await owner.post(f"/api/v1/invitations/{invitation_id}/resend")
+    assert resent.json()["email_sent"] is True
+    assert stack.mailer.sent[-1].to == "jonas@localhost.company"
+
+    revoked = await owner.delete(f"/api/v1/invitations/{invitation_id}")
+    assert revoked.status_code == 204
+    assert (await owner.post(f"/api/v1/invitations/{invitation_id}/link")).status_code == 404
+
+    actions = [event["action"] for event in (await owner.get("/api/v1/audit/events")).json()["data"]]
+    assert {"invitations.create", "invitations.link", "invitations.resend", "invitations.revoke"} <= set(actions)
+
+
+async def test_invite_keeps_the_link_when_email_fails(stack: Stack) -> None:
+    owner = await stack.owner()
+    stack.mailer.failing = True
+    created = await owner.post("/api/v1/invitations", json={"email": "jonas@localhost.company"})
+    assert created.status_code == 201, created.text
+    assert created.json()["email_sent"] is False
+    assert created.json()["accept_url"].startswith("http://agnostic.test/invite/")
+
+    stack.mailer.configured = False
+    assert (await owner.get("/api/v1/org")).json()["email_delivery"] is False
+    unconfigured = await owner.post("/api/v1/invitations", json={"email": "maya@localhost.company"})
+    assert unconfigured.json()["email_sent"] is False
+
+
 async def test_org_settings_and_seats(stack: Stack) -> None:
     owner = await stack.owner()
     updated = await owner.patch(

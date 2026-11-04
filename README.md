@@ -1,8 +1,8 @@
 # Agnostic
 
 A self-hosted control plane for [Agno](https://github.com/agno-agi/agno) AgentOS runtimes: identity and access,
-instance management, operations, observability and a UI for agents, teams and workflows. It runs entirely
-inside your network and talks to every AgentOS over its REST/SSE API.
+instance management, operations, observability, and a UI for agents, teams and workflows. It runs inside your
+network and talks to every AgentOS over its REST/SSE API.
 
 ## Prerequisites
 
@@ -11,7 +11,7 @@ inside your network and talks to every AgentOS over its REST/SSE API.
 | [uv](https://docs.astral.sh/uv/) | 0.13.6 | installs Python 3.15.2 (control plane) and 3.13 (reference runtime) for you |
 | Node.js | 26.13.0 (Active LTS; `.nvmrc`) | 24.11+ works for local development |
 | Yarn | 4.18.1 | bundled in `frontend/.yarn/releases`; any global `yarn` delegates to it |
-| Docker | with Compose v2 | for PostgreSQL and Redis; optional if you use SQLite |
+| Docker | with Compose v2 | for PostgreSQL, Redis and Mailpit; optional if you use SQLite |
 | [just](https://just.systems) | 1.59.0 | `uv tool install rust-just==1.59.0` |
 | Git | any | on Windows, Git for Windows provides the `sh` that `just` uses |
 
@@ -19,23 +19,23 @@ inside your network and talks to every AgentOS over its REST/SSE API.
 
 ```bash
 git clone <this repository> agnostic && cd agnostic
-just setup      # .env from .env.example, uv sync (backend + runtime), yarn install — all from lockfiles
-just up         # PostgreSQL 18 (+pgvector) and Redis 8 in Docker
-just migrate    # agnostic schema, Procrastinate tables, module tables
-cd backend && uv run agnostic bootstrap --org-name "Localhost Company" --owner-email you@example.com && cd ..
+just setup      # .env from .env.example; uv sync (backend, runtime, bridge); yarn install (all from lockfiles)
+just up         # PostgreSQL 18 (+pgvector), Redis 8, Mailpit and a Slack mock (deploy/dev/compose.yml)
+just migrate    # kernel and every installed module
+just bootstrap  # org "Localhost Company" and its Owner (AGNOSTIC_DEV_OWNER_EMAIL / _PASSWORD in .env)
 just dev        # API + worker on :8000, web app on :5173
 ```
 
-Open <http://localhost:5173> and sign in with the Owner you just created (or run `agnostic bootstrap` without
-`--owner-email` and open the setup link it prints). **Instances › Connect** walks you through adding an AgentOS;
-`just runtimes` starts two reference ones. Sign-in with GitHub, GitLab, Google, Okta or any OIDC provider is
-configured with environment variables ([sign-in providers](docs/how-to/sign-in-providers.md)).
+Open <http://localhost:5173> and sign in as the Owner. To create a different Owner, run
+`cd backend && uv run agnostic bootstrap --org-name "…" --owner-email you@example.com`, or leave out
+`--owner-email` and open the one-time setup link it prints.
 
-No Docker? Set `AGNOSTIC_DATABASE__URL=sqlite:///agnostic.db` in `.env`, then `just migrate && just dev`. Jobs run
-inside the API process in that mode (see [configuration](docs/how-to/configuration.md)).
+`just runtimes` starts two reference AgentOS instances (`dev-prod` on :7777, `dev-staging` on :7778) and `just seed`
+connects them ([reference runtimes](docs/how-to/reference-runtimes.md)). Sign-in with GitHub, GitLab, Google, Okta,
+any OIDC or SAML provider: [sign-in providers](docs/how-to/sign-in-providers.md).
 
-Optional: `just runtimes` starts two reference AgentOS instances (`dev-prod` on :7777, `dev-staging` on :7778)
-with the prototype's sample agents, and `just test-contract` checks the typed client against them.
+No Docker? Set `AGNOSTIC_DATABASE__URL=sqlite:///agnostic.db` in `.env`, then `just migrate && just bootstrap &&
+just dev`. Jobs run inside the API process in that mode ([configuration](docs/how-to/configuration.md)).
 
 ## Checks
 
@@ -49,11 +49,15 @@ just --list     # everything else
 
 | Path | What it is |
 |---|---|
-| `backend/` | uv workspace: `agnostic-kernel`, `agnostic-agentos-client`, the feature modules (`identity`, `org`, `access`, `instances`, `gateway`, `audit`, `settings`), the `agnostic` server and CLI |
-| `frontend/` | Yarn workspaces: `apps/web` shell, `@agnostic/ui`, `@agnostic/core`, `@agnostic/api`, feature modules in `modules/*` |
+| `backend/packages/` | `agnostic-kernel` (settings, db, jobs, modules, auth), `agnostic-agentos-client`, `agnostic-cel`, `agnostic-codegen`, `agnostic-spec` |
+| `backend/modules/` | one uv package per feature module (`identity`, `org`, `access`, `instances`, `gateway`, `audit`, `studio`, `sources`, `assistant`, …) |
+| `backend/apps/agnostic-server/` | composition root: the `agnostic` CLI, API and worker |
+| `frontend/` | Yarn workspaces: `apps/web` shell, `packages/*` (`ui`, `core`, `api`, `testing`, `assistant`, `editor`, `studio`), feature modules in `modules/*` |
 | `runtime/` | `agnostic-runtime`, the reference AgentOS app (contract tests, demos, customer template) |
-| `deploy/dev/` | Docker Compose for development dependencies (never shipped) |
-| `docs/` | architecture, how-to guides, reference - [start here](docs/README.md) |
+| `bridge/` | `agnostic-bridge`, the optional package customers install in their AgentOS |
+| `deploy/` | `dev/` (development Compose, never shipped), `compose/`, `helm/` |
+| `scripts/` | dev seed, fixture recording, license checks, upgrade and restore drills |
+| `docs/` | architecture, how-to guides, reference: [start here](docs/README.md) |
 
 ## License
 

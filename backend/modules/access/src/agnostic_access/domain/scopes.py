@@ -86,7 +86,7 @@ CONTROL_PLANE_EXTRA: tuple[tuple[str, str], ...] = (
     ("evals:gates:write", "Change publish gates"),
     ("queue:operate", "Requeue and resume queued runs"),
 )
-"""Control-plane scopes named in whose modules arrive in later phases."""
+"""Control-plane scopes the catalog always lists, so roles can grant them even while their module is disabled."""
 
 
 def split(scope: str) -> tuple[str, str | None, str]:
@@ -127,7 +127,7 @@ def granting(held: Iterable[str], required: str, *, control_plane: bool = False)
 
 
 def compress(scopes: Iterable[str]) -> list[str]:
-    """Drop scopes another scope in the set already covers (06 §3.4); keeps tokens small, never widens access."""
+    """Drop scopes another scope in the set already covers; keeps tokens small, never widens access."""
     unique = set(scopes)
     if ADMIN_SCOPE in unique:
         return [ADMIN_SCOPE]

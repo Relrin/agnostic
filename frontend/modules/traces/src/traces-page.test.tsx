@@ -1,4 +1,4 @@
-import { observeHandlers, p01Handlers, p02Handlers, renderPage } from "@agnostic/testing";
+import { observeHandlers, sampleOrgHandlers, operateHandlers, renderPage } from "@agnostic/testing";
 import { TooltipProvider } from "@agnostic/ui";
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -16,7 +16,7 @@ function TracesPage() {
   );
 }
 
-const handlers = () => [...p01Handlers(), ...p02Handlers(), ...observeHandlers()];
+const handlers = () => [...sampleOrgHandlers(), ...operateHandlers(), ...observeHandlers()];
 const server = setupServer(...handlers());
 
 beforeAll(() => {

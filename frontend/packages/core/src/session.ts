@@ -1,5 +1,5 @@
 // Who is signed in, the org, the instances and the signed-in person's access: the server state every page
-// and the shell share (query keys namespaced ["org", …] and [instance, …] per 03 §4).
+// and the shell share (query keys namespaced ["org", …] and [instance, …]).
 import {
   instancesGetHealthOptions,
   instancesListInstancesOptions,

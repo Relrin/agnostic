@@ -1,4 +1,4 @@
-// Chat widgets (04 §3.3): Composer (attachments, mentions, Enter to send, Stop while streaming) and SessionList.
+// Chat widgets: Composer (attachments, mentions, Enter to send, Stop while streaming) and SessionList.
 import { AtSign, Paperclip, Search, Send, Square, X } from "lucide-react";
 import { useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 

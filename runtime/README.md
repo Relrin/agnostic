@@ -18,6 +18,7 @@ docker build -t my-agentos .
 | `RUNTIME_DATABASE_URL`, `RUNTIME_REDIS_URL` | the runtime's own Postgres (with pgvector) and Redis |
 | `JWT_VERIFICATION_KEY` or `JWT_JWKS_FILE` | turns per-user authorization on (the control plane's public key) |
 | `RUNTIME_JWT_ISSUER` | require this `iss` (the control plane's public URL) |
+| `RUNTIME_USER_ISOLATION` | each user sees only their own sessions and memories (unset: on only for the id `dev-prod`) |
 | `RUNTIME_CORS_ORIGINS` | direct mode: the control plane's origin(s), comma-separated |
 | `RUNTIME_AUTHZ_AUDIT` | keep AgentOS's authorization decision log (the control plane ingests it) |
 

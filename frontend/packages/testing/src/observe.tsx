@@ -17,8 +17,8 @@ import type {
 import { http, HttpResponse } from "msw";
 
 import { API } from "./base";
-import { PROD } from "./p01";
-import { GATEWAY } from "./p02";
+import { PROD } from "./sample-org";
+import { GATEWAY } from "./operate";
 
 const T0 = Date.parse("2026-11-01T03:00:02Z");
 const at = (seconds: number) => new Date(T0 + seconds * 1000).toISOString();

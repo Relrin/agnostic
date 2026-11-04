@@ -8,17 +8,21 @@ import httpx
 import orjson
 import procrastinate
 import pytest
+from alembic.autogenerate import compare_metadata
+from alembic.runtime.migration import MigrationContext
 from asgi_lifespan import LifespanManager
-from sqlalchemy import text
+from sqlalchemy import Connection, ForeignKeyConstraint, text
+from sqlalchemy.sql.schema import SchemaItem
 
 from agnostic_kernel import migrations_runner
 from agnostic_kernel.cache import create_redis, detect_server, probe_commands
 from agnostic_kernel.checks import run_endpoint_checks
 from agnostic_kernel.container import build_container
-from agnostic_kernel.db import create_engine
+from agnostic_kernel.db import create_engine, make_metadata
 from agnostic_kernel.jobs import JobProgressReporter, worker_options
 from agnostic_kernel.modules import load_modules
 from agnostic_kernel.settings import Settings
+from agnostic_kernel.tables import KernelBase
 from agnostic_kernel.testing import make_settings, wait_for
 from agnostic_server.app import create_app
 from tests.support.probe import with_probe
@@ -67,6 +71,62 @@ async def test_migrations_up_down_up(fresh_postgres: str) -> None:
         assert (await migrations_runner.state(engine, modules)).up_to_date
     finally:
         await engine.dispose()
+
+
+RAW_SQL_OBJECTS = {
+    # Built with raw SQL on PostgreSQL only, so the models don't declare them.
+    "tsv",  # search_documents: generated tsvector column
+    "ix_search_documents_tsv",
+    "ix_search_documents_title_trgm",
+}
+
+
+CROSS_MODULE_FOREIGN_KEYS = {
+    # A module's metadata can't name another module's tables, so only the migration declares these.
+    ("org_members", "identity_users"),
+}
+
+
+def _include_name(name: str | None, type_: str, _parents: object) -> bool:
+    return type_ != "schema" or name == "agnostic"
+
+
+def _include(obj: SchemaItem, name: str | None, type_: str, _reflected: bool, _other: object) -> bool:
+    if type_ == "table" and name is not None:
+        # The version table and audit_events' monthly and default partitions.
+        return name != "alembic_version" and not name.startswith("audit_events_")
+    if isinstance(obj, ForeignKeyConstraint):
+        return (obj.table.name, obj.referred_table.name) not in CROSS_MODULE_FOREIGN_KEYS
+    return name not in RAW_SQL_OBJECTS
+
+
+async def test_migrations_match_models_on_postgres(fresh_postgres: str) -> None:
+    engine = create_engine(make_settings(fresh_postgres).database)
+    modules = list(load_modules().installed.values())
+    metadata = make_metadata()  # same default schema and naming convention as each module's tables
+    for source in [KernelBase.metadata, *(m for module in modules if (m := module.metadata()) is not None)]:
+        for table in source.tables.values():
+            _ = table.to_metadata(metadata)
+
+    def compare(connection: Connection) -> list[Any]:
+        context = MigrationContext.configure(
+            connection,
+            opts={
+                "compare_type": True,
+                "include_schemas": True,
+                "include_name": _include_name,
+                "include_object": _include,
+            },
+        )
+        return compare_metadata(context, metadata)
+
+    try:
+        await migrations_runner.upgrade(engine, modules)
+        async with engine.connect() as connection:
+            diffs = await connection.run_sync(compare)
+    finally:
+        await engine.dispose()
+    assert not diffs, diffs
 
 
 async def test_endpoint_checks_pass(settings: Settings) -> None:

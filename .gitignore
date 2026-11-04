@@ -46,3 +46,6 @@ blob-report/
 Thumbs.db
 **/.tsbuild/
 deploy/compose/.env
+
+# Archify working folders (diagram sources, candidates, browser evidence)
+.archify/

@@ -1,4 +1,4 @@
-// Small per-browser conveniences for the shell (03 §4: localStorage only for conveniences, wrapped in try/catch).
+// Small per-browser conveniences for the shell (localStorage only for conveniences, wrapped in try/catch).
 const LAST_INSTANCE_KEY = "agnostic.last-instance";
 
 export function lastInstance(): string | undefined {

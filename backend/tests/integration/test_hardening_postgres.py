@@ -22,7 +22,7 @@ async def test_upgrade_check_rolls_back(fresh_postgres: str) -> None:
     modules = list(load_modules().installed.values())
     try:
         applied = await migrations_runner.check_upgrade(engine, modules)
-        assert {"k0001_kernel_base", "n0003_mtls_direct_mode"} <= {step.revision for step in applied}
+        assert {"k0001_kernel_base", "n0001_instances"} <= {step.revision for step in applied}
         assert all(step.seconds >= 0 for step in applied)
         state = await migrations_runner.state(engine, modules)
         assert state.current == ()

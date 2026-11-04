@@ -6,7 +6,7 @@ import {
   auditGovernanceHandlers,
   auditRecorder,
   ownerAccess,
-  p01Handlers,
+  sampleOrgHandlers,
   renderPage,
   sampleAuditEvents,
   type AuditRecorder,
@@ -21,7 +21,7 @@ import { AuditPage } from "./audit-page";
 
 let recorder: AuditRecorder = auditRecorder();
 // The audit handlers go first: they answer /me/access with export rights and /audit/events with the sample.
-const handlers = () => [...auditGovernanceHandlers(recorder), ...p01Handlers()];
+const handlers = () => [...auditGovernanceHandlers(recorder), ...sampleOrgHandlers()];
 const server = setupServer(...handlers());
 
 beforeAll(() => {
@@ -309,7 +309,7 @@ describe("AuditPage", () => {
   });
 
   it("hides export without audit:export", async () => {
-    server.use(...p01Handlers());
+    server.use(...sampleOrgHandlers());
     renderPage(AuditPage, { path: PATH });
     await screen.findByRole("table", { name: "Audit events" });
     expect(screen.queryByRole("button", { name: "Export view" })).not.toBeInTheDocument();

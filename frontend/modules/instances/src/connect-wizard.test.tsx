@@ -1,5 +1,5 @@
 import type { InstanceOut } from "@agnostic/api";
-import { API, p01Handlers, renderPage, sampleInstances } from "@agnostic/testing";
+import { API, sampleOrgHandlers, renderPage, sampleInstances } from "@agnostic/testing";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
@@ -30,7 +30,7 @@ const discovery = {
   mcp_enabled: false,
 };
 const wizardHandlers = [
-  ...p01Handlers(),
+  ...sampleOrgHandlers(),
   http.post(`${API}/instances/probe`, () =>
     HttpResponse.json({ ok: true, steps: [step("dns", "DNS"), step("connect", "Connect")], discovery }),
   ),

@@ -3,7 +3,7 @@ import {
   assistantCalls,
   assistantHandlers,
   dailyBriefEvents,
-  p01Handlers,
+  sampleOrgHandlers,
   renderPage,
 } from "@agnostic/testing";
 import { screen, within } from "@testing-library/react";
@@ -16,13 +16,13 @@ import { initialAnswer, reduceAnswer, type AnswerEvent } from "./answer";
 import { GeneratedText } from "./generated-text";
 import { completion, suggestionsFor } from "./suggestions";
 
-const server = setupServer(...p01Handlers());
+const server = setupServer(...sampleOrgHandlers());
 
 beforeAll(() => {
   server.listen({ onUnhandledFrame: "error" });
 });
 afterEach(() => {
-  server.resetHandlers(...p01Handlers());
+  server.resetHandlers(...sampleOrgHandlers());
 });
 afterAll(() => {
   server.close();

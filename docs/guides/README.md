@@ -1,8 +1,7 @@
 # Guides
 
-These guides ship with every installation. The web app shows them under *Help*, so they work without internet
-access. The contributor documentation (architecture, ADRs, how-to guides for developers) lives next to them in the
-repository's `docs/` folder.
+Guides for administrators and operators. They ship with every installation and the web app shows them under
+*Help*, so they work without internet access.
 
 ## Administration
 
@@ -10,12 +9,12 @@ repository's `docs/` folder.
 |---|---|
 | [Install Agnostic](admin/install.md) | requirements, the pre-flight checklist, Compose and Helm, the first Owner |
 | [Air-gapped installations](admin/air-gapped.md) | the offline kit, mirroring the image and chart, no outbound calls |
-| [Sign-in, SSO and SCIM](admin/sso-and-scim.md) | local accounts, OIDC and SAML providers, directory sync |
+| [Sign-in, SSO and SCIM](admin/sso-and-scim.md) | local accounts, invitations, OIDC and SAML providers, directory sync |
 | [Instances and keys](admin/instances-and-keys.md) | connecting AgentOS runtimes, JWT keys, CA bundles, client certificates |
 | [Direct mode](admin/direct-mode.md) | browsers calling a runtime themselves |
 | [Key management](admin/key-management.md) | the master key, KMS and Vault providers, rotation |
 | [Backups and disaster recovery](admin/backups-and-dr.md) | what to back up, RPO and RTO, the DR runbook |
-| [Upgrades](admin/upgrades.md) | rolling upgrades, migration checks, rollback |
+| [Upgrades](admin/upgrades.md) | rolling upgrades, migration checks, rollback, pre-release databases |
 | [Hardening](admin/hardening.md) | security headers, TLS, network policies, image signatures |
 | [Managed services](admin/managed-services.md) | RDS, Cloud SQL, Azure, ElastiCache, Memorystore, S3-compatible storage |
 | [Observability](admin/observability.md) | metrics, alerts, traces, logs, health endpoints |

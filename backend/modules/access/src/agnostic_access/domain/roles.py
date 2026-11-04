@@ -26,7 +26,7 @@ class AccessRole:
     color: str
     kind: Literal["built_in", "custom"]
     permissions: Mapping[str, tuple[str, ...]]
-    """``{resource: (actions)}``, the role editor's matrix (design spec B §9.2)."""
+    """``{resource: (actions)}``, the role editor's matrix."""
     run_scope: Mapping[str, RunScope] = field(default_factory=dict[str, RunScope])
     """``{"agents": ("support-triage",)}`` replaces ``agents:run`` with per-agent run scopes."""
     bindable_instance_ids: tuple[str, ...] | None = None

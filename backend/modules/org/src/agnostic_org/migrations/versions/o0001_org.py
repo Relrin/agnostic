@@ -59,6 +59,7 @@ def upgrade() -> None:
         sa.Column("email", sa.String(320), nullable=False),
         sa.Column("org_role", sa.String(20), nullable=False),
         sa.Column("bindings", JSON, nullable=False),
+        sa.Column("group_ids", JSON, nullable=False),
         sa.Column("access_ends_at", sa.DateTime(timezone=True)),
         sa.Column("invited_by", sa.String(40), nullable=False),
         sa.Column("token_hash", sa.String(64), nullable=False),

@@ -1,8 +1,12 @@
 # Configuration reference
 
-Environment variables use the `AGNOSTIC_` prefix and `__` between levels. Lists accept comma-separated values.
-TOML files (`AGNOSTIC_CONFIG_FILE`) use the same names as sections and keys. Source of truth:
-`backend/packages/agnostic-kernel/src/agnostic_kernel/settings.py`.
+Environment variables use the `AGNOSTIC_` prefix and `__` between levels; priority: environment, then `.env`, then
+the TOML file named by `AGNOSTIC_CONFIG_FILE` (same names as sections and keys). Kernel lists (origins, sentinels,
+queues, disabled modules, previous keys) and the sign-in providers' scopes and domains accept comma-separated values;
+other lists and maps take JSON (`["/app"]`, `{"authorization": "…"}`).
+
+Source of truth: `backend/packages/agnostic-kernel/src/agnostic_kernel/settings.py` for the kernel, and each
+module's `backend/modules/<module>/src/agnostic_<module>/settings.py` (`AGNOSTIC_<MODULE>__*`).
 
 ## General
 
@@ -57,7 +61,7 @@ TOML files (`AGNOSTIC_CONFIG_FILE`) use the same names as sections and keys. Sou
 | `AGNOSTIC_HTTP__SECURE_COOKIES` | on unless `PUBLIC_URL` is `http://` | mark the session and CSRF cookies `Secure` |
 | `AGNOSTIC_HTTP__WEB_DIR` | — (image: `/opt/agnostic-web`) | serve the built web app on the API's origin |
 | `AGNOSTIC_HTTP__DOCS_DIR` | — (image: `/opt/agnostic-docs`) | user guides shown by the in-product help (Markdown) |
-| `AGNOSTIC_HTTP__CSP_REPORT_ONLY` | `false` | send the content security policy as report-only ([ADR-030](../adr/0030-content-security-policy.md)) |
+| `AGNOSTIC_HTTP__CSP_REPORT_ONLY` | `false` | send the content security policy as `Content-Security-Policy-Report-Only`, to try a new setup without breaking pages |
 | `AGNOSTIC_HTTP__CSP_EXTRA_CONNECT` | — | extra `connect-src` origins (CSV); direct-mode runtimes are added automatically |
 | `AGNOSTIC_HTTP__HSTS_MAX_AGE` | `31536000` | `Strict-Transport-Security` max-age when `PUBLIC_URL` is https; `0` leaves it to the proxy |
 | `AGNOSTIC_TLS__CA_FILE` | — | extra CA certificates trusted for outbound HTTPS (runtimes, IdPs, object storage, SIEM, KMS, git hosts) |
@@ -86,8 +90,9 @@ TOML files (`AGNOSTIC_CONFIG_FILE`) use the same names as sections and keys. Sou
 | `AGNOSTIC_SECRETS__AZURE__TENANT_ID` / `__CLIENT_ID` / `__CLIENT_SECRET` / `__FEDERATED_TOKEN_FILE` / `__MANAGED_IDENTITY` / `__AUTHORITY_HOST` | `AZURE_*` variables | client secret, workload identity or managed identity |
 | `AGNOSTIC_SECRETS__GCP__KEY_NAME` / `__CREDENTIALS_FILE` / `__ENDPOINT` | — / `GOOGLE_APPLICATION_CREDENTIALS` / Cloud KMS | crypto key (`projects/…/cryptoKeys/…`); without a key file, the metadata server's token |
 | `AGNOSTIC_SECRETS__<PROVIDER>__TLS__CA_FILE` / `__CERT_FILE` / `__KEY_FILE` | — | TLS material for the KMS endpoint (adds to `AGNOSTIC_TLS__CA_FILE`) |
-| `AGNOSTIC_SMTP__URL` | — | `smtp://user:pass@host:587` (STARTTLS when offered) or `smtps://host:465`; without it, emails (invitations, password resets) are written to the log |
+| `AGNOSTIC_SMTP__URL` | — | `smtp://user:pass@host:587` (STARTTLS when offered) or `smtps://host:465`; without it, emails (invitations, password resets) are written to the log and invitations are shared as links (`email_delivery: false` on `GET /api/v1/org`) |
 | `AGNOSTIC_SMTP__SENDER` | `Agnostic <agnostic@localhost>` | `From:` address |
+| `AGNOSTIC_SMTP__TIMEOUT` | `10` | seconds for connecting and talking to the SMTP server; a failed send returns the invitation link with `email_sent: false` |
 | `AGNOSTIC_SMTP__TLS__CA_FILE` / `__CERT_FILE` / `__KEY_FILE` | — | TLS material |
 
 ## Sign-in (identity module)
@@ -100,7 +105,7 @@ See [sign-in providers](../how-to/sign-in-providers.md) for setup per identity p
 | `AGNOSTIC_IDENTITY__PROVIDERS__<ID>__PRESET` | `oidc` | `github`, `gitlab`, `google`, `okta` or `oidc` (any OIDC IdP) |
 | `…__<ID>__CLIENT_ID` / `__CLIENT_SECRET` | — | OAuth client registered at the provider; callback URL `{PUBLIC_URL}/api/v1/auth/sso/<id>/callback` |
 | `…__<ID>__ISSUER` | preset default | OIDC issuer (required for Okta and generic OIDC; self-managed GitLab) |
-| `…__<ID>__BASE_URL` | `https://github.com` | GitHub Enterprise Server URL |
+| `…__<ID>__BASE_URL` | — (the `github` preset implies github.com) | GitHub Enterprise Server URL |
 | `…__<ID>__DISPLAY_NAME` / `__SCOPES` | preset default | button label; requested scopes |
 | `…__<ID>__JIT_PROVISIONING` | `false` | people without an invitation join as Members on first sign-in… |
 | `…__<ID>__ALLOWED_EMAIL_DOMAINS` | — | …when their email domain is listed (Google: also preselects the Workspace domain) |
@@ -126,8 +131,6 @@ See [sign-in providers](../how-to/sign-in-providers.md) for setup per identity p
 | `AGNOSTIC_GATEWAY__HEARTBEAT_SECONDS` | `15` | SSE keep-alive comments while a runtime is quiet |
 | `AGNOSTIC_GATEWAY__UPSTREAM_READ_TIMEOUT` | `600` | seconds a runtime may stay silent mid-response |
 | `AGNOSTIC_GATEWAY__CIRCUIT_FAILURES` / `__CIRCUIT_COOLDOWN_SECONDS` | `5` / `30` | consecutive connection failures before failing fast, and for how long |
-| `AGNOSTIC_AUDIT__RETENTION_DAYS` | `400` | older monthly partitions are dropped (ADR-017) |
-| `AGNOSTIC_AUDIT__MAINTENANCE_CRON` | `17 3 * * *` | partition creation and retention |
 
 ## Logging and tracing
 
@@ -146,7 +149,7 @@ See [sign-in providers](../how-to/sign-in-providers.md) for setup per identity p
 |---|---|---|
 | `AGNOSTIC_MODULES__DISABLED` | — | modules to turn off, e.g. `assistant,sources` |
 
-## Operate (P02)
+## Operate: approvals, observe, evals, context, search, live events
 
 | Variable | Default | Meaning |
 |---|---|---|
@@ -168,7 +171,7 @@ See [sign-in providers](../how-to/sign-in-providers.md) for setup per identity p
 | `AGNOSTIC_NOTIFICATIONS__HEARTBEAT_SECONDS` | `15` | keepalive interval on `/api/v1/events` |
 | `AGNOSTIC_NOTIFICATIONS__MAX_STREAM_SECONDS` | `1800` | streams end after this; browsers reconnect with `Last-Event-ID` |
 
-## Control: approvals, notifications, scheduler, queue
+## Control: approvals, notifications, scheduler
 
 | Variable | Default | Meaning |
 |---|---|---|
@@ -225,6 +228,14 @@ chain (*Audit retention*), SIEM destinations, and the org setting `temporary_acc
 | `AGNOSTIC_SOURCES__COMMITTER_NAME` / `__COMMITTER_EMAIL` | `Agnostic Studio` / `studio@agnostic.invalid` | the committer of Studio's commits (the author is the person) |
 | `AGNOSTIC_SOURCES__GITHUB_API_URL` / `__GITHUB_WEB_URL` | `https://api.github.com` / `https://github.com` | GitHub defaults; a connection's own URLs (Enterprise Server) win |
 | `AGNOSTIC_SOURCES__GITHUB_APP_SLUG` | — | the GitHub App people install for read & write sources |
+
+## Studio
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `AGNOSTIC_STUDIO__SOURCE_ISOLATION` | `process` | where code parsing, code edits and CEL run: `process` (a pool of worker processes, recycled when a job times out) or `inline` (a thread of the running process) |
+| `AGNOSTIC_STUDIO__SOURCE_WORKERS` | `2` | worker processes for `process` isolation (1–16) |
+| `AGNOSTIC_STUDIO__SOURCE_TIMEOUT_SECONDS` | `10` | time limit of one parse, edit or CEL job, in both modes (up to 120) |
 
 ## Assistant
 

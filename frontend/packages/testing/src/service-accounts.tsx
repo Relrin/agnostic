@@ -19,7 +19,7 @@ import type {
 import { http, HttpResponse } from "msw";
 
 import { API } from "./base";
-import { ownerAccess, PROD, sampleInstances, sampleRoles, STAGING } from "./p01";
+import { ownerAccess, PROD, sampleInstances, sampleRoles, STAGING } from "./sample-org";
 
 const NOW = Date.now();
 const MINUTE = 60_000;

@@ -134,13 +134,3 @@ current one on its first use. Tokens not used before the previous key is removed
 independent of the master key, set `AGNOSTIC_SERVICE_ACCOUNTS__TOKEN_PEPPER` (any long random string) before
 creating tokens.
 
-## Try it locally
-
-`just vault-up` starts an OpenBao server (the Vault Transit API) in the dev stack with a key named `agnostic`:
-
-```bash
-just vault-up
-export AGNOSTIC_SECRETS__PROVIDER=vault AGNOSTIC_SECRETS__VAULT__ADDRESS=http://127.0.0.1:8200 \
-       AGNOSTIC_SECRETS__VAULT__TOKEN=dev-root-token
-cd backend && uv run agnostic secrets generate-key
-```

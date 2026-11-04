@@ -1,5 +1,5 @@
-"""P02 on PostgreSQL + Redis: realtime events over Redis pub/sub and streams, full-text palette search, the
-elevation column migration."""
+"""On PostgreSQL + Redis: realtime events over Redis pub/sub and streams, full-text palette search, and the
+elevation default on new instances."""
 
 import asyncio
 import json

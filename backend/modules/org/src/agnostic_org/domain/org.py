@@ -1,4 +1,4 @@
-"""The org, its members and invitations. Pure Python.
+"""The org, its members and invitations. No I/O.
 
 One org per installation. Org roles govern the control plane; access to AgentOS instances comes
 from access-role bindings, plus the implicit full access Owners and Administrators have unless the org requires

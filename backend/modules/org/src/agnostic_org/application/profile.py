@@ -14,6 +14,7 @@ from agnostic_kernel.bootstrap import BootstrapResult, OwnerAccount
 from agnostic_kernel.crypto import hash_token, new_token, tokens_equal
 from agnostic_kernel.db import utcnow
 from agnostic_kernel.errors import ConflictError, NotFoundError, ValidationFailedError
+from agnostic_kernel.mail import Mailer
 from agnostic_org.application.ports import InvitationRepository, MemberRepository, OrgRepository
 from agnostic_org.domain.org import OrgProfile, OrgRole, OrgRuleError, clean_org_name, slugify
 from agnostic_settings.facade import OrgSettings, OrgSettingsFacade
@@ -29,6 +30,8 @@ class OrgView:
     member_count: int
     pending_invitations: int
     viewer_role: OrgRole | None
+    email_delivery: bool
+    """Email is configured: invitations can be sent, not only shared as links."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -48,12 +51,14 @@ class GetOrg:
         invitations: InvitationRepository,
         settings: OrgSettingsFacade,
         authorizer: Authorizer,
+        mailer: Mailer,
     ) -> None:
         self._org = org
         self._members = members
         self._invitations = invitations
         self._settings = settings
         self._authorizer = authorizer
+        self._mailer = mailer
 
     async def __call__(self, principal: Principal) -> OrgView:
         _ = await self._authorizer.require(principal, "org:read")
@@ -67,6 +72,7 @@ class GetOrg:
             member_count=await self._members.count_active(),
             pending_invitations=await self._invitations.count_pending(utcnow()),
             viewer_role=viewer.org_role if viewer and viewer.active else None,
+            email_delivery=self._mailer.configured,
         )
 
 

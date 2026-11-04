@@ -1,4 +1,4 @@
-// useCan / PermissionGate / WhyVisible (03 §4): decisions come from /me/access; the server enforces them anyway,
+// useCan / PermissionGate / WhyVisible: decisions come from /me/access; the server enforces them anyway,
 // the UI only avoids offering what will be refused, and says why.
 import type { MyAccessOut } from "@agnostic/api";
 import { Tooltip } from "@agnostic/ui";

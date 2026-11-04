@@ -1,4 +1,4 @@
-"""Users, passwords and sessions. Pure Python."""
+"""Users, passwords and sessions. No I/O."""
 
 from __future__ import annotations
 

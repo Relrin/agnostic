@@ -25,7 +25,7 @@ import type {
 import { http, HttpResponse } from "msw";
 
 import { API } from "./base";
-import { DANIEL, MARCUS, PROD, STAGING, sampleBindings, sampleMembers, sampleRoles } from "./p01";
+import { DANIEL, MARCUS, PROD, STAGING, sampleBindings, sampleMembers, sampleRoles } from "./sample-org";
 
 const NOW = Date.now();
 const MINUTE = 60_000;

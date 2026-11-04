@@ -1,5 +1,5 @@
 import { DensityProvider, useMe } from "@agnostic/core";
-import { API, p01Handlers, renderWithProviders, sampleMe } from "@agnostic/testing";
+import { API, sampleOrgHandlers, renderWithProviders, sampleMe } from "@agnostic/testing";
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
@@ -8,13 +8,13 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { Preferences } from "./preferences";
 
-const server = setupServer(...p01Handlers());
+const server = setupServer(...sampleOrgHandlers());
 
 beforeAll(() => {
   server.listen({ onUnhandledFrame: "error" });
 });
 afterEach(() => {
-  server.resetHandlers(...p01Handlers());
+  server.resetHandlers(...sampleOrgHandlers());
   delete document.documentElement.dataset.density;
 });
 afterAll(() => {

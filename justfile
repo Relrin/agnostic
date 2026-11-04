@@ -241,7 +241,7 @@ test-chaos:
 test-query-plans:
     cd backend && uv run pytest tests/integration/test_query_plans.py -m integration -rxX
 
-# Upgrade every pre-1.0 milestone's database to the current code (needs `just up`)
+# Upgrade every released milestone's database to the current code (needs `just up`)
 upgrade-drill:
     AGNOSTIC_DRILL_DATABASE_URL="${AGNOSTIC_DRILL_DATABASE_URL:-postgresql://agnostic:agnostic@localhost:5432/agnostic}" \
         bash scripts/upgrade_drill.sh

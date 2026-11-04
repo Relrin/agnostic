@@ -35,6 +35,7 @@ def upgrade() -> None:
         sa.Column("component_ids", JSON, nullable=False),
         sa.Column("member_ids", JSON, nullable=False),
         sa.Column("role_ids", JSON, nullable=False),
+        sa.Column("group_ids", JSON, nullable=False),
         sa.Column("channels", JSON, nullable=False),
         sa.Column("channel_ids", JSON, nullable=False),
         sa.Column("created_by", sa.String(40)),

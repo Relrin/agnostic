@@ -1,4 +1,10 @@
-import { p01Handlers, renderPage, sourcesCalls, sourcesHandlers, type SourcesCalls } from "@agnostic/testing";
+import {
+  sampleOrgHandlers,
+  renderPage,
+  sourcesCalls,
+  sourcesHandlers,
+  type SourcesCalls,
+} from "@agnostic/testing";
 import { TooltipProvider } from "@agnostic/ui";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -16,7 +22,7 @@ function SourcesPage() {
 }
 
 let calls: SourcesCalls = sourcesCalls();
-const handlers = () => [...sourcesHandlers(calls), ...p01Handlers()];
+const handlers = () => [...sourcesHandlers(calls), ...sampleOrgHandlers()];
 const server = setupServer(...handlers());
 
 beforeAll(() => {

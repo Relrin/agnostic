@@ -1,4 +1,10 @@
-import { API, p01Handlers, queueCountsOnlyHandlers, queueHandlers, renderPage } from "@agnostic/testing";
+import {
+  API,
+  sampleOrgHandlers,
+  queueCountsOnlyHandlers,
+  queueHandlers,
+  renderPage,
+} from "@agnostic/testing";
 import { TooltipProvider } from "@agnostic/ui";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -17,7 +23,7 @@ function QueuePage() {
   );
 }
 
-const handlers = () => [...p01Handlers(), ...queueHandlers()];
+const handlers = () => [...sampleOrgHandlers(), ...queueHandlers()];
 const server = setupServer(...handlers());
 
 beforeAll(() => {

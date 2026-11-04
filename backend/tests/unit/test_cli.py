@@ -88,8 +88,8 @@ def test_control_branches_downgrade_cleanly() -> None:
         ("service_accounts", "w0001_service_accounts"),
         ("directory", "r0001_directory"),
         ("studio", "u0001_studio"),
-        ("identity", "i0002_sso_mfa"),
-        ("audit", "a0002_governance"),
+        ("identity", "i0001_identity"),
+        ("audit", "a0001_audit_events"),
     ):
         downgraded = runner.invoke(app, ["db", "downgrade", f"{branch}@base"])
         assert downgraded.exit_code == 0, downgraded.output

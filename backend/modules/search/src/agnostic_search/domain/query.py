@@ -1,4 +1,4 @@
-"""Turning what someone typed into the palette into search terms. Pure Python."""
+"""Turning what someone typed into the palette into search terms. No I/O."""
 
 from __future__ import annotations
 

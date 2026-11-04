@@ -1,4 +1,4 @@
-"""P01 on PostgreSQL + Redis: sessions in Redis, the gateway, and the partitioned append-only audit log."""
+"""On PostgreSQL + Redis: sessions in Redis, the gateway, and the partitioned append-only audit log."""
 
 from datetime import UTC, datetime, timedelta
 
@@ -32,7 +32,7 @@ async def test_redis_store(redis_url: str) -> None:
         await redis.aclose()
 
 
-async def test_p01_flow_on_postgres(fresh_postgres: str, redis_url: str) -> None:
+async def test_sign_in_gateway_and_audit_on_postgres(fresh_postgres: str, redis_url: str) -> None:
     async with running_stack(fresh_postgres, redis_url=redis_url, jobs={"mode": "embedded"}) as stack:
         assert stack.settings.cache_backend() == "redis"
         owner = await stack.owner()

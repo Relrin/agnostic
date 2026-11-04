@@ -10,6 +10,7 @@ from typing import Any
 import orjson
 
 from agnostic_audit.facade import AuditEntry, AuditLog, actor_of
+from agnostic_identity.application.policy import AuthPolicies
 from agnostic_identity.application.ports import (
     CredentialRepository,
     ExternalIdentityRepository,
@@ -20,7 +21,7 @@ from agnostic_identity.application.ports import (
     UserRepository,
 )
 from agnostic_identity.application.sessions import Sessions
-from agnostic_identity.application.signin import LocalLoginDisabledError, SignInPolicy
+from agnostic_identity.application.signin import LocalLoginDisabledError, SignInPolicy, SsoRequiredError
 from agnostic_identity.domain.users import (
     MAX_DISPLAY_NAME,
     CreatedVia,
@@ -134,7 +135,11 @@ class UpdateMe:
 
 
 class CreateLocalAccount:
-    """Used by the org module for the first Owner and for invitation acceptance. The caller commits."""
+    """Used by the org module for the first Owner and for invitation acceptance. The caller commits.
+
+    Accepting an invitation with a password follows the sign-in rules: an invite link can be forwarded, so it
+    doesn't prove who holds it, and where passwords are off or SSO is enforced the invitee joins through SSO.
+    """
 
     def __init__(
         self,
@@ -142,11 +147,13 @@ class CreateLocalAccount:
         credentials: CredentialRepository,
         hasher: PasswordHasher,
         policy: SignInPolicy,
+        policies: AuthPolicies,
     ) -> None:
         self._users = users
         self._credentials = credentials
         self._hasher = hasher
         self._policy = policy
+        self._policies = policies
 
     async def __call__(self, email: str, display_name: str | None, password: str, via: CreatedVia) -> User:
         try:
@@ -158,6 +165,8 @@ class CreateLocalAccount:
         except WeakPasswordError as exc:
             raise ValidationFailedError(str(exc), extra={"field": "password"}) from exc
         existing = await self._users.find_by_email(normalized)
+        if via is CreatedVia.INVITE:
+            await self._check_password_allowed(existing)
         if existing is not None:
             if await self._credentials.password_hash(existing.id) is not None:
                 raise ConflictError(f"An account for {normalized} already exists. Sign in instead.")
@@ -170,6 +179,14 @@ class CreateLocalAccount:
             )
         await self._credentials.set_password_hash(user.id, await self._hasher.hash(password))
         return user
+
+    async def _check_password_allowed(self, existing: User | None) -> None:
+        if not self._policy.local_login:
+            raise LocalLoginDisabledError("Passwords are turned off: accept the invitation by signing in with SSO.")
+        policy = await self._policies.current()
+        allowed = policy.password_allowed(existing.id) if existing is not None else not policy.enforce_sso
+        if not allowed:
+            raise SsoRequiredError("Your organization uses SSO: accept the invitation by signing in with SSO.")
 
 
 class RequestPasswordReset:

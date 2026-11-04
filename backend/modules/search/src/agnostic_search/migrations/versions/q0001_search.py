@@ -35,6 +35,7 @@ def upgrade() -> None:
         schema="agnostic",
     )
     op.create_index("ix_search_documents_provider", "search_documents", ["provider"], schema="agnostic")
+    op.create_index("ix_search_documents_ref", "search_documents", ["ref"], schema="agnostic")
     bind = op.get_bind()
     if not is_postgresql(bind):
         return

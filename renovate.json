@@ -17,7 +17,7 @@
     { "matchPackageNames": ["/^opentelemetry-/"], "groupName": "OpenTelemetry" },
     { "matchPackageNames": ["tailwindcss", "/^@tailwindcss/"], "groupName": "Tailwind" },
     {
-      "description": "agno upgrades need the contract suite and regenerated client models (07 §8)",
+      "description": "agno upgrades need the contract suite and regenerated client models",
       "matchPackageNames": ["agno"],
       "labels": ["agentos-upgrade"],
       "dependencyDashboardApproval": true

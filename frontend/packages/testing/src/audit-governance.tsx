@@ -18,7 +18,7 @@ import type {
 import { http, HttpResponse } from "msw";
 
 import { API } from "./base";
-import { DANIEL, PROD, STAGING, ownerAccess } from "./p01";
+import { DANIEL, PROD, STAGING, ownerAccess } from "./sample-org";
 
 const DAY = "2026-10-31";
 const at = (time: string) => `${DAY}T${time}.381Z`;
@@ -431,7 +431,7 @@ export type AuditRecorder = {
 };
 
 /**
- * MSW handlers for the audit log with the 31 Oct sample; list them before `p01Handlers()` (they answer
+ * MSW handlers for the audit log with the 31 Oct sample; list them before `sampleOrgHandlers()` (they answer
  * `/me/access` with export and settings scopes, and `/audit/events` with the sample). Pass a recorder to see what
  * the page sent. Background exports finish on the second status check.
  */

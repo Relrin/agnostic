@@ -28,17 +28,26 @@ class Email:
 
 
 class Mailer(Protocol):
+    @property
+    def configured(self) -> bool:
+        """``False`` when mail only goes to the log: features offer another way (e.g. copying a link)."""
+        ...
+
     async def send(self, email: Email) -> None: ...
 
 
 class LogMailer:
     """Development fallback: the message, links included, goes to the log."""
 
+    configured = False
+
     async def send(self, email: Email) -> None:
         log.warning("mail.not_configured", to=email.to, subject=email.subject, body=email.text)
 
 
 class SmtpMailer:
+    configured = True
+
     def __init__(self, settings: SmtpSettings) -> None:
         assert settings.url is not None
         self._settings = settings

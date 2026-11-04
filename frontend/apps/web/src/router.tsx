@@ -1,6 +1,6 @@
-// Router assembled from module manifests (03 §3): public pages at the root (sign-in, invitations, first run),
+// Router assembled from module manifests: public pages at the root (sign-in, invitations, first run),
 // everything else inside the signed-in shell; instance pages under /i/$instance, org pages at the root.
-// Catalog entries without a module get a placeholder route.
+// Catalog entries without a visible module get an "unavailable" route.
 import { instancesListInstancesOptions, meGetMeOptions, problemCode } from "@agnostic/api";
 import { withQueryFn, type ModuleManifest, type ModuleScope } from "@agnostic/core";
 import type { QueryClient } from "@tanstack/react-query";
@@ -14,7 +14,7 @@ import {
 } from "@tanstack/react-router";
 
 import { NAV_CATALOG } from "./shell/nav-catalog";
-import { NotBuiltYet, NotFound } from "./shell/not-built-yet";
+import { NotFound, Unavailable } from "./shell/not-found";
 import { RootLayout } from "./shell/root-layout";
 import { lastInstance } from "./shell/session";
 
@@ -90,7 +90,7 @@ export function buildRouter(modules: readonly ModuleManifest[], queryClient: Que
       createRoute({
         getParentRoute: () => parentFor(entry.scope),
         path: `${entry.path}/$`,
-        component: () => <NotBuiltYet label={entry.label} phase={entry.phase} />,
+        component: () => <Unavailable label={entry.label} />,
       }),
     );
   }

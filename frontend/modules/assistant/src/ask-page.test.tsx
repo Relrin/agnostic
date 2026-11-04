@@ -1,4 +1,4 @@
-import { assistantCalls, assistantHandlers, p01Handlers, renderPage } from "@agnostic/testing";
+import { assistantCalls, assistantHandlers, sampleOrgHandlers, renderPage } from "@agnostic/testing";
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { setupServer } from "msw/node";
@@ -7,7 +7,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { AskPage } from "./ask-page";
 
 let calls = assistantCalls();
-const handlers = () => [...assistantHandlers(calls), ...p01Handlers()];
+const handlers = () => [...assistantHandlers(calls), ...sampleOrgHandlers()];
 const server = setupServer(...handlers());
 
 beforeAll(() => {
@@ -60,7 +60,7 @@ describe("AskPage", () => {
   });
 
   it("says the feature is off instead of offering it", async () => {
-    server.resetHandlers(...p01Handlers());
+    server.resetHandlers(...sampleOrgHandlers());
     renderPage(AskPage, { path: "/i/$instance/ask", url: "/i/prod-agentos/ask" });
     expect(await screen.findByText("Ask your OS is off")).toBeInTheDocument();
     expect(screen.queryByLabelText("Ask your OS")).not.toBeInTheDocument();

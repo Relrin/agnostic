@@ -56,6 +56,7 @@ const org = {
   seat_limit: 24,
   member_count: 24,
   pending_invitations: 0,
+  email_delivery: true,
   viewer_role: "owner",
   settings: { require_explicit_bindings: false, audit_log_all_reads: false, approval_ttl_hours: 0 },
   updated_at: T,

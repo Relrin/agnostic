@@ -1,19 +1,17 @@
 # Add a backend module
 
-Use a small existing module as the template: `backend/modules/audit` has a router, a job, settings, a migration
-and a facade; `backend/modules/settings` is the smallest. This guide adds a module called `notes`.
+Templates: `backend/modules/audit` (router, jobs, settings, migration, facade) and `backend/modules/settings` (the
+smallest). This guide adds a module called `notes`.
 
 ## 1. Create the distribution
 
-```
-backend/modules/notes/
-  pyproject.toml
-  src/agnostic_notes/
-    __init__.py  py.typed
-    module.py  settings.py  providers.py  facade.py  jobs.py
-    domain/  application/  infrastructure/  api/
-    migrations/versions/
-```
+Files under `backend/modules/notes/`:
+
+- `pyproject.toml`
+- `src/agnostic_notes/`: `__init__.py`, `py.typed`, `module.py`, `settings.py`, `providers.py`, `facade.py`,
+  `jobs.py`
+- `src/agnostic_notes/{domain,application,infrastructure,api}/`
+- `src/agnostic_notes/migrations/versions/`
 
 ```toml
 # backend/modules/notes/pyproject.toml
@@ -35,8 +33,8 @@ requires = ["uv_build==0.13.6"]
 build-backend = "uv_build"
 ```
 
-Add `"agnostic-notes"` to the workspace root's `dependencies` and `[tool.uv.sources]`
-(`backend/pyproject.toml`), then `uv sync`. The workspace already includes `modules/*`.
+Add `"agnostic-notes"` to `dependencies` and `[tool.uv.sources]` in `backend/pyproject.toml`, then `uv sync`. The
+workspace already includes `modules/*`.
 
 ## 2. Tables and the first migration
 
@@ -53,21 +51,23 @@ class NoteRow(NotesBase):
     ...
 ```
 
-Write `migrations/versions/n0001_notes.py` by hand or autogenerate it (see [migrations](migrations.md)). Its first
-revision starts the module's branch:
+Pick a module letter nobody uses ([migrations](migrations.md#revision-ids)), e.g. `y`, and write
+`migrations/versions/y0001_notes.py` by hand. Its revision starts the module's branch:
 
 ```python
-revision = "n0001_notes"
+revision = "y0001_notes"
 down_revision = None
 branch_labels = ("notes",)
 depends_on = "k0001_kernel_base"
 ```
 
+`tests/unit/test_migrations_schema.py` fails until the migration creates exactly what `NoteRow` declares.
+
 ## 3. Domain, application, infrastructure
 
 - `domain/`: frozen dataclasses and rules, standard library only.
 - `application/`: use cases taking ports (`Protocol`s) in their constructor; raise `AppError` subclasses.
-- `infrastructure/`: repositories over `AsyncSession`, adapters to `JobQueue`/`JobProgressReporter`.
+- `infrastructure/`: repositories over `AsyncSession`, adapters to `JobQueue` / `JobProgressReporter`.
 
 ## 4. API
 
@@ -80,7 +80,7 @@ async def list_notes(params: Annotated[PageParams, Depends(page_params)],
                      use_case: FromDishka[ListNotes]) -> Page[NoteOut]: ...
 ```
 
-Endpoints get stable operation ids (`notes_list_notes`) from the route name and the module tag.
+Operation ids come from the module tag and the function name (`notes_list_notes`).
 
 ## 5. Wiring and the module object
 
@@ -102,18 +102,22 @@ class NotesModule(BaseModule):
     def scopes(self): return (ScopeDecl("notes:read", "See notes"),)
 ```
 
-Routes that need a signed-in person take `principal: FromDishka[Principal]` and check scopes with
+Routes for signed-in people take `principal: FromDishka[Principal]` and check scopes with
 `await authorizer.require(principal, "notes:read")` (`Authorizer` from `agnostic_kernel.auth`). Record changes with
-`AuditLog.record(...)` from `agnostic_audit.facade` and declare the action in `audit_actions()`; add `"audit"` to
-`depends_on` then.
+`AuditLog.record(...)` from `agnostic_audit.facade`, declare the actions in `audit_actions()`, and add `"audit"` to
+`depends_on`. Jobs: [background jobs](background-jobs.md); assistant tools: [add an assistant tool](add-assistant-tool.md).
 
 ## 6. Boundaries
 
-Add the module's three contracts to `[tool.importlinter]` in `backend/pyproject.toml` (copy the `audit` ones:
-hexagonal layers, pure domain, "other modules use notes only through its facade"), and add `agnostic_notes` to
-`root_packages`, the other modules' facade contracts, `known-first-party` and `[tool.coverage.run] source`. Other
-modules may import only `agnostic_notes.facade`; when a dependency would point the wrong way, declare a port in the
-lower module's facade and provide it from the higher one ([module system](../architecture/module-system.md)).
+In `backend/pyproject.toml`:
+
+- add the module's three `[tool.importlinter]` contracts (copy the `audit` ones: layers, pure domain, "other modules
+  use notes only through its facade");
+- add `agnostic_notes` to `root_packages`, to the other modules' facade contracts, to `known-first-party` and to
+  `[tool.coverage.run] source`.
+
+Other modules import only `agnostic_notes.facade`. When a dependency would point the wrong way, declare a port in
+the lower module's facade and provide it from the higher one ([module system](../architecture/module-system.md)).
 
 ## 7. Verify
 
@@ -121,6 +125,6 @@ lower module's facade and provide it from the higher one ([module system](../arc
 cd backend && uv sync
 uv run agnostic modules list        # notes is enabled
 uv run agnostic db upgrade          # creates notes_notes
-just api-gen                        # the TypeScript client now has the notes endpoints
+just api-gen                        # TypeScript client and docs/reference/api.md gain the notes endpoints
 just check
 ```

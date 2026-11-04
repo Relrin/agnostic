@@ -1,60 +1,56 @@
 # Backend kernel
 
-`agnostic-kernel` (`backend/packages/agnostic-kernel/src/agnostic_kernel/`) holds everything modules share and
-nothing product-specific. Modules depend on it; it never imports a module (an import-linter contract enforces this).
+`agnostic-kernel` (`backend/packages/agnostic-kernel/src/agnostic_kernel/`) holds what modules share and nothing
+product-specific. It never imports a module (import-linter contract).
 
-| Module | Provides |
+| File | Provides |
 |---|---|
-| `settings.py` | `Settings` (pydantic-settings): `AGNOSTIC_*` env vars with `__` nesting, `.env`, optional TOML file; endpoint sections with TLS options; `module_settings_config()` for module settings |
-| `tls.py` | TLS contexts and libpq parameters from endpoint `TlsOptions` |
-| `logging.py` | structlog JSON/console logs, stdlib bridge, secret redaction |
-| `telemetry.py` | OpenTelemetry tracing over OTLP/HTTP when `AGNOSTIC_OTEL__ENDPOINT` is set |
-| `db.py` | async SQLAlchemy engine (asyncpg, or aiosqlite for SQLite), `make_metadata()`, `JsonDocument`, psycopg conninfo |
-| `migrations/`, `migrations_runner.py` | one Alembic environment, a branch per module, `upgrade`/`downgrade`/`state` |
-| `cache.py` | Redis client (URL or Sentinel), server detection, command-subset probe |
-| `jobs.py` | Procrastinate app, job registration, `job_container()`, `JobQueue`, `JobProgressReporter` |
-| `modules.py` | the `Module` protocol, `BaseModule`, descriptors, discovery and dependency ordering |
-| `container.py` | dishka container: kernel services + module providers |
-| `errors.py` | RFC 9457 problem responses and the `AppError` hierarchy |
-| `ids.py` | prefixed ULIDs |
-| `pagination.py` | `Page[T]` envelope and opaque cursors |
-| `http.py`, `context.py` | request-id middleware and context |
-| `health.py`, `checks.py` | `/healthz`, `/readyz`, and the endpoint probes behind `config check --connect` |
-| `testing.py` | settings and polling helpers for tests |
+| `settings.py`, `tls.py` | `Settings`: `AGNOSTIC_*` env vars (`__` nesting), `.env`, optional TOML (`AGNOSTIC_CONFIG_FILE`); endpoint sections with TLS options; `module_settings_config()` |
+| `db.py`, `tables.py` | async SQLAlchemy engine (asyncpg or aiosqlite), `make_metadata()`, `JsonDocument`, psycopg conninfo; kernel tables |
+| `migrations/`, `migrations_runner.py` | one Alembic environment, base `k0001_kernel_base`, one branch per module ([migrations](../how-to/migrations.md)) |
+| `modules.py`, `container.py` | the `Module` protocol, `BaseModule`, discovery and ordering; the dishka container |
+| `auth.py`, `bootstrap.py` | `Principal`, `PrincipalResolver`, `Authorizer`, `Bootstrapper` ports (provided by identity, access, org) |
+| `errors.py`, `http.py`, `context.py`, `security_headers.py` | RFC 9457 problems and `AppError`; request-id middleware and request context; CSP (Trusted Types), HSTS |
+| `cache.py`, `ephemeral.py` | Redis client (URL or Sentinel; Valkey and DragonflyDB work) and its command-subset probe; `EphemeralStore` with `MemoryStore` and `DegradingStore` |
+| `events.py`, `domain_events.py` | realtime `EventBus` (Redis pub/sub + replay stream, `MemoryEventBus`); `DomainEvents` and the `kernel.domain_event` job |
+| `jobs.py`, `job_admin.py` | Procrastinate app, `JobSpec` registration, `job_container()`, `JobQueue`, `JobProgressReporter`; queue depth, lag, failed jobs, retry |
+| `crypto.py`, `keys/`, `rewrap.py` | `SecretBox` envelope encryption (AES-256-GCM data keys wrapped by the master key); key providers (local, Vault, AWS KMS, GCP KMS, Azure Key Vault); `agnostic secrets rotate` |
+| `mail.py`, `aws_sigv4.py` | SMTP (logs the mail when none is configured); SigV4 for S3 and KMS |
+| `tools.py` | `ToolSpec`: read-only assistant tools modules contribute |
+| `diagnostics.py`, `checks.py`, `health.py` | `CheckResult` / `StatusItem`; endpoint probes; `/healthz`, `/readyz` |
+| `logging.py`, `telemetry.py`, `metrics.py` | structlog with secret redaction; OpenTelemetry over OTLP/HTTP; Prometheus metrics on their own port |
+| `ids.py`, `pagination.py`, `testing.py` | prefixed ULIDs (`usr_…`); `Page[T]` with opaque cursors; test helpers |
 
-## Request flow
+## Request path
 
-```
-HTTP → RequestIdMiddleware → (OTel) → router (Pydantic validation) → use case → domain → repository
-     → response model → JSON          errors anywhere → problem+json with the request id
-```
+Middleware, outermost first: metrics, security headers, request id, CORS (when configured), the web app (when
+`AGNOSTIC_HTTP__WEB_DIR` is set). Routes resolve the `Principal` through identity, which checks the session cookie
+and `X-CSRF-Token` on unsafe requests. Each request gets a request-scoped dishka container with one `AsyncSession`,
+committed by the use case.
 
-Each request gets a request-scoped dishka container: one `AsyncSession` per request, committed by the use case.
+![Request path: middleware, router, use case, authorizer, domain, repository, commit and audit, response or problem+json](images/request-path.svg)
 
 ## Dependency injection
 
-The container is built by the composition root (`agnostic_server.app.create_app` or the worker) from:
-
-- `KernelProvider`: `Settings`, `LoadedModules`, `AsyncEngine`, `async_sessionmaker`, `AsyncSession` (request
-  scope), `Redis`, the Procrastinate `App` (opened for the app's lifetime), `JobQueue`, `JobProgressReporter`;
-- each enabled module's settings model (`AGNOSTIC_<MODULE>__*`);
-- each enabled module's own providers (`Module.provide()`).
-
-Routes use `DishkaRoute` and `FromDishka[T]` parameters. Jobs use `job_container(context)`.
+The composition root (`agnostic_server.app.create_app`, or the worker) builds the container from `KernelProvider`
+(settings, loaded modules, engine, sessions, Redis, the ephemeral store, the event bus, `SecretBox`, the mailer,
+the Procrastinate app, `JobQueue`, `JobProgressReporter`),
+each enabled module's settings model, and each module's `provide()`. Routes use `DishkaRoute` with `FromDishka[T]`;
+jobs use `job_container(context)`.
 
 ## Database
 
-- Every table lives in schema `agnostic`, named `<module>_<thing>`; constraint names are deterministic.
-- PostgreSQL is the production backend; SQLite is supported for development and tests. On SQLite the engine maps
-  the `agnostic` schema away with `schema_translate_map`, so models and migrations are the same code.
-- Use `JsonDocument` for JSON columns (jsonb on PostgreSQL) and `func.now()` for timestamps; both work on both
-  backends.
+- Every table lives in schema `agnostic` with its module's prefix (`access_roles`, `inst_instances`, `apr_routes`);
+  constraint names are deterministic.
+- PostgreSQL in production; SQLite for development and tests, where `schema_translate_map` drops the schema so models
+  and migrations are the same code.
+- Use `JsonDocument` for JSON (jsonb on PostgreSQL) and `func.now()` for timestamps.
 
 ## Errors
 
-Raise an `AppError` subclass from use cases (`NotFoundError`, `ValidationFailedError`, `ConflictError`,
-`VersionConflictError`, `UnauthenticatedError`, `ScopeMissingError`, `ServiceUnavailableError`). Handlers turn
-them, HTTP errors, validation errors and unhandled exceptions into `application/problem+json`:
+Use cases raise `AppError` subclasses (`NotFoundError`, `ValidationFailedError`, `ConflictError`,
+`VersionConflictError`, `UnauthenticatedError`, `ScopeMissingError`, `ForbiddenError`, `RateLimitedError`, `ServiceUnavailableError`). Handlers turn
+them, HTTP and validation errors, and unhandled exceptions into `application/problem+json`:
 
 ```json
 {"type": "urn:agnostic:problem:not_found", "title": "Not found", "status": 404, "code": "not_found",
@@ -66,14 +62,14 @@ them, HTTP errors, validation errors and unhandled exceptions into `application/
 
 ## Health
 
-- `/healthz`: process is alive.
-- `/readyz`: database reachable, cache reachable, migrations at head; `503` with per-check details otherwise.
+- `/healthz`: the process is alive.
+- `/readyz`: database, cache and migrations. `503` only when the database is down or migrations aren't at head
+  (including "unknown revision in the database" for revisions this version doesn't ship); a cache outage reports
+  `degraded` so replicas stay in rotation.
 
 ## Python 3.15
 
-The control plane targets Python 3.15. Two consequences in code:
-
-- Route modules that use `DishkaRoute` don't use `from __future__ import annotations`: dishka wraps endpoints and
-  FastAPI must resolve their annotations against the module (3.15 evaluates annotations lazily anyway).
-- Every entry point runs on a selector event loop on Windows (`agnostic_server.loops`), because psycopg's async
-  driver can't use the Proactor loop.
+- Route modules using `DishkaRoute` don't use `from __future__ import annotations`: FastAPI must resolve the wrapped
+  endpoints' annotations against the module.
+- On Windows every entry point runs a selector event loop (`agnostic_server.loops`): psycopg's async driver can't use
+  the Proactor loop.

@@ -1,7 +1,7 @@
 # Add a frontend module
 
-Use `frontend/modules/audit` as the template (one page, a nav entry, MSW-backed tests). This guide adds the
-page for a `notes` backend module.
+Template: `frontend/modules/audit` (one page, a nav entry, MSW-backed tests). This guide adds the page for a `notes`
+backend module.
 
 ## 1. Create the workspace package
 
@@ -25,9 +25,9 @@ page for a `notes` backend module.
 }
 ```
 
-Copy `tsconfig.json` and `src/vitest-env.d.ts` from `modules/audit`, add the package to the root
-`tsconfig.json` references and to `apps/web/tsconfig.json` references, then `yarn install`. `yarn constraints`
-keeps versions exact and identical across workspaces.
+Copy `tsconfig.json` and `src/vitest-env.d.ts` from `modules/audit`, add the package to the `references` of the root
+`tsconfig.json` and of `apps/web/tsconfig.json`, then `yarn install`. `yarn constraints` keeps versions exact and
+identical across workspaces.
 
 ## 2. Write the page
 
@@ -44,7 +44,7 @@ export function NotesPage() {
 }
 ```
 
-Every page needs loading (skeletons), empty and error states. Errors show the problem's explanation and request id
+Every page has loading (skeletons), empty and error states. Errors show the problem's explanation and request id
 (`describeError`). Wrap actions the person may not be allowed to take in `<PermissionGate scope="notes:write">`.
 
 ## 3. Export the manifest
@@ -52,21 +52,23 @@ Every page needs loading (skeletons), empty and error states. Errors show the pr
 ```ts
 export const notesModule = defineModule({
   id: "notes",
-  scope: "instance",
+  scope: "instance",                     // or "org"
   routes: [{ path: "notes", component: NotesPage }],
   nav: [{ id: "notes", group: "context", label: "Notes", icon: NotebookPen, path: "notes", order: 50 }],
   commands: [{ id: "notes.open", label: "Open Notes", path: "notes" }],
+  requires: { anyScope: ["notes:read"] }, // optional: also capabilities, features
 });
 ```
 
-To take over a page that's already in the design, reuse its nav id from `apps/web/src/shell/nav-catalog.ts`
-(e.g. `approvals`); your entry replaces the placeholder and keeps the catalog's position.
+`apps/web/src/shell/nav-catalog.ts` holds the shell's full navigation. To take over an entry there, reuse its nav id
+(e.g. `approvals`): your entry replaces it and keeps its position. A catalog entry no visible module claims (disabled,
+or the instance lacks the capability) opens an "unavailable" page.
 
 ## 4. Register it in the shell
 
 ```ts
 // apps/web/src/modules.ts
-export const MODULES = [identityModule, …, auditModule, notesModule];
+export const MODULES: readonly ModuleManifest[] = [identityModule, …, auditModule, notesModule];
 ```
 
 and add `"@agnostic/module-notes": "workspace:*"` to `apps/web/package.json`.
@@ -74,8 +76,8 @@ and add `"@agnostic/module-notes": "workspace:*"` to `apps/web/package.json`.
 ## 5. Test
 
 - Unit tests next to the code (`*.test.tsx`), rendered with `renderPage` (or `renderWithProviders`) and MSW
-  handlers (`p01Handlers()` covers `/me`, `/org`, `/instances` and access).
-- Stories for reusable widgets go in `@agnostic/ui` and must pass the axe checks.
+  handlers (`sampleOrgHandlers()` covers `/me`, `/org`, `/instances`, access and audit; see [testing](testing.md)).
+- Reusable widgets go in `@agnostic/ui` with stories, which must pass the axe checks.
 - Add an e2e case in `apps/web/e2e` for the page's main flow.
 
 ```bash

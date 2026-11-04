@@ -1,4 +1,4 @@
-// Operate widgets (04 §3.3) with the prototype's sample run: support-triage paused on refund_customer, the Home
+// Operate widgets with a sample run: support-triage paused on refund_customer, the Home
 // tiles and attention cards, a workflow paused on a HumanReview step.
 import type { Meta, StoryObj } from "@storybook/react-vite";
 

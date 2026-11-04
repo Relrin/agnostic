@@ -132,7 +132,7 @@ function columns(): Column<Row>[] {
   ];
 }
 
-/** `/i/:instance/sessions/:sessionId?` with `?type=&component=&user=&q=&sort=&tab=&page=` (design spec A §8). */
+/** `/i/:instance/sessions/:sessionId?` with `?type=&component=&user=&q=&sort=&tab=&page=`. */
 export function SessionsPage() {
   const params = useParams({ strict: false }) as unknown as Record<string, string | undefined>;
   const search = useSearch({ strict: false }) as unknown as Record<string, unknown>;
