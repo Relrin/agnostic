@@ -1,8 +1,8 @@
 # Agnostic
 
-A self-hosted control plane for [Agno](https://github.com/agno-agi/agno) AgentOS runtimes: identity and access,
+A self-hosted control plane for [Agno](https://github.com/agno-agi/agno) AgentOS runtime. identity and access,
 instance management, operations, observability, and a UI for agents, teams and workflows. It runs inside your
-network and talks to every AgentOS over its REST/SSE API.
+network and communicated to AgentOS over REST API.
 
 ## Prerequisites
 
