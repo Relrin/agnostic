@@ -33,5 +33,7 @@ export const studioWorkflowsModule = defineModule({
 });
 
 export { WorkflowBuilderPage } from "./builder-page";
-export { buildGraph, layoutWorkflow } from "./layout";
+export { buildFlowGraph } from "./graph";
+export { fromLangflow, toLangflow } from "./langflow";
+export { layoutWorkflow } from "./layout";
 export * as tree from "./tree";

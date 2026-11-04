@@ -1,10 +1,11 @@
-// Layout: the graph has a "+" on every connector at the right place, branches labelled and joined, containers as
-// compound nodes; ELK places everything, a 200-step workflow included, without overlaps among siblings.
+// Layout: ELK places the flow graph left to right, groups as compound nodes around their steps, Router choices in
+// the order they're written, and a 200-step workflow without overlaps among siblings.
 import type { Config } from "@agnostic/studio";
 import { ticketRouter } from "@agnostic/testing";
 import { describe, expect, it } from "vitest";
 
-import { END, START, buildGraph, layoutWorkflow } from "./layout";
+import { buildFlowGraph } from "./graph";
+import { END, START, layoutWorkflow, toElk } from "./layout";
 
 function big(count: number): Config {
   const steps = Array.from({ length: count / 4 }, (_, index) => ({
@@ -24,71 +25,43 @@ function big(count: number): Config {
 }
 
 describe("the workflow layout", () => {
-  it("builds the graph with insert slots and branch labels", () => {
-    const built = buildGraph(ticketRouter());
-    const edge = (source: string, target: string) =>
-      built.edges.find((item) => item.source === source && item.target === target);
-    expect(edge(START, "steps[0]")?.slot).toEqual({ parent: "", lane: "steps", index: 0 });
-    expect(edge("steps[0]", "steps[1]")?.slot).toEqual({ parent: "", lane: "steps", index: 1 });
-    expect(edge("steps[1]", "steps[1].choices[2]")).toMatchObject({
-      label: "Draft & review",
-      tone: "choice",
-    });
-    expect(edge("steps[1].choices[1].steps[0]", "steps[1].choices[1].steps[1]")).toBeUndefined();
-    expect(edge("steps[1].choices[2].steps[0]", "steps[1].choices[2].steps[1]")?.slot).toEqual({
-      parent: "steps[1].choices[2]",
-      lane: "steps",
-      index: 1,
-    });
-    // Every choice joins at the condition; only the last connector carries the "+".
-    const joins = built.edges.filter((item) => item.target === "steps[2]");
-    expect(joins.map((item) => item.source)).toEqual([
-      "steps[1].choices[0]",
-      "steps[1].choices[1]",
-      "steps[1].choices[2]",
+  it("puts every port where the node draws it", () => {
+    const elk = toElk(buildFlowGraph(ticketRouter()));
+    const router = elk.children?.find((node) => node.id === "steps[1]");
+    const ports = router?.ports ?? [];
+    expect(ports.map((port) => port.id)).toEqual([
+      "steps[1]#in",
+      "steps[1]#choices[0]",
+      "steps[1]#choices[1]",
+      "steps[1]#choices[2]",
     ]);
-    expect(joins.filter((item) => item.slot)).toHaveLength(1);
-    expect(edge("steps[2]", "steps[2].else_steps[0]")).toMatchObject({ label: "else", tone: "else" });
-    expect(built.edges.filter((item) => item.target === END).map((item) => item.source)).toEqual([
-      "steps[2].steps[0]",
-      "steps[2].else_steps[0]",
-    ]);
-    expect(built.kinds.get("steps[1].choices[1]")?.kind).toBe("container");
-    expect(built.kinds.get("steps[1].choices[1].steps[0]")?.parent).toBe("steps[1].choices[1]");
+    const ys = ports.slice(1).map((port) => port.y ?? 0);
+    expect([...ys].sort((a, b) => a - b)).toEqual(ys);
+    expect(ports[1]?.x).toBe(router?.width);
   });
 
-  it("gives empty containers and lanes a drop zone", () => {
-    const built = buildGraph({
-      steps: [
-        { type: "Loop", name: "L", steps: [] },
-        { type: "Condition", name: "C", steps: [], else_steps: [] },
-      ],
-    });
-    expect(built.kinds.get("steps[0]::empty")).toMatchObject({
-      kind: "placeholder",
-      slot: { parent: "steps[0]", lane: "steps", index: 0 },
-    });
-    expect(built.kinds.get("steps[1]::steps")?.slot).toEqual({ parent: "steps[1]", lane: "steps", index: 0 });
-  });
-
-  it("places the ticket router top-down", async () => {
+  it("places the ticket router left to right", async () => {
     const layout = await layoutWorkflow(ticketRouter());
     const at = (id: string) => layout.nodes.find((node) => node.id === id);
-    expect(at(START)?.y).toBeLessThan(at("steps[0]")?.y ?? 0);
-    expect(at("steps[0]")?.y).toBeLessThan(at("steps[1]")?.y ?? 0);
-    expect(at("steps[1]")?.y).toBeLessThan(at("steps[1].choices[0]")?.y ?? 0);
-    expect(at("steps[2]")?.y).toBeLessThan(at(END)?.y ?? 0);
+    expect(at(START)?.x).toBeLessThan(at("steps[0]")?.x ?? 0);
+    expect(at("steps[0]")?.x).toBeLessThan(at("steps[1]")?.x ?? 0);
+    expect(at("steps[1]")?.x).toBeLessThan(at("steps[1].choices[0]")?.x ?? 0);
+    expect(at("steps[2]")?.x).toBeLessThan(at(END)?.x ?? 0);
+    // Choices top to bottom, in order.
+    expect(at("steps[1].choices[0]")?.y).toBeLessThan(at("steps[1].choices[1]")?.y ?? 0);
+    expect(at("steps[1].choices[1]")?.y).toBeLessThan(at("steps[1].choices[2]")?.y ?? 0);
     const investigate = at("steps[1].choices[1]");
     expect(investigate?.width).toBeGreaterThan(at("steps[1].choices[1].steps[0]")?.width ?? 0);
+    expect(at("steps[1].choices[1].steps[0]")?.parent).toBe("steps[1].choices[1]");
   });
 
   it("lays out 200 steps", async () => {
     const config = big(200);
     const started = performance.now();
     const layout = await layoutWorkflow(config);
-    expect(layout.nodes.filter((node) => node.kind !== "terminal")).toHaveLength(200);
+    expect(layout.nodes.filter((node) => node.kind !== "input" && node.kind !== "output")).toHaveLength(200);
     expect(performance.now() - started).toBeLessThan(5_000);
-    const top = layout.nodes.filter((node) => node.parent === undefined && node.kind === "step");
+    const top = layout.nodes.filter((node) => node.parent === undefined && node.kind === "component");
     for (const [index, node] of top.entries()) {
       for (const other of top.slice(index + 1)) {
         const overlap =

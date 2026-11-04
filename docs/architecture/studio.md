@@ -45,15 +45,28 @@ config it reads as.
 
 ## Workflows
 
+- The canvas is a projection of the step tree (`graph.ts`): components with typed ports (Message, Data, Route), a
+  Router's choices and a Condition's true / else as their own output ports, Steps / Loop / Parallel as group frames,
+  the workflow's input and output, and drop zones for empty lanes. The layout (ELK, left to right, ports at the rows
+  the node draws them), the canvas and the Langflow export all read that one projection.
 - Canvas actions are tree operations (insert, move, wrap, unwrap, remove, paste), so every state loads in agno and
-  undoes. Only manual moves are stored (`studio_canvas_layouts`, offsets from the ELK layout).
+  undoes. Only manual moves and sticky notes are stored (`studio_canvas_layouts`: `{positions, notes}`, positions as
+  offsets from the ELK layout); notes never reach the config or the code.
+- **Langflow flow JSON** (`langflow.ts`), both ways. Export writes `ChatInput` / `ChatOutput` at the ends, a
+  `genericNode` per step (settings as template fields, ports as outputs), groups as Langflow group nodes with their
+  steps in `node.flow`, notes as `noteNode`, and edges with Langflow's œ-encoded handles; every node also carries its
+  config and tree path in `metadata.agnostic`, so a flow exported here imports back exactly. A flow made in Langflow
+  imports as Steps, in the topological order of its message connections, with no executor yet; tool and model
+  connections and fan-out come back as warnings. Import replaces the draft's steps as one undoable edit and lays the
+  canvas out again.
 - Step names are unique (a rule), so agno's per-step pins stay stable; saves pin each step's stored executor
   (`step_agent` / `step_team` / `step_workflow` links).
 - Validation: shape, registry, rules (one executor per Step, Router choices, Loop limits, review options, nothing
   paused inside a Parallel, nesting ≤ 10), CEL type checks in context, then agno's strict load.
 - CEL: `/studio/cel/check` and `/studio/cel/contexts` for the editor; `…/studio/cel/evaluate` runs agno's evaluator
   through the bridge, else `agnostic-cel`'s, and says which.
-- `…/test-runs` lights the canvas with step events; `…/step-stats` and `…/step-runs` come from traces (observe).
+- `…/test-runs` (the builder's Playground) lights the canvas with step events, follows the running step, and keeps
+  each step's output for its node and the inspector; `…/step-stats` and `…/step-runs` come from traces (observe).
 
 ## Validation and the registry
 

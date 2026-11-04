@@ -1,15 +1,27 @@
-// Workflow builder building blocks with the ticket router's steps: node cards of every primitive and run status,
-// branch labels, the insert button and palette items.
+// Workflow builder building blocks with the ticket router's steps: component nodes of every primitive and run
+// status, group frames, the input and output nodes, a sticky note, the port legend, branch labels, the insert
+// button and palette items.
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 
-import { BranchLabel, InsertButton, NodeCard, PaletteItem, type WorkflowNodeType } from "../domain/workflow";
+import {
+  BranchLabel,
+  FlowIoNode,
+  FlowNodeFrame,
+  GroupFrame,
+  InsertButton,
+  PaletteItem,
+  PortLegend,
+  StickyNote,
+  portDotStyle,
+  type FlowRow,
+} from "../domain/workflow";
 
 const meta = {
   title: "Studio/Workflow builder",
   decorators: [
     (Story) => (
-      <div className="flex max-w-md flex-col gap-4 p-6">
+      <div className="flex flex-col gap-4 bg-canvas p-6">
         <Story />
       </div>
     ),
@@ -18,48 +30,138 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const NodeCards: Story = {
+const dot = (row: Extract<FlowRow, { kind: "in" | "out" }>) => (
+  <span
+    aria-hidden
+    className="absolute top-1/2 -translate-y-1/2"
+    style={{ ...portDotStyle(row.port, true), [row.kind === "in" ? "left" : "right"]: -7 }}
+  />
+);
+
+const classify: FlowRow[] = [
+  { kind: "desc", text: "Agent · support-triage" },
+  { kind: "in", id: "in", label: "Input", port: "message" },
+  { kind: "field", label: "Model", value: "claude-opus-5-5" },
+  { kind: "field", label: "Tools", value: "kb_lookup, zendesk_search" },
+  { kind: "sep" },
+  { kind: "out", id: "out", label: "Response", port: "message" },
+];
+const router: FlowRow[] = [
+  { kind: "desc", text: "Router · runs exactly one choice" },
+  { kind: "in", id: "in", label: "Input", port: "message" },
+  {
+    kind: "area",
+    label: "Selector · CEL",
+    lines: ['input.contains("refund")', '|| input.contains("invoice")', '? "Billing"', ': "Draft & review"'],
+  },
+  { kind: "out", id: "choices[0]", label: "Billing", port: "route" },
+  { kind: "out", id: "choices[1]", label: "Investigate", port: "route" },
+  { kind: "out", id: "choices[2]", label: "Draft & review", port: "route" },
+];
+
+export const ComponentNodes: Story = {
   render: function Render() {
     const [selected, setSelected] = useState("Route by category");
-    const cards: { type: WorkflowNodeType; title: string; meta?: string; chip?: string }[] = [
-      { type: "Step", title: "Classify ticket", meta: "avg 1.1 s", chip: "agent · support-triage" },
-      {
-        type: "Router",
-        title: "Route by category",
-        meta: "3 choices",
-        chip: 'cel · input.contains("refund") || …',
-      },
-      { type: "Parallel", title: "Investigate", meta: "2 branches" },
-      { type: "Loop", title: "Draft & review", meta: "max 3" },
-      { type: "Condition", title: "Needs a human?", chip: 'cel · previous_step_content.contains("ESC…' },
-      { type: "Steps", title: "Prepare", meta: "2 steps" },
-    ];
     return (
-      <div className="flex flex-col gap-3">
-        {cards.map((card) => (
-          <NodeCard
-            key={card.title}
-            {...card}
-            selected={selected === card.title}
-            onSelect={() => {
-              setSelected(card.title);
-            }}
-          />
-        ))}
+      <div className="flex flex-wrap items-start gap-6 px-2">
+        <FlowNodeFrame
+          type="Step"
+          executor="agent"
+          title="Classify ticket"
+          rows={classify}
+          chip="agent · support-triage"
+          meta="avg 1.1 s"
+          selected={selected === "Classify ticket"}
+          onSelect={() => {
+            setSelected("Classify ticket");
+          }}
+          renderPort={dot}
+        />
+        <FlowNodeFrame
+          type="Router"
+          title="Route by category"
+          rows={router}
+          chip='cel · input.contains("refund") || …'
+          meta="3 choices"
+          selected={selected === "Route by category"}
+          onSelect={() => {
+            setSelected("Route by category");
+          }}
+          renderPort={dot}
+        />
       </div>
     );
   },
 };
 
 export const RunStatus: Story = {
+  render: () => {
+    const rows: FlowRow[] = [
+      { kind: "in", id: "in", label: "Input", port: "message" },
+      { kind: "out", id: "out", label: "Response", port: "message" },
+    ];
+    return (
+      <div className="flex flex-wrap items-start gap-6 px-2">
+        <FlowNodeFrame
+          type="Step"
+          executor="agent"
+          title="Classify ticket"
+          rows={rows}
+          status="done"
+          time="1.1 s"
+        />
+        <FlowNodeFrame type="Step" executor="agent" title="Billing" rows={rows} status="running" />
+        <FlowNodeFrame type="Step" executor="team" title="Escalate" rows={rows} status="paused" />
+        <FlowNodeFrame
+          type="Step"
+          executor="function"
+          title="Send reply"
+          rows={rows}
+          status="failed"
+          problems={1}
+        />
+      </div>
+    );
+  },
+};
+
+export const GroupsAndEnds: Story = {
   render: () => (
-    <div className="flex flex-col gap-3">
-      <NodeCard type="Step" title="Classify ticket" chip="agent · support-triage" status="done" />
-      <NodeCard type="Step" title="Billing" chip="agent · billing-agent" status="running" />
-      <NodeCard type="Step" title="Escalate" chip="team · escalation-team" status="paused" />
-      <NodeCard type="Step" title="Send reply" chip="fn · send_reply" status="failed" problems={1} />
+    <div className="flex flex-wrap items-start gap-6 px-2">
+      <FlowIoNode kind="input" title="Workflow input" description="Start · input" />
+      <GroupFrame
+        type="Parallel"
+        title="Investigate"
+        label="PARALLEL"
+        meta="2 branches"
+        width={300}
+        height={140}
+      />
+      <GroupFrame
+        type="Loop"
+        title="Draft & review"
+        label="LOOP · MAX 3"
+        footer='until last_step_content.contains("APPROVED")'
+        width={300}
+        height={140}
+      />
+      <FlowIoNode kind="output" title="Workflow output" description="The last step's response" />
     </div>
   ),
+};
+
+export const NotesAndLegend: Story = {
+  render: function Render() {
+    const [text, setText] = useState(
+      "The router reads the classifier's answer. Keep route names in sync with its categories.",
+    );
+    return (
+      <div className="flex flex-wrap items-start gap-6">
+        <StickyNote text={text} onChange={setText} onDelete={() => undefined} />
+        <PortLegend types={["message", "data", "route"]} />
+      </div>
+    );
+  },
 };
 
 export const BranchesAndInsert: Story = {
@@ -85,13 +187,6 @@ export const Palette: Story = {
   render: () => (
     <div className="flex w-52 flex-col gap-0.5">
       <PaletteItem
-        type="Step"
-        name="Step"
-        description="Run an agent, team or function"
-        onAdd={() => undefined}
-        onDragStart={() => undefined}
-      />
-      <PaletteItem
         type="Router"
         name="Router"
         description="Pick one choice by selector"
@@ -99,16 +194,23 @@ export const Palette: Story = {
         onDragStart={() => undefined}
       />
       <PaletteItem
+        type="Loop"
+        name="Loop"
+        description="Repeat until an end condition"
+        onAdd={() => undefined}
+        onDragStart={() => undefined}
+      />
+      <PaletteItem
         name="support-triage"
         kind="agent"
-        color="var(--entity-agent)"
+        executor="agent"
         onAdd={() => undefined}
         onDragStart={() => undefined}
       />
       <PaletteItem
         name="check_status"
         kind="fn"
-        color="var(--entity-fn)"
+        executor="function"
         onAdd={() => undefined}
         onDragStart={() => undefined}
       />

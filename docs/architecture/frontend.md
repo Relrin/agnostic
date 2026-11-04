@@ -55,5 +55,6 @@ components use semantic classes, never raw hex. Dark is the only theme. Fonts ar
 through axe in CI, and a unit test checks WCAG contrast of token pairs and the TypeScript token mirror.
 
 `@agnostic/editor` loads CodeMirror in its own chunk, themed from `--syntax-*` tokens. The workflow builder
-(`modules/studio-workflows`) draws with `@xyflow/react`, laid out by ELK in a worker; edits are immer patches in a
-zustand store, so each undoes.
+(`modules/studio-workflows`) draws a left-to-right flow with `@xyflow/react` (component nodes with typed ports, group
+frames, a port legend, a minimap and sticky notes; the node widgets live in `@agnostic/ui`), laid out by ELK in a
+worker; edits are immer patches in a zustand store, so each undoes.

@@ -1,7 +1,8 @@
 // The inspector: the selected node's settings (or the workflow's, with nothing selected). Fields come from the
 // workflow schema per node type and reuse the Studio form controls on a node-scoped form context; the executor,
 // CEL fields and human review have their own editors. Human review shows only what the node type supports. The Runs
-// tab lists the step's latest results.
+// tab lists the step's latest results, Output shows what the step did in the Playground's test run, and Code shows
+// the step's lines of the workflow's code.
 import { studioStepRunsOptions } from "@agnostic/api";
 import { withQueryFn } from "@agnostic/core";
 import {
@@ -15,6 +16,7 @@ import {
 import {
   Badge,
   Button,
+  CodeBlock,
   Combobox,
   DropdownMenu,
   DropdownMenuContent,
@@ -26,6 +28,7 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
+  WorkflowGlyph,
 } from "@agnostic/ui";
 import { useQuery } from "@tanstack/react-query";
 import { Copy, Layers, Trash2, Ungroup } from "lucide-react";
@@ -34,6 +37,7 @@ import { forwardRef, useMemo } from "react";
 import { CelField, type CelContext } from "./cel-field";
 import { useBuilderContext } from "./context";
 import { useBuilder } from "./history";
+import { seconds, type StepResult } from "./run-test";
 import { executorLabel, kindLabel, type ExecutorOption, type WorkflowSchema } from "./schema";
 import {
   CONTAINERS,
@@ -87,6 +91,10 @@ export type InspectorProps = {
   workflowForm: { sections: Section[]; fields: Record<string, FieldInfo>; ctx: FormContext | undefined };
   focusedPath: string | undefined;
   onFocusPath: (path: string | undefined) => void;
+  /** The Playground's test run, by step name. */
+  results: ReadonlyMap<string, StepResult>;
+  /** Show the code view at the selected step. */
+  onOpenCode: () => void;
 };
 
 export const Inspector = forwardRef<HTMLElement, InspectorProps>(function Inspector(props, ref) {
@@ -129,6 +137,8 @@ function NodeInspector({
   node,
   focusedPath,
   onFocusPath,
+  results,
+  onOpenCode,
 }: InspectorProps & { path: string; node: WorkflowNode }) {
   const { doc, actions, readOnly, store } = useBuilderContext();
   const type = nodeType(node);
@@ -159,6 +169,7 @@ function NodeInspector({
   return (
     <div className="flex flex-col gap-3 p-4">
       <div className="flex items-center gap-2">
+        <WorkflowGlyph type={type} executor={executorOf(node)?.kind} size={22} />
         <span
           className="rounded-type px-1.5 py-0.5 font-mono text-[10.5px] uppercase"
           style={{ color, backgroundColor: `color-mix(in srgb, ${color} 14%, transparent)` }}
@@ -173,7 +184,9 @@ function NodeInspector({
       <Tabs defaultValue="settings">
         <TabsList variant="underline">
           <TabsTrigger value="settings">Settings</TabsTrigger>
+          <TabsTrigger value="output">Output</TabsTrigger>
           <TabsTrigger value="runs">Runs</TabsTrigger>
+          <TabsTrigger value="code">Code</TabsTrigger>
         </TabsList>
         <TabsContent value="settings" className="flex flex-col gap-4 pt-3">
           {schema.sections[type].map((section) => (
@@ -225,8 +238,14 @@ function NodeInspector({
           ))}
           {type === "Router" && <Choices path={path} node={node} />}
         </TabsContent>
+        <TabsContent value="output" className="pt-3">
+          <StepOutput result={results.get(nodeName(node))} />
+        </TabsContent>
         <TabsContent value="runs" className="pt-3">
           <StepRuns instance={instance} componentId={componentId} step={nodeName(node)} />
+        </TabsContent>
+        <TabsContent value="code" className="flex flex-col gap-2 pt-3">
+          <StepCode path={path} onOpenCode={onOpenCode} />
         </TabsContent>
       </Tabs>
       {CONTAINERS.includes(type) && (
@@ -497,4 +516,74 @@ function StepRuns({ instance, componentId, step }: { instance: string; component
       ))}
     </ul>
   );
+}
+
+const OUTPUT_STATUS: Record<StepResult["status"], string> = {
+  idle: "Not run yet",
+  running: "Running",
+  done: "Done",
+  paused: "Waiting for a person",
+  failed: "Failed",
+  skipped: "Skipped",
+};
+
+/** What the step did in the Playground's latest test run. */
+function StepOutput({ result }: { result: StepResult | undefined }) {
+  if (!result) {
+    return (
+      <EmptyState title="Not in a test run yet">
+        Open the Playground and send a message: this step&apos;s output shows here as it runs.
+      </EmptyState>
+    );
+  }
+  return (
+    <div className="flex flex-col gap-2">
+      <span className="text-[12px] text-fg-muted">
+        {[
+          OUTPUT_STATUS[result.status],
+          result.ms !== undefined ? seconds(result.ms) : undefined,
+          "latest test run",
+        ]
+          .filter(Boolean)
+          .join(" · ")}
+      </span>
+      {result.error && <p className="m-0 font-mono text-[12px] text-danger">{result.error}</p>}
+      <pre className="m-0 max-h-80 overflow-auto rounded-button border border-border bg-inset px-3 py-2.5 font-mono text-[11.5px] leading-relaxed whitespace-pre-wrap text-fg-prose">
+        {result.content || (result.status === "running" ? "Streaming…" : "No output.")}
+      </pre>
+      {result.tools.length > 0 && (
+        <span className="font-mono text-[11.5px] text-fg-muted">{`tools · ${result.tools.join(", ")}`}</span>
+      )}
+    </div>
+  );
+}
+
+/** The step's own lines of the workflow's code, read-only; the code view edits them. */
+function StepCode({ path, onOpenCode }: { path: string; onOpenCode: () => void }) {
+  const { doc } = useBuilderContext();
+  const code = doc.source.code ?? doc.code?.code;
+  const span = doc.spans[path];
+  const lines = code && span ? code.split("\n").slice(span.line - 1, span.end_line) : undefined;
+  return (
+    <>
+      {lines ? (
+        <CodeBlock
+          title={`${doc.code?.filename ?? "workflow.py"} · L${String(span?.line ?? 0)}–${String(span?.end_line ?? 0)}`}
+          code={dedent(lines).join("\n")}
+        />
+      ) : (
+        <p className="m-0 text-[12px] text-fg-muted">The code for this step shows once it's generated.</p>
+      )}
+      <Button variant="ghost" size="28" className="self-start" onClick={onOpenCode}>
+        Open in the code view
+      </Button>
+    </>
+  );
+}
+
+function dedent(lines: string[]): string[] {
+  const indent = Math.min(
+    ...lines.filter((line) => line.trim()).map((line) => line.length - line.trimStart().length),
+  );
+  return Number.isFinite(indent) ? lines.map((line) => line.slice(indent)) : lines;
 }

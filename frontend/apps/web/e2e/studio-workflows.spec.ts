@@ -1,6 +1,6 @@
 // The workflow builder against stubbed Studio routes: the design's ticket router on the canvas, a step inserted from
-// a connector, a draft test run lighting steps up as its events stream in, the code view following the selection,
-// and a 200-step workflow that pans and zooms within the frame budget.
+// a connection, a draft test run in the Playground lighting steps up as its events stream in, the code view following
+// the selection, and a 200-step workflow that pans and zooms within the frame budget.
 import { expect, test, type Page } from "@playwright/test";
 
 import celContexts from "../../../packages/testing/src/fixtures/studio-cel-contexts.json" with { type: "json" };
@@ -235,10 +235,10 @@ test.describe("workflow builder", () => {
     await page.getByRole("button", { name: "Undo" }).click();
     await expect(board.getByRole("button", { name: "Step Step", exact: true })).toHaveCount(0);
 
-    await page.getByRole("button", { name: "Run test" }).click();
-    const panel = page.getByRole("region", { name: "Run test" });
-    await panel.getByRole("textbox", { name: "Sample input" }).fill("I was charged twice, need a refund");
-    // The panel covers the lower half of the canvas: fit the view to what's left so the router's lanes show.
+    await page.getByRole("button", { name: "Playground" }).click();
+    const panel = page.getByRole("complementary", { name: "Playground" });
+    await panel.getByRole("textbox", { name: "Test message" }).fill("I was charged twice, need a refund");
+    // The Playground takes the inspector's place: fit the view to what's left so the router's choices show.
     await page.getByRole("button", { name: "Auto-layout" }).click();
     await panel.getByRole("button", { name: "Run", exact: true }).click();
     await expect(board.locator('[data-path="steps[0]"] [data-slot="node-card"]')).toHaveAttribute(

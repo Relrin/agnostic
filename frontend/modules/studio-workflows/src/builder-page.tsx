@@ -1,7 +1,8 @@
-// The workflow builder (`studio/workflows/:id`, `?view=canvas|code&node=`): header (draft chip, Versions, Run test,
-// Save draft, Publish), toolbar (Canvas / Code, undo and redo, zoom, auto-layout, the validation sentence), then the
-// palette, the canvas (or the code) and the inspector, with the problems and the test run below. The canvas and the
-// code are one document: the selected step highlights its lines, and the cursor in the code selects a step.
+// The workflow builder (`studio/workflows/:id`, `?view=canvas|code&node=`): header (draft chip, Versions, Playground,
+// Share, Save draft, Publish), toolbar (Canvas / Code, undo and redo, auto-layout, the validation sentence), then the
+// component palette, the canvas (or the code) and the inspector or the Playground, with the problems below. The
+// canvas and the code are one document: the selected step highlights its lines, and the cursor in the code selects
+// a step. Share exports the workflow as a Langflow flow and imports one.
 import {
   describeError,
   studioGetCanvasLayoutOptions,
@@ -29,32 +30,54 @@ import {
   type DraftDocument,
   type FormContext,
 } from "@agnostic/studio";
-import { Breadcrumb, Button, Callout, ErrorState, LoadingRows, SegmentedControl, cn } from "@agnostic/ui";
+import {
+  Breadcrumb,
+  Button,
+  Callout,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  ErrorState,
+  LoadingRows,
+  SegmentedControl,
+  cn,
+  toast,
+} from "@agnostic/ui";
 import { skipToken, useQuery } from "@tanstack/react-query";
 import { Link, useNavigate, useParams, useSearch } from "@tanstack/react-router";
-import { useViewport } from "@xyflow/react";
 import {
   CircleAlert,
   CircleCheck,
   Code2,
+  Download,
   History,
   LayoutGrid,
   Play,
   Redo2,
   Share2,
   Undo2,
-  ZoomIn,
-  ZoomOut,
+  Upload,
+  Waypoints,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 
-import { CanvasProvider, WorkflowCanvas, useCanvas, type Offsets } from "./canvas";
+import { CanvasProvider, WorkflowCanvas, useCanvas } from "./canvas";
 import { BuilderProvider, useActions, type Builder } from "./context";
+import { useExecutorDetails } from "./executor-details";
 import { createBuilderStore, useBuilder } from "./history";
 import { Inspector } from "./inspector";
+import { fromLangflow, toLangflow, type ImportResult } from "./langflow";
+import { readCanvasState, type CanvasState } from "./notes";
 import { Palette } from "./palette";
 import { ProblemsPanel, nodePathOf, problemCounts } from "./problems";
-import { RunTestPanel, stepStatuses, useTestRun } from "./run-test";
+import { PlaygroundPanel, stepResults, useTestRun } from "./run-test";
 import { useExecutors, useWorkflowSchema } from "./schema";
 import { stepCount } from "./tree";
 
@@ -116,35 +139,73 @@ function useValidation(instance: string, doc: DraftDocument) {
   });
 }
 
-function ZoomControls({ onAutoLayout }: { onAutoLayout: () => void }) {
-  const flow = useCanvas();
-  const { zoom } = useViewport();
+/** Downloads `content` as a file. */
+function download(filename: string, content: string) {
+  const url = URL.createObjectURL(new Blob([content], { type: "application/json" }));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+function ImportDialog({
+  result,
+  onCancel,
+  onApply,
+}: {
+  result: ImportResult | undefined;
+  onCancel: () => void;
+  onApply: (result: ImportResult) => void;
+}) {
+  const notes = result?.notes.length ?? 0;
+  const steps = result?.steps.length ?? 0;
   return (
-    <div className="flex items-center gap-1 rounded-[9px] border border-border px-1">
-      <Button
-        variant="icon"
-        size="28"
-        aria-label="Zoom out"
-        onClick={() => void flow.zoomOut({ duration: 150 })}
-      >
-        <ZoomOut aria-hidden />
-      </Button>
-      <span className="w-11 text-center font-mono text-[11.5px] text-fg-secondary" aria-live="polite">
-        {`${String(Math.round(zoom * 100))}%`}
-      </span>
-      <Button
-        variant="icon"
-        size="28"
-        aria-label="Zoom in"
-        onClick={() => void flow.zoomIn({ duration: 150 })}
-      >
-        <ZoomIn aria-hidden />
-      </Button>
-      <Button variant="ghost" size="28" onClick={onAutoLayout}>
-        <LayoutGrid aria-hidden />
-        Auto-layout
-      </Button>
-    </div>
+    <Dialog
+      open={result !== undefined}
+      onOpenChange={(open) => {
+        if (!open) onCancel();
+      }}
+    >
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Import the Langflow flow</DialogTitle>
+          <DialogDescription>
+            {result?.source === "agnostic"
+              ? "This flow was exported from Studio: it replaces the draft's steps exactly as they were."
+              : "Its components that pass messages on become steps, in the order they run. It replaces the draft's steps; Undo brings them back."}
+          </DialogDescription>
+        </DialogHeader>
+        {result && (
+          <div className="flex flex-col gap-2 text-[13px]">
+            <p className="m-0">
+              {`${String(steps)} top-level step${steps === 1 ? "" : "s"}${notes ? `, ${String(notes)} note${notes === 1 ? "" : "s"}` : ""}.`}
+            </p>
+            {result.warnings.length > 0 && (
+              <ul aria-label="What doesn't carry over" className="m-0 flex flex-col gap-1 pl-4 text-warning">
+                {result.warnings.map((warning) => (
+                  <li key={warning}>{warning}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+        <DialogFooter>
+          <Button variant="secondary" size="32" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            size="32"
+            onClick={() => {
+              if (result) onApply(result);
+            }}
+          >
+            Replace the steps
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -163,7 +224,10 @@ function WorkflowBuilder({ instance, componentId }: { instance: string; componen
   const instanceName = findInstance(instances.data, instance)?.display_name ?? instance;
   const [search, setSearch] = useBuilderSearch();
   const [dialog, setDialog] = useState<"versions" | "publish" | undefined>(undefined);
-  const [testing, setTesting] = useState(false);
+  const [panel, setPanel] = useState<"inspector" | "playground">("inspector");
+  const [importing, setImporting] = useState<ImportResult | undefined>(undefined);
+  const importInput = useRef<HTMLInputElement>(null);
+  const flow = useCanvas();
   const [layoutVersion, setLayoutVersion] = useState(0);
   // A field focused in the form or the code wins over the selected step until the selection changes.
   const [fieldFocus, setFieldFocus] = useState<{ selected: string | undefined; path: string | undefined }>({
@@ -176,6 +240,7 @@ function WorkflowBuilder({ instance, componentId }: { instance: string; componen
   const canRedo = useBuilder(store, (state) => state.future.length > 0);
   const validation = useValidation(instance, doc);
   const run = useTestRun(instance, componentId);
+  const details = useExecutorDetails(instance, doc.config);
   const scoped = `/i/${encodeURIComponent(instance)}`;
   const draft = doc.draft;
 
@@ -188,6 +253,12 @@ function WorkflowBuilder({ instance, componentId }: { instance: string; componen
     if (selected !== search.node) setSearch({ node: selected });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only a new selection writes the URL
   }, [selected]);
+  // Selecting a step shows its settings (adjusted while rendering, as React suggests for derived state).
+  const [shownSelection, setShownSelection] = useState(selected);
+  if (selected !== shownSelection) {
+    setShownSelection(selected);
+    if (selected) setPanel("inspector");
+  }
   const focusedPath = fieldFocus.selected === selected ? (fieldFocus.path ?? selected) : selected;
   const setFocusedPath = (path: string | undefined) => {
     setFieldFocus({ selected: store.getState().selected, path });
@@ -214,20 +285,25 @@ function WorkflowBuilder({ instance, componentId }: { instance: string; componen
     enabled: Boolean(draft),
     staleTime: Infinity,
   });
-  const [offsets, setOffsets] = useState<Offsets | undefined>(undefined);
-  const shownOffsets = useMemo<Offsets>(() => {
-    if (offsets) return offsets;
-    const saved = layoutQuery.data?.layout.positions;
-    return saved && typeof saved === "object" ? (saved as Offsets) : {};
-  }, [offsets, layoutQuery.data]);
-  const saveLayout = useDebouncedCallback((next: Offsets) => {
+  // Manual moves and sticky notes, as edited here or as last saved for this draft.
+  const [canvasState, setCanvasState] = useState<CanvasState | undefined>(undefined);
+  const shown = useMemo<CanvasState>(
+    () => canvasState ?? readCanvasState(layoutQuery.data?.layout),
+    [canvasState, layoutQuery.data],
+  );
+  const saveLayout = useDebouncedCallback((next: CanvasState) => {
     if (!draft || readOnly) return;
     void studioPutCanvasLayout({
       path: { instance, component_id: componentId },
-      body: { version: draft.version, layout: { positions: next } },
+      body: { version: draft.version, layout: { positions: next.positions, notes: next.notes } },
     });
   }, LAYOUT_SAVE_MS);
-  const statuses = useMemo(() => stepStatuses(run.state?.steps), [run.state?.steps]);
+  const updateCanvas = (next: Partial<CanvasState>) => {
+    const merged = { ...shown, ...next };
+    setCanvasState(merged);
+    saveLayout(merged);
+  };
+  const results = useMemo(() => stepResults(run.state?.steps), [run.state?.steps]);
   const problems = useMemo(() => problemCounts(validation.data), [validation.data]);
 
   if (doc.isPending) return <LoadingRows rows={8} label="Loading the workflow" />;
@@ -247,6 +323,39 @@ function WorkflowBuilder({ instance, componentId }: { instance: string; componen
   const inputSchema = doc.config?.input_schema;
   const inputLabel =
     typeof inputSchema === "string" ? inputSchema : inputSchema ? "structured input" : "input";
+
+  const exportFlow = async () => {
+    const exported = await toLangflow({
+      config: doc.config,
+      id: component.id,
+      name: component.name,
+      inputLabel,
+      offsets: shown.positions,
+      notes: shown.notes,
+      viewport: flow.getViewport(),
+    });
+    download(`${component.id}.langflow.json`, `${JSON.stringify(exported, null, 2)}\n`);
+    toast.success(`Exported ${component.id}.langflow.json`);
+  };
+  const readImport = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    try {
+      setImporting(fromLangflow(JSON.parse(await file.text())));
+    } catch (error) {
+      toast.error(error instanceof SyntaxError ? "This file isn't JSON." : (error as Error).message);
+    }
+  };
+  const applyImport = (result: ImportResult) => {
+    actions.updateWorkflow("Import a Langflow flow", (config) => {
+      config.steps = result.steps;
+    });
+    updateCanvas({ positions: {}, notes: result.notes });
+    setImporting(undefined);
+    setLayoutVersion((current) => current + 1);
+    toast.success("Imported the Langflow flow.");
+  };
 
   const workflowCtx: FormContext | undefined = doc.config
     ? {
@@ -301,14 +410,48 @@ function WorkflowBuilder({ instance, componentId }: { instance: string; componen
             <Button
               variant="outline"
               size="32"
+              aria-pressed={panel === "playground"}
+              className={cn(panel === "playground" && "border-border-dashed bg-surface-hover")}
               onClick={() => {
-                setTesting(true);
+                setPanel((current) => (current === "playground" ? "inspector" : "playground"));
               }}
             >
-              <Play aria-hidden />
-              Run test
+              <Play aria-hidden className="fill-accent text-accent" />
+              Playground
             </Button>
           )}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="32">
+                <Waypoints aria-hidden />
+                Share
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onSelect={() => void exportFlow()}>
+                <Download aria-hidden />
+                Export as Langflow JSON
+              </DropdownMenuItem>
+              {!readOnly && (
+                <DropdownMenuItem
+                  onSelect={() => {
+                    importInput.current?.click();
+                  }}
+                >
+                  <Upload aria-hidden />
+                  Import Langflow JSON…
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <input
+            ref={importInput}
+            type="file"
+            accept="application/json,.json"
+            aria-label="Langflow flow to import"
+            className="hidden"
+            onChange={(event) => void readImport(event)}
+          />
           {draft && canWrite.allowed && (
             <Button
               variant="secondary"
@@ -369,13 +512,17 @@ function WorkflowBuilder({ instance, componentId }: { instance: string; componen
             </Button>
           </div>
           {search.view === "canvas" && (
-            <ZoomControls
-              onAutoLayout={() => {
-                setOffsets({});
-                saveLayout({});
+            <Button
+              variant="ghost"
+              size="28"
+              onClick={() => {
+                updateCanvas({ positions: {} });
                 setLayoutVersion((current) => current + 1);
               }}
-            />
+            >
+              <LayoutGrid aria-hidden />
+              Auto-layout
+            </Button>
           )}
           <span className="flex-1" />
           <span
@@ -403,20 +550,27 @@ function WorkflowBuilder({ instance, componentId }: { instance: string; componen
         <div className="flex min-h-0 flex-1">
           {search.view === "canvas" ? (
             <>
-              <Palette executors={executors} />
+              <Palette executors={executors} registryHref={`${scoped}/studio/registry`} />
               <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-canvas">
                 <WorkflowCanvas
                   config={doc.config}
                   inputLabel={inputLabel}
-                  statuses={statuses}
+                  results={results}
                   problems={problems}
                   stats={averages}
-                  offsets={shownOffsets}
-                  onOffsets={(next) => {
-                    setOffsets(next);
-                    saveLayout(next);
+                  details={details}
+                  offsets={shown.positions}
+                  onOffsets={(positions) => {
+                    updateCanvas({ positions });
                   }}
-                  onOpenInspector={() => inspector.current?.focus()}
+                  notes={shown.notes}
+                  onNotes={(notes) => {
+                    updateCanvas({ notes });
+                  }}
+                  onOpenInspector={() => {
+                    setPanel("inspector");
+                    requestAnimationFrame(() => inspector.current?.focus());
+                  }}
                   layoutVersion={layoutVersion}
                 />
               </div>
@@ -445,35 +599,46 @@ function WorkflowBuilder({ instance, componentId }: { instance: string; componen
               />
             </div>
           )}
-          <Inspector
-            ref={inspector}
-            instance={instance}
-            componentId={componentId}
-            schema={schema}
-            executors={executors}
-            workflowForm={{
-              sections: workflowSchema.sections,
-              fields: workflowSchema.fields,
-              ctx: workflowCtx,
-            }}
-            focusedPath={focusedPath}
-            onFocusPath={setFocusedPath}
-          />
+          {panel === "playground" && draft ? (
+            <PlaygroundPanel
+              run={run}
+              instanceName={instanceName}
+              componentName={component.name}
+              version={draft.version}
+              beforeRun={doc.save}
+              onClose={() => {
+                setPanel("inspector");
+              }}
+            />
+          ) : (
+            <Inspector
+              ref={inspector}
+              instance={instance}
+              componentId={componentId}
+              schema={schema}
+              executors={executors}
+              workflowForm={{
+                sections: workflowSchema.sections,
+                fields: workflowSchema.fields,
+                ctx: workflowCtx,
+              }}
+              focusedPath={focusedPath}
+              onFocusPath={setFocusedPath}
+              results={results}
+              onOpenCode={() => {
+                setSearch({ view: "code" });
+              }}
+            />
+          )}
         </div>
         <ProblemsPanel validation={validation.data} />
-        {testing && (
-          <RunTestPanel
-            run={run}
-            instanceName={instanceName}
-            componentName={component.name}
-            version={draft?.version}
-            beforeRun={doc.save}
-            onClose={() => {
-              setTesting(false);
-              run.clear();
-            }}
-          />
-        )}
+        <ImportDialog
+          result={importing}
+          onCancel={() => {
+            setImporting(undefined);
+          }}
+          onApply={applyImport}
+        />
         <VersionsDrawer
           open={dialog === "versions"}
           onOpenChange={(open) => {

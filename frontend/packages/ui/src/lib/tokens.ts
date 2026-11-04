@@ -52,6 +52,9 @@ export const entities = {
   "--entity-fn": "#A9AFB8",
   "--node-condition": "#F2B54B",
   "--node-loop": "#F28FC0",
+  "--note": "#221D12",
+  "--note-border": "#4A3D1E",
+  "--note-fg": "#F5DFA8",
   "--reg-schema": "#F2A0C0",
   "--reg-function": "#8FE0D0",
   "--reg-knowledge": "#E8C27A",
@@ -85,6 +88,7 @@ export const contrastPairs = [
   { fg: "--danger", bg: "--bg", min: 4.5 },
   { fg: "--info", bg: "--bg", min: 4.5 },
   { fg: "--bg", bg: "--accent", min: 4.5 },
+  { fg: "--note-fg", bg: "--note", min: 4.5 },
 ] as const;
 
 export const allColors: Record<string, string> = { ...surfaces, ...lines, ...text, ...accents, ...entities };

@@ -25,10 +25,16 @@ Model parameters (temperature, max tokens…) come from registered presets, each
 - **Autosave** saves 2 seconds after the last change. If someone else saved meanwhile (in Studio or straight on
   AgentOS), a conflict dialog shows their version and lets you load it or save yours over it.
 - **Teams**: members are pinned at a version; the editor explains the team mode with the actual members.
-- **Workflows**: the canvas edits the step tree (Steps, Parallel, Condition, Loop, Router, human review); every
-  action keeps the workflow loadable and can be undone. Conditions, routers and loops use **CEL** expressions,
-  type-checked as you write them; *Try* evaluates one on a sample input (with the bridge, agno evaluates it exactly as
-  a run would).
+- **Workflows**: the canvas shows the workflow as a flow, read left to right: the workflow's input, a component per
+  step with its input and output ports, Router choices and Condition branches leaving from their own ports, Loop,
+  Parallel and Steps as frames around their steps, and the output. Drag a component from the sidebar onto a
+  connection's **+** (or empty space, to add it at the end); every action keeps the workflow loadable and can be
+  undone. Conditions, routers and loops use **CEL** expressions, type-checked as you write them; *Try* evaluates one
+  on a sample input (with the bridge, agno evaluates it exactly as a run would). **Playground** runs the draft with a
+  test message: steps light up on the canvas as they run, and each step's output opens from its node or the
+  inspector's *Output* tab. *Add note* leaves a sticky note for your team (saved with the canvas, never in the
+  config). **Share** exports the workflow as Langflow flow JSON and imports one: a flow exported from Studio comes
+  back exactly; one made in Langflow comes in as steps in the order it runs, with what doesn't carry over listed.
 
 ## Testing
 

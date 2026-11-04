@@ -1,501 +1,348 @@
-// The workflow canvas: React Flow drawing the tree that layout.ts placed. Start, steps, containers holding their steps,
-// Condition and Router branches with their labels, "+" on every connector (click to add a step, or drop a palette
-// item or a step's grip on it), and the end. Keyboard: arrows move between steps, Enter opens the inspector, Delete
-// removes (with undo), Ctrl+C / Ctrl+V copy and paste a subtree, Ctrl+Z / Ctrl+Shift+Z undo and redo.
+// The workflow canvas: React Flow drawing the flow graph that layout.ts placed, left to right. The workflow's
+// input, its components with their typed ports, groups holding their steps, Router choices and Condition branches
+// leaving from their own ports, and the output; a "+" on every connection (click it, or drop a palette item or a
+// step's grip on it) and drops on empty space append a step. Sticky notes, the port legend, zoom controls and a
+// minimap sit over it, and the test run lights nodes and connections up as it goes. Keyboard: arrows move between
+// steps, Enter opens the inspector, Delete removes (with undo), Ctrl+C / Ctrl+V copy and paste a subtree,
+// Ctrl+Z / Ctrl+Shift+Z undo and redo.
+import type { Config } from "@agnostic/studio";
+import { Button, NODE_COLORS, PortLegend, tokens, type WorkflowNodeStatus } from "@agnostic/ui";
 import {
   Background,
-  BaseEdge,
-  EdgeLabelRenderer,
-  Handle,
-  Position,
+  MiniMap,
+  Panel,
   ReactFlow,
   ReactFlowProvider,
-  getSmoothStepPath,
   useReactFlow,
   useStoreApi,
-  type Edge,
-  type EdgeProps,
-  type Node,
-  type NodeProps,
+  useViewport,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import type { Config } from "@agnostic/studio";
+import { Lock, LockOpen, Maximize, Minus, Plus, StickyNote } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent, type KeyboardEvent } from "react";
+
+import { DRAG_TYPE, readDragItem, useBuilderContext } from "./context";
+import { EDGE_VIEWS, type FlowEdgeType } from "./edges";
 import {
-  BranchLabel,
-  InsertButton,
-  NODE_COLORS,
-  NodeCard,
-  WorkflowGlyph,
-  cn,
-  type BranchTone,
-  type WorkflowNodeStatus,
-} from "@agnostic/ui";
-import { GripVertical, Plus } from "lucide-react";
-import {
-  memo,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type DragEvent,
-  type KeyboardEvent,
-} from "react";
+  END,
+  START,
+  buildFlowGraph,
+  describeNode,
+  groupLabel,
+  layoutKey,
+  portTypesOf,
+  type DetailsLookup,
+  type FlowGraph,
+} from "./graph";
+import { layoutGraph, type Layout } from "./layout";
+import { NODE_VIEWS, type FlowNode } from "./nodes";
+import { NOTE_PREFIX, newNote, type Note, type Offsets } from "./notes";
+import { seconds, type StepResult } from "./run-test";
+import { executorOf, flatten, neighbour, nodeAt, nodeName, parentOf, rootSteps } from "./tree";
 
-import { DRAG_TYPE, readDragItem, useBuilderContext, type DragItem } from "./context";
-import { useBuilder } from "./history";
-import { START, layoutWorkflow, type Layout, type LayoutEdge, type LayoutNode } from "./layout";
-import { executorLabel } from "./schema";
-import {
-  LANES,
-  children,
-  executorOf,
-  neighbour,
-  nodeAt,
-  nodeName,
-  nodeType,
-  parentOf,
-  rootSteps,
-  type NodeType,
-  type Slot,
-  type WorkflowNode,
-} from "./tree";
-
-export type Offsets = Record<string, { x: number; y: number }>;
-
-type CardData = {
-  path: string;
-  type: NodeType;
-  title: string;
-  meta?: string | undefined;
-  chip?: string | undefined;
-  status: WorkflowNodeStatus;
-  problems: number;
-  footer?: string | undefined;
-};
-type TerminalData = { label: string; start: boolean };
-type PlaceholderData = { slot: Slot };
-type StepFlowNode = Node<CardData, "step">;
-type ContainerFlowNode = Node<CardData, "container">;
-type TerminalFlowNode = Node<TerminalData, "terminal">;
-type PlaceholderFlowNode = Node<PlaceholderData, "placeholder">;
-type FlowNode = StepFlowNode | ContainerFlowNode | TerminalFlowNode | PlaceholderFlowNode;
-type InsertFlowEdge = Edge<
-  { slot?: Slot | undefined; label?: string | undefined; tone?: BranchTone | undefined },
-  "insert"
->;
-
-const HIDDEN_HANDLE = "!size-1 !min-h-0 !min-w-0 !border-0 !bg-transparent";
-
-function preview(text: string, max = 36): string {
-  return text.length > max ? `${text.slice(0, max - 1)}…` : text;
+/** The component steps the test run has running, in reading order (containers don't count). */
+function flattenRunning(config: Config | undefined, results: ReadonlyMap<string, StepResult>): string[] {
+  return flatten(config)
+    .filter((item) => item.type === "Step" && results.get(nodeName(item.node))?.status === "running")
+    .map((item) => item.path);
 }
 
-function seconds(ms: number): string {
-  return ms >= 1000 ? `${(ms / 1000).toFixed(1)} s` : `${String(Math.round(ms))} ms`;
-}
+export type { Offsets } from "./notes";
 
-function callable(node: WorkflowNode, field: string): string | undefined {
-  const value = node[field];
-  if (typeof value === "boolean") return `always ${value ? "true" : "false"}`;
-  if (typeof value !== "string" || value === "") return undefined;
-  if (node[`${field}_type`] === "function") return `fn · ${value}`;
-  return `cel · ${preview(value)}`;
-}
-
-/** How a node reads on the canvas. */
-export function describeNode(
-  node: WorkflowNode,
-  avgMs: number | undefined,
-): Omit<CardData, "path" | "status" | "problems"> {
-  const type = nodeType(node);
-  const title = nodeName(node);
-  const stats = avgMs !== undefined ? `avg ${seconds(avgMs)}` : undefined;
-  switch (type) {
-    case "Step": {
-      const executor = executorOf(node);
-      return { type, title, meta: stats, chip: executor ? executorLabel(executor) : "no executor yet" };
-    }
-    case "Router": {
-      const count = children(node, "choices").length;
-      return {
-        type,
-        title,
-        meta: `${String(count)} choice${count === 1 ? "" : "s"}`,
-        chip: callable(node, "selector"),
-      };
-    }
-    case "Condition":
-      return { type, title, meta: stats, chip: callable(node, "evaluator") };
-    case "Loop": {
-      const max = typeof node.max_iterations === "number" ? node.max_iterations : 3;
-      const until = callable(node, "end_condition");
-      return {
-        type,
-        title,
-        meta: `max ${String(max)}`,
-        footer: until ? `until ${until.replace(/^cel · /, "")}` : undefined,
-      };
-    }
-    case "Parallel": {
-      const count = children(node, "steps").length;
-      return { type, title, meta: `${String(count)} branch${count === 1 ? "" : "es"}` };
-    }
-    case "Steps": {
-      const count = children(node, "steps").length;
-      return { type, title, meta: `${String(count)} step${count === 1 ? "" : "s"}` };
-    }
-  }
-}
-
-/** The shape layout depends on: node types and how many children each has, not names or settings. */
-export function structureKey(config: Config | undefined): string {
-  const shape = (node: WorkflowNode): unknown => {
-    const type = nodeType(node);
-    return [type, ...LANES[type].map((lane) => children(node, lane).map(shape))];
-  };
-  return JSON.stringify(rootSteps(config).map(shape));
-}
-
-// ---------------------------------------------------------------- nodes
-
-function Grip({ path }: { path: string }) {
-  const { readOnly } = useBuilderContext();
-  if (readOnly) return null;
-  return (
-    <span
-      draggable
-      role="button"
-      tabIndex={-1}
-      aria-label="Drag to move this step"
-      className="nodrag absolute top-2 -left-5 cursor-grab text-fg-faint hover:text-fg-secondary"
-      onDragStart={(event) => {
-        event.dataTransfer.setData(DRAG_TYPE, JSON.stringify({ move: path } satisfies DragItem));
-        event.dataTransfer.effectAllowed = "move";
-      }}
-    >
-      <GripVertical aria-hidden className="size-4" />
-    </span>
-  );
-}
-
-const StepView = memo(function StepView({ data }: NodeProps<StepFlowNode>) {
-  const { store } = useBuilderContext();
-  const selected = useBuilder(store, (state) => state.selected === data.path);
-  return (
-    <div className="relative" data-path={data.path}>
-      <Handle type="target" position={Position.Top} isConnectable={false} className={HIDDEN_HANDLE} />
-      <Grip path={data.path} />
-      <NodeCard
-        type={data.type}
-        title={data.title}
-        meta={data.meta}
-        chip={data.chip}
-        status={data.status}
-        problems={data.problems}
-        selected={selected}
-        onSelect={() => {
-          store.getState().select(data.path);
-        }}
-      />
-      <Handle type="source" position={Position.Bottom} isConnectable={false} className={HIDDEN_HANDLE} />
-    </div>
-  );
-});
-
-const ContainerView = memo(function ContainerView({ data, width, height }: NodeProps<ContainerFlowNode>) {
-  const { store, actions, readOnly, doc } = useBuilderContext();
-  const selected = useBuilder(store, (state) => state.selected === data.path);
-  const color = NODE_COLORS[data.type];
-  return (
-    <div
-      data-path={data.path}
-      className={cn(
-        "relative rounded-card border bg-canvas/80",
-        selected && "ring-[3px] ring-accent/16",
-        data.status === "running" && "ring-[3px] ring-info/30",
-      )}
-      style={{
-        width,
-        height,
-        borderColor: selected ? "var(--accent)" : `color-mix(in srgb, ${color} 45%, transparent)`,
-      }}
-    >
-      <Handle type="target" position={Position.Top} isConnectable={false} className={HIDDEN_HANDLE} />
-      <Grip path={data.path} />
-      <button
-        type="button"
-        aria-pressed={selected}
-        aria-label={`${data.type} ${data.title}${data.problems ? `, ${String(data.problems)} problems` : ""}`}
-        className="flex w-full items-center gap-2 rounded-t-card px-3 py-2 text-left focus-visible:ring-1 focus-visible:ring-accent focus-visible:outline-none"
-        onClick={() => {
-          store.getState().select(data.path);
-        }}
-      >
-        <WorkflowGlyph type={data.type} />
-        <span className="font-mono text-[10.5px] uppercase" style={{ color }}>
-          {data.type}
-        </span>
-        <span className="truncate text-[13px] font-medium">{data.title || "Untitled"}</span>
-        <span className="flex-1" />
-        {data.problems > 0 && <span className="text-[11px] text-danger">{data.problems}</span>}
-        {data.meta && <span className="text-[11px] text-fg-muted">{data.meta}</span>}
-      </button>
-      {!readOnly && (
-        <button
-          type="button"
-          aria-label={`Add a step at the end of ${data.title || data.type}`}
-          className="nodrag absolute right-2 bottom-2 inline-flex size-[22px] items-center justify-center rounded-full border border-border bg-surface text-fg-secondary hover:border-accent hover:text-accent"
-          onClick={() => {
-            const node = nodeAt(doc.config, data.path);
-            actions.add({ parent: data.path, lane: "steps", index: children(node, "steps").length }, "Step");
-          }}
-        >
-          <Plus aria-hidden className="size-3.5" />
-        </button>
-      )}
-      {data.footer && (
-        <span className="absolute bottom-2.5 left-3 max-w-[70%] truncate font-mono text-[10.5px] text-fg-muted">
-          {data.footer}
-        </span>
-      )}
-      <Handle type="source" position={Position.Bottom} isConnectable={false} className={HIDDEN_HANDLE} />
-    </div>
-  );
-});
-
-const TerminalView = memo(function TerminalView({ data }: NodeProps<TerminalFlowNode>) {
-  return (
-    <div className="flex h-8 items-center gap-2 rounded-full border border-border-strong bg-surface px-4 text-[12.5px]">
-      {!data.start && (
-        <Handle type="target" position={Position.Top} isConnectable={false} className={HIDDEN_HANDLE} />
-      )}
-      <span
-        aria-hidden
-        className={cn("size-[7px]", data.start ? "rounded-full bg-accent" : "rounded-[2px] bg-fg-muted")}
-      />
-      <span className="truncate">{data.label}</span>
-      {data.start && (
-        <Handle type="source" position={Position.Bottom} isConnectable={false} className={HIDDEN_HANDLE} />
-      )}
-    </div>
-  );
-});
-
-function useDropOn(slot: Slot | undefined) {
-  const { actions } = useBuilderContext();
-  return useCallback(
-    (event: DragEvent<HTMLElement>) => {
-      event.preventDefault();
-      const item = readDragItem(event.dataTransfer);
-      if (item && slot) actions.drop(slot, item);
-    },
-    [actions, slot],
-  );
-}
-
-const PlaceholderView = memo(function PlaceholderView({
-  data,
-  width,
-  height,
-}: NodeProps<PlaceholderFlowNode>) {
-  const { actions, readOnly } = useBuilderContext();
-  const drop = useDropOn(data.slot);
-  return (
-    <div
-      className="flex items-center justify-center gap-2 rounded-control border border-dashed border-border-dashed text-[12px] text-fg-muted"
-      style={{ width, height }}
-      onDragOver={(event) => {
-        event.preventDefault();
-      }}
-      onDrop={drop}
-    >
-      <Handle type="target" position={Position.Top} isConnectable={false} className={HIDDEN_HANDLE} />
-      <InsertButton
-        label="Add a step here"
-        disabled={readOnly}
-        onInsert={() => {
-          actions.add(data.slot, "Step");
-        }}
-        onDropItem={drop}
-      />
-      Drop a step here
-      <Handle type="source" position={Position.Bottom} isConnectable={false} className={HIDDEN_HANDLE} />
-    </div>
-  );
-});
-
-// ---------------------------------------------------------------- edges
-
-function InsertEdge(props: EdgeProps<InsertFlowEdge>) {
-  const { actions, readOnly } = useBuilderContext();
-  const [path, labelX, labelY] = getSmoothStepPath({ ...props, borderRadius: 10 });
-  const slot = props.data?.slot;
-  const drop = useDropOn(slot);
-  return (
-    <>
-      <BaseEdge id={props.id} path={path} style={{ stroke: "var(--border-strong)", strokeWidth: 2 }} />
-      <EdgeLabelRenderer>
-        {props.data?.label && props.data.tone && (
-          <div
-            className="nodrag nopan pointer-events-none absolute"
-            style={{
-              transform: `translate(-50%, -100%) translate(${String(props.targetX)}px, ${String(props.targetY - 6)}px)`,
-            }}
-          >
-            <BranchLabel tone={props.data.tone}>{props.data.label}</BranchLabel>
-          </div>
-        )}
-        {slot && !readOnly && (
-          <div
-            className="nodrag nopan absolute"
-            style={{
-              transform: `translate(-50%, -50%) translate(${String(labelX)}px, ${String(labelY)}px)`,
-              pointerEvents: "all",
-            }}
-          >
-            <InsertButton
-              onInsert={() => {
-                actions.add(slot, "Step");
-              }}
-              onDropItem={drop}
-            />
-          </div>
-        )}
-      </EdgeLabelRenderer>
-    </>
-  );
-}
-
-const NODE_TYPES_MAP = {
-  step: StepView,
-  container: ContainerView,
-  terminal: TerminalView,
-  placeholder: PlaceholderView,
-};
-const EDGE_TYPES_MAP = { insert: InsertEdge };
 /** The lowest zoom at which the whole workflow is shown on open; below it the view starts on the first steps. */
-const READABLE_ZOOM = 0.4;
-
-// ---------------------------------------------------------------- the canvas
+const READABLE_ZOOM = 0.6;
 
 export type CanvasProps = {
   config: Config | undefined;
   inputLabel: string;
-  statuses: ReadonlyMap<string, WorkflowNodeStatus>;
+  results: ReadonlyMap<string, StepResult>;
   problems: ReadonlyMap<string, number>;
   stats: ReadonlyMap<string, number>;
+  details: DetailsLookup;
   offsets: Offsets;
   onOffsets: (offsets: Offsets) => void;
+  notes: Note[];
+  onNotes: (notes: Note[]) => void;
   onOpenInspector: () => void;
   /** Bumped by "Auto-layout": drop manual offsets and fit the view. */
   layoutVersion: number;
 };
 
-function problemsUnder(problems: ReadonlyMap<string, number>, path: string): number {
-  return problems.get(path) ?? 0;
+/** A token's value, for the minimap (SVG fills don't read CSS variables everywhere). */
+function resolve(color: string): string {
+  const name = /var\((--[\w-]+)\)/.exec(color)?.[1];
+  return (name && tokens.allColors[name]) ?? color;
+}
+
+function statusOf(results: ReadonlyMap<string, StepResult>, name: string): WorkflowNodeStatus {
+  return results.get(name)?.status ?? "idle";
 }
 
 function toFlow(
+  graph: FlowGraph,
   layout: Layout,
   config: Config | undefined,
   props: CanvasProps,
-): { nodes: FlowNode[]; edges: InsertFlowEdge[] } {
-  const nodes: FlowNode[] = layout.nodes.map((item: LayoutNode): FlowNode => {
+): { nodes: FlowNode[]; edges: FlowEdgeType[] } {
+  const connected = new Map<string, string[]>();
+  for (const edge of graph.edges) {
+    connected.set(edge.source, [...(connected.get(edge.source) ?? []), edge.sourceHandle]);
+    connected.set(edge.target, [...(connected.get(edge.target) ?? []), edge.targetHandle]);
+  }
+  const byId = new Map(graph.nodes.map((node) => [node.id, node]));
+  const statusById = new Map<string, WorkflowNodeStatus>();
+  const nodes: FlowNode[] = layout.nodes.flatMap((item): FlowNode[] => {
+    const graphNode = byId.get(item.id);
+    if (!graphNode) return [];
     const offset = props.offsets[item.id];
-    const position = { x: item.x + (offset?.x ?? 0), y: item.y + (offset?.y ?? 0) };
     const base = {
       id: item.id,
-      position,
+      position: { x: item.x + (offset?.x ?? 0), y: item.y + (offset?.y ?? 0) },
       ...(item.parent ? { parentId: item.parent, extent: "parent" as const } : {}),
       width: item.width,
       height: item.height,
+      selectable: false,
     };
-    if (item.kind === "terminal") {
-      const start = item.id === START;
-      return {
-        ...base,
-        type: "terminal",
-        draggable: false,
-        selectable: false,
-        data: { label: start ? `Start · ${props.inputLabel}` : "End", start },
-      };
+    if (graphNode.kind === "input" || graphNode.kind === "output") {
+      const input = graphNode.kind === "input";
+      return [
+        {
+          ...base,
+          type: "io",
+          draggable: false,
+          data: {
+            kind: graphNode.kind,
+            title: input ? "Workflow input" : "Workflow output",
+            description: input ? `Start · ${props.inputLabel}` : "The last step's response",
+            connected: (connected.get(item.id) ?? []).length > 0,
+          },
+        },
+      ];
     }
-    if (item.kind === "placeholder") {
-      return {
-        ...base,
-        type: "placeholder",
-        draggable: false,
-        selectable: false,
-        data: { slot: item.slot ?? { parent: "", lane: "steps", index: 0 } },
-      };
+    if (graphNode.kind === "placeholder") {
+      const slot = graphNode.slot ?? { parent: "", lane: "steps", index: 0 };
+      return [
+        {
+          ...base,
+          type: "placeholder",
+          draggable: false,
+          data: { slot, label: slot.lane === "choices" ? "Add a choice here" : "Add a step here" },
+        },
+      ];
     }
     const node = nodeAt(config, item.id) ?? {};
-    const shown = describeNode(node, props.stats.get(nodeName(node)));
-    const data: CardData = {
-      path: item.id,
-      ...shown,
-      status: props.statuses.get(nodeName(node)) ?? "idle",
-      problems: problemsUnder(props.problems, item.id),
-    };
-    return item.kind === "container"
-      ? { ...base, type: "container", data, selectable: false }
-      : { ...base, type: "step", data, selectable: false };
+    const name = nodeName(node);
+    const result = props.results.get(name);
+    const status = statusOf(props.results, name);
+    statusById.set(item.id, status);
+    const shown = describeNode(node, props.stats.get(name));
+    const problems = props.problems.get(item.id) ?? 0;
+    if (graphNode.kind === "group") {
+      return [
+        {
+          ...base,
+          type: "frame",
+          data: {
+            path: item.id,
+            type: graphNode.type ?? "Steps",
+            title: name,
+            label: groupLabel(node),
+            footer: shown.footer,
+            meta: shown.meta,
+            status,
+            problems,
+            connected: connected.get(item.id) ?? [],
+          },
+        },
+      ];
+    }
+    return [
+      {
+        ...base,
+        type: "component",
+        data: {
+          path: item.id,
+          type: graphNode.type ?? "Step",
+          executor: executorOf(node)?.kind,
+          title: name,
+          rows: graphNode.rows,
+          chip: shown.chip,
+          meta: shown.meta,
+          status,
+          time: result?.ms !== undefined ? seconds(result.ms) : undefined,
+          problems,
+          connected: connected.get(item.id) ?? [],
+          result,
+        },
+      },
+    ];
   });
-  const edges: InsertFlowEdge[] = layout.edges.map((item: LayoutEdge) => ({
-    id: item.id,
-    source: item.source,
-    target: item.target,
-    type: "insert",
+  const ran = (id: string) => {
+    if (id === START) return props.results.size > 0;
+    const status = statusById.get(id);
+    return status === "done" || status === "running" || status === "paused";
+  };
+  const edges: FlowEdgeType[] = graph.edges.map((edge) => {
+    const running = statusById.get(edge.target) === "running";
+    return {
+      id: edge.id,
+      source: edge.source,
+      sourceHandle: edge.sourceHandle,
+      target: edge.target,
+      targetHandle: edge.targetHandle,
+      type: "flow",
+      selectable: false,
+      animated: running,
+      data: { port: edge.port, slot: edge.slot, lit: ran(edge.source) && (running || ran(edge.target)) },
+    };
+  });
+  const notes: FlowNode[] = props.notes.map((note) => ({
+    id: note.id,
+    type: "note",
+    position: { x: note.x, y: note.y },
+    width: note.width,
+    // Until it's measured, so it counts as on screen right away.
+    initialHeight: 96,
     selectable: false,
-    data: { slot: item.slot, label: item.label, tone: item.tone },
+    zIndex: 10,
+    data: {
+      note,
+      onChange: (next: Note) => {
+        props.onNotes(props.notes.map((item) => (item.id === next.id ? next : item)));
+      },
+      onDelete: (id: string) => {
+        props.onNotes(props.notes.filter((item) => item.id !== id));
+      },
+    },
   }));
-  return { nodes, edges };
+  return { nodes: [...nodes, ...notes], edges };
 }
 
-/** The canvas. It needs a React Flow provider around it (the toolbar's zoom buttons share it). */
+function CanvasControls({
+  locked,
+  onLock,
+  onAddNote,
+  readOnly,
+}: {
+  locked: boolean;
+  onLock: () => void;
+  onAddNote: () => void;
+  readOnly: boolean;
+}) {
+  const flow = useReactFlow();
+  const { zoom } = useViewport();
+  return (
+    <div
+      role="group"
+      aria-label="Canvas controls"
+      className="flex items-center gap-0.5 rounded-segment border border-border bg-canvas/90 p-[3px]"
+    >
+      <Button
+        variant="icon"
+        size="28"
+        aria-label="Zoom out"
+        onClick={() => void flow.zoomOut({ duration: 150 })}
+      >
+        <Minus aria-hidden />
+      </Button>
+      <span className="w-11 text-center font-mono text-[11.5px] text-fg" aria-live="polite">
+        {`${String(Math.round(zoom * 100))}%`}
+      </span>
+      <Button
+        variant="icon"
+        size="28"
+        aria-label="Zoom in"
+        onClick={() => void flow.zoomIn({ duration: 150 })}
+      >
+        <Plus aria-hidden />
+      </Button>
+      <Button
+        variant="ghost"
+        size="28"
+        aria-label="Zoom to fit"
+        onClick={() => void flow.fitView({ padding: 0.12, duration: 200, maxZoom: 1 })}
+      >
+        <Maximize aria-hidden />
+        Fit
+      </Button>
+      <Button variant="ghost" size="28" onClick={() => void flow.zoomTo(1, { duration: 150 })}>
+        100%
+      </Button>
+      <span aria-hidden className="mx-0.5 h-4 w-px bg-border-input" />
+      <Button
+        variant="icon"
+        size="28"
+        aria-label={locked ? "Unlock the canvas" : "Lock the canvas"}
+        aria-pressed={locked}
+        onClick={onLock}
+      >
+        {locked ? <Lock aria-hidden /> : <LockOpen aria-hidden />}
+      </Button>
+      {!readOnly && (
+        <Button variant="ghost" size="28" onClick={onAddNote}>
+          <StickyNote aria-hidden className="text-warning" />
+          Add note
+        </Button>
+      )}
+    </div>
+  );
+}
+
+/** The canvas. It needs a React Flow provider around it. */
 export function WorkflowCanvas(props: CanvasProps) {
-  const { config, offsets, onOffsets, onOpenInspector, layoutVersion } = props;
+  const { config, offsets, onOffsets, onOpenInspector, layoutVersion, notes, onNotes } = props;
   const { store, actions, readOnly } = useBuilderContext();
   const flow = useReactFlow();
   const flowStore = useStoreApi();
-  const [layout, setLayout] = useState<Layout | undefined>(undefined);
-  const key = structureKey(config);
-  const latestConfig = useRef(config);
+  const frame = useRef<HTMLDivElement>(null);
+  const [layout, setLayout] = useState<{ key: string; layout: Layout } | undefined>(undefined);
+  const [locked, setLocked] = useState(false);
+  const graph = useMemo(
+    () => buildFlowGraph(config, { inputLabel: props.inputLabel, details: props.details }),
+    [config, props.inputLabel, props.details],
+  );
+  const key = layoutKey(graph);
+  const latestGraph = useRef(graph);
   useEffect(() => {
-    latestConfig.current = config;
-  }, [config]);
+    latestGraph.current = graph;
+  }, [graph]);
 
   useEffect(() => {
     let cancelled = false;
-    void layoutWorkflow(latestConfig.current).then((next) => {
-      if (!cancelled) setLayout(next);
+    void layoutGraph(latestGraph.current).then((next) => {
+      if (!cancelled) setLayout({ key, layout: next });
     });
     return () => {
       cancelled = true;
     };
   }, [key]);
 
-  // Show the whole workflow when it stays readable; a long one opens on its start and first steps instead.
+  // Show the whole workflow when it stays readable; a long one opens on its input and first steps instead.
   const opened = useRef(false);
   const fitStart = useCallback(
     (duration: number) => {
       const { width, height } = flowStore.getState();
-      const whole = flow.getNodesBounds(flow.getNodes());
-      const zoom = Math.min(width / (whole.width * 1.2), height / (whole.height * 1.2));
+      const whole = flow.getNodesBounds(flow.getNodes().filter((node) => !node.id.startsWith(NOTE_PREFIX)));
+      const zoom = Math.min(width / (whole.width * 1.1), height / (whole.height * 1.1));
       if (zoom >= READABLE_ZOOM) {
-        void flow.fitView({ maxZoom: 1, padding: 0.1, duration });
+        void flow.fitView({ maxZoom: 1, padding: 0.06, duration });
         return;
       }
       const first = [
         START,
-        ...rootSteps(latestConfig.current)
-          .slice(0, 4)
+        ...rootSteps(config)
+          .slice(0, 2)
           .map((_, index) => `steps[${String(index)}]`),
       ];
-      void flow.fitView({ nodes: first.map((id) => ({ id })), maxZoom: 1, padding: 0.2, duration });
+      void flow.fitView({
+        nodes: first.map((id) => ({ id })),
+        minZoom: READABLE_ZOOM,
+        maxZoom: 0.9,
+        padding: 0.12,
+        duration,
+      });
     },
-    [flow, flowStore],
+    [flow, flowStore, config],
   );
   useEffect(() => {
     if (!layout || opened.current) return;
@@ -506,12 +353,39 @@ export function WorkflowCanvas(props: CanvasProps) {
   }, [layout, fitStart]);
   useEffect(() => {
     if (layoutVersion > 0) fitStart(200);
-  }, [layoutVersion, fitStart]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only "Auto-layout" refits
+  }, [layoutVersion]);
 
+  // Follow the test run: each step that starts running is brought into view.
+  const runningPath = useMemo(() => {
+    const running = flattenRunning(config, props.results);
+    return running.at(-1);
+  }, [config, props.results]);
+  useEffect(() => {
+    if (!runningPath) return;
+    const internal = flow.getInternalNode(runningPath);
+    if (!internal) return;
+    const { x, y } = internal.internals.positionAbsolute;
+    const width = internal.measured.width ?? 0;
+    const height = internal.measured.height ?? 0;
+    void flow.setCenter(x + width / 2, y + height / 2, { zoom: flow.getZoom(), duration: 450 });
+  }, [runningPath, flow]);
+
+  // While a new layout is on its way the previous one keeps the nodes it still has in place.
   const shown = useMemo(
-    () => (layout ? toFlow(layout, config, props) : { nodes: [], edges: [] }),
+    () => (layout ? toFlow(graph, layout.layout, config, props) : { nodes: [], edges: [] }),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- `props` fields listed individually
-    [layout, config, props.statuses, props.problems, props.stats, props.offsets, props.inputLabel],
+    [
+      layout,
+      graph,
+      config,
+      props.results,
+      props.problems,
+      props.stats,
+      props.offsets,
+      props.notes,
+      props.inputLabel,
+    ],
   );
 
   const selectAndShow = useCallback(
@@ -525,13 +399,33 @@ export function WorkflowCanvas(props: CanvasProps) {
       const height = internal.measured.height ?? 0;
       void flow.setCenter(x + width / 2, y + height / 2, { zoom: flow.getZoom(), duration: 150 });
       requestAnimationFrame(() => {
-        document.querySelector<HTMLElement>(`[data-path="${CSS.escape(path)}"] button`)?.focus();
+        document
+          .querySelector<HTMLElement>(`[data-path="${CSS.escape(path)}"] button[aria-pressed]`)
+          ?.focus();
       });
     },
     [flow, store],
   );
 
+  const addNote = () => {
+    const box = frame.current?.getBoundingClientRect();
+    const center = flow.screenToFlowPosition({
+      x: (box?.left ?? 0) + (box?.width ?? 0) / 2 - 120,
+      y: (box?.top ?? 0) + (box?.height ?? 0) / 2 - 40,
+    });
+    onNotes([...notes, newNote(Math.round(center.x), Math.round(center.y))]);
+  };
+
+  const onDropAtEnd = (event: DragEvent<HTMLDivElement>) => {
+    const item = readDragItem(event.dataTransfer);
+    if (!item || readOnly) return;
+    event.preventDefault();
+    actions.drop({ parent: "", lane: "steps", index: rootSteps(config).length }, item);
+  };
+
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    // Typing in a note is just typing.
+    if (event.target instanceof HTMLTextAreaElement || event.target instanceof HTMLInputElement) return;
     const selected = store.getState().selected;
     const command = event.metaKey || event.ctrlKey;
     const arrows: Record<string, "up" | "down" | "left" | "right"> = {
@@ -583,10 +477,12 @@ export function WorkflowCanvas(props: CanvasProps) {
     }
   };
 
+  const legend = portTypesOf(graph);
   return (
     // The canvas takes keyboard commands (arrows, Enter, Delete, copy and paste, undo), so it is focusable.
     // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
     <div
+      ref={frame}
       role="application"
       aria-label="Workflow canvas"
       aria-roledescription="workflow canvas"
@@ -594,24 +490,38 @@ export function WorkflowCanvas(props: CanvasProps) {
       tabIndex={0}
       className="relative h-full min-h-0 w-full outline-none focus-visible:ring-1 focus-visible:ring-accent/40"
       onKeyDown={onKeyDown}
+      onDragOver={(event) => {
+        if (!readOnly && event.dataTransfer.types.includes(DRAG_TYPE)) event.preventDefault();
+      }}
+      onDrop={onDropAtEnd}
     >
-      <ReactFlow<FlowNode, InsertFlowEdge>
+      <ReactFlow<FlowNode, FlowEdgeType>
         nodes={shown.nodes}
         edges={shown.edges}
-        nodeTypes={NODE_TYPES_MAP}
-        edgeTypes={EDGE_TYPES_MAP}
+        nodeTypes={NODE_VIEWS}
+        edgeTypes={EDGE_VIEWS}
         nodesConnectable={false}
-        nodesDraggable={!readOnly}
+        nodesDraggable={!readOnly && !locked}
         elementsSelectable={false}
         deleteKeyCode={null}
         selectionKeyCode={null}
         multiSelectionKeyCode={null}
         onlyRenderVisibleElements
-        minZoom={0.2}
+        minZoom={0.15}
         maxZoom={2}
         proOptions={{ hideAttribution: true }}
         onNodeDragStop={(_, node) => {
-          const placed = layout?.nodes.find((item) => item.id === node.id);
+          if (node.id.startsWith(NOTE_PREFIX)) {
+            onNotes(
+              notes.map((item) =>
+                item.id === node.id
+                  ? { ...item, x: Math.round(node.position.x), y: Math.round(node.position.y) }
+                  : item,
+              ),
+            );
+            return;
+          }
+          const placed = layout?.layout.nodes.find((item) => item.id === node.id);
           if (!placed) return;
           onOffsets({
             ...offsets,
@@ -622,7 +532,41 @@ export function WorkflowCanvas(props: CanvasProps) {
           store.getState().select(undefined);
         }}
       >
-        <Background gap={20} size={1} color="var(--border)" />
+        <Background gap={22} size={1.2} color="var(--border-strong)" />
+        <Panel position="bottom-left" className="!m-3 flex flex-col items-start gap-2">
+          <PortLegend types={legend} />
+          <CanvasControls
+            locked={locked}
+            onLock={() => {
+              setLocked((current) => !current);
+            }}
+            onAddNote={addNote}
+            readOnly={readOnly}
+          />
+        </Panel>
+        <MiniMap<FlowNode>
+          position="bottom-right"
+          ariaLabel="Workflow overview"
+          pannable
+          zoomable
+          className="!m-3 overflow-hidden rounded-button border border-border-input"
+          style={{ width: 196, height: 120 }}
+          bgColor={resolve("var(--bg-canvas)")}
+          maskColor="rgb(11 12 14 / 0.72)"
+          maskStrokeColor={resolve("var(--accent)")}
+          maskStrokeWidth={2}
+          nodeBorderRadius={3}
+          nodeColor={(node) => {
+            if (node.type === "frame") return "transparent";
+            if (node.type === "note") return resolve("var(--note-border)");
+            if (node.type === "component") return resolve(NODE_COLORS[node.data.type]);
+            return resolve("var(--fg-muted)");
+          }}
+          nodeStrokeColor={(node) =>
+            node.type === "frame" ? resolve(NODE_COLORS[node.data.type]) : "transparent"
+          }
+          nodeStrokeWidth={6}
+        />
       </ReactFlow>
       {shown.nodes.length === 0 && (
         <div
@@ -636,4 +580,5 @@ export function WorkflowCanvas(props: CanvasProps) {
   );
 }
 
+export { END, START };
 export { ReactFlowProvider as CanvasProvider, useReactFlow as useCanvas };

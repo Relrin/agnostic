@@ -1,6 +1,8 @@
 // The workflow builder against MSW: the ticket router on the canvas with its validation sentence and stats, adding
 // a step from a connector and from the palette, the router's CEL checked and tried in the inspector, the executor
-// picker, delete with undo from the keyboard, the code view highlighting the selected step, and the Runs tab.
+// picker, delete with undo from the keyboard, the code view highlighting the selected step, the Runs tab, a test run
+// in the Playground lighting steps up with their output, sticky notes saved with the canvas layout, and a Langflow
+// export imported back.
 import {
   sampleOrgHandlers,
   renderPage,
@@ -13,8 +15,9 @@ import {
 import { TooltipProvider } from "@agnostic/ui";
 import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { HttpResponse, http } from "msw";
 import { setupServer } from "msw/node";
-import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 import { WorkflowBuilderPage as Builder } from "./builder-page";
 
@@ -208,5 +211,121 @@ describe("WorkflowBuilderPage", () => {
       expect(code.querySelectorAll(".cm-focus-line").length).toBeGreaterThan(0);
     });
     expect(screen.getByRole("complementary", { name: "Step properties" })).toBeInTheDocument();
+  });
+
+  it("runs the draft in the Playground, lights steps up and shows a step's output", async () => {
+    const user = userEvent.setup();
+    const run = { run_id: "run_w1", session_id: "ses_w1", workflow_id: "ticket-router" };
+    const events = [
+      { event: "WorkflowStarted", ...run },
+      { event: "StepStarted", ...run, step_name: "Classify ticket", step_index: 0 },
+      {
+        event: "StepCompleted",
+        ...run,
+        step_name: "Classify ticket",
+        step_index: 0,
+        content: "Category: BILLING",
+      },
+      { event: "RouterExecutionStarted", ...run, step_name: "Route by category", step_index: 1 },
+      { event: "StepStarted", ...run, step_name: "Billing", step_index: 0 },
+    ];
+    server.use(
+      http.post(
+        "*/api/v1/instances/:instance/studio/components/:id/test-runs",
+        () =>
+          new HttpResponse(
+            events
+              .map(
+                (item) => `event: ${item.event}
+data: ${JSON.stringify(item)}
+
+`,
+              )
+              .join(""),
+            { headers: { "Content-Type": "text/event-stream" } },
+          ),
+      ),
+    );
+    renderPage(WorkflowBuilderPage, BUILDER);
+    const board = await canvas();
+    await user.click(screen.getByRole("button", { name: "Playground" }));
+    const playground = screen.getByRole("complementary", { name: "Playground" });
+    await user.type(within(playground).getByRole("textbox", { name: "Test message" }), "I was charged twice");
+    await user.click(within(playground).getByRole("button", { name: "Run" }));
+    await waitFor(
+      () => {
+        expect(board.querySelector('[data-path="steps[0]"] [data-slot="node-card"]')).toHaveAttribute(
+          "data-status",
+          "done",
+        );
+      },
+      { timeout: 5_000 },
+    );
+    expect(board.querySelector('[data-path="steps[1].choices[0]"] [data-slot="node-card"]')).toHaveAttribute(
+      "data-status",
+      "running",
+    );
+    await user.click(within(board).getByRole("button", { name: "Inspect the output of Classify ticket" }));
+    expect(await screen.findByRole("dialog", { name: "Output of Classify ticket" })).toHaveTextContent(
+      "Category: BILLING",
+    );
+    fireEvent.click(within(board).getByRole("button", { name: /^Step Classify ticket/ }));
+    const inspector = screen.getByRole("complementary", { name: "Step properties" });
+    await user.click(within(inspector).getByRole("tab", { name: "Output" }));
+    expect(within(inspector).getByText("Category: BILLING")).toBeInTheDocument();
+  });
+
+  it("adds a sticky note and saves it with the canvas layout", async () => {
+    const user = userEvent.setup();
+    renderPage(WorkflowBuilderPage, BUILDER);
+    const board = await canvas();
+    await user.click(within(board).getByRole("button", { name: "Add note" }));
+    await user.type(await within(board).findByRole("textbox", { name: "Note" }), "Keep route names in sync");
+    await waitFor(
+      () => {
+        const saved = flows.layouts.at(-1) as { layout: { notes: { text: string }[] } } | undefined;
+        expect(saved?.layout.notes.map((note) => note.text)).toEqual(["Keep route names in sync"]);
+      },
+      { timeout: 5_000 },
+    );
+  });
+
+  it("exports the workflow as a Langflow flow and imports it back", async () => {
+    const user = userEvent.setup();
+    let blob: Blob | undefined;
+    Object.assign(URL, {
+      createObjectURL: (value: Blob) => {
+        blob = value;
+        return "blob:flow";
+      },
+      revokeObjectURL: () => undefined,
+    });
+    vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => undefined);
+    renderPage(WorkflowBuilderPage, BUILDER);
+    const board = await canvas();
+    await user.click(screen.getByRole("button", { name: "Share" }));
+    await user.click(await screen.findByRole("menuitem", { name: "Export as Langflow JSON" }));
+    await waitFor(() => {
+      expect(blob).toBeDefined();
+    });
+    const text = (await blob?.text()) ?? "";
+    const flow = JSON.parse(text) as { data: { nodes: { data: { type: string } }[] } };
+    expect(flow.data.nodes[0]?.data.type).toBe("ChatInput");
+
+    // Remove the first step, then bring the exported flow back.
+    fireEvent.click(within(board).getByRole("button", { name: /^Step Classify ticket/ }));
+    board.focus();
+    await user.keyboard("{Delete}");
+    await waitFor(() => {
+      expect(within(board).queryByRole("button", { name: /^Step Classify ticket/ })).not.toBeInTheDocument();
+    });
+    await user.upload(
+      screen.getByLabelText("Langflow flow to import"),
+      new File([text], "ticket-router.langflow.json", { type: "application/json" }),
+    );
+    const dialog = await screen.findByRole("dialog", { name: "Import the Langflow flow" });
+    expect(dialog).toHaveTextContent("exported from Studio");
+    await user.click(within(dialog).getByRole("button", { name: "Replace the steps" }));
+    expect(await within(board).findByRole("button", { name: /^Step Classify ticket/ })).toBeInTheDocument();
   });
 });

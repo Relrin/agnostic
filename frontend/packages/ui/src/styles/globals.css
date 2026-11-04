@@ -70,6 +70,9 @@
   --color-entity-team: var(--entity-team);
   --color-entity-workflow: var(--entity-workflow);
   --color-entity-fn: var(--entity-fn);
+  --color-note: var(--note);
+  --color-note-border: var(--note-border);
+  --color-note-fg: var(--note-fg);
   --color-env-production: var(--env-production);
   --color-env-staging: var(--env-staging);
   --color-env-development: var(--env-development);
