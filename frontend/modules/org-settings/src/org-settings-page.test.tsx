@@ -1,5 +1,12 @@
 import { ReauthProvider } from "@agnostic/core";
-import { API, orgSettingsHandlers, p01Handlers, renderPage } from "@agnostic/testing";
+import {
+  API,
+  assistantCalls,
+  assistantHandlers,
+  orgSettingsHandlers,
+  p01Handlers,
+  renderPage,
+} from "@agnostic/testing";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
@@ -86,6 +93,45 @@ describe("OrgSettingsPage", () => {
     expect(await screen.findByRole("button", { name: "Restore 2025-08 for search" })).toBeInTheDocument();
     await user.click(screen.getByRole("tab", { name: "Temporary access" }));
     expect(await screen.findByLabelText("Longest temporary access (hours)")).toHaveValue(168);
+  });
+
+  it("hides AI features unless the assistant module is installed", async () => {
+    open("ai-features");
+    expect(await screen.findByRole("tab", { name: "Authentication" })).toBeInTheDocument();
+    expect(screen.queryByRole("tab", { name: "AI features" })).not.toBeInTheDocument();
+  });
+
+  it("configures AI features: provider, budget and redaction, the key write-only", async () => {
+    const calls = assistantCalls();
+    server.use(...assistantHandlers(calls));
+    const user = userEvent.setup();
+    open("ai-features");
+    expect(await screen.findByRole("tab", { name: "AI features" })).toHaveAttribute("aria-selected", "true");
+    expect(await screen.findByLabelText("Model")).toHaveValue("qwen3:8b");
+    expect(screen.getByLabelText("Endpoint")).toHaveValue("http://ollama.internal:11434");
+    expect(screen.getByText(/What leaves the control plane/)).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Test connection" }));
+    expect(await screen.findByText("The model answered in 420 ms: 'ready'")).toBeInTheDocument();
+
+    await user.type(screen.getByLabelText("API key"), "sk-local");
+    await user.click(screen.getByRole("switch", { name: /Leave out tool arguments/ }));
+    await user.clear(screen.getByLabelText("Tokens per person per month"));
+    await user.type(screen.getByLabelText("Tokens per person per month"), "200000");
+    await user.click(screen.getByRole("button", { name: "Save AI features" }));
+    await waitFor(() => {
+      expect(calls.settings).toHaveLength(1);
+    });
+    expect(calls.settings[0]).toMatchObject({
+      enabled: true,
+      models: { assistant: "ollama:qwen3:8b", summaries: "", suggestions: "" },
+      api_key: "sk-local",
+      redact_tool_args: true,
+      redact_user_messages: true,
+      user_monthly_tokens: 200000,
+      monthly_token_budget: 5000000,
+      version: 3,
+    });
   });
 
   it("adds a SAML provider after a step-up and shows what to copy into the IdP", async () => {

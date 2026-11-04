@@ -12,12 +12,14 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from agnostic_access import jobs
 from agnostic_access.api.router import me_router, router
+from agnostic_access.api.tools import TOOLS
 from agnostic_access.application.use_cases import SyncCatalog
 from agnostic_access.infrastructure.tables import AccessBase
 from agnostic_access.providers import AccessProvider
 from agnostic_access.settings import AccessSettings
 from agnostic_kernel.logging import get_logger
 from agnostic_kernel.modules import AuditActionDecl, BaseModule, JobSpec, RouterSpec
+from agnostic_kernel.tools import ToolSpec
 
 log = get_logger(__name__)
 
@@ -70,3 +72,6 @@ class AccessModule(BaseModule):
                 await (await request.get(SyncCatalog))()
         except SQLAlchemyError as exc:
             log.warning("access.catalog_sync_skipped", reason="database not migrated?", error=str(exc)[:200])
+
+    def assistant_tools(self) -> Iterable[ToolSpec]:
+        return TOOLS

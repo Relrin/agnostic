@@ -184,7 +184,11 @@ def modules_list() -> None:
         routes = sum(len(spec.router.routes) for spec in module.routers())
         jobs = ", ".join(spec.name for spec in module.jobs()) or "-"
         depends = ", ".join(module.depends_on) or "-"
-        typer.echo(f"{name:<16} {module.version:<8} {state}  depends: {depends}  routes: {routes}  jobs: {jobs}")
+        tools = len(tuple(module.assistant_tools()))
+        typer.echo(
+            f"{name:<16} {module.version:<8} {state}  depends: {depends}  routes: {routes}  jobs: {jobs}"
+            f"  tools: {tools}"
+        )
 
 
 async def _bootstrap(org_name: str, owner: OwnerAccount | None) -> BootstrapResult:

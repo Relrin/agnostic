@@ -12,6 +12,9 @@
       "path": "../../packages/api"
     },
     {
+      "path": "../../packages/assistant"
+    },
+    {
       "path": "../../packages/studio"
     },
     {

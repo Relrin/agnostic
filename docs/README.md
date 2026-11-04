@@ -21,6 +21,7 @@
 | [Code sources](architecture/sources.md) | connections, sources, path mappings, pulling as drafts, field-level merges and conflicts, write-back as pull requests, webhooks, mirrors, local folders |
 | [Studio](architecture/studio.md) | typed configs and code generation, the registry and used-by index, drafts and autosave, validation, gated publish with overrides, draft test runs, teams, promotion, golden fixtures |
 | [Control](architecture/control.md) | approvals inbox, routing and expiry, notifications (inbox, Slack, email, webhooks), scheduler previews, the durable queue and checkpoint recovery |
+| [Assistant](architecture/assistant.md) | Ask your OS: tools contributed by modules and run as the asking person, answers in the worker streamed over the event bus, explanations and suggestions, budgets, redaction, guardrails |
 | [Access governance](architecture/access-governance.md) | groups and IdP sync (SCIM, claims, Google), editable roles, service accounts, temporary access, SAML and MFA, audit views, export, SIEM, archive |
 
 ## How-to guides
@@ -40,6 +41,8 @@
 | [Testing](how-to/testing.md) | unit, integration, contract, Storybook a11y, Playwright |
 | [Dependencies](how-to/dependencies.md) | exact pinning, upgrades, Renovate, license policy |
 | [Connect a code source](how-to/connect-a-code-source.md) | GitHub Apps, tokens, path mappings and sync policies, git workers, local folders, the dev Gitea |
+| [Configure AI features](how-to/configure-ai-features.md) | providers (vLLM, Ollama, OpenAI-compatible, Azure, OpenAI, Anthropic), air-gapped installs, redaction, budgets |
+| [Add an assistant tool](how-to/add-assistant-tool.md) | let Ask your OS read a module's data, as the person asking |
 | [Troubleshooting](how-to/troubleshooting.md) | Windows, ports, Docker, common errors |
 
 ## Reference

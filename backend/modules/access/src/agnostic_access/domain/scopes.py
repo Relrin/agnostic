@@ -85,7 +85,6 @@ CONTROL_PLANE_EXTRA: tuple[tuple[str, str], ...] = (
     ("studio:promote", "Promote components between instances"),
     ("evals:gates:write", "Change publish gates"),
     ("queue:operate", "Requeue and resume queued runs"),
-    ("assistant:use", "Use Ask your OS"),
 )
 """Control-plane scopes named in whose modules arrive in later phases."""
 

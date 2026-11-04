@@ -43,6 +43,7 @@ import {
   toast,
   type GhostBar,
 } from "@agnostic/ui";
+import { GeneratedText, useAssistant } from "@agnostic/assistant";
 import { keepPreviousData, skipToken, useQuery } from "@tanstack/react-query";
 import { Link, useNavigate, useParams, useSearch } from "@tanstack/react-router";
 import { GitCompareArrows, Link2, Search } from "lucide-react";
@@ -205,13 +206,36 @@ export function comparisonRows(rows: readonly ComparisonRowOut[]): ComparisonRow
   });
 }
 
+/** "Why?" follow-ups go to Ask your OS with this trace as the context. */
+function AskWhy({ instance, traceId }: { instance: string; traceId: string }) {
+  const { available } = useAssistant();
+  if (!available) return null;
+  return (
+    <Link
+      to="/i/$instance/ask"
+      params={{ instance }}
+      search={{
+        context: `trace:${traceId}`,
+        q: "Why did this run behave differently from the last successful one?",
+      }}
+      className="self-start text-[12.5px] text-info hover:text-info-hover"
+    >
+      Ask why
+    </Link>
+  );
+}
+
 function ComparisonCard({
+  instance,
+  traceId,
   comparison,
   loading,
   error,
   traceStart,
   active,
 }: {
+  instance: string;
+  traceId: string;
   comparison: TraceComparisonOut | undefined;
   loading: boolean;
   error: unknown;
@@ -266,7 +290,16 @@ function ComparisonCard({
           ))}
         </tbody>
       </table>
-      {comparison.diagnosis && <p className="text-[13px] text-fg-prose">{comparison.diagnosis}</p>}
+      {comparison.diagnosis && (
+        <GeneratedText
+          instance={instance}
+          request={{ kind: "trace.diagnosis", subject: { trace_id: traceId } }}
+          label="Generated diagnosis"
+        >
+          <p className="text-[13px] text-fg-prose">{comparison.diagnosis}</p>
+        </GeneratedText>
+      )}
+      <AskWhy instance={instance} traceId={traceId} />
     </div>
   );
 }
@@ -482,6 +515,8 @@ function TraceDetail({
         >
           {compare ? (
             <ComparisonCard
+              instance={instance}
+              traceId={traceId}
               comparison={comparison.data}
               loading={comparison.isPending}
               error={comparison.error}

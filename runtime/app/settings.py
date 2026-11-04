@@ -25,6 +25,17 @@ class RuntimeSettings(BaseSettings):
     # When set, tokens must carry this `iss` (the control plane's public URL, AGNOSTIC_HTTP__PUBLIC_URL).
     jwt_issuer: str | None = None
     max_concurrency: int = 4
+    # Failures to reproduce on purpose, e.g. "web_search=timeout" (comma-separated tool=fault pairs). Development
+    # only: it is how the dev stack gets a daily-brief run that fails the way production ones do.
+    faults: str = ""
+
+    def fault(self, tool: str) -> str | None:
+        """The fault configured for ``tool`` ("timeout"), if any."""
+        for item in self.faults.split(","):
+            name, _, kind = item.strip().partition("=")
+            if name == tool and kind:
+                return kind
+        return None
 
     @property
     def user_isolation_enabled(self) -> bool:

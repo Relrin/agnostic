@@ -1,5 +1,6 @@
 export {
   defineModule,
+  featuresOn,
   moduleAvailable,
   type Capability,
   type CommandDefinition,
@@ -35,8 +36,10 @@ export {
 export {
   ORG_ROLE_LABELS,
   findInstance,
+  useFeatures,
   useInstanceHealth,
   useInstances,
+  useModuleEnabled,
   useMe,
   useMyAccess,
   useOrg,

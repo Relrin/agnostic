@@ -11,10 +11,12 @@ from sqlalchemy import MetaData
 
 from agnostic_evals import jobs
 from agnostic_evals.api.router import router
+from agnostic_evals.api.tools import TOOLS
 from agnostic_evals.infrastructure.tables import EvalsBase
 from agnostic_evals.providers import EvalsProvider
 from agnostic_evals.settings import EvalsSettings
 from agnostic_kernel.modules import AuditActionDecl, BaseModule, CapabilityProbe, JobSpec, RouterSpec
+from agnostic_kernel.tools import ToolSpec
 
 
 class EvalsModule(BaseModule):
@@ -54,3 +56,6 @@ class EvalsModule(BaseModule):
 
     def capabilities(self) -> Iterable[CapabilityProbe]:
         return (CapabilityProbe("evals", "Evaluations (datasets, batches, version comparison)"),)
+
+    def assistant_tools(self) -> Iterable[ToolSpec]:
+        return TOOLS

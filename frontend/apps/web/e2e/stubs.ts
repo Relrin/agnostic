@@ -79,6 +79,7 @@ export const access = {
     "settings:read",
     "settings:write",
     "service_accounts:manage",
+    "assistant:use",
   ],
   grants: [],
 };
@@ -122,6 +123,11 @@ export async function stubApi(page: Page, { signedIn = true } = {}) {
   );
   await page.route(/\/api\/v1\/me\/access/, (route) => route.fulfill({ json: access }));
   await page.route(/\/api\/v1\/org$/, (route) => route.fulfill({ json: org }));
+  // AI features are off unless a spec turns them on (assistant.spec.ts).
+  await page.route(/\/api\/v1\/system\/features$/, (route) => route.fulfill({ json: { features: {} } }));
+  await page.route(/\/api\/v1\/system\/modules$/, (route) =>
+    route.fulfill({ json: { enabled: [], disabled: ["assistant"] } }),
+  );
   await page.route(/\/api\/v1\/instances$/, (route) => route.fulfill({ json: instances }));
   await page.route(/\/api\/v1\/instances\/[^/]+\/health$/, (route) =>
     route.fulfill({

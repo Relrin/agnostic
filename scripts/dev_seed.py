@@ -8,7 +8,10 @@ active public key to runtime/.jwt/<slug>.pem, where `just runtimes` picks it up 
 runtimes after a key changes, then test the connection (here with --test, or in the web app).
 
 It also creates the DB component `support-triage-studio` on each runtime through the gateway (AgentOS `/components`):
-published versions v1-v3 with v3 current, and a draft v4. Versions that already exist are left alone.
+published versions v1-v3 with v3 current, and a draft v4. Versions that already exist are left alone. On dev-prod it
+creates the `daily-brief` schedule (03:00 UTC). With --trigger-daily-brief it runs it now; start the runtimes with
+RUNTIME_FAULTS=web_search=timeout first and the run fails like a production one, ready for "Why did daily-brief fail
+last night?" in Ask your OS.
 
 Environment: AGNOSTIC_DEV_API_URL (default http://127.0.0.1:8000), AGNOSTIC_DEV_OWNER_EMAIL and
 AGNOSTIC_DEV_OWNER_PASSWORD (the `just bootstrap` defaults).
@@ -258,6 +261,37 @@ def seed_components(client: httpx.Client, instance: dict[str, Any]) -> None:
         print(f"  {instance['slug']}: skipped ({exc}). Restart the runtimes, then run `just seed` again.")
 
 
+DAILY_BRIEF = {
+    "name": "daily-brief",
+    "description": "Research the day's agent platform news and write the morning brief.",
+    "cron_expr": "0 3 * * *",
+    "timezone": "UTC",
+    "method": "POST",
+    "endpoint": "/workflows/daily-brief/runs",
+    "payload": {"message": "Search the web for agent platform news and brief me."},
+    "max_retries": 1,
+    "retry_delay_seconds": 60,
+}
+
+
+def seed_daily_brief(client: httpx.Client, instance: dict[str, Any], *, trigger: bool) -> None:
+    """The daily-brief schedule on ``instance``, created once; ``trigger`` runs it now."""
+    base = f"/api/v1/instances/{instance['id']}/schedules"
+    try:
+        listed = _check(client.get(base, params={"limit": 100}), "listing schedules")
+        found = next((item for item in listed.get("data", []) if item.get("name") == DAILY_BRIEF["name"]), None)
+        if found is None:
+            found = _check(client.post(base, json=DAILY_BRIEF), "creating the daily-brief schedule")
+            print(f"  {instance['slug']}: daily-brief schedule created (03:00 UTC)")
+        else:
+            print(f"  {instance['slug']}: daily-brief schedule exists")
+        if trigger:
+            run = _check(client.post(f"{base}/{found['id']}/trigger"), "triggering daily-brief")
+            print(f"  {instance['slug']}: daily-brief triggered ({run.get('status', 'started')})")
+    except SeedError as exc:
+        print(f"  {instance['slug']}: schedule skipped ({exc}).")
+
+
 def test_connection(client: httpx.Client, instance: dict[str, Any]) -> bool:
     report = _check(client.post(f"/api/v1/instances/{instance['id']}/test"), f"testing {instance['slug']}")
     print(f"  {instance['slug']}: {'ok' if report['ok'] else 'FAILED'}")
@@ -276,6 +310,11 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--api-url", default=os.environ.get("AGNOSTIC_DEV_API_URL", "http://127.0.0.1:8000"))
     parser.add_argument("--test", action="store_true", help="also run Test connection for each runtime")
+    parser.add_argument(
+        "--trigger-daily-brief",
+        action="store_true",
+        help="run the daily-brief schedule on dev-prod now (with RUNTIME_FAULTS=web_search=timeout it fails)",
+    )
     args = parser.parse_args()
     email = os.environ.get("AGNOSTIC_DEV_OWNER_EMAIL", "daniel@localhost.company")
     password = os.environ.get("AGNOSTIC_DEV_OWNER_PASSWORD", "localhost-dev-password")
@@ -292,6 +331,8 @@ def main() -> int:
             print("Components")
             for instance in instances:
                 seed_components(client, instance)
+            print("Schedules")
+            seed_daily_brief(client, instances[0], trigger=args.trigger_daily_brief)
             if args.test:
                 print("Test connection")
                 results = [test_connection(client, instance) for instance in instances]

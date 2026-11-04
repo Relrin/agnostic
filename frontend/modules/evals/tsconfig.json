@@ -5,6 +5,7 @@
     { "path": "../../packages/ui" },
     { "path": "../../packages/core" },
     { "path": "../../packages/api" },
+    { "path": "../../packages/assistant" },
     { "path": "../../packages/testing" }
   ]
 }

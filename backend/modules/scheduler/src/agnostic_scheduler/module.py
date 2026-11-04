@@ -10,8 +10,10 @@ from pydantic_settings import BaseSettings
 from sqlalchemy import MetaData
 
 from agnostic_kernel.modules import AuditActionDecl, BaseModule, CapabilityProbe, JobSpec, RouterSpec
+from agnostic_kernel.tools import ToolSpec
 from agnostic_scheduler import jobs
 from agnostic_scheduler.api.router import router
+from agnostic_scheduler.api.tools import TOOLS
 from agnostic_scheduler.infrastructure.tables import SchedulerBase
 from agnostic_scheduler.providers import SchedulerProvider
 from agnostic_scheduler.settings import SchedulerSettings
@@ -53,3 +55,6 @@ class SchedulerModule(BaseModule):
 
     def capabilities(self) -> Iterable[CapabilityProbe]:
         return (CapabilityProbe("scheduler", "Cron schedules that call AgentOS endpoints"),)
+
+    def assistant_tools(self) -> Iterable[ToolSpec]:
+        return TOOLS

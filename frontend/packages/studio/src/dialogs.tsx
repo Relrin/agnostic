@@ -17,6 +17,7 @@ import {
   type PublishCheckOut,
   type VersionOut,
 } from "@agnostic/api";
+import { GeneratedText, SuggestButton } from "@agnostic/assistant";
 import { formatWhen, useCan, useInstances, withQueryFn } from "@agnostic/core";
 import { CodeView } from "@agnostic/editor";
 import {
@@ -87,6 +88,15 @@ export function DiffDialog({
           <LoadingRows rows={4} label="Loading the diff" />
         ) : diff.data ? (
           <div className="flex max-h-[60vh] flex-col gap-4 overflow-auto">
+            <GeneratedText
+              instance={instance}
+              action="Summarize the change"
+              label="Generated summary"
+              request={{
+                kind: "studio.version_summary",
+                subject: { component_id: componentId, from_version: from, to_version: to },
+              }}
+            />
             <ScopeDiff
               lines={diff.data.changes.map((change) => ({
                 op: ops[change.op],
@@ -554,6 +564,18 @@ export function PublishDialog({
                 setNotes(event.target.value);
               }}
             />
+            <div className="-mt-1">
+              <SuggestButton
+                instance={instance}
+                label="Suggest notes"
+                request={{
+                  kind: "studio.release_notes",
+                  subject: { component_id: componentId, version },
+                  material: { summary: data.summary, changes: data.changes },
+                }}
+                onUse={setNotes}
+              />
+            </div>
             {data.hold.held ? (
               <Callout tone="warning" title="Waiting for the repository">
                 {data.hold.reason}

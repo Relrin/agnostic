@@ -12,6 +12,7 @@ import {
   type InstanceOut,
   type MemberOut,
 } from "@agnostic/api";
+import { settled, useAssistant, useExplanation } from "@agnostic/assistant";
 import { ORG_ROLE_LABELS, STALE_TIME, useCan, useMe, useOrg, withQueryFn } from "@agnostic/core";
 import {
   Avatar,
@@ -357,6 +358,122 @@ const PER_COMPONENT: Record<string, string> = {
   workflows: "Workflow id",
 };
 
+type ParsedCheck = { resource: string; verb: string; component: string | null; instance: string | null };
+
+function parseCheck(content: string): ParsedCheck | undefined {
+  try {
+    const value = JSON.parse(content) as Record<string, unknown>;
+    const resource = typeof value.resource === "string" ? value.resource : "";
+    const verb = typeof value.verb === "string" ? value.verb : "";
+    if (!resource || !verb) return undefined;
+    return {
+      resource,
+      verb,
+      component: typeof value.component === "string" ? value.component : null,
+      instance: typeof value.instance === "string" ? value.instance : null,
+    };
+  } catch {
+    return undefined;
+  }
+}
+
+/** "Can Maya publish support-triage on prod?" → the structured check below, filled in for the person to run. */
+function PermissionQuestion({
+  member,
+  instances,
+  resources,
+  verbs,
+  instance,
+  onCheck,
+}: {
+  member: MemberOut;
+  instances: readonly InstanceOut[];
+  resources: readonly string[];
+  verbs: readonly string[];
+  instance: string;
+  onCheck: (check: ParsedCheck) => void;
+}) {
+  const { available } = useAssistant();
+  const [question, setQuestion] = useState("");
+  const inputId = useId();
+  const explanation = useExplanation(instance, {
+    kind: "access.question",
+    subject: { question: question.trim() },
+    material: {
+      people: [{ id: member.user_id, name: member.display_name, email: member.email }],
+      instances: instances.map((item) => item.slug),
+      resources,
+      verbs,
+    },
+  });
+  if (!available || !instance) return null;
+  const { state } = explanation;
+  const parsed = state.status === "completed" ? parseCheck(state.content) : undefined;
+  return (
+    <form
+      className="flex flex-col gap-1.5"
+      onSubmit={(event) => {
+        event.preventDefault();
+        if (question.trim()) void explanation.start();
+      }}
+    >
+      <label htmlFor={inputId} className="text-[12px] text-fg-muted">
+        Ask in your own words
+      </label>
+      <div className="flex gap-2">
+        <Input
+          id={inputId}
+          className="h-8"
+          placeholder={`Can ${firstName(member.display_name)} publish support-triage on prod?`}
+          value={question}
+          onChange={(event) => {
+            setQuestion(event.target.value);
+          }}
+        />
+        <Button
+          type="submit"
+          size="32"
+          variant="secondary"
+          disabled={!question.trim() || explanation.pending}
+        >
+          Understand
+        </Button>
+      </div>
+      {explanation.requested && !settled(state) && (
+        <p className="text-[12px] text-fg-muted">Reading the question…</p>
+      )}
+      {parsed && (
+        <div className="flex flex-wrap items-center gap-2 text-[12.5px] text-fg-secondary">
+          <Badge tone="info">Generated</Badge>
+          <span>
+            Check <code className="font-mono">{parsed.verb}</code> on{" "}
+            <code className="font-mono">
+              {parsed.component ? `${parsed.resource}:${parsed.component}` : parsed.resource}
+            </code>
+            {parsed.instance ? ` on ${parsed.instance}` : ""}?
+          </span>
+          <Button
+            size="28"
+            variant="primary"
+            onClick={() => {
+              onCheck(parsed);
+            }}
+          >
+            Check this
+          </Button>
+        </div>
+      )}
+      {(state.status === "failed" || (state.status === "completed" && !parsed) || explanation.error) && (
+        <p role="alert" className="text-[12px] text-danger">
+          {explanation.error ??
+            state.error ??
+            "Couldn't turn that into a permission check; use the fields below."}
+        </p>
+      )}
+    </form>
+  );
+}
+
 function CheckPermission({ member, instances }: { member: MemberOut; instances: readonly InstanceOut[] }) {
   const catalog = useQuery({ ...withQueryFn(accessListScopesOptions()), staleTime: STALE_TIME.config });
   const scopes = (catalog.data ?? []).filter(
@@ -386,8 +503,34 @@ function CheckPermission({ member, instances }: { member: MemberOut; instances: 
     });
   };
   const result = explain.data;
+  const check = (parsed: ParsedCheck) => {
+    const target = instances.find((item) => item.slug === parsed.instance || item.id === parsed.instance);
+    const nextInstance = target?.id ?? instance;
+    const nextComponent = parsed.component ?? "";
+    setResource(parsed.resource);
+    setVerb(parsed.verb);
+    setComponent(nextComponent);
+    setInstance(nextInstance);
+    explain.mutate({
+      body: {
+        user_id: member.user_id,
+        resource: parsed.resource,
+        verb: parsed.verb,
+        component: PER_COMPONENT[parsed.resource] && nextComponent ? nextComponent : null,
+        instance: nextInstance || null,
+      },
+    });
+  };
   return (
     <Section title="Check a permission">
+      <PermissionQuestion
+        member={member}
+        instances={instances}
+        resources={resources}
+        verbs={[...new Set(scopes.map((scope) => scope.action))]}
+        instance={instance}
+        onCheck={check}
+      />
       <form onSubmit={submit} className="flex flex-col gap-2">
         <div className="flex flex-wrap items-center gap-2 text-[13px] text-fg-secondary">
           <span>Can {firstName(member.display_name)}</span>

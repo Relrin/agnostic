@@ -40,8 +40,6 @@ WEAK_ALLOWED = {
     "psycopg": "LGPL-3.0",
     "psycopg-binary": "LGPL-3.0",
     "psycopg-pool": "LGPL-3.0",
-    "agno": "MPL-2.0",
-    "agnoctl": "MPL-2.0",
     "certifi": "MPL-2.0",
     "pathspec": "MPL-2.0",
     "hypothesis": "MPL-2.0",

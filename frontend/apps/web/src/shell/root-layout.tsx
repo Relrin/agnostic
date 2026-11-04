@@ -3,6 +3,7 @@ import {
   buildNavigation,
   collectCommands,
   decide,
+  featuresOn,
   findInstance,
   moduleAvailable,
   ORG_ROLE_LABELS,
@@ -12,6 +13,7 @@ import {
   useApprovalsCount,
   useSourceConflicts,
   useCan,
+  useFeatures,
   useInstanceHealth,
   useInstances,
   useMe,
@@ -201,18 +203,23 @@ function UnreachableBanner({ instance, health }: { instance: InstanceOut | undef
   );
 }
 
-/** Modules shown for the active instance: capability-driven (07 §3) and scope-driven (anyScope). */
+/**
+ * Modules shown for the active instance: capability-driven, feature-driven (control-plane features that are
+ * switched on) and scope-driven (anyScope).
+ */
 function useVisibleModules(capabilities: ReadonlyMap<string, string> | undefined): ModuleManifest[] {
   const orgAccess = useMyAccess();
+  const features = useFeatures();
   return useMemo(
     () =>
       MODULES.filter((module) => {
         if (module.scope === "instance" && !moduleAvailable(module, capabilities)) return false;
+        if (!featuresOn(module, features.data)) return false;
         const anyScope = module.requires?.anyScope ?? [];
         if (anyScope.length === 0 || !orgAccess.data) return true;
         return anyScope.some((scope) => decide(orgAccess.data, scope).allowed === true);
       }),
-    [capabilities, orgAccess.data],
+    [capabilities, orgAccess.data, features.data],
   );
 }
 
@@ -246,7 +253,7 @@ export function RootLayout() {
   const visibleModules = useVisibleModules(capabilities);
   const badges = useNavBadges(active);
   const navigation = useMemo(() => buildNavigation(NAV_CATALOG, visibleModules), [visibleModules]);
-  const commands = useMemo(() => collectCommands(MODULES), []);
+  const commands = useMemo(() => collectCommands(visibleModules), [visibleModules]);
   const activeId = activeNavId(navigation, pathname, instanceSlug);
   const activeEntry = [...navigation.groups.flatMap((group) => group.items), ...navigation.footer].find(
     (entry) => entry.id === activeId,

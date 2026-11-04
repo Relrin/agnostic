@@ -1,6 +1,36 @@
 {
   "components": {
     "schemas": {
+      "AcceptedOut": {
+        "properties": {
+          "conversation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conversation Id"
+          },
+          "message_id": {
+            "title": "Message Id",
+            "type": "string"
+          },
+          "reused": {
+            "title": "Reused",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "message_id",
+          "conversation_id",
+          "reused"
+        ],
+        "title": "AcceptedOut",
+        "type": "object"
+      },
       "AccessRequestIn": {
         "properties": {
           "duration_hours": {
@@ -381,6 +411,357 @@
           "count"
         ],
         "title": "ActorSummaryOut",
+        "type": "object"
+      },
+      "AiSettingsIn": {
+        "description": "Only the fields sent change.",
+        "properties": {
+          "api_key": {
+            "anyOf": [
+              {
+                "maxLength": 4000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Write-only: omit to keep, \"\" to remove",
+            "title": "Api Key"
+          },
+          "api_version": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Version"
+          },
+          "audit_question_text": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Audit Question Text"
+          },
+          "data_notice": {
+            "anyOf": [
+              {
+                "maxLength": 1000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data Notice"
+          },
+          "enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enabled"
+          },
+          "endpoint": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Endpoint"
+          },
+          "features": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FeatureToggles"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "models": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FeatureModels"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "monthly_token_budget": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "0 removes the limit",
+            "title": "Monthly Token Budget"
+          },
+          "redact_tool_args": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Redact Tool Args"
+          },
+          "redact_user_messages": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Redact User Messages"
+          },
+          "requests_per_minute": {
+            "anyOf": [
+              {
+                "maximum": 600.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requests Per Minute"
+          },
+          "retention_days": {
+            "anyOf": [
+              {
+                "maximum": 3650.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Retention Days"
+          },
+          "temperature": {
+            "anyOf": [
+              {
+                "maximum": 2.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Temperature"
+          },
+          "user_monthly_tokens": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "0 removes the limit",
+            "title": "User Monthly Tokens"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The version you edited; a newer one is a conflict",
+            "title": "Version"
+          }
+        },
+        "title": "AiSettingsIn",
+        "type": "object"
+      },
+      "AiSettingsOut": {
+        "properties": {
+          "api_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Version"
+          },
+          "audit_question_text": {
+            "title": "Audit Question Text",
+            "type": "boolean"
+          },
+          "data_notice": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data Notice"
+          },
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "endpoint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Endpoint"
+          },
+          "features": {
+            "$ref": "#/components/schemas/FeatureToggles"
+          },
+          "has_api_key": {
+            "title": "Has Api Key",
+            "type": "boolean"
+          },
+          "models": {
+            "$ref": "#/components/schemas/FeatureModels"
+          },
+          "monthly_token_budget": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Monthly Token Budget"
+          },
+          "providers": {
+            "items": {
+              "$ref": "#/components/schemas/ModelProviderOut"
+            },
+            "title": "Providers",
+            "type": "array"
+          },
+          "redact_tool_args": {
+            "title": "Redact Tool Args",
+            "type": "boolean"
+          },
+          "redact_user_messages": {
+            "title": "Redact User Messages",
+            "type": "boolean"
+          },
+          "requests_per_minute": {
+            "title": "Requests Per Minute",
+            "type": "integer"
+          },
+          "retention_days": {
+            "title": "Retention Days",
+            "type": "integer"
+          },
+          "temperature": {
+            "title": "Temperature",
+            "type": "number"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "updated_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated By"
+          },
+          "user_monthly_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Monthly Tokens"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "enabled",
+          "models",
+          "endpoint",
+          "api_version",
+          "has_api_key",
+          "temperature",
+          "features",
+          "monthly_token_budget",
+          "user_monthly_tokens",
+          "requests_per_minute",
+          "redact_tool_args",
+          "redact_user_messages",
+          "audit_question_text",
+          "retention_days",
+          "data_notice",
+          "version",
+          "updated_by",
+          "updated_at",
+          "providers"
+        ],
+        "title": "AiSettingsOut",
         "type": "object"
       },
       "AlternativeOut": {
@@ -1294,6 +1675,84 @@
           "restore_expires_at"
         ],
         "title": "ArchiveOut",
+        "type": "object"
+      },
+      "AssistantStatusOut": {
+        "properties": {
+          "budget": {
+            "$ref": "#/components/schemas/BudgetOut"
+          },
+          "can_use": {
+            "title": "Can Use",
+            "type": "boolean"
+          },
+          "data_notice": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data Notice"
+          },
+          "features": {
+            "$ref": "#/components/schemas/FeatureToggles"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider"
+          },
+          "requests_per_minute": {
+            "title": "Requests Per Minute",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "features",
+          "can_use",
+          "provider",
+          "data_notice",
+          "budget",
+          "requests_per_minute"
+        ],
+        "title": "AssistantStatusOut",
+        "type": "object"
+      },
+      "AttachmentOut": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "media_type": {
+            "title": "Media Type",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "size": {
+            "title": "Size",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "media_type",
+          "size"
+        ],
+        "title": "AttachmentOut",
         "type": "object"
       },
       "AttemptOut": {
@@ -2830,6 +3289,61 @@
         "title": "BindingOut",
         "type": "object"
       },
+      "Body_assistant_ask_question": {
+        "properties": {
+          "context": {
+            "anyOf": [
+              {
+                "maxLength": 220,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "What you're looking at: trace:<id>, …",
+            "title": "Context"
+          },
+          "conversation_id": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conversation Id"
+          },
+          "files": {
+            "anyOf": [
+              {
+                "items": {
+                  "contentMediaType": "application/octet-stream",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Logs or screenshots",
+            "title": "Files"
+          },
+          "question": {
+            "maxLength": 50000,
+            "title": "Question",
+            "type": "string"
+          }
+        },
+        "required": [
+          "question"
+        ],
+        "title": "Body_assistant_ask_question",
+        "type": "object"
+      },
       "BreakGlassUserOut": {
         "properties": {
           "display_name": {
@@ -2851,6 +3365,53 @@
           "display_name"
         ],
         "title": "BreakGlassUserOut",
+        "type": "object"
+      },
+      "BudgetOut": {
+        "properties": {
+          "month": {
+            "title": "Month",
+            "type": "string"
+          },
+          "org_limit": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Org Limit"
+          },
+          "org_tokens": {
+            "title": "Org Tokens",
+            "type": "integer"
+          },
+          "user_limit": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Limit"
+          },
+          "user_tokens": {
+            "title": "User Tokens",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "month",
+          "org_tokens",
+          "org_limit",
+          "user_tokens",
+          "user_limit"
+        ],
+        "title": "BudgetOut",
         "type": "object"
       },
       "BulkOutcomeOut": {
@@ -5573,6 +6134,51 @@
         "title": "ConnectedOut",
         "type": "object"
       },
+      "ConnectionCheckIn": {
+        "properties": {
+          "feature": {
+            "$ref": "#/components/schemas/FeatureName",
+            "default": "assistant"
+          }
+        },
+        "title": "ConnectionCheckIn",
+        "type": "object"
+      },
+      "ConnectionCheckOut": {
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "latency_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latency Ms"
+          },
+          "model": {
+            "title": "Model",
+            "type": "string"
+          },
+          "ok": {
+            "title": "Ok",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ok",
+          "model",
+          "latency_ms",
+          "detail"
+        ],
+        "title": "ConnectionCheckOut",
+        "type": "object"
+      },
       "ConnectionIn": {
         "properties": {
           "access": {
@@ -6024,6 +6630,36 @@
           }
         },
         "title": "ConventionIO",
+        "type": "object"
+      },
+      "ConversationOut": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "ConversationOut",
         "type": "object"
       },
       "CostOut": {
@@ -7952,6 +8588,44 @@
         "title": "ExplainIn",
         "type": "object"
       },
+      "ExplanationIn": {
+        "properties": {
+          "kind": {
+            "description": "One of: access.question, audit.diff, eval.insight, memory.optimization, studio.cel, studio.commit_message, studio.config_explanation, studio.release_notes, studio.version_summary, trace.diagnosis",
+            "title": "Kind",
+            "type": "string"
+          },
+          "material": {
+            "description": "What the page shows that isn't stored yet (a draft, a preview)",
+            "title": "Material"
+          },
+          "regenerate": {
+            "default": false,
+            "description": "Write a new one instead of reusing the last",
+            "title": "Regenerate",
+            "type": "boolean"
+          },
+          "subject": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Subject",
+            "type": "object"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "title": "ExplanationIn",
+        "type": "object"
+      },
       "ExplanationOut": {
         "properties": {
           "allowed": {
@@ -8192,6 +8866,77 @@
           "last_used_at"
         ],
         "title": "FactorOut",
+        "type": "object"
+      },
+      "FeatureModels": {
+        "properties": {
+          "assistant": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "provider:model, e.g. vllm:Qwen/Qwen3-32B or ollama:qwen3:8b",
+            "title": "Assistant"
+          },
+          "suggestions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Empty: the assistant's model",
+            "title": "Suggestions"
+          },
+          "summaries": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Empty: the assistant's model",
+            "title": "Summaries"
+          }
+        },
+        "title": "FeatureModels",
+        "type": "object"
+      },
+      "FeatureName": {
+        "enum": [
+          "assistant",
+          "summaries",
+          "suggestions"
+        ],
+        "type": "string"
+      },
+      "FeatureToggles": {
+        "properties": {
+          "assistant": {
+            "default": true,
+            "title": "Assistant",
+            "type": "boolean"
+          },
+          "suggestions": {
+            "default": true,
+            "title": "Suggestions",
+            "type": "boolean"
+          },
+          "summaries": {
+            "default": true,
+            "title": "Summaries",
+            "type": "boolean"
+          }
+        },
+        "title": "FeatureToggles",
         "type": "object"
       },
       "FieldChangeOut": {
@@ -11946,6 +12691,148 @@
         "title": "MemorySourceOut",
         "type": "object"
       },
+      "MessageOut": {
+        "properties": {
+          "attachments": {
+            "items": {
+              "$ref": "#/components/schemas/AttachmentOut"
+            },
+            "title": "Attachments",
+            "type": "array"
+          },
+          "completed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At"
+          },
+          "content": {
+            "title": "Content",
+            "type": "string"
+          },
+          "conversation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conversation Id"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "feature": {
+            "$ref": "#/components/schemas/FeatureName"
+          },
+          "generated": {
+            "title": "Generated",
+            "type": "boolean"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "input_tokens": {
+            "title": "Input Tokens",
+            "type": "integer"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "output_tokens": {
+            "title": "Output Tokens",
+            "type": "integer"
+          },
+          "role": {
+            "enum": [
+              "user",
+              "assistant"
+            ],
+            "title": "Role",
+            "type": "string"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/agnostic_assistant__api__schemas__SourceOut"
+            },
+            "title": "Sources",
+            "type": "array"
+          },
+          "status": {
+            "enum": [
+              "queued",
+              "running",
+              "completed",
+              "failed",
+              "cancelled"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "tool_calls": {
+            "items": {
+              "$ref": "#/components/schemas/ToolCallOut"
+            },
+            "title": "Tool Calls",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "conversation_id",
+          "role",
+          "feature",
+          "kind",
+          "content",
+          "status",
+          "tool_calls",
+          "sources",
+          "model",
+          "input_tokens",
+          "output_tokens",
+          "error",
+          "created_at",
+          "completed_at",
+          "attachments",
+          "generated"
+        ],
+        "title": "MessageOut",
+        "type": "object"
+      },
       "MetaPatchIn": {
         "properties": {
           "clear_owner": {
@@ -12228,6 +13115,24 @@
         ],
         "type": "string"
       },
+      "ModelProviderOut": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "label"
+        ],
+        "title": "ModelProviderOut",
+        "type": "object"
+      },
       "ModelTokensOut": {
         "properties": {
           "model_id": {
@@ -12259,6 +13164,13 @@
       },
       "ModuleInfo": {
         "properties": {
+          "assistant_tools": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Assistant Tools",
+            "type": "array"
+          },
           "audit_actions": {
             "items": {
               "type": "string"
@@ -12302,7 +13214,8 @@
           "depends_on",
           "scopes",
           "jobs",
-          "audit_actions"
+          "audit_actions",
+          "assistant_tools"
         ],
         "title": "ModuleInfo",
         "type": "object"
@@ -16251,7 +17164,7 @@
           "source": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/SourceOut"
+                "$ref": "#/components/schemas/agnostic_studio__api__schemas__SourceOut"
               },
               {
                 "type": "null"
@@ -19681,50 +20594,6 @@
         "title": "SourceIn",
         "type": "object"
       },
-      "SourceOut": {
-        "properties": {
-          "file": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "File"
-          },
-          "line": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Line"
-          },
-          "module": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Module"
-          }
-        },
-        "required": [
-          "module",
-          "file",
-          "line"
-        ],
-        "title": "SourceOut",
-        "type": "object"
-      },
       "SourcePatchIn": {
         "properties": {
           "branch": {
@@ -20597,6 +21466,22 @@
         "title": "SyncPolicyIO",
         "type": "object"
       },
+      "SystemFeatures": {
+        "properties": {
+          "features": {
+            "additionalProperties": {
+              "type": "boolean"
+            },
+            "title": "Features",
+            "type": "object"
+          }
+        },
+        "required": [
+          "features"
+        ],
+        "title": "SystemFeatures",
+        "type": "object"
+      },
       "SystemModules": {
         "properties": {
           "disabled": {
@@ -20802,6 +21687,26 @@
           "version"
         ],
         "title": "TestRunIn",
+        "type": "object"
+      },
+      "ThreadOut": {
+        "properties": {
+          "conversation": {
+            "$ref": "#/components/schemas/ConversationOut"
+          },
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/MessageOut"
+            },
+            "title": "Messages",
+            "type": "array"
+          }
+        },
+        "required": [
+          "conversation",
+          "messages"
+        ],
+        "title": "ThreadOut",
         "type": "object"
       },
       "TimelineEntryOut": {
@@ -21017,6 +21922,60 @@
           "total"
         ],
         "title": "TokensOut",
+        "type": "object"
+      },
+      "ToolCallOut": {
+        "properties": {
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
+          "duration_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Ms"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "running",
+              "done",
+              "denied",
+              "not_found",
+              "error"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "status",
+          "duration_ms",
+          "detail"
+        ],
+        "title": "ToolCallOut",
         "type": "object"
       },
       "TotalsOut": {
@@ -21951,6 +22910,29 @@
         "title": "WriteCheckOut",
         "type": "object"
       },
+      "agnostic_assistant__api__schemas__SourceOut": {
+        "properties": {
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "path": {
+            "title": "Path",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "label",
+          "path"
+        ],
+        "title": "SourceOut",
+        "type": "object"
+      },
       "agnostic_observe__api__metrics_schemas__ModelUsageOut": {
         "properties": {
           "model_id": {
@@ -22007,6 +22989,50 @@
           "share"
         ],
         "title": "ModelUsageOut",
+        "type": "object"
+      },
+      "agnostic_studio__api__schemas__SourceOut": {
+        "properties": {
+          "file": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File"
+          },
+          "line": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Line"
+          },
+          "module": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Module"
+          }
+        },
+        "required": [
+          "module",
+          "file",
+          "line"
+        ],
+        "title": "SourceOut",
         "type": "object"
       }
     }
@@ -23575,6 +24601,196 @@
         "summary": "Change a routing rule",
         "tags": [
           "approvals"
+        ]
+      }
+    },
+    "/api/v1/assistant/settings": {
+      "get": {
+        "operationId": "assistant_get_settings",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiSettingsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "the org's AI features (needs settings:read)",
+        "tags": [
+          "assistant"
+        ]
+      },
+      "put": {
+        "operationId": "assistant_update_settings",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AiSettingsIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiSettingsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Change AI features: only the fields sent (needs settings:write; a new API key needs a recent sign-in)",
+        "tags": [
+          "assistant"
+        ]
+      }
+    },
+    "/api/v1/assistant/settings/check": {
+      "post": {
+        "operationId": "assistant_check_connection",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConnectionCheckIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionCheckOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Send the configured model one tiny prompt and report what happened",
+        "tags": [
+          "assistant"
+        ]
+      }
+    },
+    "/api/v1/assistant/status": {
+      "get": {
+        "operationId": "assistant_get_status",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantStatusOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Which AI features work for you right now, and the token budget",
+        "tags": [
+          "assistant"
         ]
       }
     },
@@ -28647,6 +29863,511 @@
         "summary": "Approve or reject a paused run's approval, then continue the run (needs approvals:write)",
         "tags": [
           "approvals"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/assistant/conversations": {
+      "get": {
+        "operationId": "assistant_list_conversations",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ConversationOut"
+                  },
+                  "title": "Response Assistant List Conversations",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Your conversations on this instance, most recent first",
+        "tags": [
+          "assistant"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/assistant/conversations/{conversation_id}": {
+      "delete": {
+        "operationId": "assistant_delete_conversation",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "conversation_id",
+            "required": true,
+            "schema": {
+              "title": "Conversation Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Delete a conversation",
+        "tags": [
+          "assistant"
+        ]
+      },
+      "get": {
+        "operationId": "assistant_get_conversation",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "conversation_id",
+            "required": true,
+            "schema": {
+              "title": "Conversation Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ThreadOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "One of your conversations with its messages",
+        "tags": [
+          "assistant"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/assistant/explanations": {
+      "post": {
+        "operationId": "assistant_explain",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExplanationIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AcceptedOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Queue a generated explanation or suggestion next to a page's own text (reused unless regenerate)",
+        "tags": [
+          "assistant"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/assistant/messages/{message_id}": {
+      "get": {
+        "operationId": "assistant_get_message",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "message_id",
+            "required": true,
+            "schema": {
+              "title": "Message Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "An answer or explanation as it stands",
+        "tags": [
+          "assistant"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/assistant/messages/{message_id}/cancel": {
+      "post": {
+        "operationId": "assistant_cancel_message",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "message_id",
+            "required": true,
+            "schema": {
+              "title": "Message Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Stop an answer that is still being written",
+        "tags": [
+          "assistant"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/assistant/messages/{message_id}/events": {
+      "get": {
+        "operationId": "assistant_follow_message",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "message_id",
+            "required": true,
+            "schema": {
+              "title": "Message Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Last-Event-ID",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Last-Event-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {}
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Follow an answer as it is written (text/event-stream; resumes from Last-Event-ID)",
+        "tags": [
+          "assistant"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/assistant/questions": {
+      "post": {
+        "operationId": "assistant_ask_question",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_assistant_ask_question"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AcceptedOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Ask your OS: queue a question; follow the answer at …/messages/{message_id}/events",
+        "tags": [
+          "assistant"
         ]
       }
     },
@@ -40150,6 +41871,49 @@
         "summary": "Starting points for new agents, teams and workflows",
         "tags": [
           "studio"
+        ]
+      }
+    },
+    "/api/v1/system/features": {
+      "get": {
+        "operationId": "system_list_features",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SystemFeatures"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Control-plane features that are switched on",
+        "tags": [
+          "system"
         ]
       }
     },

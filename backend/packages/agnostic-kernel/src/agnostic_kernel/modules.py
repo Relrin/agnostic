@@ -19,6 +19,8 @@ from fastapi import APIRouter
 from pydantic_settings import BaseSettings
 from sqlalchemy import MetaData
 
+from agnostic_kernel.tools import ToolSpec
+
 ENTRY_POINT_GROUP = "agnostic.modules"
 
 
@@ -133,6 +135,8 @@ class Module(Protocol):
     def audit_actions(self) -> Iterable[AuditActionDecl]: ...
     def search_providers(self) -> Iterable[SearchProvider]: ...
     def capabilities(self) -> Iterable[CapabilityProbe]: ...
+    def assistant_tools(self) -> Iterable[ToolSpec]: ...
+    async def features(self, container: AsyncContainer) -> Mapping[str, bool]: ...
     async def on_startup(self, container: AsyncContainer) -> None: ...
     async def on_shutdown(self, container: AsyncContainer) -> None: ...
 
@@ -176,6 +180,18 @@ class BaseModule:
 
     def capabilities(self) -> Iterable[CapabilityProbe]:
         return ()
+
+    def assistant_tools(self) -> Iterable[ToolSpec]:
+        """Read-only tools the assistant may call as the asking person (see :mod:`agnostic_kernel.tools`)."""
+        return ()
+
+    async def features(self, container: AsyncContainer) -> Mapping[str, bool]:  # noqa: ARG002
+        """Control-plane features that are switched on right now, e.g. ``{"assistant": True}``.
+
+        Served by ``GET /api/v1/system/features`` so the web app shows only what works. ``container`` is
+        request-scoped.
+        """
+        return {}
 
     async def on_startup(self, container: AsyncContainer) -> None:  # noqa: ARG002
         return None

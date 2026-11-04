@@ -7,6 +7,7 @@ import {
   studioEvaluateCel,
   type CelEvaluateOut,
 } from "@agnostic/api";
+import { SuggestButton, useAssistant } from "@agnostic/assistant";
 import { withQueryFn } from "@agnostic/core";
 import { CelEditor, type CelEditorHandle, type CelSymbol } from "@agnostic/editor";
 import { useDebouncedValue } from "@agnostic/studio";
@@ -189,9 +190,78 @@ export function CelField({
               ))}
             </div>
           )}
+          {!readOnly && (
+            <CelFromDescription
+              instance={instance}
+              context={context}
+              choices={choices}
+              symbols={symbols}
+              onUse={(expression) => {
+                onChange(expression, "cel");
+              }}
+            />
+          )}
           <Sandbox instance={instance} context={context} expression={text} choices={choices} />
         </>
       )}
+    </div>
+  );
+}
+
+/** Describe the condition in words; the suggestion is checked like a typed expression before it can be used. */
+function CelFromDescription({
+  instance,
+  context,
+  choices,
+  symbols,
+  onUse,
+}: {
+  instance: string;
+  context: CelContext;
+  choices: string[] | undefined;
+  symbols: readonly CelSymbol[];
+  onUse: (expression: string) => void;
+}) {
+  const { available } = useAssistant("suggestions");
+  const [description, setDescription] = useState("");
+  const validate = useMemo(
+    () => async (expression: string) => {
+      const checked = (
+        await studioCheckCel({ body: { expression, context, choices: choices ?? null }, throwOnError: true })
+      ).data;
+      return checked.ok ? undefined : `The suggestion doesn't check: ${checked.summary}`;
+    },
+    [context, choices],
+  );
+  if (!available) return null;
+  return (
+    <div className="flex items-center gap-2">
+      <Input
+        aria-label="Describe the expression"
+        className="h-8"
+        placeholder="Describe it: “the customer is on the gold tier and asked about billing”"
+        value={description}
+        onChange={(event) => {
+          setDescription(event.target.value);
+        }}
+      />
+      <SuggestButton
+        key={description}
+        instance={instance}
+        label="Write CEL"
+        disabled={!description.trim()}
+        request={{
+          kind: "studio.cel",
+          subject: { description: description.trim() },
+          material: {
+            context,
+            choices: choices ?? [],
+            symbols: symbols.map((symbol) => ({ name: symbol.name, kind: symbol.kind, type: symbol.detail })),
+          },
+        }}
+        validate={validate}
+        onUse={onUse}
+      />
     </div>
   );
 }

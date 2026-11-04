@@ -5,6 +5,7 @@ import {
   describeError,
   type OptimizeOut,
 } from "@agnostic/api";
+import { GeneratedText } from "@agnostic/assistant";
 import {
   PermissionGate,
   findInstance,
@@ -311,6 +312,8 @@ function UserMemories({
 
         {preview && (
           <OptimizationPreview
+            instance={instance}
+            user={user}
             preview={preview}
             before={loaded}
             applying={optimize.isPending}
@@ -499,12 +502,16 @@ function MemoryCard({
 }
 
 function OptimizationPreview({
+  instance,
+  user,
   preview,
   before,
   applying,
   onApply,
   onDismiss,
 }: {
+  instance: string;
+  user: string;
   preview: OptimizeOut;
   before: readonly Memory[];
   applying: boolean;
@@ -521,11 +528,29 @@ function OptimizationPreview({
           <h2 className="text-[14px] font-semibold">
             Preview: {preview.memories_before} → {preview.memories_after} memories
           </h2>
-          <p className="text-[12.5px] text-fg-secondary">
-            Strategy: summarize · {formatCount(preview.tokens_saved)} tokens saved (
-            {preview.reduction_percentage.toFixed(0)}%) · nothing changes until you apply. Applying runs the
-            optimization again, so the saved wording can differ slightly from this preview.
-          </p>
+          <GeneratedText
+            instance={instance}
+            action="Explain this change"
+            label="Generated explanation"
+            request={{
+              kind: "memory.optimization",
+              subject: { user_id: user },
+              material: {
+                before: before.map((memory) => memory.memory),
+                after: preview.memories.map((memory) => memory.memory),
+                memories_before: preview.memories_before,
+                memories_after: preview.memories_after,
+                tokens_saved: preview.tokens_saved,
+                reduction_percentage: preview.reduction_percentage,
+              },
+            }}
+          >
+            <p className="text-[12.5px] text-fg-secondary">
+              Strategy: summarize · {formatCount(preview.tokens_saved)} tokens saved (
+              {preview.reduction_percentage.toFixed(0)}%) · nothing changes until you apply. Applying runs the
+              optimization again, so the saved wording can differ slightly from this preview.
+            </p>
+          </GeneratedText>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="30" onClick={onDismiss}>

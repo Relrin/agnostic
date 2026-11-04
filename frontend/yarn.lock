@@ -25,6 +25,27 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@agnostic/assistant@workspace:*, @agnostic/assistant@workspace:packages/assistant":
+  version: 0.0.0-use.local
+  resolution: "@agnostic/assistant@workspace:packages/assistant"
+  dependencies:
+    "@agnostic/api": "workspace:*"
+    "@agnostic/core": "workspace:*"
+    "@agnostic/testing": "workspace:*"
+    "@agnostic/ui": "workspace:*"
+    "@microsoft/fetch-event-source": "npm:2.0.1"
+    "@tanstack/react-query": "npm:5.105.0"
+    "@tanstack/react-router": "npm:1.170.46"
+    "@testing-library/jest-dom": "npm:7.0.1"
+    lucide-react: "npm:1.65.0"
+    msw: "npm:3.0.3"
+    react: "npm:19.3.1"
+    react-dom: "npm:19.3.1"
+  peerDependencies:
+    react: 19.3.1
+  languageName: unknown
+  linkType: soft
+
 "@agnostic/core@workspace:*, @agnostic/core@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "@agnostic/core@workspace:packages/core"
@@ -67,6 +88,7 @@ __metadata:
   resolution: "@agnostic/module-access-people@workspace:modules/access-people"
   dependencies:
     "@agnostic/api": "workspace:*"
+    "@agnostic/assistant": "workspace:*"
     "@agnostic/core": "workspace:*"
     "@agnostic/testing": "workspace:*"
     "@agnostic/ui": "workspace:*"
@@ -142,11 +164,33 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@agnostic/module-assistant@workspace:*, @agnostic/module-assistant@workspace:modules/assistant":
+  version: 0.0.0-use.local
+  resolution: "@agnostic/module-assistant@workspace:modules/assistant"
+  dependencies:
+    "@agnostic/api": "workspace:*"
+    "@agnostic/assistant": "workspace:*"
+    "@agnostic/core": "workspace:*"
+    "@agnostic/testing": "workspace:*"
+    "@agnostic/ui": "workspace:*"
+    "@tanstack/react-query": "npm:5.105.0"
+    "@tanstack/react-router": "npm:1.170.46"
+    "@testing-library/jest-dom": "npm:7.0.1"
+    lucide-react: "npm:1.65.0"
+    msw: "npm:3.0.3"
+    react: "npm:19.3.1"
+    react-dom: "npm:19.3.1"
+  peerDependencies:
+    react: 19.3.1
+  languageName: unknown
+  linkType: soft
+
 "@agnostic/module-audit@workspace:*, @agnostic/module-audit@workspace:modules/audit":
   version: 0.0.0-use.local
   resolution: "@agnostic/module-audit@workspace:modules/audit"
   dependencies:
     "@agnostic/api": "workspace:*"
+    "@agnostic/assistant": "workspace:*"
     "@agnostic/core": "workspace:*"
     "@agnostic/testing": "workspace:*"
     "@agnostic/ui": "workspace:*"
@@ -187,6 +231,7 @@ __metadata:
   resolution: "@agnostic/module-evals@workspace:modules/evals"
   dependencies:
     "@agnostic/api": "workspace:*"
+    "@agnostic/assistant": "workspace:*"
     "@agnostic/core": "workspace:*"
     "@agnostic/testing": "workspace:*"
     "@agnostic/ui": "workspace:*"
@@ -227,6 +272,7 @@ __metadata:
   resolution: "@agnostic/module-home@workspace:modules/home"
   dependencies:
     "@agnostic/api": "workspace:*"
+    "@agnostic/assistant": "workspace:*"
     "@agnostic/core": "workspace:*"
     "@agnostic/testing": "workspace:*"
     "@agnostic/ui": "workspace:*"
@@ -327,6 +373,7 @@ __metadata:
   resolution: "@agnostic/module-memory@workspace:modules/memory"
   dependencies:
     "@agnostic/api": "workspace:*"
+    "@agnostic/assistant": "workspace:*"
     "@agnostic/core": "workspace:*"
     "@agnostic/testing": "workspace:*"
     "@agnostic/ui": "workspace:*"
@@ -572,6 +619,7 @@ __metadata:
   resolution: "@agnostic/module-studio-workflows@workspace:modules/studio-workflows"
   dependencies:
     "@agnostic/api": "workspace:*"
+    "@agnostic/assistant": "workspace:*"
     "@agnostic/core": "workspace:*"
     "@agnostic/editor": "workspace:*"
     "@agnostic/studio": "workspace:*"
@@ -598,6 +646,7 @@ __metadata:
   resolution: "@agnostic/module-traces@workspace:modules/traces"
   dependencies:
     "@agnostic/api": "workspace:*"
+    "@agnostic/assistant": "workspace:*"
     "@agnostic/core": "workspace:*"
     "@agnostic/testing": "workspace:*"
     "@agnostic/ui": "workspace:*"
@@ -618,6 +667,7 @@ __metadata:
   resolution: "@agnostic/studio@workspace:packages/studio"
   dependencies:
     "@agnostic/api": "workspace:*"
+    "@agnostic/assistant": "workspace:*"
     "@agnostic/core": "workspace:*"
     "@agnostic/editor": "workspace:*"
     "@agnostic/testing": "workspace:*"
@@ -702,6 +752,7 @@ __metadata:
     "@agnostic/module-access-roles": "workspace:*"
     "@agnostic/module-account": "workspace:*"
     "@agnostic/module-approvals": "workspace:*"
+    "@agnostic/module-assistant": "workspace:*"
     "@agnostic/module-audit": "workspace:*"
     "@agnostic/module-chat": "workspace:*"
     "@agnostic/module-evals": "workspace:*"

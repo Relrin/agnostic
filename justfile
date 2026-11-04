@@ -34,6 +34,11 @@ git-up:
 gitea-seed:
     bash deploy/dev/gitea/seed.sh
 
+# Start the dev Ollama and pull a small model for Ask your OS (model=…: any Ollama model with tool calling)
+ai-up model="qwen3:8b":
+    {{compose}} --profile ai up -d --wait ollama
+    {{compose}} exec ollama ollama pull {{model}}
+
 # Stop the dev stack (data volume is kept; `just nuke` deletes it)
 down:
     {{compose}} down
@@ -123,7 +128,7 @@ fmt:
 
 # Unit tests (no Docker needed: the backend runs on SQLite)
 test:
-    cd backend && uv run pytest -m "not integration and not contract" --cov=agnostic_kernel --cov-fail-under=90
+    cd backend && uv run pytest -m "not integration and not contract and not assistant_eval" --cov=agnostic_kernel --cov-fail-under=90
     cd runtime && uv run pytest
     cd bridge && uv run pytest
     cd frontend && yarn test
@@ -135,6 +140,10 @@ test-int:
 # Contract tests against a live runtime (start one with `just runtimes`)
 test-contract url="http://127.0.0.1:7777":
     cd backend && AGNOSTIC_CONTRACT_RUNTIME_URL={{url}} uv run pytest -m contract
+
+# The assistant's Q&A pairs on seeded data, asked to a real model (default: the dev Ollama from `just ai-up`)
+test-assistant model="ollama:qwen3:8b" endpoint="http://localhost:11434":
+    cd backend && AGNOSTIC_TEST_ASSISTANT_MODEL={{model}} AGNOSTIC_TEST_ASSISTANT_ENDPOINT={{endpoint}}         uv run pytest -m assistant_eval
 
 # Storybook stories with axe a11y checks, then Playwright e2e
 test-ui:

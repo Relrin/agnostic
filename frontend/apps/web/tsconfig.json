@@ -103,6 +103,12 @@
     },
     {
       "path": "../../modules/sources"
+    },
+    {
+      "path": "../../packages/assistant"
+    },
+    {
+      "path": "../../modules/assistant"
     }
   ]
 }

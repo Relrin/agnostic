@@ -20,7 +20,6 @@ import {
   AttentionCard,
   Badge,
   Button,
-  Callout,
   Card,
   DataTable,
   EmptyState,
@@ -36,12 +35,14 @@ import {
   ShareList,
   Skeleton,
   StackedBarChart,
+  cn,
   type Column,
   type KpiDelta,
 } from "@agnostic/ui";
+import { AnswerView, AskBox, suggestionsFor, useAnswer, useAssistant } from "@agnostic/assistant";
 import { skipToken, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams } from "@tanstack/react-router";
-import { RefreshCw, Sparkles } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { useState } from "react";
 
 type Range = "24h" | "7d" | "30d";
@@ -256,6 +257,59 @@ function Activity({ items }: { items: readonly ActivityOut[] }) {
   );
 }
 
+/** Components named by failing attention items ("daily-brief failed twice" → "daily-brief"). */
+function failingComponents(attention: readonly AttentionOut[]): string[] {
+  return attention
+    .filter((item) => item.kind === "schedule_failing" || item.kind === "error_spike")
+    .map((item) => item.title.split(" ")[0] ?? "")
+    .filter((name) => name.length > 0);
+}
+
+/** Ask your OS on Home: the question, then its answer streaming in below with a link to the conversation. */
+function AskCard({
+  instance,
+  attention,
+  notice,
+}: {
+  instance: string;
+  attention: readonly AttentionOut[];
+  notice: string | null | undefined;
+}) {
+  const { available } = useAssistant();
+  const [asked, setAsked] = useState<{ messageId: string; conversationId: string | null }>();
+  const answer = useAnswer(instance, asked?.messageId);
+  if (!available) return null;
+  return (
+    <Card
+      id="ask"
+      title="Ask your OS"
+      action={
+        asked?.conversationId ? (
+          <Link
+            to="/i/$instance/ask"
+            params={{ instance }}
+            search={{ conversation: asked.conversationId }}
+            className="text-[12.5px] text-info hover:text-info-hover"
+          >
+            Open conversation
+          </Link>
+        ) : undefined
+      }
+    >
+      <AskBox
+        instance={instance}
+        context="page:home"
+        notice={notice}
+        suggestions={suggestionsFor("home", failingComponents(attention))}
+        onAsked={(accepted) => {
+          setAsked({ messageId: accepted.message_id, conversationId: accepted.conversation_id });
+        }}
+      />
+      {asked && <AnswerView state={answer.state} onStop={() => void answer.stop()} />}
+    </Card>
+  );
+}
+
 /** `/i/:instance/home`: what needs attention, how the instance is doing, and what changed (design spec A §1). */
 export function HomePage() {
   const params = useParams({ strict: false }) as unknown as Record<string, string | undefined>;
@@ -285,6 +339,7 @@ export function HomePage() {
       queryClient.setQueryData(options.queryKey, fresh);
     },
   });
+  const assistant = useAssistant();
   const data = overview.data;
   const counts = data?.counts;
   const unavailable = data?.unavailable ?? {};
@@ -445,7 +500,7 @@ export function HomePage() {
             )}
           </Card>
 
-          <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
+          <div className={cn("grid gap-4", assistant.available && "lg:grid-cols-[1fr_1fr]")}>
             <Card
               title="Recent activity"
               action={
@@ -462,23 +517,11 @@ export function HomePage() {
                 <Unavailable reason={unavailable.activity} />
               )}
             </Card>
-            <Card title="Ask your OS">
-              <div className="flex flex-col gap-2">
-                <label htmlFor="ask-your-os" className="sr-only">
-                  Ask your OS
-                </label>
-                <div className="flex items-center gap-2 rounded-control border border-border-input bg-surface px-3 py-2 opacity-70">
-                  <Sparkles className="size-4 text-fg-muted" aria-hidden />
-                  <input
-                    id="ask-your-os"
-                    disabled
-                    placeholder="Why did daily-brief fail last night?"
-                    className="min-w-0 flex-1 bg-transparent text-[13px] outline-none"
-                  />
-                </div>
-                <Callout tone="availability">Available when AI features are enabled.</Callout>
-              </div>
-            </Card>
+            <AskCard
+              instance={instanceRef}
+              attention={data?.attention ?? []}
+              notice={assistant.status?.data_notice}
+            />
           </div>
         </>
       )}

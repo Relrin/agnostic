@@ -37,6 +37,8 @@ export type CommandDefinition = {
   icon?: NavIcon;
   /** Navigate to a path relative to the module scope. */
   path?: string;
+  /** Pass what was typed in the palette along as `?q=` (e.g. "Ask your OS: why did…"). */
+  withQuery?: boolean;
 };
 
 export type Capability = string;
@@ -54,8 +56,15 @@ export type ModuleManifest = {
   routes: readonly ModuleRoute[];
   nav?: readonly NavEntry[];
   commands?: readonly CommandDefinition[];
-  /** When to show the module at all: the active instance's capability matrix and the person's scopes. */
-  requires?: { capabilities?: readonly Capability[]; anyScope?: readonly Scope[] };
+  /**
+   * When to show the module at all: the active instance's capability matrix, the person's scopes, and
+   * control-plane features that must be switched on (`GET /system/features`, e.g. "assistant").
+   */
+  requires?: {
+    capabilities?: readonly Capability[];
+    anyScope?: readonly Scope[];
+    features?: readonly string[];
+  };
 };
 
 /** Whether a module's nav entries show for the active instance (unknown capabilities don't hide anything). */
@@ -69,6 +78,15 @@ export function moduleAvailable(
     const status = capabilities.get(name);
     return status === undefined || status === "available" || status === "unknown";
   });
+}
+
+/** Whether every feature a module needs is on (a missing feature is off: its backend module isn't there). */
+export function featuresOn(
+  manifest: Pick<ModuleManifest, "requires">,
+  features: Readonly<Record<string, boolean>> | undefined,
+): boolean {
+  const needed = manifest.requires?.features ?? [];
+  return needed.every((name) => features?.[name] === true);
 }
 
 /** Identity helper that type-checks a manifest. */

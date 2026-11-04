@@ -8,7 +8,8 @@ import {
   type ExplanationOut,
   type InstanceOut,
 } from "@agnostic/api";
-import { useCan, useMe, withQueryFn } from "@agnostic/core";
+import { GeneratedText } from "@agnostic/assistant";
+import { useCan, useInstances, useMe, withQueryFn } from "@agnostic/core";
 import {
   ArgsDiff,
   Avatar,
@@ -62,8 +63,11 @@ export function DecisionBadge({ decision }: { decision: AuditEventOut["decision"
 }
 
 function DiffSection({ event }: { event: AuditEventOut }) {
+  const instances = useInstances();
   const view = diffView(event.diff);
   if (!view) return null;
+  // Explanations run against an instance; org-wide events use the first one the person can reach.
+  const instance = event.instance_id ?? instances.data?.[0]?.id;
   return (
     <Section title={view.title ?? "Changes"}>
       <div className="rounded-tile border border-border-subtle bg-surface px-3.5 py-3">
@@ -76,6 +80,14 @@ function DiffSection({ event }: { event: AuditEventOut }) {
         )}
       </div>
       {view.kind !== "json" && view.note && <p className="text-[12px] text-fg-muted">{view.note}</p>}
+      {instance && (
+        <GeneratedText
+          instance={instance}
+          action="Summarize this change"
+          label="Generated summary"
+          request={{ kind: "audit.diff", subject: { event_id: event.id } }}
+        />
+      )}
     </Section>
   );
 }

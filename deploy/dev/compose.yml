@@ -117,7 +117,23 @@ services:
       retries: 40
     profiles: ["git"]
 
+  # A local model for Ask your OS (`just ai-up`): set the provider to Ollama, the endpoint to
+  # http://localhost:11434 and the model to what `just ai-up` pulled. Nothing leaves the machine.
+  ollama:
+    image: ollama/ollama:0.40.14@sha256:ebaef4f4c5d93660e1f25f8ad085a112f51ccfb0e8458073e71793959dba91c9
+    ports:
+      - "${AGNOSTIC_DEV_OLLAMA_PORT:-11434}:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 3s
+      timeout: 5s
+      retries: 40
+    profiles: ["ai"]
+
 volumes:
   postgres-data:
   seaweedfs-data:
   gitea-data:
+  ollama-data:

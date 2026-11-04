@@ -5,6 +5,7 @@
     { "path": "../ui" },
     { "path": "../core" },
     { "path": "../api" },
+    { "path": "../assistant" },
     { "path": "../editor" },
     { "path": "../testing" }
   ]

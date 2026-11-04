@@ -40,11 +40,18 @@ class ModuleInfo(BaseModel):
     scopes: list[str]
     jobs: list[str]
     audit_actions: list[str]
+    assistant_tools: list[str]
 
 
 class SystemModules(BaseModel):
     enabled: list[ModuleInfo]
     disabled: list[str]
+
+
+class SystemFeatures(BaseModel):
+    features: dict[str, bool]
+    """Control-plane features switched on right now (``assistant``, ``assistant.summaries``, …). A feature that is
+    missing is off: its module is disabled, not installed or not configured."""
 
 
 def operation_id(route: APIRoute) -> str:
@@ -53,7 +60,7 @@ def operation_id(route: APIRoute) -> str:
     return f"{prefix}_{route.name}"
 
 
-def system_router(modules: LoadedModules) -> APIRouter:
+def system_router(modules: LoadedModules, container: AsyncContainer) -> APIRouter:
     router = APIRouter(tags=["system"])
 
     @router.get("/system/modules", summary="Enabled and disabled modules with what they contribute")
@@ -67,11 +74,20 @@ def system_router(modules: LoadedModules) -> APIRouter:
                     scopes=[s.name for s in m.scopes()],
                     jobs=[j.name for j in m.jobs()],
                     audit_actions=[a.action for a in m.audit_actions()],
+                    assistant_tools=[t.name for t in m.assistant_tools()],
                 )
                 for m in modules.enabled
             ],
             disabled=list(modules.disabled),
         )
+
+    @router.get("/system/features", summary="Control-plane features that are switched on")
+    async def list_features() -> SystemFeatures:
+        features: dict[str, bool] = {}
+        async with container() as request:
+            for module in modules.enabled:
+                features.update(await module.features(request))
+        return SystemFeatures(features=features)
 
     return router
 
@@ -144,7 +160,7 @@ def create_app(
     app.state.modules = modules
 
     api = APIRouter(prefix=API_PREFIX, responses=PROBLEM_RESPONSES)
-    api.include_router(system_router(modules))
+    api.include_router(system_router(modules, container))
     root_specs: list[tuple[str, RouterSpec]] = []
     for module in modules.enabled:
         for spec in module.routers():

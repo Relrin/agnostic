@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@agnostic/api": "workspace:*",
+    "@agnostic/assistant": "workspace:*",
     "@agnostic/core": "workspace:*",
     "@agnostic/ui": "workspace:*",
     "@tanstack/react-query": "5.105.0",

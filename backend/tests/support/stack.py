@@ -13,6 +13,7 @@ from dishka import AsyncContainer, Provider, Scope, provide
 from dishka.integrations.fastapi import FastapiProvider
 from fastapi import FastAPI
 
+from agnostic_assistant.infrastructure.models import ModelFactory
 from agnostic_audit.infrastructure.http import AuditHttp
 from agnostic_directory.application.ports import GoogleDirectory
 from agnostic_directory.infrastructure.google import HttpGoogleDirectory
@@ -35,6 +36,7 @@ from agnostic_sources.infrastructure.http import SourcesHttp
 from tests.support.fake_agentos import FakeAgentOS
 from tests.support.fake_google import FakeGoogle
 from tests.support.fake_slack import FakeSlack
+from tests.support.scripted_model import ScriptedModels
 
 PUBLIC_URL = "http://agnostic.test"
 OWNER_PASSWORD = "correct horse battery staple"
@@ -62,6 +64,8 @@ class Routes:
         self.runtimes: dict[str, FakeAgentOS] = {}
         self.services: dict[str, Any] = {}
         """Other fake hosts (object storage, SIEM receivers): host → ASGI app."""
+        self.requests: list[tuple[str, str, str]] = []
+        """Every request sent to a fake runtime: ``(method, host, path)``."""
 
     def transport(self) -> httpx.AsyncBaseTransport:
         routes = self
@@ -72,6 +76,7 @@ class Routes:
                 if service is not None:
                     return await httpx.ASGITransport(app=service).handle_async_request(request)
                 runtime = routes.runtimes.get(request.url.host)
+                routes.requests.append((request.method, request.url.host, request.url.path))
                 if runtime is None:
                     raise httpx.ConnectError(f"Connection refused: {request.url.host}", request=request)
                 return await httpx.ASGITransport(app=runtime.app).handle_async_request(request)
@@ -88,6 +93,8 @@ class Stack:
     settings: Settings
     slack: FakeSlack
     google: FakeGoogle = field(default_factory=FakeGoogle)
+    models: ScriptedModels = field(default_factory=ScriptedModels)
+    """The assistant's model: set ``models.script`` to decide what it calls and answers."""
     clients: list[httpx.AsyncClient] = field(default_factory=list[httpx.AsyncClient])
 
     def runtime(self, host: str, **kwargs: Any) -> FakeAgentOS:
@@ -136,6 +143,7 @@ async def running_stack(database_url: str, **overrides: Any) -> AsyncGenerator[S
     mailer = CapturingMailer()
     slack = FakeSlack()
     google = FakeGoogle()
+    models = ScriptedModels()
     transport = routes.transport()
 
     class TestAdapters(Provider):
@@ -170,6 +178,10 @@ async def running_stack(database_url: str, **overrides: Any) -> AsyncGenerator[S
             await http.aclose()
 
         @provide(scope=Scope.APP)
+        def assistant_models(self) -> ModelFactory:
+            return models
+
+        @provide(scope=Scope.APP)
         async def google_directory(self) -> AsyncIterator[GoogleDirectory]:
             directory = HttpGoogleDirectory(google.transport())
             yield directory
@@ -182,7 +194,14 @@ async def running_stack(database_url: str, **overrides: Any) -> AsyncGenerator[S
     app = create_app(settings, modules=modules, container=container)
     async with LifespanManager(app):
         stack = Stack(
-            app=app, container=container, routes=routes, mailer=mailer, settings=settings, slack=slack, google=google
+            app=app,
+            container=container,
+            routes=routes,
+            mailer=mailer,
+            settings=settings,
+            slack=slack,
+            google=google,
+            models=models,
         )
         try:
             yield stack

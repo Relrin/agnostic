@@ -10,8 +10,10 @@ from pydantic_settings import BaseSettings
 from sqlalchemy import MetaData
 
 from agnostic_kernel.modules import AuditActionDecl, BaseModule, JobSpec, RouterSpec
+from agnostic_kernel.tools import ToolSpec
 from agnostic_observe import jobs
 from agnostic_observe.api.router import org_router, router
+from agnostic_observe.api.tools import TOOLS
 from agnostic_observe.infrastructure.tables import ObserveBase
 from agnostic_observe.providers import ObserveProvider
 from agnostic_observe.settings import ObserveSettings
@@ -46,3 +48,6 @@ class ObserveModule(BaseModule):
 
     def audit_actions(self) -> Iterable[AuditActionDecl]:
         return (AuditActionDecl("observe.price_table.updated", "{actor} updated the price table of {where}"),)
+
+    def assistant_tools(self) -> Iterable[ToolSpec]:
+        return TOOLS

@@ -24,6 +24,7 @@ import { ArrowLeftRight, CheckCircle2, Code2, Columns2, History, Rows3, Upload }
 import { useEffect, useState, type ReactNode } from "react";
 
 import { CodePane } from "./code-pane";
+import { ExplainConfig } from "./explain-config";
 import { changedFields, type Config, type EditableKind } from "./config";
 import { ConflictDialog, DiffDialog, PromoteDialog, PublishDialog, VersionsDrawer } from "./dialogs";
 import { useDraftDocument, useRegistry, type DraftDocument } from "./document";
@@ -187,6 +188,7 @@ export function StudioEditor({
       <DraftChip doc={doc} />
       <IncomingChip instance={instance} componentId={componentId} />
       <span className="flex-1" />
+      <ExplainConfig instance={instance} componentId={componentId} config={doc.config} />
       <Button
         variant="outline"
         size="32"

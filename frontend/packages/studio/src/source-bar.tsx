@@ -13,6 +13,7 @@ import {
   type ComponentSourceOut,
   type ConflictOut,
 } from "@agnostic/api";
+import { SuggestButton } from "@agnostic/assistant";
 import { formatRelative, withQueryFn } from "@agnostic/core";
 import { CodeView, type ChangeMark } from "@agnostic/editor";
 import {
@@ -326,6 +327,24 @@ export function CommitComposer({
           {preview.data?.sentence ?? "Working out the branch…"}
         </span>
         <span className="flex-1" />
+        <SuggestButton
+          instance={instance}
+          label="Suggest message"
+          request={{
+            kind: "studio.commit_message",
+            subject: { source_id: sourceId },
+            material: changes
+              .filter((change) => change.included)
+              .map((change) => ({
+                path: change.path,
+                component: change.component_id,
+                summary: change.summary,
+                additions: change.additions,
+                deletions: change.deletions,
+              })),
+          }}
+          onUse={setMessage}
+        />
         <Button
           variant="secondary"
           size="30"

@@ -6,6 +6,8 @@ import {
   meGetMeOptions,
   meMyAccessOptions,
   orgGetOrgOptions,
+  systemListFeaturesOptions,
+  systemListModulesOptions,
   type HealthOut,
   type InstanceOut,
   type MeOut,
@@ -40,6 +42,28 @@ export function useInstances() {
 export function useMyAccess(instance?: string) {
   const options = meMyAccessOptions(instance ? { query: { instance } } : {});
   return useQuery({ ...options, queryFn: options.queryFn ?? skipToken, staleTime: STALE_TIME.list });
+}
+
+/** Control-plane features switched on right now (`{"assistant": true, …}`); missing means off. */
+export function useFeatures() {
+  const options = systemListFeaturesOptions();
+  return useQuery({
+    ...options,
+    queryFn: options.queryFn ?? skipToken,
+    staleTime: STALE_TIME.list,
+    select: (data) => data.features,
+  });
+}
+
+/** Whether a backend module is installed and enabled (for settings pages that exist even when a feature is off). */
+export function useModuleEnabled(name: string): boolean | undefined {
+  const options = systemListModulesOptions();
+  const modules = useQuery({
+    ...options,
+    queryFn: options.queryFn ?? skipToken,
+    staleTime: STALE_TIME.config,
+  });
+  return modules.data ? modules.data.enabled.some((module) => module.name === name) : undefined;
 }
 
 export function useInstanceHealth(instance: string | undefined) {

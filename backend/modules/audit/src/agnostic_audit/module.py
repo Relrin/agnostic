@@ -12,10 +12,12 @@ from sqlalchemy import MetaData
 from agnostic_audit import jobs
 from agnostic_audit.api.governance import router as governance_router
 from agnostic_audit.api.router import router
+from agnostic_audit.api.tools import TOOLS
 from agnostic_audit.infrastructure.tables import AuditBase
 from agnostic_audit.providers import AuditProvider
 from agnostic_audit.settings import AuditSettings
 from agnostic_kernel.modules import AuditActionDecl, BaseModule, JobSpec, RouterSpec, ScopeDecl
+from agnostic_kernel.tools import ToolSpec
 
 
 class AuditModule(BaseModule):
@@ -72,3 +74,6 @@ class AuditModule(BaseModule):
             AuditActionDecl("audit.sinks.delete", "{actor} removed the SIEM sink {resource}"),
             AuditActionDecl("audit.views.share", "{actor} changed the shared audit view {resource}"),
         )
+
+    def assistant_tools(self) -> Iterable[ToolSpec]:
+        return TOOLS

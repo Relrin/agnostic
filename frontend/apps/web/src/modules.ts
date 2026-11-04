@@ -5,6 +5,7 @@ import { accessPeopleModule } from "@agnostic/module-access-people";
 import { accessRolesModule } from "@agnostic/module-access-roles";
 import { accountModule } from "@agnostic/module-account";
 import { approvalsModule } from "@agnostic/module-approvals";
+import { assistantModule } from "@agnostic/module-assistant";
 import { auditModule } from "@agnostic/module-audit";
 import { chatModule } from "@agnostic/module-chat";
 import { evalsModule } from "@agnostic/module-evals";
@@ -57,4 +58,5 @@ export const MODULES: readonly ModuleManifest[] = [
   approvalsModule,
   schedulerModule,
   queueModule,
+  assistantModule,
 ];

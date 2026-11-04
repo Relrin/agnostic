@@ -238,6 +238,7 @@ export const ownerAccess: MyAccessOut = {
     "studio:sources:read",
     "studio:sources:write",
     "studio:sources:delete",
+    "assistant:use",
   ],
   grants: [],
 };
@@ -305,6 +306,9 @@ export function p01Handlers() {
         runtime_scopes: ["agent_os:admin"],
       });
     }),
+    // AI features are off unless a test turns them on (assistantHandlers).
+    http.get(`${API}/system/features`, () => HttpResponse.json({ features: {} })),
+    http.get(`${API}/system/modules`, () => HttpResponse.json({ enabled: [], disabled: [] })),
     http.get(`${API}/org`, () => HttpResponse.json(sampleOrg)),
     http.get(`${API}/instances`, () => HttpResponse.json(sampleInstances)),
     http.get(`${API}/instances/:instance`, ({ params }) => {

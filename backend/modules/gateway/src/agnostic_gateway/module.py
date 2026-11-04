@@ -11,10 +11,12 @@ from sqlalchemy import MetaData
 
 from agnostic_gateway import jobs
 from agnostic_gateway.api.router import policies_router, router
+from agnostic_gateway.api.tools import TOOLS
 from agnostic_gateway.infrastructure.upstream import GatewayBase
 from agnostic_gateway.providers import GatewayProvider
 from agnostic_gateway.settings import GatewaySettings
 from agnostic_kernel.modules import AuditActionDecl, BaseModule, JobSpec, RouterSpec
+from agnostic_kernel.tools import ToolSpec
 
 
 class GatewayModule(BaseModule):
@@ -63,3 +65,6 @@ class GatewayModule(BaseModule):
                 periodic=GatewaySettings().ingest_cron,
             ),
         )
+
+    def assistant_tools(self) -> Iterable[ToolSpec]:
+        return TOOLS

@@ -1,0 +1,45 @@
+[project]
+name = "agnostic-assistant"
+version = "0.1.0"
+description = "Ask your OS and natural-language explainers: an agno agent with read-only tools that run as the asking person, on a model the org chooses"
+requires-python = "==3.15.*"
+license = "BSD-3-Clause"
+dependencies = [
+  "agno==3.1.12",
+  "agnostic-access",
+  "agnostic-audit",
+  "agnostic-gateway",
+  "agnostic-identity",
+  "agnostic-instances",
+  "agnostic-kernel",
+  "alembic==1.20.1",
+  "anthropic==2.4.0",
+  "dishka==1.10.1",
+  "fastapi==0.162.0",
+  "ollama==0.6.3",
+  "openai==3.44.0",
+  "orjson==3.13.0",
+  "procrastinate==3.10.0",
+  "pydantic==2.14.2",
+  "pydantic-settings==2.16.2",
+  "python-multipart==0.0.33",
+  "sqlalchemy[asyncio]==2.1.6",
+]
+
+[project.entry-points."agnostic.modules"]
+assistant = "agnostic_assistant.module:AssistantModule"
+
+[tool.uv.sources]
+agnostic-access = { workspace = true }
+agnostic-audit = { workspace = true }
+agnostic-gateway = { workspace = true }
+agnostic-identity = { workspace = true }
+agnostic-instances = { workspace = true }
+agnostic-kernel = { workspace = true }
+
+[tool.deptry.per_rule_ignores]
+DEP002 = ["anthropic", "ollama", "openai"] # provider SDKs agno imports for the configured model
+
+[build-system]
+requires = ["uv_build==0.13.6"]
+build-backend = "uv_build"

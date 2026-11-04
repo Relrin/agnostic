@@ -10,6 +10,7 @@ import {
   type ItemOut,
   type SummaryOut,
 } from "@agnostic/api";
+import { GeneratedText } from "@agnostic/assistant";
 import { formatWhen, useCan, useDebouncedCallback } from "@agnostic/core";
 import {
   Badge,
@@ -412,7 +413,16 @@ export function EvaluationDetail({ instance, batchId }: { instance: string; batc
             </span>
           }
         >
-          {compared.insight}
+          <GeneratedText
+            instance={instance}
+            request={{
+              kind: "eval.insight",
+              subject: { evaluation_id: compared.after.id, compare_to_id: compared.before.id },
+            }}
+            label="Generated insight"
+          >
+            {compared.insight}
+          </GeneratedText>
         </Callout>
       )}
 

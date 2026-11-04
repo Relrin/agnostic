@@ -22,7 +22,6 @@ import {
   MessagesSquare,
   ScrollText,
   Settings,
-  SquareTerminal,
   Target,
   Users,
   Workflow,
@@ -266,16 +265,6 @@ export const NAV_CATALOG: readonly CatalogEntryWithPhase[] = [
     order: 10,
     scope: "instance",
     phase: "P01",
-  },
-  {
-    id: "ask",
-    group: "footer",
-    label: "Ask your OS",
-    icon: SquareTerminal,
-    path: "ask",
-    order: 20,
-    scope: "instance",
-    phase: "P10",
   },
 ];
 

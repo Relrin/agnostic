@@ -13,7 +13,9 @@ from pydantic_settings import BaseSettings
 from sqlalchemy import MetaData
 
 from agnostic_kernel.modules import AuditActionDecl, BaseModule, RouterSpec, ScopeDecl
+from agnostic_kernel.tools import ToolSpec
 from agnostic_studio.api.router import org_router, router
+from agnostic_studio.api.tools import TOOLS
 from agnostic_studio.application.ports import SourceRunner
 from agnostic_studio.infrastructure.isolation import SourceWorkers
 from agnostic_studio.infrastructure.tables import StudioBase
@@ -67,3 +69,6 @@ class StudioModule(BaseModule):
                 "evals.gate.override", "{actor} published {component} {version} past its eval gate: {reason}"
             ),
         )
+
+    def assistant_tools(self) -> Iterable[ToolSpec]:
+        return TOOLS

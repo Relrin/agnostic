@@ -12,11 +12,13 @@ from sqlalchemy import MetaData
 
 from agnostic_approvals import jobs
 from agnostic_approvals.api.router import org_router, router
+from agnostic_approvals.api.tools import TOOLS
 from agnostic_approvals.application.poller import run_poller, stop
 from agnostic_approvals.infrastructure.tables import ApprovalsBase
 from agnostic_approvals.providers import ApprovalsProvider
 from agnostic_approvals.settings import ApprovalsSettings
 from agnostic_kernel.modules import AuditActionDecl, BaseModule, CapabilityProbe, JobSpec, RouterSpec
+from agnostic_kernel.tools import ToolSpec
 
 
 class ApprovalsModule(BaseModule):
@@ -70,3 +72,6 @@ class ApprovalsModule(BaseModule):
     async def on_shutdown(self, container: AsyncContainer) -> None:  # noqa: ARG002
         await stop(self._poller)
         self._poller = None
+
+    def assistant_tools(self) -> Iterable[ToolSpec]:
+        return TOOLS

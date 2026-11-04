@@ -5,6 +5,24 @@ export type ClientOptions = {
 };
 
 /**
+ * AcceptedOut
+ */
+export type AcceptedOut = {
+    /**
+     * Conversation Id
+     */
+    conversation_id: string | null;
+    /**
+     * Message Id
+     */
+    message_id: string;
+    /**
+     * Reused
+     */
+    reused: boolean;
+};
+
+/**
  * AccessRequestIn
  */
 export type AccessRequestIn = {
@@ -215,6 +233,156 @@ export type ActorSummaryOut = {
      * Kind
      */
     kind: 'user' | 'service_account' | 'system' | 'anonymous';
+};
+
+/**
+ * AiSettingsIn
+ *
+ * Only the fields sent change.
+ */
+export type AiSettingsIn = {
+    /**
+     * Api Key
+     *
+     * Write-only: omit to keep, "" to remove
+     */
+    api_key?: string | null;
+    /**
+     * Api Version
+     */
+    api_version?: string | null;
+    /**
+     * Audit Question Text
+     */
+    audit_question_text?: boolean | null;
+    /**
+     * Data Notice
+     */
+    data_notice?: string | null;
+    /**
+     * Enabled
+     */
+    enabled?: boolean | null;
+    /**
+     * Endpoint
+     */
+    endpoint?: string | null;
+    features?: FeatureToggles | null;
+    models?: FeatureModels | null;
+    /**
+     * Monthly Token Budget
+     *
+     * 0 removes the limit
+     */
+    monthly_token_budget?: number | null;
+    /**
+     * Redact Tool Args
+     */
+    redact_tool_args?: boolean | null;
+    /**
+     * Redact User Messages
+     */
+    redact_user_messages?: boolean | null;
+    /**
+     * Requests Per Minute
+     */
+    requests_per_minute?: number | null;
+    /**
+     * Retention Days
+     */
+    retention_days?: number | null;
+    /**
+     * Temperature
+     */
+    temperature?: number | null;
+    /**
+     * User Monthly Tokens
+     *
+     * 0 removes the limit
+     */
+    user_monthly_tokens?: number | null;
+    /**
+     * Version
+     *
+     * The version you edited; a newer one is a conflict
+     */
+    version?: number | null;
+};
+
+/**
+ * AiSettingsOut
+ */
+export type AiSettingsOut = {
+    /**
+     * Api Version
+     */
+    api_version: string | null;
+    /**
+     * Audit Question Text
+     */
+    audit_question_text: boolean;
+    /**
+     * Data Notice
+     */
+    data_notice: string | null;
+    /**
+     * Enabled
+     */
+    enabled: boolean;
+    /**
+     * Endpoint
+     */
+    endpoint: string | null;
+    features: FeatureToggles;
+    /**
+     * Has Api Key
+     */
+    has_api_key: boolean;
+    models: FeatureModels;
+    /**
+     * Monthly Token Budget
+     */
+    monthly_token_budget: number | null;
+    /**
+     * Providers
+     */
+    providers: Array<ModelProviderOut>;
+    /**
+     * Redact Tool Args
+     */
+    redact_tool_args: boolean;
+    /**
+     * Redact User Messages
+     */
+    redact_user_messages: boolean;
+    /**
+     * Requests Per Minute
+     */
+    requests_per_minute: number;
+    /**
+     * Retention Days
+     */
+    retention_days: number;
+    /**
+     * Temperature
+     */
+    temperature: number;
+    /**
+     * Updated At
+     */
+    updated_at: string | null;
+    /**
+     * Updated By
+     */
+    updated_by: string | null;
+    /**
+     * User Monthly Tokens
+     */
+    user_monthly_tokens: number | null;
+    /**
+     * Version
+     */
+    version: number;
 };
 
 /**
@@ -615,6 +783,52 @@ export type ArchiveOut = {
      * Sha256
      */
     sha256: string;
+};
+
+/**
+ * AssistantStatusOut
+ */
+export type AssistantStatusOut = {
+    budget: BudgetOut;
+    /**
+     * Can Use
+     */
+    can_use: boolean;
+    /**
+     * Data Notice
+     */
+    data_notice: string | null;
+    features: FeatureToggles;
+    /**
+     * Provider
+     */
+    provider: string | null;
+    /**
+     * Requests Per Minute
+     */
+    requests_per_minute: number;
+};
+
+/**
+ * AttachmentOut
+ */
+export type AttachmentOut = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Media Type
+     */
+    media_type: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Size
+     */
+    size: number;
 };
 
 /**
@@ -1345,6 +1559,32 @@ export type BindingOut = {
 };
 
 /**
+ * Body_assistant_ask_question
+ */
+export type BodyAssistantAskQuestion = {
+    /**
+     * Context
+     *
+     * What you're looking at: trace:<id>, …
+     */
+    context?: string | null;
+    /**
+     * Conversation Id
+     */
+    conversation_id?: string | null;
+    /**
+     * Files
+     *
+     * Logs or screenshots
+     */
+    files?: Array<Blob | File> | null;
+    /**
+     * Question
+     */
+    question: string;
+};
+
+/**
  * BreakGlassUserOut
  */
 export type BreakGlassUserOut = {
@@ -1360,6 +1600,32 @@ export type BreakGlassUserOut = {
      * Id
      */
     id: string;
+};
+
+/**
+ * BudgetOut
+ */
+export type BudgetOut = {
+    /**
+     * Month
+     */
+    month: string;
+    /**
+     * Org Limit
+     */
+    org_limit: number | null;
+    /**
+     * Org Tokens
+     */
+    org_tokens: number;
+    /**
+     * User Limit
+     */
+    user_limit: number | null;
+    /**
+     * User Tokens
+     */
+    user_tokens: number;
 };
 
 /**
@@ -2831,6 +3097,35 @@ export type ConnectedOut = {
 };
 
 /**
+ * ConnectionCheckIn
+ */
+export type ConnectionCheckIn = {
+    feature?: FeatureName;
+};
+
+/**
+ * ConnectionCheckOut
+ */
+export type ConnectionCheckOut = {
+    /**
+     * Detail
+     */
+    detail: string;
+    /**
+     * Latency Ms
+     */
+    latency_ms: number | null;
+    /**
+     * Model
+     */
+    model: string;
+    /**
+     * Ok
+     */
+    ok: boolean;
+};
+
+/**
  * ConnectionIn
  */
 export type ConnectionIn = {
@@ -3069,6 +3364,28 @@ export type ConventionIo = {
      * Workflows Module
      */
     workflows_module?: string;
+};
+
+/**
+ * ConversationOut
+ */
+export type ConversationOut = {
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
 };
 
 /**
@@ -4152,6 +4469,36 @@ export type ExplainIn = {
 };
 
 /**
+ * ExplanationIn
+ */
+export type ExplanationIn = {
+    /**
+     * Kind
+     *
+     * One of: access.question, audit.diff, eval.insight, memory.optimization, studio.cel, studio.commit_message, studio.config_explanation, studio.release_notes, studio.version_summary, trace.diagnosis
+     */
+    kind: string;
+    /**
+     * Material
+     *
+     * What the page shows that isn't stored yet (a draft, a preview)
+     */
+    material?: unknown;
+    /**
+     * Regenerate
+     *
+     * Write a new one instead of reusing the last
+     */
+    regenerate?: boolean;
+    /**
+     * Subject
+     */
+    subject?: {
+        [key: string]: string | number;
+    };
+};
+
+/**
  * ExplanationOut
  */
 export type ExplanationOut = {
@@ -4280,6 +4627,50 @@ export type FactorOut = {
      * Last Used At
      */
     last_used_at: string | null;
+};
+
+/**
+ * FeatureModels
+ */
+export type FeatureModels = {
+    /**
+     * Assistant
+     *
+     * provider:model, e.g. vllm:Qwen/Qwen3-32B or ollama:qwen3:8b
+     */
+    assistant?: string | null;
+    /**
+     * Suggestions
+     *
+     * Empty: the assistant's model
+     */
+    suggestions?: string | null;
+    /**
+     * Summaries
+     *
+     * Empty: the assistant's model
+     */
+    summaries?: string | null;
+};
+
+export type FeatureName = 'assistant' | 'summaries' | 'suggestions';
+
+/**
+ * FeatureToggles
+ */
+export type FeatureToggles = {
+    /**
+     * Assistant
+     */
+    assistant?: boolean;
+    /**
+     * Suggestions
+     */
+    suggestions?: boolean;
+    /**
+     * Summaries
+     */
+    summaries?: boolean;
 };
 
 /**
@@ -6279,6 +6670,77 @@ export type MemorySourceOut = {
 };
 
 /**
+ * MessageOut
+ */
+export type MessageOut = {
+    /**
+     * Attachments
+     */
+    attachments: Array<AttachmentOut>;
+    /**
+     * Completed At
+     */
+    completed_at: string | null;
+    /**
+     * Content
+     */
+    content: string;
+    /**
+     * Conversation Id
+     */
+    conversation_id: string | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Error
+     */
+    error: string | null;
+    feature: FeatureName;
+    /**
+     * Generated
+     */
+    generated: boolean;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Input Tokens
+     */
+    input_tokens: number;
+    /**
+     * Kind
+     */
+    kind: string;
+    /**
+     * Model
+     */
+    model: string | null;
+    /**
+     * Output Tokens
+     */
+    output_tokens: number;
+    /**
+     * Role
+     */
+    role: 'user' | 'assistant';
+    /**
+     * Sources
+     */
+    sources: Array<AgnosticAssistantApiSchemasSourceOut>;
+    /**
+     * Status
+     */
+    status: 'queued' | 'running' | 'completed' | 'failed' | 'cancelled';
+    /**
+     * Tool Calls
+     */
+    tool_calls: Array<ToolCallOut>;
+};
+
+/**
  * MetaPatchIn
  */
 export type MetaPatchIn = {
@@ -6430,6 +6892,20 @@ export type MfaSignedIn = {
 export type ModeName = 'elevated' | 'admin';
 
 /**
+ * ModelProviderOut
+ */
+export type ModelProviderOut = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Label
+     */
+    label: string;
+};
+
+/**
  * ModelTokensOut
  */
 export type ModelTokensOut = {
@@ -6448,6 +6924,10 @@ export type ModelTokensOut = {
  * ModuleInfo
  */
 export type ModuleInfo = {
+    /**
+     * Assistant Tools
+     */
+    assistant_tools: Array<string>;
     /**
      * Audit Actions
      */
@@ -8440,7 +8920,7 @@ export type RegistryEntryOut = {
      * Requires Approval
      */
     requires_approval: boolean;
-    source: SourceOut | null;
+    source: AgnosticStudioApiSchemasSourceOut | null;
     /**
      * Status
      */
@@ -10277,24 +10757,6 @@ export type SourceIn = {
 };
 
 /**
- * SourceOut
- */
-export type SourceOut = {
-    /**
-     * File
-     */
-    file: string | null;
-    /**
-     * Line
-     */
-    line: number | null;
-    /**
-     * Module
-     */
-    module: string | null;
-};
-
-/**
  * SourcePatchIn
  */
 export type SourcePatchIn = {
@@ -10752,6 +11214,18 @@ export type SyncPolicyIo = {
 };
 
 /**
+ * SystemFeatures
+ */
+export type SystemFeatures = {
+    /**
+     * Features
+     */
+    features: {
+        [key: string]: boolean;
+    };
+};
+
+/**
  * SystemModules
  */
 export type SystemModules = {
@@ -10866,6 +11340,17 @@ export type TestRunIn = {
 };
 
 /**
+ * ThreadOut
+ */
+export type ThreadOut = {
+    conversation: ConversationOut;
+    /**
+     * Messages
+     */
+    messages: Array<MessageOut>;
+};
+
+/**
  * TimelineEntryOut
  */
 export type TimelineEntryOut = {
@@ -10975,6 +11460,32 @@ export type TokensOut = {
      * Total
      */
     total: number;
+};
+
+/**
+ * ToolCallOut
+ */
+export type ToolCallOut = {
+    /**
+     * Detail
+     */
+    detail: string | null;
+    /**
+     * Duration Ms
+     */
+    duration_ms: number | null;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Status
+     */
+    status: 'running' | 'done' | 'denied' | 'not_found' | 'error';
 };
 
 /**
@@ -11503,6 +12014,24 @@ export type WriteCheckOut = {
 };
 
 /**
+ * SourceOut
+ */
+export type AgnosticAssistantApiSchemasSourceOut = {
+    /**
+     * Kind
+     */
+    kind: string;
+    /**
+     * Label
+     */
+    label: string;
+    /**
+     * Path
+     */
+    path: string;
+};
+
+/**
  * ModelUsageOut
  */
 export type AgnosticObserveApiMetricsSchemasModelUsageOut = {
@@ -11540,6 +12069,24 @@ export type AgnosticObserveApiSchemasModelUsageOut = {
      * Share
      */
     share: number;
+};
+
+/**
+ * SourceOut
+ */
+export type AgnosticStudioApiSchemasSourceOut = {
+    /**
+     * File
+     */
+    file: string | null;
+    /**
+     * Line
+     */
+    line: number | null;
+    /**
+     * Module
+     */
+    module: string | null;
 };
 
 export type JwksJwksData = {
@@ -12452,6 +12999,122 @@ export type ApprovalsUpdateRouteResponses = {
 };
 
 export type ApprovalsUpdateRouteResponse = ApprovalsUpdateRouteResponses[keyof ApprovalsUpdateRouteResponses];
+
+export type AssistantGetSettingsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/assistant/settings';
+};
+
+export type AssistantGetSettingsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AssistantGetSettingsError = AssistantGetSettingsErrors[keyof AssistantGetSettingsErrors];
+
+export type AssistantGetSettingsResponses = {
+    /**
+     * Successful Response
+     */
+    200: AiSettingsOut;
+};
+
+export type AssistantGetSettingsResponse = AssistantGetSettingsResponses[keyof AssistantGetSettingsResponses];
+
+export type AssistantUpdateSettingsData = {
+    body: AiSettingsIn;
+    path?: never;
+    query?: never;
+    url: '/api/v1/assistant/settings';
+};
+
+export type AssistantUpdateSettingsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AssistantUpdateSettingsError = AssistantUpdateSettingsErrors[keyof AssistantUpdateSettingsErrors];
+
+export type AssistantUpdateSettingsResponses = {
+    /**
+     * Successful Response
+     */
+    200: AiSettingsOut;
+};
+
+export type AssistantUpdateSettingsResponse = AssistantUpdateSettingsResponses[keyof AssistantUpdateSettingsResponses];
+
+export type AssistantCheckConnectionData = {
+    body: ConnectionCheckIn;
+    path?: never;
+    query?: never;
+    url: '/api/v1/assistant/settings/check';
+};
+
+export type AssistantCheckConnectionErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AssistantCheckConnectionError = AssistantCheckConnectionErrors[keyof AssistantCheckConnectionErrors];
+
+export type AssistantCheckConnectionResponses = {
+    /**
+     * Successful Response
+     */
+    200: ConnectionCheckOut;
+};
+
+export type AssistantCheckConnectionResponse = AssistantCheckConnectionResponses[keyof AssistantCheckConnectionResponses];
+
+export type AssistantGetStatusData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/assistant/status';
+};
+
+export type AssistantGetStatusErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AssistantGetStatusError = AssistantGetStatusErrors[keyof AssistantGetStatusErrors];
+
+export type AssistantGetStatusResponses = {
+    /**
+     * Successful Response
+     */
+    200: AssistantStatusOut;
+};
+
+export type AssistantGetStatusResponse = AssistantGetStatusResponses[keyof AssistantGetStatusResponses];
 
 export type AuditListActionsData = {
     body?: never;
@@ -15332,6 +15995,304 @@ export type ApprovalsDecideResponses = {
 };
 
 export type ApprovalsDecideResponse = ApprovalsDecideResponses[keyof ApprovalsDecideResponses];
+
+export type AssistantListConversationsData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/assistant/conversations';
+};
+
+export type AssistantListConversationsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AssistantListConversationsError = AssistantListConversationsErrors[keyof AssistantListConversationsErrors];
+
+export type AssistantListConversationsResponses = {
+    /**
+     * Response Assistant List Conversations
+     *
+     * Successful Response
+     */
+    200: Array<ConversationOut>;
+};
+
+export type AssistantListConversationsResponse = AssistantListConversationsResponses[keyof AssistantListConversationsResponses];
+
+export type AssistantDeleteConversationData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Conversation Id
+         */
+        conversation_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/assistant/conversations/{conversation_id}';
+};
+
+export type AssistantDeleteConversationErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AssistantDeleteConversationError = AssistantDeleteConversationErrors[keyof AssistantDeleteConversationErrors];
+
+export type AssistantDeleteConversationResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type AssistantDeleteConversationResponse = AssistantDeleteConversationResponses[keyof AssistantDeleteConversationResponses];
+
+export type AssistantGetConversationData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Conversation Id
+         */
+        conversation_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/assistant/conversations/{conversation_id}';
+};
+
+export type AssistantGetConversationErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AssistantGetConversationError = AssistantGetConversationErrors[keyof AssistantGetConversationErrors];
+
+export type AssistantGetConversationResponses = {
+    /**
+     * Successful Response
+     */
+    200: ThreadOut;
+};
+
+export type AssistantGetConversationResponse = AssistantGetConversationResponses[keyof AssistantGetConversationResponses];
+
+export type AssistantExplainData = {
+    body: ExplanationIn;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/assistant/explanations';
+};
+
+export type AssistantExplainErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AssistantExplainError = AssistantExplainErrors[keyof AssistantExplainErrors];
+
+export type AssistantExplainResponses = {
+    /**
+     * Successful Response
+     */
+    202: AcceptedOut;
+};
+
+export type AssistantExplainResponse = AssistantExplainResponses[keyof AssistantExplainResponses];
+
+export type AssistantGetMessageData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Message Id
+         */
+        message_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/assistant/messages/{message_id}';
+};
+
+export type AssistantGetMessageErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AssistantGetMessageError = AssistantGetMessageErrors[keyof AssistantGetMessageErrors];
+
+export type AssistantGetMessageResponses = {
+    /**
+     * Successful Response
+     */
+    200: MessageOut;
+};
+
+export type AssistantGetMessageResponse = AssistantGetMessageResponses[keyof AssistantGetMessageResponses];
+
+export type AssistantCancelMessageData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Message Id
+         */
+        message_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/assistant/messages/{message_id}/cancel';
+};
+
+export type AssistantCancelMessageErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AssistantCancelMessageError = AssistantCancelMessageErrors[keyof AssistantCancelMessageErrors];
+
+export type AssistantCancelMessageResponses = {
+    /**
+     * Successful Response
+     */
+    200: MessageOut;
+};
+
+export type AssistantCancelMessageResponse = AssistantCancelMessageResponses[keyof AssistantCancelMessageResponses];
+
+export type AssistantFollowMessageData = {
+    body?: never;
+    headers?: {
+        /**
+         * Last-Event-Id
+         */
+        'Last-Event-ID'?: string | null;
+    };
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Message Id
+         */
+        message_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/assistant/messages/{message_id}/events';
+};
+
+export type AssistantFollowMessageErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AssistantFollowMessageError = AssistantFollowMessageErrors[keyof AssistantFollowMessageErrors];
+
+export type AssistantFollowMessageResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
+
+export type AssistantAskQuestionData = {
+    body: BodyAssistantAskQuestion;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/assistant/questions';
+};
+
+export type AssistantAskQuestionErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type AssistantAskQuestionError = AssistantAskQuestionErrors[keyof AssistantAskQuestionErrors];
+
+export type AssistantAskQuestionResponses = {
+    /**
+     * Successful Response
+     */
+    202: AcceptedOut;
+};
+
+export type AssistantAskQuestionResponse = AssistantAskQuestionResponses[keyof AssistantAskQuestionResponses];
 
 export type InstancesGetCapabilitiesData = {
     body?: never;
@@ -21963,6 +22924,35 @@ export type StudioTemplatesResponses = {
 };
 
 export type StudioTemplatesResponse = StudioTemplatesResponses[keyof StudioTemplatesResponses];
+
+export type SystemListFeaturesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/system/features';
+};
+
+export type SystemListFeaturesErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type SystemListFeaturesError = SystemListFeaturesErrors[keyof SystemListFeaturesErrors];
+
+export type SystemListFeaturesResponses = {
+    /**
+     * Successful Response
+     */
+    200: SystemFeatures;
+};
+
+export type SystemListFeaturesResponse = SystemListFeaturesResponses[keyof SystemListFeaturesResponses];
 
 export type SystemListModulesData = {
     body?: never;

@@ -162,8 +162,10 @@ JWT_VERIFICATION_KEY="$(cat .jwt/dev-prod.pem)" RUNTIME_ID=dev-prod uv run pytho
 
 Settings (`RUNTIME_*`): `ID`, `NAME`, `HOST`, `PORT`, `DATABASE_URL` (`postgresql+psycopg://…`), `REDIS_URL`,
 `INTERNAL_SERVICE_TOKEN`, `USER_ISOLATION` (unset: on for `dev-prod`, off otherwise), `JWT_ISSUER` (optional
-`iss` check), `MAX_CONCURRENCY`. Set `JWT_VERIFICATION_KEY` (PEM) or `JWT_JWKS_FILE` to switch on JWT authorization
-(`auth_mode=jwt`, audience = `RUNTIME_ID`).
+`iss` check), `MAX_CONCURRENCY`, `FAULTS` (development: `web_search=timeout` makes `web_search` time out, so
+`just seed --trigger-daily-brief` produces the failing daily-brief run Ask your OS explains). Set
+`JWT_VERIFICATION_KEY` (PEM) or `JWT_JWKS_FILE` to switch on JWT authorization (`auth_mode=jwt`, audience =
+`RUNTIME_ID`).
 
 ## As a container
 

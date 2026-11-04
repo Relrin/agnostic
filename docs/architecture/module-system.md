@@ -27,10 +27,13 @@ It implements `agnostic_kernel.modules.Module`; subclass `BaseModule` and overri
 | `jobs()` | `JobSpec`s: background tasks and periodic schedules |
 | `event_handlers()` | domain-event subscriptions |
 | `audit_actions()` | audit vocabulary and summary templates |
-| `search_providers()`, `capabilities()` | command-palette search and AgentOS capability probes (later phases) |
+| `search_providers()`, `capabilities()` | command-palette search and AgentOS capability probes |
+| `assistant_tools()` | read-only tools the assistant may call as the asking person (`agnostic_kernel.tools.ToolSpec`) |
+| `features()` | control-plane features switched on right now, served by `GET /api/v1/system/features` for the web app |
 | `on_startup()`, `on_shutdown()` | lifecycle hooks with the app container |
 
-`GET /api/v1/system/modules` and `agnostic modules list` show what each enabled module contributes.
+`GET /api/v1/system/modules` and `agnostic modules list` show what each enabled module contributes, assistant tools
+included.
 
 ## Loading
 

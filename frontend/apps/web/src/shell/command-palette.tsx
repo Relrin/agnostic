@@ -151,6 +151,8 @@ export function CommandPalette({
   const goScoped = (scope: ModuleScope, path: string) => {
     go(scopedPath(scope, path, instance));
   };
+  /** A command takes whatever was typed ("Ask your OS: …"), so something always matches. */
+  const askAnything = query.trim().length > 0 && commands.some((command) => command.withQuery === true);
   // Server-side results always match what was typed; cmdk only needs to keep them.
   const keep = (label: string) => `${label} ${query}`;
   const hits: readonly SearchHitOut[] = text.length >= 2 ? (entities.data?.data ?? []) : [];
@@ -165,11 +167,13 @@ export function CommandPalette({
     >
       <CommandInput placeholder="Search or jump to…" value={query} onValueChange={setQuery} />
       <CommandList>
-        <CommandEmpty>
-          {entities.isFetching || session.isFetching
-            ? "Searching…"
-            : "Nothing matches. Paste a session or trace id to open it."}
-        </CommandEmpty>
+        {!askAnything && (
+          <CommandEmpty>
+            {entities.isFetching || session.isFetching
+              ? "Searching…"
+              : "Nothing matches. Paste a session or trace id to open it."}
+          </CommandEmpty>
+        )}
 
         {session.data && (
           <CommandGroup heading="Session">
@@ -266,17 +270,27 @@ export function CommandPalette({
           </CommandGroup>
         )}
         {commands.length > 0 && (
-          <CommandGroup heading="Actions">
+          <CommandGroup heading="Actions" forceMount={askAnything}>
             {commands.map((command) => (
               <CommandItem
                 key={command.id}
                 value={`${command.label} ${command.keywords?.join(" ") ?? ""}`}
+                // A command that takes what was typed ("Ask your OS: …") matches anything typed.
+                forceMount={command.withQuery === true && query.trim().length > 0}
                 onSelect={() => {
-                  if (command.path !== undefined) goScoped(command.scope, command.path);
+                  if (command.path === undefined) return;
+                  const target = scopedPath(command.scope, command.path, instance);
+                  const typed = query.trim();
+                  go(command.withQuery && typed ? `${target}?q=${encodeURIComponent(typed)}` : target);
                 }}
               >
                 {command.icon && <command.icon aria-hidden />}
-                {command.label}
+                <span className="truncate">
+                  {command.label}
+                  {command.withQuery && query.trim() && (
+                    <span className="text-fg-muted">: {query.trim()}</span>
+                  )}
+                </span>
               </CommandItem>
             ))}
           </CommandGroup>

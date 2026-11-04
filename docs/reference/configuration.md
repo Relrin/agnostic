@@ -199,6 +199,22 @@ chain (*Audit retention*), SIEM destinations, and the org setting `temporary_acc
 | `AGNOSTIC_SOURCES__GITHUB_API_URL` / `__GITHUB_WEB_URL` | `https://api.github.com` / `https://github.com` | GitHub defaults; a connection's own URLs (Enterprise Server) win |
 | `AGNOSTIC_SOURCES__GITHUB_APP_SLUG` | — | the GitHub App people install for read & write sources |
 
+## Assistant
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `AGNOSTIC_ASSISTANT__ANSWER_TIMEOUT_SECONDS` | `120` | an answer still being written after this long is stopped and marked failed |
+| `AGNOSTIC_ASSISTANT__TOOL_TIMEOUT_SECONDS` / `__MAX_TOOL_CALLS` | `30` / `12` | one tool call; tool calls per answer |
+| `AGNOSTIC_ASSISTANT__MAX_TOOL_RESULT_CHARS` | `12000` | a tool result longer than this is cut before the model reads it |
+| `AGNOSTIC_ASSISTANT__HISTORY_MESSAGES` | `10` | earlier messages sent with a follow-up question |
+| `AGNOSTIC_ASSISTANT__MAX_ATTACHMENTS` / `__MAX_ATTACHMENT_BYTES` / `__MAX_ATTACHMENT_CHARS` | `4` / `2000000` / `20000` | files per question, size of each, text kept from each (logs keep their end) |
+| `AGNOSTIC_ASSISTANT__MAX_QUESTION_CHARS` | `4000` | longest question; attach longer text |
+| `AGNOSTIC_ASSISTANT__PRUNE_CRON` | `23 4 * * *` | delete conversations past the org's retention; empty turns it off |
+
+The provider, models, API key, budgets, rate limit, redaction and retention are org settings
+(Organization › AI features, `GET`/`PUT /api/v1/assistant/settings`), not environment variables; see
+[configure AI features](../how-to/configure-ai-features.md).
+
 ## Tests only
 
 | Variable | Meaning |
@@ -206,3 +222,4 @@ chain (*Audit retention*), SIEM destinations, and the org setting `temporary_acc
 | `AGNOSTIC_TEST_DATABASE_URL`, `AGNOSTIC_TEST_REDIS_URL` | use existing servers instead of testcontainers |
 | `AGNOSTIC_TEST_REDIS_IMAGE` | cache image for testcontainers (Valkey/Dragonfly compatibility) |
 | `AGNOSTIC_CONTRACT_RUNTIME_URL` | runtime for contract tests |
+| `AGNOSTIC_TEST_ASSISTANT_MODEL`, `AGNOSTIC_TEST_ASSISTANT_ENDPOINT`, `AGNOSTIC_TEST_ASSISTANT_API_KEY` | the model the assistant Q&A suite (`-m assistant_eval`) asks |
