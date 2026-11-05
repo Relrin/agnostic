@@ -11,7 +11,7 @@ every change; the rest is supported and checked by `agnostic config check --conn
 
 - The bridge is optional. Without it, the features that need its routes (component validation, file provenance,
   worker details, the event feed, code introspection, CEL preview) show as unavailable for that instance.
-- A new Agno minor needs a bridge release (its `agno` range is the tested minor) and a contract run.
+- A new Agno minor needs a new bridge version (its `agno` range is the tested minor) and a contract run.
 - The control plane warns on an instance whose Agno minor changed ("version drift") and keeps working with the
   routes it knows.
 
@@ -36,7 +36,6 @@ Managed services and their quirks (extension allow-lists, TLS bundles, disabled 
 | Artifact | Platforms |
 |---|---|
 | `agnostic` image | linux/amd64, linux/arm64; any OCI runtime; read-only root filesystem, uid 10001 |
-| Helm chart | Kubernetes 1.27+ (`kubeVersion`; CI renders and validates against 1.30); Helm 3.12+ |
 | Compose example | Docker Compose v2 |
 | agnostic-bridge | Python 3.10–3.13, wherever the AgentOS runs (CI tests 3.13) |
 | Web app | current Chrome, Edge, Firefox and Safari (Trusted Types are enforced where the browser supports them) |

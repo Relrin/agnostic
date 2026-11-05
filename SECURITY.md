@@ -30,8 +30,8 @@ versions.
 
 ## Scope
 
-This repository's code and the artifacts built from it: the `agnostic` image, the Helm chart, the Compose example,
-the air-gapped kit, `agnostic-bridge` and the runtime template. Vulnerabilities in Agno itself go to the Agno
+This repository's code and the artifacts built from it: the `agnostic` image, the Compose example, the air-gapped
+kit, `agnostic-bridge` and the runtime template. Vulnerabilities in Agno itself go to the Agno
 project; vulnerabilities in your own endpoints (database, cache, IdP) go to their vendors.
 
 How Agnostic is secured, and how to harden an installation, is in the guides: `docs/guides/security/whitepaper.md`

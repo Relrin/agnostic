@@ -24,7 +24,7 @@ classifiers = [
   "Typing :: Typed",
 ]
 # A library installed into customers' AgentOS apps: compatible ranges, not exact pins. The agno range is the
-# minor the bridge is tested against (contract tests), so a new agno minor needs a bridge release.
+# minor the bridge is tested against (contract tests), so a new agno minor needs a new bridge version.
 dependencies = [
   "agno[os]>=3.1.12,<3.2",
   "fastapi>=0.115,<1",

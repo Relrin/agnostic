@@ -12,7 +12,6 @@ Each release has an air-gapped kit, `agnostic-airgap-<version>.tar.gz`, built by
 |---|---|
 | `image/agnostic-<version>.tar` | the `agnostic` image (`docker load`) |
 | `image/signatures.json` | the image's cosign signatures, when the release was signed |
-| `chart/agnostic-<version>.tgz` | the Helm chart |
 | `compose/` | `compose.yml` and `.env.example` |
 | `guides/` | these guides (the image serves them in the product too) |
 | `licenses/` | LICENSE and the third-party license files |
@@ -28,11 +27,9 @@ sha256sum -c SHA256SUMS
 docker load -i image/agnostic-1.0.0.tar
 docker tag ghcr.io/relrin/agnostic:1.0.0 registry.internal/agnostic:1.0.0
 docker push registry.internal/agnostic:1.0.0
-helm push chart/agnostic-1.0.0.tgz oci://registry.internal/charts
 ```
 
-Then install as in [Install Agnostic](install.md) with `image.repository: registry.internal/agnostic` (Helm) or
-`AGNOSTIC_IMAGE=registry.internal/agnostic:1.0.0` (Compose).
+Then install as in [Install Agnostic](install.md) with `AGNOSTIC_IMAGE=registry.internal/agnostic:1.0.0`.
 
 ## What to configure
 

@@ -74,3 +74,15 @@ jobs:
           fi
       - if: failure()
         run: cat runtime/runtime.log
+
+  runtime-image:
+    # The template's image builds the bridge from source; nothing else exercises that Dockerfile.
+    name: agnostic-runtime · image
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: docker build --build-context bridge=bridge -t agnostic-runtime:ci runtime
+      - name: The image carries the bridge and starts as non-root
+        run: |
+          docker run --rm --entrypoint /srv/.venv/bin/python agnostic-runtime:ci -c "import agnostic_bridge, app.main"
+          test "$(docker run --rm --entrypoint id agnostic-runtime:ci -u)" = "10001"

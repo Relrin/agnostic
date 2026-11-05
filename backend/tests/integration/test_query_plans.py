@@ -556,7 +556,7 @@ async def verdicts(postgres_url: str, redis_url: str) -> Verdicts:
 
 
 def known_gap(case: str, finding: str) -> Any:
-    reason = f"Known limitation (docs/release-notes/1.0.0.md): {finding}"
+    reason = f"Known limitation: {finding}"
     return pytest.param(case, marks=pytest.mark.xfail(strict=True, reason=reason))
 
 

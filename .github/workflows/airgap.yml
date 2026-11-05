@@ -50,7 +50,7 @@ jobs:
       - name: The product works without a route out
         run: |
           probe() { docker run --rm --network agnostic-airgap curlimages/curl:8.17.0@sha256:935d9100e9ba842cdb060de42472c7ca90cfe9a7c96e4dacb55e79e560b3ff40 "$@"; }
-          for i in $(seq 60); do probe -fsS http://api:8000/readyz && break; sleep 2; done
+          for _ in $(seq 60); do probe -fsS http://api:8000/readyz && break; sleep 2; done
           probe -fsS http://api:8000/ | grep -q '<div id="root">'
           probe -fsS -c /tmp/jar -H 'Content-Type: application/json' \
             -d '{"email":"owner@airgap.test","password":"airgap-owner-password"}' http://api:8000/api/v1/auth/login

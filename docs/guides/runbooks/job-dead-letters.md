@@ -30,9 +30,9 @@ sense, such as a notification about something long resolved). Both need `org:sys
 
 ### Jobs wait but nothing runs
 
-- Are workers running? `kubectl get pods -l app.kubernetes.io/component=worker`, or the worker container.
+- Are workers running? `docker compose ps worker`.
 - Do they listen to the queue? `AGNOSTIC_JOBS__QUEUES` (empty means all).
-- Are they busy? Raise `worker.replicas` or `AGNOSTIC_JOBS__CONCURRENCY`.
+- Are they busy? Run more workers (`docker compose up -d --scale worker=3`) or raise `AGNOSTIC_JOBS__CONCURRENCY`.
 - Can they reach PostgreSQL? Workers log connection errors at start.
 
 ## Verify

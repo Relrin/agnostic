@@ -1,13 +1,14 @@
 # Upgrades
 
-Upgrades are rolling and need no downtime. Migrations are **expand/contract**: a release only adds to the schema
-in a way the previous release still works with; destructive changes take two releases (stop using a column, then
-drop it). So the old pods keep serving while the new ones start, and a rollback to the previous release works
-against the upgraded schema.
+An upgrade is a new image, its migrations, and a restart of the API and worker containers. Migrations are
+**expand/contract**: a release only adds to the schema in a way the previous release still works with; destructive
+changes take two releases (stop using a column, then drop it). So the old containers keep serving while the
+migrations run, and a rollback to the previous release works against the upgraded schema.
 
 ## Before you upgrade
 
-1. Read the release notes for new settings and behaviour changes.
+1. Read what changed since your version (the commit history between the two `v*` tags) for new settings and
+   behaviour changes.
 2. Check the migrations against a copy of production (PostgreSQL only):
 
    ```bash
@@ -18,17 +19,7 @@ against the upgraded schema.
    a migration that fails or is slow shows up here instead of during the rollout.
 3. Take a backup or confirm your PITR is current.
 
-## With Helm
-
-```bash
-helm upgrade agnostic deploy/helm/agnostic -f values.yaml --version 1.0.1
-```
-
-The migrate Job runs as a pre-upgrade hook; Helm waits for it before rolling the Deployments. API pods roll one at a
-time with `maxUnavailable: 0` and drain streams for up to 60 seconds; workers finish their current jobs (up to 120
-seconds). If the Job fails, nothing else changes: read its logs (`kubectl logs job/agnostic-migrate`), fix, rerun.
-
-## With Compose
+## Upgrade
 
 ```bash
 docker compose pull
@@ -46,9 +37,9 @@ The System page shows the running version of every module.
 
 ## Rolling back
 
-Roll back the image (`helm rollback`, or the previous `AGNOSTIC_IMAGE`). Don't downgrade the schema: the previous
-release works with it. `agnostic db downgrade` exists for development and should only be used in production on the
-advice of the release notes.
+Roll back the image: set the previous `AGNOSTIC_IMAGE` and run `docker compose up -d`. Don't downgrade the schema:
+the previous release works with it. `agnostic db downgrade` exists for development; don't use
+it in production.
 
 ## Pre-release databases
 

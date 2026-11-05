@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Restore drill (release checklist): back up a seeded control-plane database with pg_dump, restore it into a fresh
+# Restore drill (nightly in CI): back up a seeded control-plane database with pg_dump, restore it into a fresh
 # database, and prove the restored copy is complete and consistent: migrations current, audit hash chain intact,
 # every stored secret opens with the configured master key, archived audit months verify.
 #

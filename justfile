@@ -128,7 +128,7 @@ fmt:
 
 # Unit tests (no Docker needed: the backend runs on SQLite)
 test:
-    cd backend && uv run pytest -m "not integration and not contract and not assistant_eval and not chaos" --cov=agnostic_kernel --cov-fail-under=90
+    cd backend && uv run pytest -m "not integration and not contract and not assistant_eval" --cov=agnostic_kernel --cov-fail-under=90
     cd runtime && uv run pytest
     cd bridge && uv run pytest
     cd frontend && yarn test
@@ -209,19 +209,13 @@ hooks:
 image tag="agnostic:dev":
     docker build -t {{tag}} .
 
-# Lint the Helm chart and render it with every optional part on
-helm-lint:
-    helm lint deploy/helm/agnostic --strict
-    helm template agnostic deploy/helm/agnostic --kube-version 1.30.0 --set ingress.enabled=true \
-        --set networkPolicy.enabled=true --set api.autoscaling.enabled=true > /dev/null
-
 # Third-party notices (Python and web app) into dist/, as the image build writes them
 notices:
     mkdir -p dist
     cd backend && uv run python ../scripts/check_python_licenses.py --write ../dist/THIRD_PARTY_LICENSES-python.md
     cd frontend && node scripts/check-licenses.mjs --write ../dist/THIRD_PARTY_LICENSES-web.md
 
-# The air-gapped kit for a version (image archive, chart, Compose example, guides, licenses, checksums)
+# The air-gapped kit for a version (image archive, Compose example, guides, licenses, checksums)
 airgap-kit version image="":
     bash scripts/build_airgap_kit.sh {{version}} {{image}}
 
@@ -232,10 +226,6 @@ runtime-template version:
 # The production web build under the production CSP and Trusted Types (vite preview)
 test-csp:
     cd frontend && yarn workspace @agnostic/web e2e:csp
-
-# Chaos scenarios on PostgreSQL + Redis containers (instance flapping, cache loss, failover, worker crash, SIEM)
-test-chaos:
-    cd backend && uv run pytest -m chaos -rxX
 
 # Query plans of the hot list queries at realistic volumes (needs Docker or AGNOSTIC_TEST_DATABASE_URL)
 test-query-plans:

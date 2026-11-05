@@ -37,23 +37,23 @@ Session cookies are `HttpOnly`, `SameSite=Lax` and `Secure` behind HTTPS; unsafe
 
 ## The container
 
-The image runs as uid 10001, works with a read-only root filesystem (writes go to `/tmp` and `/var/lib/agnostic`),
-needs no Linux capabilities and runs with `allowPrivilegeEscalation: false` and the runtime-default seccomp profile
-in the Helm chart. Keep those settings.
+The image runs as uid 10001, works with a read-only root filesystem (writes go to `/tmp` and `/var/lib/agnostic`)
+and needs no Linux capabilities. The Compose file runs it with `read_only`, `cap_drop: [ALL]` and
+`no-new-privileges`. Keep those settings.
 
 ## Network
 
-- Turn on the chart's NetworkPolicy and list only the endpoints the control plane calls (database, cache, object
-  storage, IdP, SMTP, SIEM, git hosts, KMS) and your runtimes. Everything else is denied.
-- Metrics are served on port 9464 of the API and the workers, which the ingress doesn't route. That port has no
-  authentication: only allow Prometheus to reach it (the chart's NetworkPolicy does with `ingressFrom`). The API's
-  main port answers `/metrics` only when `AGNOSTIC_METRICS__TOKEN` is set, and then only with that bearer token.
+- Limit the containers' egress with your firewall to the endpoints the control plane calls (database, cache,
+  object storage, IdP, SMTP, SIEM, git hosts, KMS) and your runtimes.
+- Metrics are served on port 9464 of the API and the workers, which the Compose file doesn't publish. That port has
+  no authentication: if you publish it, only allow Prometheus to reach it. The API's main port answers `/metrics`
+  only when `AGNOSTIC_METRICS__TOKEN` is set, and then only with that bearer token.
 - Keep runtimes in gateway mode unless you need [direct mode](direct-mode.md).
 
 ## Secrets
 
-- Database and cache URLs and the master key belong in a Secret (`existingSecret`), never in `config`: the chart's
-  schema refuses them there.
+- Database and cache URLs and the master key belong in `.env` (readable only by the account that deploys) or
+  your secret store, never in the image, the Compose file or the repository.
 - Use a KMS provider for the master key where you have one: [Key management](key-management.md). Rotate it yearly.
 - Sealed secrets are never returned by the API; forms show "set" or "not set".
 
@@ -75,11 +75,11 @@ Release images are signed with cosign (keyless, GitHub OIDC) and carry an SBOM a
 
 ```bash
 cosign verify ghcr.io/relrin/agnostic@sha256:<digest> \
-  --certificate-identity-regexp '^https://github.com/Relrin/agnostic/\.github/workflows/release\.yml@refs/tags/agnostic-v' \
+  --certificate-identity-regexp '^https://github.com/Relrin/agnostic/\.github/workflows/release\.yml@refs/tags/v' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 cosign verify-attestation --type cyclonedx ghcr.io/relrin/agnostic@sha256:<digest> \
   --certificate-identity-regexp '^https://github.com/Relrin/agnostic/' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 ```
 
-Deploy by digest (`image.digest` in the chart) and enforce signatures with your admission controller.
+Deploy by digest (`AGNOSTIC_IMAGE=ghcr.io/relrin/agnostic@sha256:<digest>`) once the signature verifies.

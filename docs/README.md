@@ -2,7 +2,7 @@
 
 ## Start here
 
-- [Install Agnostic](guides/admin/install.md): requirements, Compose or Helm, the first Owner, the first instance.
+- [Install Agnostic](guides/admin/install.md): requirements, Compose, the first Owner, the first instance.
 - [Getting started](getting-started.md) (contributors): run the stack, find your way around, make a first change.
 - [Architecture overview](architecture/overview.md): what runs where and why.
 
@@ -61,7 +61,6 @@ security whitepaper.
 - [API reference](reference/api.md): every control-plane route (generated from the OpenAPI document).
 - [Compatibility](reference/compatibility.md): Agno/AgentOS, bridge, PostgreSQL, Redis-compatible caches, KMS, platforms.
 
-## Releases
+## Security
 
-- [Release checklist](release/checklist.md) and [release notes](release-notes/1.0.0.md).
 - [Security policy](../SECURITY.md): reporting vulnerabilities, supported versions.

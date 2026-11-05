@@ -7,8 +7,8 @@ Guides for administrators and operators. They ship with every installation and t
 
 | Guide | For |
 |---|---|
-| [Install Agnostic](admin/install.md) | requirements, the pre-flight checklist, Compose and Helm, the first Owner |
-| [Air-gapped installations](admin/air-gapped.md) | the offline kit, mirroring the image and chart, no outbound calls |
+| [Install Agnostic](admin/install.md) | requirements, the pre-flight checklist, Compose, the first Owner |
+| [Air-gapped installations](admin/air-gapped.md) | the offline kit, mirroring the image, no outbound calls |
 | [Sign-in, SSO and SCIM](admin/sso-and-scim.md) | local accounts, invitations, OIDC and SAML providers, directory sync |
 | [Instances and keys](admin/instances-and-keys.md) | connecting AgentOS runtimes, JWT keys, CA bundles, client certificates |
 | [Direct mode](admin/direct-mode.md) | browsers calling a runtime themselves |

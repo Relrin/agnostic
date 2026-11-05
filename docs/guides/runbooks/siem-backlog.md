@@ -15,7 +15,7 @@ accepted a batch. The backlog is everything after the cursor.
 
 | Error | Cause |
 |---|---|
-| connection refused, timeout | the receiver is down, or a firewall or NetworkPolicy blocks the worker |
+| connection refused, timeout | the receiver is down, or a firewall blocks the worker |
 | certificate verify failed | the receiver's CA isn't trusted: add it to the destination (syslog) or `AGNOSTIC_TLS__CA_FILE` |
 | 401 / 403 | the token or signing secret changed on the receiver |
 | 413 | batches too large for the receiver: lower `AGNOSTIC_AUDIT__DELIVERY_BATCH` (500 by default) |

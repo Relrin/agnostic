@@ -4,6 +4,22 @@ A self-hosted control plane for [Agno](https://github.com/agno-agi/agno) AgentOS
 instance management, operations, observability, and a UI for agents, teams and workflows. It runs inside your
 network and communicated to AgentOS over REST API.
 
+## Features
+
+- **Operate**: Home with attention items and KPIs; chat with agents, teams and workflows (streaming, tool calls,
+  inline approvals); sessions; the ⌘K palette; realtime updates
+- **Observe**: traces compared with the last successful run, metrics and cost from your price table, evaluations
+  with datasets, version comparison and publish gates
+- **Context**: Memory, knowledge (content, retrieval tests, uploads), learnings and the file system of an instance.
+- **Control**: an approvals inbox with routing, reminders and expiry; notifications in the app, by email, Slack and
+  webhooks
+- **Access**: people and groups (SCIM, Google Workspace, IdP group sync), editable roles, service accounts, temporary
+  access; OIDC, SAML and GitHub sign-in, MFA and SSO enforcement
+- **Build**: an editor for agents, teams and workflows (form, code and canvas), a registry, versions with eval
+  gates and promotion, and code sources synced from GitHub, GitLab, Gitea, Forgejo or local folders.
+- **Ask your OS**: plain-language questions about an instance, answered from its data with read-only tools (off
+  until a model provider is configured)
+
 ## Prerequisites
 
 | Tool | Version | Notes |
@@ -55,7 +71,7 @@ just --list     # everything else
 | `frontend/` | Yarn workspaces: `apps/web` shell, `packages/*` (`ui`, `core`, `api`, `testing`, `assistant`, `editor`, `studio`), feature modules in `modules/*` |
 | `runtime/` | `agnostic-runtime`, the reference AgentOS app (contract tests, demos, customer template) |
 | `bridge/` | `agnostic-bridge`, the optional package customers install in their AgentOS |
-| `deploy/` | `dev/` (development Compose, never shipped), `compose/`, `helm/` |
+| `deploy/` | `dev/` (development Compose, never shipped), `compose/` |
 | `scripts/` | dev seed, fixture recording, license checks, upgrade and restore drills |
 | `docs/` | architecture, how-to guides, reference: [start here](docs/README.md) |
 

@@ -166,7 +166,6 @@ markers = [
   "integration: needs Docker (testcontainers) or AGNOSTIC_TEST_DATABASE_URL / AGNOSTIC_TEST_REDIS_URL",
   "contract: talks to a live agnostic-runtime (AGNOSTIC_CONTRACT_RUNTIME_URL)",
   "assistant_eval: asks a real model (AGNOSTIC_TEST_ASSISTANT_MODEL, optional AGNOSTIC_TEST_ASSISTANT_ENDPOINT)",
-  "chaos: breaks its own Postgres/Redis containers, runtimes and sinks on purpose; Docker, runs only with -m chaos",
 ]
 filterwarnings = ["error::pytest.PytestUnraisableExceptionWarning"]
 

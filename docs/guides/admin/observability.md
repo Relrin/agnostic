@@ -23,8 +23,8 @@ protect port 9464 with a network policy that lets only Prometheus in.
 | `AGNOSTIC_METRICS__PORT` | `9464` | the metrics listener of the API and the worker |
 | `AGNOSTIC_METRICS__TOKEN` | — | also serve `/metrics` on the API's main port, to scrapes sending `Authorization: Bearer <token>` |
 
-With the Helm chart, `metrics.serviceMonitor.enabled: true` creates a ServiceMonitor that scrapes port 9464 of the API
-and the workers.
+Point Prometheus at port 9464 of the API and worker containers (the Compose file doesn't publish it), or set
+`AGNOSTIC_METRICS__TOKEN` and scrape the API's main port with that bearer token.
 
 | Metric | Type | Labels | What |
 |---|---|---|---|
@@ -73,8 +73,7 @@ groups:
         for: 10m
 ```
 
-The targets are a gateway p95 overhead under 25 ms and about 1,000 streams per API replica; the release notes say
-where a release stands.
+The targets are a gateway p95 overhead under 25 ms and about 1,000 streams per API replica.
 
 ## Traces
 

@@ -43,7 +43,7 @@ ephemeral state in Redis: losing Redis costs caches, sessions and live updates, 
 | `backend/packages/agnostic-spec`, `agnostic-cel`, `agnostic-codegen` | typed component configs, workflow CEL, config ⇄ Python ([Studio](studio.md)) |
 | `backend/modules/*` | 21 feature modules: `access`, `approvals`, `assistant`, `audit`, `context`, `directory`, `evals`, `gateway`, `identity`, `instances`, `notifications`, `observe`, `org`, `queue`, `scheduler`, `search`, `service_accounts`, `settings`, `sources`, `studio`, `system` ([module system](module-system.md)) |
 | `backend/apps/agnostic-server` | composition root: app factory, worker, CLI |
-| `backend/tests/` | `unit`, `api`, `integration`, `contract`, `chaos`, `assistant_eval`, golden fixtures |
+| `backend/tests/` | `unit`, `api`, `integration`, `contract`, `assistant_eval`, golden fixtures |
 | `frontend/` | Yarn 4 workspaces: React 19, Vite, Tailwind v4 ([frontend](frontend.md)) |
 | `frontend/apps/web` | the shell: router, sidebar, header, command palette |
 | `frontend/packages/*` | `ui`, `core`, `api`, `testing`, `assistant`, `editor`, `studio` |
@@ -51,7 +51,7 @@ ephemeral state in Redis: losing Redis costs caches, sessions and live updates, 
 | `runtime/` | `agnostic-runtime`: reference AgentOS (Python 3.13, agno 3.1.12) |
 | `bridge/` | `agnostic-bridge`: optional routes customers add to their AgentOS ([runtime and client](agentos-runtime-and-client.md)) |
 | `deploy/dev` | Compose for contributors: PostgreSQL, Redis, Mailpit, a Slack mock, Keycloak, SeaweedFS, Gitea, Ollama, Vault (some behind profiles) |
-| `deploy/compose`, `deploy/helm` | Compose file and Helm chart that run the `agnostic` image against your endpoints |
+| `deploy/compose` | the Compose file that runs the `agnostic` image against your endpoints |
 | `scripts/` | repository tooling: license checks, SSE fixture recording, upgrade and restore drills, air-gap kit |
 | `docs/` | these pages, how-to guides, reference, in-product guides |
 

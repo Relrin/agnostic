@@ -3,9 +3,9 @@
 #
 #   scripts/build_airgap_kit.sh 1.0.0 [image-ref]
 #
-# Contents: the `agnostic` image (OCI archive, both architectures when the reference is multi-arch), the Helm chart,
-# the Compose example, the guides, LICENSE and THIRD_PARTY_LICENSES, the image SBOM, cosign signatures when
-# present, and SHA256SUMS. Needs docker (buildx), helm and, for the SBOM, syft.
+# Contents: the `agnostic` image (OCI archive, both architectures when the reference is multi-arch), the Compose
+# example, the guides, LICENSE and THIRD_PARTY_LICENSES, the image SBOM, cosign signatures when present, and
+# SHA256SUMS. Needs docker (buildx) and, for the SBOM, syft.
 set -euo pipefail
 
 version="${1:?usage: build_airgap_kit.sh VERSION [IMAGE]}"
@@ -13,7 +13,7 @@ image="${2:-ghcr.io/relrin/agnostic:${version}}"
 root="$(cd "$(dirname "$0")/.." && pwd)"
 out="${root}/dist/agnostic-airgap-${version}"
 rm -rf "${out}"
-mkdir -p "${out}/image" "${out}/chart" "${out}/compose" "${out}/licenses"
+mkdir -p "${out}/image" "${out}/compose" "${out}/licenses"
 
 echo "image: ${image}"
 if docker buildx imagetools inspect "${image}" >/dev/null 2>&1; then
@@ -23,9 +23,7 @@ if docker buildx imagetools inspect "${image}" >/dev/null 2>&1; then
 fi
 docker save "${image}" -o "${out}/image/agnostic-${version}.tar"
 
-helm package "${root}/deploy/helm/agnostic" --version "${version}" --app-version "${version}" \
-  --destination "${out}/chart" >/dev/null
-cp "${root}/deploy/compose/compose.yml" "${root}/deploy/compose/.env.example" "${out}/compose/"
+cp"${root}/deploy/compose/compose.yml" "${root}/deploy/compose/.env.example" "${out}/compose/"
 cp -r "${root}/docs/guides" "${out}/guides"
 cp "${root}/LICENSE" "${out}/licenses/"
 container="$(docker create "${image}")"
@@ -48,8 +46,7 @@ cat >"${out}/README.md" <<EOF
        docker tag ${image} registry.internal/agnostic:${version}
        docker push registry.internal/agnostic:${version}
 
-2. Install with Helm (\`chart/agnostic-${version}.tgz\`, image.repository=registry.internal/agnostic) or Compose
-   (\`compose/\`, AGNOSTIC_IMAGE=registry.internal/agnostic:${version}).
+2. Install with Compose (\`compose/\`, AGNOSTIC_IMAGE=registry.internal/agnostic:${version}).
 3. Follow guides/admin/install.md and guides/admin/air-gapped.md. The guides are also served in the product (Help).
 
 Verify the files with \`sha256sum -c SHA256SUMS\`; verify the image signature with cosign against the
