@@ -77,7 +77,7 @@ source it builds into its image, so it needs no package index for the bridge.
 ```bash
 uv sync
 RUNTIME_DATABASE_URL=postgresql+psycopg://… RUNTIME_REDIS_URL=redis://… uv run python -m app.main
-docker build -t my-agentos .
+docker build --build-context bridge=../bridge -t my-agentos .   # from runtime/
 ```
 
 ## Connecting a runtime

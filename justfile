@@ -209,6 +209,14 @@ hooks:
 image tag="agnostic:dev":
     docker build -t {{tag}} .
 
+# Release images, labelled and smoke-checked: `just images`, `just images --runtime`, `just images --help`
+images *args:
+    bash scripts/build_images.sh {{args}}
+
+# Run an image on a network with no route out and check the product still works (default: agnostic:<version>)
+airgap-check image="":
+    bash scripts/check_airgap.sh {{image}}
+
 # Third-party notices (Python and web app) into dist/, as the image build writes them
 notices:
     mkdir -p dist

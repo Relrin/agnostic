@@ -18,7 +18,7 @@ Status:
 | V7 Error handling and logging | RFC 9457 problem responses without stack traces; request ids; JSON logs without secrets; audit log of every change and denial with a hash chain and SIEM streaming | Implemented |
 | V8 Data protection | secrets never returned by the API; `Cache-Control: no-store` on tokens; data-subject requests for context data; retention and archive settings | Implemented; Customer (retention choices) |
 | V9 Communication | TLS to every endpoint, verification on by default for HTTPS; PostgreSQL `sslmode=verify-full` available (the default is `prefer`); mutual TLS to runtimes; HSTS | Customer (TLS at the proxy and endpoints); Implemented in the product |
-| V10 Malicious code | dependency pinning, audits, SBOM, signed images; no dynamic code execution; the assistant's tools are read-only | Implemented |
+| V10 Malicious code | dependency pinning, audits, SBOM; images built from the release tag by the operator, who can sign them; no dynamic code execution; the assistant's tools are read-only | Implemented |
 | V11 Business logic | rate limits on sign-in, gateway buckets and token issue; approvals and publish gates audited; idempotent approval decisions | Implemented; Pentest |
 | V12 Files and resources | upload size limits and streaming; downloads from runtimes passed through without parsing; no server-side URL fetching from user input except configured endpoints | Implemented; Pentest (SSRF through instance URLs: admins only) |
 | V13 API and web services | one versioned API (`/api/v1`) with OpenAPI; CSRF and same-origin; CORS off unless configured; schema-validated bodies | Implemented |

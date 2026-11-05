@@ -29,6 +29,6 @@ Reviewers: one engineer who built the area, one who didn't, and the security con
 | The web app | CSP with Trusted Types; HTML rendering of highlighted code replaced by React elements | `style-src 'unsafe-inline'` permits CSS injection if an injection point exists | evaluate nonce-based styles for the code editor |
 | Metrics | new `/metrics` endpoint | exposes route names and counts | served on a port of its own (9464) that ingresses don't route; the main port answers only with `AGNOSTIC_METRICS__TOKEN`; restrict 9464 to Prometheus ([Hardening](../admin/hardening.md)) |
 | Audit log | archive verification and restore checks | an attacker with database write access can rewrite unchained history before the chain is turned on | decide whether the hash chain should be on by default |
-| Supply chain | signed images, SBOM, provenance | signatures only help if verified at deploy time | document admission-controller enforcement (in [Hardening](../admin/hardening.md)) |
+| Supply chain | no published images: operators build from the release tag (digest-pinned bases, locked dependencies), scan and keep an SBOM | the operator's build host and registry are in the trust path | sign your own builds and enforce them at admission ([Hardening](../admin/hardening.md)) |
 
 Sign-off: pending the external penetration test.

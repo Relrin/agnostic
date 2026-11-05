@@ -69,17 +69,12 @@ and needs no Linux capabilities. The Compose file runs it with `read_only`, `cap
 - Turn on the hash chain (*Organization › Audit retention & archive*) and verify it regularly: [Audit integrity](audit-integrity.md).
 - Stream the audit log to your SIEM, and archive to a bucket with Object Lock in compliance mode.
 
-## Verify the image
+## Build and pin the image
 
-Release images are signed with cosign (keyless, GitHub OIDC) and carry an SBOM and SLSA build provenance:
+No images are published, so the image you run is one you built ([Build the images](build-images.md)):
 
-```bash
-cosign verify ghcr.io/relrin/agnostic@sha256:<digest> \
-  --certificate-identity-regexp '^https://github.com/Relrin/agnostic/\.github/workflows/release\.yml@refs/tags/v' \
-  --certificate-oidc-issuer https://token.actions.githubusercontent.com
-cosign verify-attestation --type cyclonedx ghcr.io/relrin/agnostic@sha256:<digest> \
-  --certificate-identity-regexp '^https://github.com/Relrin/agnostic/' \
-  --certificate-oidc-issuer https://token.actions.githubusercontent.com
-```
-
-Deploy by digest (`AGNOSTIC_IMAGE=ghcr.io/relrin/agnostic@sha256:<digest>`) once the signature verifies.
+- Build from a release tag on a build host you control, scan it (trivy) and keep its SBOM (syft) as described there.
+- Push it to your own registry and deploy by digest (`AGNOSTIC_IMAGE=registry.internal/agnostic@sha256:<digest>`), so
+  a re-pushed tag can't change what runs.
+- Sign it with your own key (`cosign sign --key`) and have the cluster refuse unsigned images with an admission
+  controller (Sigstore policy-controller, Kyverno or Connaisseur) configured with your `cosign.pub`.

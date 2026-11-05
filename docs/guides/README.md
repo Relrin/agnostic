@@ -7,15 +7,16 @@ Guides for administrators and operators. They ship with every installation and t
 
 | Guide | For |
 |---|---|
+| [Build the images](admin/build-images.md) | building `agnostic` and the reference runtime from a release tag, registries, signing |
 | [Install Agnostic](admin/install.md) | requirements, the pre-flight checklist, Compose, the first Owner |
-| [Air-gapped installations](admin/air-gapped.md) | the offline kit, mirroring the image, no outbound calls |
+| [Air-gapped installations](admin/air-gapped.md) | building the offline kit, mirroring the image, no outbound calls |
 | [Sign-in, SSO and SCIM](admin/sso-and-scim.md) | local accounts, invitations, OIDC and SAML providers, directory sync |
 | [Instances and keys](admin/instances-and-keys.md) | connecting AgentOS runtimes, JWT keys, CA bundles, client certificates |
 | [Direct mode](admin/direct-mode.md) | browsers calling a runtime themselves |
 | [Key management](admin/key-management.md) | the master key, KMS and Vault providers, rotation |
 | [Backups and disaster recovery](admin/backups-and-dr.md) | what to back up, RPO and RTO, the DR runbook |
 | [Upgrades](admin/upgrades.md) | rolling upgrades, migration checks, rollback, pre-release databases |
-| [Hardening](admin/hardening.md) | security headers, TLS, network policies, image signatures |
+| [Hardening](admin/hardening.md) | security headers, TLS, network policies, pinning and signing your image |
 | [Managed services](admin/managed-services.md) | RDS, Cloud SQL, Azure, ElastiCache, Memorystore, S3-compatible storage |
 | [Observability](admin/observability.md) | metrics, alerts, traces, logs, health endpoints |
 | [The System page](admin/system-page.md) | versions, endpoint checks, job queues, failed jobs |

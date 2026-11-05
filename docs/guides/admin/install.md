@@ -1,6 +1,7 @@
 # Install Agnostic
 
-Agnostic ships one image, `agnostic`, with three commands: `api` (the HTTP API, which also serves the web app),
+Agnostic runs as one image, `agnostic`, that you build from the release tag ([Build the images](build-images.md)).
+It has three commands: `api` (the HTTP API, which also serves the web app),
 `worker` (background jobs and schedules) and `migrate` (database migrations). Everything it depends on is an
 endpoint you already run: PostgreSQL, a Redis-compatible cache, and optionally object storage, SMTP, an OTLP
 collector, your identity provider and your AgentOS runtimes. Agnostic never installs or operates them.
@@ -18,7 +19,7 @@ This guide gets you from nothing to chatting with an agent, signed in through yo
 | OTLP/HTTP collector | OpenTelemetry Collector or compatible | traces of the control plane itself (optional) |
 | Identity provider | OIDC (Okta, Entra ID, Google, Keycloak, GitLab…), SAML 2.0, GitHub | SSO (local accounts work without one) |
 | AgentOS | Agno AgentOS 3.1.x | the runtimes you manage (see [Bridge and runtime](../bridge-and-runtime.md)) |
-| Docker | Docker Compose v2 | running the image |
+| Docker | Docker Engine 23+ (BuildKit) and Docker Compose v2 | building and running the image |
 
 Size for a start: two API replicas (0.25 CPU, 384 MiB each) and two workers (0.1 CPU, 256 MiB). Add API replicas as
 concurrent chat streams grow.
@@ -38,11 +39,14 @@ reference shipped with the repository, `docs/reference/configuration.md`).
 | `AGNOSTIC_SMTP__URL`, `AGNOSTIC_SMTP__SENDER` | `smtp://user:…@smtp.example.com:587`, `Agnostic <agnostic@example.com>` |
 | `AGNOSTIC_TLS__CA_FILE` | your organization's CA, if runtimes or IdPs use certificates from it |
 
+Build the image first ([Build the images](build-images.md)); the commands below use the local tag
+`agnostic:0.1.0`.
+
 Generate the master key once and store a copy somewhere safe (a password manager or your secret store). Without it,
 every stored secret is lost:
 
 ```bash
-docker run --rm ghcr.io/relrin/agnostic:0.1.0 secrets generate-key
+docker run --rm agnostic:0.1.0 secrets generate-key
 ```
 
 ### Pre-flight checklist
@@ -66,14 +70,14 @@ and exits with 1 when any of them fails. Run it before the first start and after
 
 ```bash
 cd deploy/compose
-cp .env.example .env            # fill in the endpoints and the master key
+cp .env.example .env            # set AGNOSTIC_IMAGE, the endpoints and the master key
 docker compose run --rm api config check --connect
 docker compose up -d
 ```
 
 The containers run with a read-only root filesystem, a tmpfs at `/tmp` and a volume at `/var/lib/agnostic` (git
 mirrors of code sources). The API listens on port 8000 in plain HTTP: put your TLS-terminating reverse proxy in
-front of it. `AGNOSTIC_IMAGE` picks the image (`ghcr.io/relrin/agnostic:0.1.0`, or your mirror).
+front of it. `AGNOSTIC_IMAGE` picks the image: the local tag (`agnostic:0.1.0`) or its reference in your registry.
 
 ## Create the first Owner
 

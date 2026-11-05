@@ -109,8 +109,9 @@ runs the image on a network without egress to keep it that way.
   a minimum release age; base images are pinned by digest.
 - Every change runs `pip-audit`, `yarn npm audit`, gitleaks, and a license check against the policy (BSD-3-Clause
   project; permissive dependencies; reviewed weak-copyleft libraries used unmodified; strong copyleft refused).
-- The image is scanned with trivy, gets a CycloneDX SBOM (checked against the same license policy), and release
-  images are signed with cosign keyless signing, with the SBOM and SLSA build provenance attested.
+- On every change the image is built, scanned with trivy and given a CycloneDX SBOM (checked against the same
+  license policy). No images are published: operators build them from the release tag, with digest-pinned base
+  images and locked dependencies, and can sign them with their own keys ([Build the images](../admin/build-images.md)).
 - The image is non-root, works with a read-only root filesystem and contains only Agnostic and its dependencies.
 
 ## Reporting vulnerabilities

@@ -9,7 +9,8 @@
 name: agnostic
 
 x-agnostic: &agnostic
-  image: ${AGNOSTIC_IMAGE:-ghcr.io/relrin/agnostic:latest}
+  # No published image: build it from the release tag (docs/guides/admin/build-images.md) and set AGNOSTIC_IMAGE.
+  image: ${AGNOSTIC_IMAGE:?set AGNOSTIC_IMAGE in .env to the agnostic image you built}
   env_file: .env
   read_only: true
   tmpfs:
