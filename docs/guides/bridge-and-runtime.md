@@ -13,8 +13,12 @@ routes are guarded by AgentOS's own authorization and keep no state.
 Without the bridge everything still works; some checks fall back to the control plane's own (and say so), and a few
 details are unavailable (workers per replica, the event feed, file provenance).
 
+The bridge isn't on a package index: build it from the Agnostic repository and install the wheel into your AgentOS
+app's image (the runtime template's `Dockerfile` does the same from the repository's `bridge/` directory):
+
 ```bash
-pip install agnostic-bridge      # or uv add agnostic-bridge
+uv build bridge --wheel --out-dir dist                       # from the repository root
+uv add ./dist/agnostic_bridge-1.0.0-py3-none-any.whl         # in your AgentOS app
 ```
 
 ```python
@@ -53,8 +57,8 @@ needs it), tracing, the scheduler, a durable queue with Redis coordination, a `R
 replace `app/agents`, `app/teams` and `app/workflows` with yours, and deploy it like any AgentOS. Agnostic never
 ships or operates it.
 
-Each release publishes it as a source tree (`scripts/export_runtime_template.sh` builds it with the published bridge
-as a dependency).
+Each release publishes it as a source tree (`scripts/export_runtime_template.sh`): `runtime/` next to the `bridge/`
+source it builds into its image, so it needs no package index for the bridge.
 
 | Setting | Does |
 |---|---|

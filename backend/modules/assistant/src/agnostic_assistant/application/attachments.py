@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import dataclass
-from pathlib import PurePath
+from pathlib import PureWindowsPath
 
 from agnostic_assistant.domain.model import Attachment
 from agnostic_assistant.domain.settings import VISION_PROVIDERS
@@ -42,12 +42,17 @@ class Upload:
     data: bytes
 
 
+def _base_name(name: str) -> str:
+    # Some browsers send the client's full path; Windows paths split on both separators on every OS.
+    return PureWindowsPath(name).name
+
+
 def _is_text(upload: Upload) -> bool:
     media_type = upload.media_type.split(";", 1)[0].strip().lower()
     return (
         media_type.startswith("text/")
         or media_type in TEXT_TYPES
-        or PurePath(upload.name).suffix.lower() in TEXT_SUFFIXES
+        or PureWindowsPath(upload.name).suffix.lower() in TEXT_SUFFIXES
     )
 
 
@@ -64,7 +69,7 @@ def extract(uploads: Sequence[Upload], *, provider: str | None, limits: Attachme
         raise ValidationFailedError(f"Attach at most {limits.max_files} files.")
     found: list[Attachment] = []
     for upload in uploads:
-        name = PurePath(upload.name or "attachment").name[:200]
+        name = (_base_name(upload.name) or "attachment")[:200]
         if len(upload.data) > limits.max_bytes:
             limit = limits.max_bytes / 1_000_000
             raise ValidationFailedError(f"{name} is larger than {limit:g} MB.")

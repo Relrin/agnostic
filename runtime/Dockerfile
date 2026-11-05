@@ -10,7 +10,7 @@ ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy UV_PYTHON_DOWNLOADS=never PYTHONUNBU
 WORKDIR /srv
 COPY pyproject.toml uv.lock .python-version ./
 # uv.lock points at ../bridge; install it as a regular (non-editable) package.
-COPY --from=bridge pyproject.toml /bridge/pyproject.toml
+COPY --from=bridge pyproject.toml README.md LICENSE /bridge/
 COPY --from=bridge src /bridge/src
 RUN uv sync --frozen --no-dev --no-install-project --no-editable
 COPY app ./app

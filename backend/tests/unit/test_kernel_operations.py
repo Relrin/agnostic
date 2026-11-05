@@ -213,9 +213,13 @@ async def test_azure_managed_identity_and_managed_hsm(monkeypatch: pytest.Monkey
 async def test_azure_needs_some_credentials(monkeypatch: pytest.MonkeyPatch) -> None:
     for name in ("AZURE_TENANT_ID", "AZURE_CLIENT_ID", "AZURE_CLIENT_SECRET", "AZURE_FEDERATED_TOKEN_FILE"):
         monkeypatch.delenv(name, raising=False)
+
+    def handle(request: httpx.Request) -> httpx.Response:
+        raise AssertionError(f"no request is expected without credentials, got {request.url}")
+
     settings = AzureKeyVaultSettings(vault_url="https://corp.vault.azure.net", key_name="k")
     provider = create_key_provider(
-        SecretsSettings(provider="azure-key-vault", azure=settings), transport=httpx.MockTransport(httpx.Response)
+        SecretsSettings(provider="azure-key-vault", azure=settings), transport=httpx.MockTransport(handle)
     )
     with pytest.raises(KeyProviderError, match="no Azure credentials"):
         await provider.wrap(b"k" * 32)

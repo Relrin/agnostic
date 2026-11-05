@@ -63,8 +63,10 @@ fails when the runtime serializes differently from the committed JSON.
   and the canvas layout. React Flow and CodeMirror need the jsdom layout stubs in `builder-page.test.tsx`; click
   canvas nodes with `fireEvent` (a pointer press starts React Flow's drag).
 - Every story is rendered in Chromium and checked with axe (WCAG 2.2 AA); a violation fails the run.
-- Playwright runs Chromium with its sandbox on (`launchOptions.chromiumSandbox`); `studio-workflows.spec.ts` also
-  checks that a 200-step workflow pans and zooms within the frame budget.
+- Playwright runs Chromium with its sandbox on (`launchOptions.chromiumSandbox`). Ubuntu 23.10+ (CI's
+  `ubuntu-24.04` included) lets the sandbox start only for binaries with an AppArmor profile, so run
+  `scripts/allow_chromium_sandbox.sh` after `playwright install` there; it adds one for the Playwright browsers.
+- `studio-workflows.spec.ts` also checks that a 200-step workflow pans and zooms within the frame budget.
 - `packages/ui/src/lib/tokens.test.ts` checks text/background contrast and that the token mirror matches
   `tokens.css`.
 

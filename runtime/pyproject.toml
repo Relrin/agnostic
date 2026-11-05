@@ -35,7 +35,7 @@ package = false
 required-version = "==0.13.6"
 
 [tool.uv.sources]
-# Developed in this repository; customers install the published package.
+# Developed and built in this repository; it isn't published to a package index.
 agnostic-bridge = { path = "../bridge", editable = true }
 
 [tool.ruff]

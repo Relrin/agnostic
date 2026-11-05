@@ -60,10 +60,12 @@ LABEL org.opencontainers.image.title="agnostic" \
       org.opencontainers.image.version="${VERSION}" \
       org.opencontainers.image.revision="${REVISION}" \
       org.opencontainers.image.source="https://github.com/Relrin/agnostic"
-# git and ssh: code sources sync through the git CLI.
+# git and ssh: code sources sync through the git CLI. The app runs from /opt/agnostic and never installs packages,
+# so the base image's pip (and the libraries it vendors) goes.
 RUN apt-get update \
  && apt-get install --yes --no-install-recommends git openssh-client \
  && rm -rf /var/lib/apt/lists/* \
+ && python -m pip uninstall --yes --root-user-action ignore pip \
  && useradd --system --uid 10001 --home-dir /var/lib/agnostic --shell /usr/sbin/nologin agnostic \
  && mkdir -p /var/lib/agnostic && chown agnostic /var/lib/agnostic
 COPY --from=python /opt/agnostic /opt/agnostic

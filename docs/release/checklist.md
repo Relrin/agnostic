@@ -63,9 +63,10 @@ Record links to the runs and documents.
 - [ ] `python3 scripts/check_sbom_licenses.py sbom.cdx.json` passes on the release SBOM.
 - [ ] The Helm chart is in the OCI registry and its signature verifies.
 - [ ] The air-gapped kit is attached to the release; `sha256sum -c SHA256SUMS` passes after downloading it.
-- [ ] `agnostic-bridge` is published (PyPI or the customer index) when its version changed; `pip install
-      agnostic-bridge==<version>` works in a clean environment.
-- [ ] The runtime template is exported (`scripts/export_runtime_template.sh <version>`) and pushed.
+- [ ] When `agnostic-bridge`'s version changed, its wheel and sdist are attached to its GitHub release (it is never
+      uploaded to a package index) and the wheel installs into a clean environment.
+- [ ] The runtime template is exported (`scripts/export_runtime_template.sh <version>`) and pushed; in the
+      exported tree, `cd runtime && docker build --build-context bridge=../bridge .` builds.
 - [ ] Release notes in `docs/release-notes/<version>.md`, linked from the GitHub release.
 - [ ] The release commit is added to `deploy/upgrade-milestones.txt` (one line: commit, then the version), so the
       next release is drilled from it.

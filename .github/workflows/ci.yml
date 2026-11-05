@@ -166,6 +166,7 @@ jobs:
         with: { node-version-file: .nvmrc }
       - run: yarn install --immutable
       - run: yarn workspace @agnostic/web playwright install --with-deps chromium
+      - run: bash ../scripts/allow_chromium_sandbox.sh
       # Visual baselines are per OS; Linux baselines get recorded in the Playwright image (docs/how-to/testing.md).
       - run: yarn e2e --grep-invert @visual
       - if: failure()
@@ -182,6 +183,7 @@ jobs:
         with: { node-version-file: .nvmrc }
       - run: yarn install --immutable
       - run: yarn workspace @agnostic/web playwright install --with-deps chromium
+      - run: bash ../scripts/allow_chromium_sandbox.sh
       - run: yarn workspace @agnostic/web e2e:csp
 
   api-drift:
@@ -265,8 +267,10 @@ jobs:
       - name: Vulnerability scan (trivy)
         run: >-
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock
+          -v "$PWD/.github/trivy-secret.yaml:/trivy-secret.yaml:ro"
           aquasec/trivy:0.76.1@sha256:790fd66d1697395d8693d1acaa1ea702406a20f109b6fc7bac8db623eca6c06c
-          image --exit-code 1 --severity HIGH,CRITICAL --ignore-unfixed --no-progress agnostic:ci
+          image --exit-code 1 --severity HIGH,CRITICAL --ignore-unfixed --no-progress
+          --secret-config /trivy-secret.yaml agnostic:ci
       - name: SBOM (syft, CycloneDX)
         run: >-
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$PWD:/out"

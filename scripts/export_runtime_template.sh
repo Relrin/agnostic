@@ -1,40 +1,56 @@
 #!/usr/bin/env bash
-# Export `runtime/` as the `agnostic-runtime` template repository: the reference AgentOS app, depending on the
-# published agnostic-bridge instead of this repository's ../bridge.
+# Export `runtime/` as the `agnostic-runtime` template repository: the reference AgentOS app together with the
+# agnostic-bridge source it installs. The bridge isn't on a package index, so the tree keeps this repository's
+# layout (`runtime/` next to `bridge/`): the path dependency, uv.lock and the image build work unchanged.
 #
-#   scripts/export_runtime_template.sh 1.0.0 [bridge-version]
+#   scripts/export_runtime_template.sh 1.0.0
 #
-# Writes dist/agnostic-runtime-<version>/ (a ready-to-push repository tree) and its tarball. Run `uv lock` in the
-# exported tree against your package index before the first commit there.
+# Writes dist/agnostic-runtime-<version>/ (a ready-to-push repository tree) and its tarball.
 set -euo pipefail
 
-version="${1:?usage: export_runtime_template.sh VERSION [BRIDGE_VERSION]}"
-bridge_version="${2:-${version}}"
+version="${1:?usage: export_runtime_template.sh VERSION}"
 root="$(cd "$(dirname "$0")/.." && pwd)"
 out="${root}/dist/agnostic-runtime-${version}"
 rm -rf "${out}"
 mkdir -p "${out}"
 
-(cd "${root}/runtime" && git ls-files -z) | while IFS= read -r -d '' file; do
-  mkdir -p "${out}/$(dirname "${file}")"
-  cp "${root}/runtime/${file}" "${out}/${file}"
+for dir in runtime bridge; do
+  (cd "${root}/${dir}" && git ls-files -z) | while IFS= read -r -d '' file; do
+    mkdir -p "${out}/${dir}/$(dirname "${file}")"
+    cp "${root}/${dir}/${file}" "${out}/${dir}/${file}"
+  done
 done
 cp "${root}/LICENSE" "${out}/LICENSE"
 
-python3 - "${out}/pyproject.toml" "${bridge_version}" "${version}" <<'PY'
+python3 - "${out}/runtime" "${version}" <<'PY'
 import re
 import sys
 from pathlib import Path
 
-path, bridge, version = Path(sys.argv[1]), sys.argv[2], sys.argv[3]
-text = path.read_text(encoding="utf-8")
-text = re.sub(r'(?m)^version = "[^"]+"', f'version = "{version}"', text, count=1)
-text = re.sub(r'"agnostic-bridge==[^"]+"', f'"agnostic-bridge=={bridge}"', text)
-# The path source only exists inside the Agnostic repository.
-text = re.sub(r"(?m)^\[tool\.uv\.sources\]\n(?:#.*\n)*agnostic-bridge = .*\n\n?", "", text)
-path.write_text(text, encoding="utf-8")
+runtime, version = Path(sys.argv[1]), sys.argv[2]
+for name, pattern in (
+    ("pyproject.toml", r'(?m)^(version = )"[^"]+"'),
+    # The template's own (virtual) entry in the lock.
+    ("uv.lock", r'(?m)(?<=^name = "agnostic-runtime"\n)(version = )"[^"]+"'),
+):
+    path = runtime / name
+    text, count = re.subn(pattern, rf'\g<1>"{version}"', path.read_text(encoding="utf-8"), count=1)
+    if count != 1:
+        sys.exit(f"{path}: no version to set")
+    path.write_text(text, encoding="utf-8", newline="\n")
 PY
-rm -f "${out}/uv.lock"
+
+cat > "${out}/README.md" <<'README'
+# agnostic-runtime
+
+The reference Agno AgentOS app for Agnostic: see [runtime/README.md](runtime/README.md). `bridge/` is the
+agnostic-bridge source the app installs; it is built into the image, not taken from a package index.
+
+```bash
+cd runtime
+docker build --build-context bridge=../bridge -t my-agentos .
+```
+README
 
 tar -C "$(dirname "${out}")" -czf "${out}.tar.gz" "$(basename "${out}")"
-echo "wrote ${out} (run 'uv lock' there against your index)"
+echo "wrote ${out}"

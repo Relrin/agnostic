@@ -5,9 +5,17 @@ what AgentOS itself doesn't expose: capability discovery, component validation a
 provenance, evals, worker and scheduler details, approval and schedule events, code-defined component
 introspection and CEL evaluation.
 
-```bash
-pip install agnostic-bridge
-```
+It isn't published to a package index: it's built from this repository and installed into the image of the AgentOS
+app that uses it.
+
+- Inside the repository, `runtime/` takes it as a path dependency, and `runtime/Dockerfile` builds it into the
+  runtime image (`docker build --build-context bridge=bridge -t agnostic-runtime:dev runtime`).
+- In your own AgentOS app, build the wheel from the repository root and install it in your image:
+
+  ```bash
+  uv build bridge --wheel --out-dir dist
+  uv add ./dist/agnostic_bridge-1.0.0-py3-none-any.whl
+  ```
 
 ```python
 from agno.os import AgentOS

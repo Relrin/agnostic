@@ -36,9 +36,10 @@ jobs:
           AGNOSTIC_DATABASE__URL=postgresql://agnostic:agnostic@postgres:5432/agnostic
           AGNOSTIC_DATABASE__SSLMODE=disable
           AGNOSTIC_REDIS__URL=redis://redis:6379/0
-          AGNOSTIC_SECRETS__MASTER_KEY=AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=
           ENV
           sed -i 's/^ *//' airgap.env
+          # A throwaway key for this run's database only, made fresh every time.
+          echo "AGNOSTIC_SECRETS__MASTER_KEY=$(openssl rand -base64 32)" >> airgap.env
           run() { docker run --rm --network agnostic-airgap --env-file airgap.env --read-only --tmpfs /tmp agnostic:airgap "$@"; }
           run migrate
           printf '%s\n' "airgap-owner-password" | docker run --rm -i --network agnostic-airgap --env-file airgap.env \

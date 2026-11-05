@@ -225,7 +225,7 @@ notices:
 airgap-kit version image="":
     bash scripts/build_airgap_kit.sh {{version}} {{image}}
 
-# The agnostic-runtime template repository, depending on the published agnostic-bridge
+# The agnostic-runtime template repository, with the agnostic-bridge source it builds
 runtime-template version:
     bash scripts/export_runtime_template.sh {{version}}
 

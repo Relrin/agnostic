@@ -120,10 +120,8 @@ jobs:
   bridge:
     if: startsWith(github.ref, 'refs/tags/agnostic-bridge-v')
     runs-on: ubuntu-24.04
-    # PyPI trusted publishing when the repository variable PUBLISH_PYPI is "true"; otherwise the customer's index
-    # (BRIDGE_INDEX_URL + the BRIDGE_INDEX_TOKEN secret).
-    environment: release
-    permissions: { contents: write, id-token: write }
+    # Never uploaded to a package index: the wheel and sdist are release assets, installed into AgentOS images.
+    permissions: { contents: write }
     defaults: { run: { working-directory: bridge } }
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -131,13 +129,5 @@ jobs:
         with: { version: "${{ env.UV_VERSION }}" }
       - run: uv sync --locked && uv run pytest
       - run: uv build --out-dir dist
-      - if: vars.PUBLISH_PYPI == 'true'
-        uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # v1.14.3
-        with: { packages-dir: bridge/dist }
-      - if: vars.PUBLISH_PYPI != 'true' && vars.BRIDGE_INDEX_URL != ''
-        env:
-          UV_PUBLISH_URL: ${{ vars.BRIDGE_INDEX_URL }}
-          UV_PUBLISH_TOKEN: ${{ secrets.BRIDGE_INDEX_TOKEN }}
-        run: uv publish dist/*
       - uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
         with: { files: "bridge/dist/*" }

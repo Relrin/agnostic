@@ -19,7 +19,8 @@ for customers. It isn't shipped with Agnostic. `just runtimes` starts two ([guid
 
 ## `agnostic-bridge`
 
-`bridge/` is an optional package customers add to their AgentOS (`pip install agnostic-bridge`; Python ≥ 3.10,
+`bridge/` is an optional package customers add to their AgentOS (built from this repository into their image, not
+published to an index; Python ≥ 3.10,
 `agno[os]>=3.1.12,<3.2`). `install(agent_os)` adds routes under `/agnostic/v1`, mounted ahead of AgentOS's MCP
 catch-all and protected by AgentOS's own auth (their scopes go into `app.state.scope_mappings`). It keeps no state.
 
