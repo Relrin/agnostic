@@ -61,8 +61,10 @@ LABEL org.opencontainers.image.title="agnostic" \
       org.opencontainers.image.revision="${REVISION}" \
       org.opencontainers.image.source="https://github.com/Relrin/agnostic"
 # git and ssh: code sources sync through the git CLI. The app runs from /opt/agnostic and never installs packages,
-# so the base image's pip (and the libraries it vendors) goes.
+# so the base image's pip (and the libraries it vendors) goes. The upgrade picks up Debian security fixes published
+# after the pinned base image was built, so the image does not wait on an upstream rebuild.
 RUN apt-get update \
+ && apt-get upgrade --yes --no-install-recommends \
  && apt-get install --yes --no-install-recommends git openssh-client \
  && rm -rf /var/lib/apt/lists/* \
  && python -m pip uninstall --yes --root-user-action ignore pip \
