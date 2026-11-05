@@ -17,7 +17,10 @@
 #   --no-check         skip the smoke checks on the local agnostic image
 set -euo pipefail
 
-root="$(cd "$(dirname "$0")/.." && pwd)"
+# Git Bash on Windows rewrites arguments that look like POSIX paths (/tmp, /licenses) before docker sees them; with
+# that off, the build contexts must be native paths, which `pwd -W` gives there (plain `pwd` everywhere else).
+export MSYS2_ARG_CONV_EXCL='*'
+root="$(cd "$(dirname "$0")/.." && { pwd -W 2>/dev/null || pwd; })"
 version=""
 registry=""
 platform=""
