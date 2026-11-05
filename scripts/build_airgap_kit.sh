@@ -23,7 +23,7 @@ if docker buildx imagetools inspect "${image}" >/dev/null 2>&1; then
 fi
 docker save "${image}" -o "${out}/image/agnostic-${version}.tar"
 
-cp"${root}/deploy/compose/compose.yml" "${root}/deploy/compose/.env.example" "${out}/compose/"
+cp "${root}/deploy/compose/compose.yml" "${root}/deploy/compose/.env.example" "${out}/compose/"
 cp -r "${root}/docs/guides" "${out}/guides"
 cp "${root}/LICENSE" "${out}/licenses/"
 container="$(docker create "${image}")"
