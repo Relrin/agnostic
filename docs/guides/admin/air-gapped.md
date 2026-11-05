@@ -22,14 +22,14 @@ Each release has an air-gapped kit, `agnostic-airgap-<version>.tar.gz`, built by
 ## Mirror it
 
 ```bash
-tar -xzf agnostic-airgap-1.0.0.tar.gz && cd agnostic-airgap-1.0.0
+tar -xzf agnostic-airgap-0.1.0.tar.gz && cd agnostic-airgap-0.1.0
 sha256sum -c SHA256SUMS
-docker load -i image/agnostic-1.0.0.tar
-docker tag ghcr.io/relrin/agnostic:1.0.0 registry.internal/agnostic:1.0.0
-docker push registry.internal/agnostic:1.0.0
+docker load -i image/agnostic-0.1.0.tar
+docker tag ghcr.io/relrin/agnostic:0.1.0 registry.internal/agnostic:0.1.0
+docker push registry.internal/agnostic:0.1.0
 ```
 
-Then install as in [Install Agnostic](install.md) with `AGNOSTIC_IMAGE=registry.internal/agnostic:1.0.0`.
+Then install as in [Install Agnostic](install.md) with `AGNOSTIC_IMAGE=registry.internal/agnostic:0.1.0`.
 
 ## What to configure
 

@@ -18,7 +18,7 @@ app's image (the runtime template's `Dockerfile` does the same from the reposito
 
 ```bash
 uv build bridge --wheel --out-dir dist                       # from the repository root
-uv add ./dist/agnostic_bridge-1.0.0-py3-none-any.whl         # in your AgentOS app
+uv add ./dist/agnostic_bridge-0.1.0-py3-none-any.whl         # in your AgentOS app
 ```
 
 ```python

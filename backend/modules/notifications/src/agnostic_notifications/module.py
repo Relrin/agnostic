@@ -31,7 +31,7 @@ from agnostic_notifications.settings import NotificationsSettings
 
 class NotificationsModule(BaseModule):
     name = "notifications"
-    version = "0.2.0"
+    version = "0.1.0"
     depends_on = ("access", "audit", "identity", "instances", "org")
 
     def settings_model(self) -> type[BaseSettings] | None:

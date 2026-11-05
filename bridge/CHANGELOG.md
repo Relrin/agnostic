@@ -1,8 +1,8 @@
 # Changelog
 
-## 1.0.0
+## 0.1.0
 
-First stable release, for Agno AgentOS 3.1.x.
+First release, for Agno AgentOS 3.1.x.
 
 - Routes under `/agnostic/v1`: capabilities, component validate/normalize, evals, file provenance, workers,
   events, code-component and registry introspection, CEL evaluation.

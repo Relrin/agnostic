@@ -42,7 +42,7 @@ Generate the master key once and store a copy somewhere safe (a password manager
 every stored secret is lost:
 
 ```bash
-docker run --rm ghcr.io/relrin/agnostic:1.0.0 secrets generate-key
+docker run --rm ghcr.io/relrin/agnostic:0.1.0 secrets generate-key
 ```
 
 ### Pre-flight checklist
@@ -73,7 +73,7 @@ docker compose up -d
 
 The containers run with a read-only root filesystem, a tmpfs at `/tmp` and a volume at `/var/lib/agnostic` (git
 mirrors of code sources). The API listens on port 8000 in plain HTTP: put your TLS-terminating reverse proxy in
-front of it. `AGNOSTIC_IMAGE` picks the image (`ghcr.io/relrin/agnostic:1.0.0`, or your mirror).
+front of it. `AGNOSTIC_IMAGE` picks the image (`ghcr.io/relrin/agnostic:0.1.0`, or your mirror).
 
 ## Create the first Owner
 

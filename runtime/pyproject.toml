@@ -8,7 +8,7 @@ requires-python = "==3.13.*"
 license = "BSD-3-Clause"
 dependencies = [
   "agno[cel,os,postgres,pgvector,redis]==3.1.12",
-  "agnostic-bridge==1.0.0",
+  "agnostic-bridge==0.1.0",
   "cel-python==0.5.0",
   "cryptography==50.0.2",
   "fastapi==0.162.0",

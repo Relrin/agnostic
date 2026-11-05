@@ -3,7 +3,7 @@
 # agnostic-bridge source it installs. The bridge isn't on a package index, so the tree keeps this repository's
 # layout (`runtime/` next to `bridge/`): the path dependency, uv.lock and the image build work unchanged.
 #
-#   scripts/export_runtime_template.sh 1.0.0
+#   scripts/export_runtime_template.sh 0.1.0
 #
 # Writes dist/agnostic-runtime-<version>/ (a ready-to-push repository tree) and its tarball.
 set -euo pipefail

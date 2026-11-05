@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 try:
     __version__ = version("agnostic-bridge")
 except PackageNotFoundError:  # running from a source tree without installing
-    __version__ = "1.0.0"
+    __version__ = "0.1.0"
 
 API_VERSION = "v1"
 

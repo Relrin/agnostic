@@ -14,7 +14,7 @@ app that uses it.
 
   ```bash
   uv build bridge --wheel --out-dir dist
-  uv add ./dist/agnostic_bridge-1.0.0-py3-none-any.whl
+  uv add ./dist/agnostic_bridge-0.1.0-py3-none-any.whl
   ```
 
 ```python

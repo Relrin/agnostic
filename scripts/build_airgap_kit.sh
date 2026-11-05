@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Build the air-gapped kit: everything an installation without internet access needs, in one tarball.
 #
-#   scripts/build_airgap_kit.sh 1.0.0 [image-ref]
+#   scripts/build_airgap_kit.sh 0.1.0 [image-ref]
 #
 # Contents: the `agnostic` image (OCI archive, both architectures when the reference is multi-arch), the Compose
 # example, the guides, LICENSE and THIRD_PARTY_LICENSES, the image SBOM, cosign signatures when present, and
