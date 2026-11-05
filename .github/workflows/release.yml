@@ -49,8 +49,15 @@ jobs:
       - name: Sign the image (keyless, GitHub OIDC)
         run: cosign sign --yes "${IMAGE}@${{ steps.build.outputs.digest }}"
       - name: SBOM (CycloneDX) and license policy
+        # syft reads the image straight from the registry, from inside its own container: it sees neither the docker
+        # daemon nor docker/login-action's credentials, so it gets its own (passed by name, never on the command line).
+        env:
+          SYFT_REGISTRY_AUTH_AUTHORITY: ghcr.io
+          SYFT_REGISTRY_AUTH_USERNAME: ${{ github.actor }}
+          SYFT_REGISTRY_AUTH_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
         run: |
           docker run --rm -v "$PWD:/out" \
+            -e SYFT_REGISTRY_AUTH_AUTHORITY -e SYFT_REGISTRY_AUTH_USERNAME -e SYFT_REGISTRY_AUTH_PASSWORD \
             anchore/syft:v1.56.0@sha256:697ae864af1299cfa43c54b161cea3dd65c6d54de82e3dba66ea3dccb3acc313 \
             "${IMAGE}@${{ steps.build.outputs.digest }}" -o cyclonedx-json=/out/sbom.cdx.json
           docker run --rm --entrypoint cat "${IMAGE}@${{ steps.build.outputs.digest }}" \
