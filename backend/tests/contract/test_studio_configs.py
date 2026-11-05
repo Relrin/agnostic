@@ -73,11 +73,19 @@ def _without_step_ids(value: Any) -> Any:
     return value
 
 
+def _run_message(config: dict[str, Any]) -> str:
+    """agno validates a run's input against the workflow's ``input_schema``; the goldens only use ``TriageResult``."""
+    if config.get("input_schema") == "TriageResult":
+        return json.dumps({"category": "billing", "urgency": "high", "needs_human": True})
+    return "I was charged twice, need a refund"
+
+
 @pytest.mark.parametrize("path", STUDIO_WORKFLOWS, ids=lambda path: path.stem)
 async def test_golden_workflow_round_trips_and_runs(runtime: AgentOSClient, path: Path) -> None:
     config: dict[str, Any] = parse("workflow", json.loads(path.read_text(encoding="utf-8"))).dump()  # noqa: ASYNC240
     component_id = f"contract-{path.stem}-{uuid.uuid4().hex[:8]}"
-    config = {**config, "id": component_id}
+    # Studio always writes the name; a traced runtime can't run a workflow without one.
+    config = {**config, "id": component_id, "name": config.get("name") or component_id}
     await runtime.request_json(
         "POST",
         "/components",
@@ -94,7 +102,7 @@ async def test_golden_workflow_round_trips_and_runs(runtime: AgentOSClient, path
         run = await runtime.request_json(
             "POST",
             f"/workflows/{component_id}/runs",
-            form={"message": "I was charged twice, need a refund", "stream": "false", "version": "1"},
+            form={"message": _run_message(config), "stream": "false", "version": "1"},
         )
         assert run.get("status") in {"COMPLETED", "PAUSED"}, run
     finally:

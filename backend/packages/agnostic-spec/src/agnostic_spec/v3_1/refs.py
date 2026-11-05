@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Any, ClassVar, Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, SerializerFunctionWrapHandler, model_serializer
 
 
 class Ref(BaseModel):
@@ -42,6 +42,15 @@ class ToolRef(Ref):
     external_execution: bool | None = None
     approval_type: str | None = None
     toolkit: str | None = None
+
+    # ``Function.from_dict`` fills these in as ``False`` and ``to_dict`` keeps them, while a function that never set
+    # them serializes without them: ``False`` and absent mean the same, and the dump writes neither.
+    _omitted_when_false: ClassVar[frozenset[str]] = frozenset({"requires_confirmation", "external_execution"})
+
+    @model_serializer(mode="wrap")
+    def _drop_omitted_defaults(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        data: dict[str, Any] = handler(self)
+        return {key: value for key, value in data.items() if not (key in self._omitted_when_false and value is False)}
 
     @property
     def registry_name(self) -> str:
