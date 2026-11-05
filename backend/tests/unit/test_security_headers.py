@@ -2,7 +2,11 @@
 
 import re
 from pathlib import Path
+from types import SimpleNamespace
 
+import pytest
+
+from agnostic_kernel import security_headers
 from agnostic_kernel.security_headers import ConnectSources, content_security_policy, origin_of
 
 PREVIEW_HEADERS = Path(__file__).resolve().parents[3] / "frontend" / "apps" / "web" / "security-headers.ts"
@@ -48,3 +52,15 @@ async def test_connect_sources_cache_and_survive_provider_errors() -> None:
     assert calls == 1
     sources.invalidate()
     assert await sources.origins() == ("https://a.corp", "https://extra.corp")  # kept on failure
+
+
+async def test_connect_sources_refresh_right_after_boot(monkeypatch: pytest.MonkeyPatch) -> None:
+    # The monotonic clock starts near zero at boot; a fresh cache must still ask its providers.
+    monkeypatch.setattr(security_headers, "time", SimpleNamespace(monotonic=lambda: 5.0))
+
+    async def provider() -> list[str]:
+        return ["https://a.corp/os"]
+
+    sources = ConnectSources(ttl=30)
+    sources.add_provider(provider)
+    assert await sources.origins() == ("https://a.corp",)

@@ -51,7 +51,9 @@ jobs:
           docker run --rm -v "$PWD:/out" \
             anchore/syft:v1.56.0@sha256:697ae864af1299cfa43c54b161cea3dd65c6d54de82e3dba66ea3dccb3acc313 \
             "${IMAGE}@${{ steps.build.outputs.digest }}" -o cyclonedx-json=/out/sbom.cdx.json
-          python3 scripts/check_sbom_licenses.py sbom.cdx.json
+          docker run --rm --entrypoint cat "${IMAGE}@${{ steps.build.outputs.digest }}" \
+            /licenses/THIRD_PARTY_LICENSES-python.md > notices-python.md
+          python3 scripts/check_sbom_licenses.py sbom.cdx.json --notices notices-python.md
           cosign attest --yes --type cyclonedx --predicate sbom.cdx.json "${IMAGE}@${{ steps.build.outputs.digest }}"
       - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:

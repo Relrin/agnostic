@@ -5,7 +5,12 @@ this one covers what actually ends up in the image, operating-system packages of
 policy applies to Python and npm components; Debian packages of the base image are reported, and fail only on
 licenses that are forbidden for anything we ship.
 
-    python scripts/check_sbom_licenses.py sbom.cdx.json
+    python scripts/check_sbom_licenses.py sbom.cdx.json [--notices THIRD_PARTY_LICENSES-python.md]
+
+Syft reads a Python distribution's ``License``/``License-Expression`` fields but not its trove classifiers, so a
+distribution that states its license only as a classifier comes out unknown. ``--notices`` takes the image's
+``/licenses/THIRD_PARTY_LICENSES-python.md`` (written by ``check_python_licenses.py`` during the build, which
+reads classifiers) and uses the license recorded there for such components, matched by name and version.
 
 Exit code 1 on a forbidden license, or on a Python/npm component that is unknown or unreviewed weak copyleft.
 """
@@ -29,6 +34,26 @@ OWN = re.compile(r"^(agnostic|@agnostic/)")
 # Base-image system packages: GPL/LGPL tools of the distribution are fine as separate programs; only licenses we
 # never accept in an artifact fail.
 SYSTEM_FORBIDDEN = re.compile(r"\b(SSPL|Server Side Public|BUSL|Business Source|Commons Clause|RSAL)\b", re.IGNORECASE)
+
+
+NOTICE_HEADING = re.compile(r"^## (\S+) (\S+)$")
+
+
+def normalized(name: str) -> str:
+    return re.sub(r"[-_.]+", "-", name).lower()
+
+
+def notice_licenses(path: Path) -> dict[tuple[str, str], str]:
+    """(name, version) -> license from a THIRD_PARTY_LICENSES-python.md written by check_python_licenses.py."""
+    found: dict[tuple[str, str], str] = {}
+    current: tuple[str, str] | None = None
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if heading := NOTICE_HEADING.match(line):
+            current = (normalized(heading[1]), heading[2])
+        elif current and line.startswith("License: "):
+            found[current] = line.removeprefix("License: ")
+            current = None
+    return found
 
 
 def licenses_of(component: dict[str, Any]) -> str:
@@ -68,8 +93,10 @@ def verdict(name: str, kind: str, text: str) -> str:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("sbom", type=Path, help="CycloneDX JSON SBOM of the image")
+    parser.add_argument("--notices", type=Path, help="the image's THIRD_PARTY_LICENSES-python.md")
     args = parser.parse_args()
     document = json.loads(args.sbom.read_text(encoding="utf-8"))
+    notices = notice_licenses(args.notices) if args.notices else {}
 
     counts: dict[str, int] = {}
     problems: list[str] = []
@@ -80,6 +107,10 @@ def main() -> int:
         kind = ecosystem(component)
         text = licenses_of(component)
         result = verdict(name, kind, text)
+        recorded = notices.get((normalized(name), str(component.get("version", ""))))
+        if result == "unknown" and kind == "pypi" and recorded:
+            text = f"{recorded} (from the notices)"
+            result = verdict(name, kind, recorded)
         counts[result] = counts.get(result, 0) + 1
         if result in {"forbidden", "weak-unlisted"} or (result == "unknown" and kind in {"pypi", "npm"}):
             problems.append(f"{kind}:{name} {component.get('version', '')}: {result} license '{text}'")

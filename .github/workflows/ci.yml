@@ -265,7 +265,9 @@ jobs:
           anchore/syft:v1.56.0@sha256:697ae864af1299cfa43c54b161cea3dd65c6d54de82e3dba66ea3dccb3acc313
           agnostic:ci -o cyclonedx-json=/out/sbom.cdx.json
       - name: License policy on the image
-        run: python3 scripts/check_sbom_licenses.py sbom.cdx.json
+        run: |
+          docker run --rm --entrypoint cat agnostic:ci /licenses/THIRD_PARTY_LICENSES-python.md > notices-python.md
+          python3 scripts/check_sbom_licenses.py sbom.cdx.json --notices notices-python.md
       - name: Compose example is valid
         run: |
           cp deploy/compose/.env.example deploy/compose/.env

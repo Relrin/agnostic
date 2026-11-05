@@ -51,17 +51,17 @@ class ConnectSources:
         self._providers: list[OriginProvider] = []
         self._ttl = ttl
         self._cached: tuple[str, ...] = self._extra
-        self._at = 0.0
+        self._at: float | None = None  # monotonic time of the last refresh; None: never or invalidated
 
     def add_provider(self, provider: OriginProvider) -> None:
         self._providers.append(provider)
         self.invalidate()
 
     def invalidate(self) -> None:
-        self._at = 0.0
+        self._at = None
 
     async def origins(self) -> tuple[str, ...]:
-        if not self._providers or time.monotonic() - self._at < self._ttl:
+        if not self._providers or (self._at is not None and time.monotonic() - self._at < self._ttl):
             return self._cached
         found = set(self._extra)
         for provider in self._providers:

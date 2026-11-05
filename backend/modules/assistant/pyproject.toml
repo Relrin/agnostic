@@ -38,7 +38,11 @@ agnostic-instances = { workspace = true }
 agnostic-kernel = { workspace = true }
 
 [tool.deptry.per_rule_ignores]
-DEP002 = ["anthropic", "ollama", "openai"] # provider SDKs agno imports for the configured model
+DEP002 = [
+  "anthropic", "ollama", "openai", # provider SDKs agno imports for the configured model
+  "python-multipart", # FastAPI loads it to parse the question form and its file uploads
+  "agnostic-access", # in `depends_on`: the module is looked up through the module system, not imported
+]
 
 [build-system]
 requires = ["uv_build==0.13.6"]
