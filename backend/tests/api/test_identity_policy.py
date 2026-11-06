@@ -489,6 +489,13 @@ async def test_self_managed_gitlab_signs_in_at_its_own_url(stack: Stack) -> None
         assert moved.json()["oidc"]["issuer"] == "https://git.corp.test"
         assert await _authorize_host(stack.client(), "gitlab") == "https://git.corp.test/oauth/authorize"
 
+        # So does naming another instance as the issuer (the older way to set it).
+        reissued = await owner.patch("/api/v1/auth/admin/providers/gitlab", json={"issuer": "https://gitlab.corp.test"})
+        assert reissued.status_code == 200, reissued.text
+        oidc = reissued.json()["oidc"]
+        assert (oidc["issuer"], oidc["base_url"]) == ("https://gitlab.corp.test", "https://gitlab.corp.test")
+        assert await _authorize_host(stack.client(), "gitlab") == "https://gitlab.corp.test/oauth/authorize"
+
         # Clearing it goes back to gitlab.com.
         cleared = await owner.patch("/api/v1/auth/admin/providers/gitlab", json={"base_url": None})
         assert (cleared.json()["oidc"]["issuer"], cleared.json()["oidc"]["base_url"]) == ("https://gitlab.com", None)

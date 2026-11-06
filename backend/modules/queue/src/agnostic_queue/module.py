@@ -13,7 +13,7 @@ from agnostic_queue.providers import QueueProvider
 
 class QueueModule(BaseModule):
     name = "queue"
-    version = "0.1.0"
+    version = "0.2.0"
     depends_on = ("access", "audit", "instances", "gateway")
 
     def provide(self) -> Iterable[Provider]:

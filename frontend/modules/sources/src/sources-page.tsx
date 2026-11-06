@@ -722,6 +722,9 @@ function OutgoingSection({
                       Changed in the repository too: pull the incoming change first.
                     </span>
                   )}
+                  {change.status === "pending" && typeof change.outcome.commit_error === "string" && (
+                    <span className="text-danger">{`The last commit didn't go through: ${change.outcome.commit_error}`}</span>
+                  )}
                 </div>
                 <Button asChild variant="link" size="28">
                   <Link

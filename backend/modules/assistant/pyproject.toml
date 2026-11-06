@@ -1,6 +1,6 @@
 [project]
 name = "agnostic-assistant"
-version = "0.1.0"
+version = "0.2.0"
 description = "Ask your OS and natural-language explainers: an agno agent with read-only tools that run as the asking person, on a model the org chooses"
 requires-python = "==3.15.*"
 license = "BSD-3-Clause"

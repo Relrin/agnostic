@@ -1,6 +1,6 @@
 {
   "name": "@agnostic/api",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "description": "Client generated from the control-plane OpenAPI (fetch client + TanStack Query options)",

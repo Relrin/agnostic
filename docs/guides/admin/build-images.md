@@ -1,6 +1,6 @@
 # Build the images
 
-Agnostic publishes no container images. A release is a git tag (`v0.1.0`); you build the images from the tagged
+Agnostic publishes no container images. A release is a git tag (`v0.2.0`); you build the images from the tagged
 source with `scripts/build_images.sh` and run them from your own host or registry. CI builds, smoke tests and scans
 the same Dockerfile on every change, so a tag builds the way CI tested it.
 
@@ -24,17 +24,17 @@ updates available when you build, so rebuilding a tag later picks up OS fixes pu
 ## Build `agnostic`
 
 ```bash
-git clone --branch v0.1.0 --depth 1 https://github.com/Relrin/agnostic.git
+git clone --branch v0.2.0 --depth 1 https://github.com/Relrin/agnostic.git
 cd agnostic
 bash scripts/build_images.sh                 # or: just images
 ```
 
-This builds `agnostic:0.1.0` (the version comes from the checkout), labels it with the version and commit
+This builds `agnostic:0.2.0` (the version comes from the checkout), labels it with the version and commit
 (`org.opencontainers.image.version` and `.revision`), and runs the checks CI runs on every image: it starts with a
 read-only root filesystem, runs as uid 10001 and carries its license files. It warns when the checkout isn't the
 release tag or has uncommitted changes. `bash scripts/build_images.sh --help` lists the options.
 
-Then set `AGNOSTIC_IMAGE=agnostic:0.1.0` in `deploy/compose/.env` and continue with
+Then set `AGNOSTIC_IMAGE=agnostic:0.2.0` in `deploy/compose/.env` and continue with
 [Install Agnostic](install.md).
 
 ### Without the script
@@ -42,11 +42,11 @@ Then set `AGNOSTIC_IMAGE=agnostic:0.1.0` in `deploy/compose/.env` and continue w
 Where bash isn't available, the same build and checks:
 
 ```bash
-docker build -t agnostic:0.1.0 --build-arg VERSION=0.1.0 --build-arg REVISION="$(git rev-parse HEAD)" .
-docker run --rm --read-only --tmpfs /tmp agnostic:0.1.0 --help
-docker run --rm --read-only --tmpfs /tmp -e AGNOSTIC_ENV=test agnostic:0.1.0 modules list
-docker run --rm --entrypoint id agnostic:0.1.0 -u                    # 10001: it runs as non-root
-docker run --rm --entrypoint ls agnostic:0.1.0 /licenses             # LICENSE and THIRD_PARTY_LICENSES-*
+docker build -t agnostic:0.2.0 --build-arg VERSION=0.2.0 --build-arg REVISION="$(git rev-parse HEAD)" .
+docker run --rm --read-only --tmpfs /tmp agnostic:0.2.0 --help
+docker run --rm --read-only --tmpfs /tmp -e AGNOSTIC_ENV=test agnostic:0.2.0 modules list
+docker run --rm --entrypoint id agnostic:0.2.0 -u                    # 10001: it runs as non-root
+docker run --rm --entrypoint ls agnostic:0.2.0 /licenses             # LICENSE and THIRD_PARTY_LICENSES-*
 ```
 
 ## Check it without a route out
@@ -70,7 +70,7 @@ docker buildx create --name agnostic --use      # once: a builder that can produ
 bash scripts/build_images.sh --registry registry.internal --platform linux/amd64,linux/arm64 --push
 ```
 
-That pushes `registry.internal/agnostic:0.1.0` and prints its digest; add `--runtime` to push
+That pushes `registry.internal/agnostic:0.2.0` and prints its digest; add `--runtime` to push
 `registry.internal/agnostic-runtime` too, and `--latest` to also move `:latest`. A multi-platform build can't be loaded into the local
 Docker image store, which is why it needs `--push`.
 
@@ -83,8 +83,8 @@ Deploy by digest once you trust a build: `AGNOSTIC_IMAGE=registry.internal/agnos
 Without a registry, move the image as a file:
 
 ```bash
-docker save agnostic:0.1.0 | gzip > agnostic-0.1.0.tar.gz     # on the build host
-docker load -i agnostic-0.1.0.tar.gz                          # on the target host
+docker save agnostic:0.2.0 | gzip > agnostic-0.2.0.tar.gz     # on the build host
+docker load -i agnostic-0.2.0.tar.gz                          # on the target host
 ```
 
 For hosts without internet access, the [air-gapped kit](#the-air-gapped-kit) bundles the image with everything else
@@ -98,12 +98,12 @@ Optional, and the same tools CI uses. Run them from the repository checkout:
 # Known vulnerabilities (fails on fixable HIGH or CRITICAL findings)
 docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
   -v "$PWD/.github/trivy-secret.yaml:/trivy-secret.yaml:ro" aquasec/trivy:0.76.1 \
-  image --exit-code 1 --severity HIGH,CRITICAL --ignore-unfixed --secret-config /trivy-secret.yaml agnostic:0.1.0
+  image --exit-code 1 --severity HIGH,CRITICAL --ignore-unfixed --secret-config /trivy-secret.yaml agnostic:0.2.0
 
 # CycloneDX SBOM, checked against the project's license policy
 docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$PWD:/out" anchore/syft:v1.56.0 \
-  agnostic:0.1.0 -o cyclonedx-json=/out/sbom.cdx.json
-docker run --rm --entrypoint cat agnostic:0.1.0 /licenses/THIRD_PARTY_LICENSES-python.md > notices-python.md
+  agnostic:0.2.0 -o cyclonedx-json=/out/sbom.cdx.json
+docker run --rm --entrypoint cat agnostic:0.2.0 /licenses/THIRD_PARTY_LICENSES-python.md > notices-python.md
 python3 scripts/check_sbom_licenses.py sbom.cdx.json --notices notices-python.md
 ```
 
@@ -122,10 +122,10 @@ cosign verify --key cosign.pub registry.internal/agnostic@sha256:<digest>
 The reference AgentOS app installs the bridge from the repository:
 
 ```bash
-bash scripts/build_images.sh --runtime-only  # agnostic-runtime:0.1.0; --runtime builds both images
+bash scripts/build_images.sh --runtime-only  # agnostic-runtime:0.2.0; --runtime builds both images
 ```
 
-Without the script, from the repository root: `docker build --build-context bridge=bridge -t agnostic-runtime:0.1.0
+Without the script, from the repository root: `docker build --build-context bridge=bridge -t agnostic-runtime:0.2.0
 runtime`.
 
 It is a starting point for your own runtime: its settings, and how to add `agnostic-bridge` to an AgentOS app you
@@ -133,13 +133,13 @@ already have, are in [Bridge and runtime](../bridge-and-runtime.md).
 
 ## The air-gapped kit
 
-After building `agnostic:0.1.0`, on the same machine:
+After building `agnostic:0.2.0`, on the same machine:
 
 ```bash
-bash scripts/build_airgap_kit.sh 0.1.0     # or: just airgap-kit 0.1.0
+bash scripts/build_airgap_kit.sh 0.2.0     # or: just airgap-kit 0.2.0
 ```
 
-It writes `dist/agnostic-airgap-0.1.0.tar.gz`: the image archive, the Compose example, these guides, the licenses, an
+It writes `dist/agnostic-airgap-0.2.0.tar.gz`: the image archive, the Compose example, these guides, the licenses, an
 SBOM when [syft](https://github.com/anchore/syft) is installed, and checksums. Pass an image reference as the second
 argument to package a different tag. Installing from it: [Air-gapped installations](air-gapped.md).
 
@@ -152,7 +152,7 @@ docker build \
   --build-arg PYTHON_IMAGE=registry.internal/library/python:3.15.2-slim-trixie@sha256:<digest> \
   --build-arg NODE_IMAGE=registry.internal/library/node:26.13.0-trixie-slim@sha256:<digest> \
   --build-arg UV_IMAGE=registry.internal/astral-sh/uv:0.13.6@sha256:<digest> \
-  -t agnostic:0.1.0 .
+  -t agnostic:0.2.0 .
 ```
 
 Use the digests from the `ARG` lines at the top of the `Dockerfile`, so a mirror can't change what you build. Python

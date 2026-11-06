@@ -6,6 +6,7 @@ hour; tokens are cached sealed until shortly before then.
 
 from __future__ import annotations
 
+import hashlib
 import time
 from typing import Any, cast
 from urllib.parse import quote
@@ -23,8 +24,15 @@ from agnostic_sources.application.ports import (
     Remote,
     RepoSummary,
 )
-from agnostic_sources.domain.outcomes import team_label
-from agnostic_sources.infrastructure.providers.base import FORBIDDEN, NOT_FOUND, Api, basic, items
+from agnostic_sources.infrastructure.providers.base import (
+    FORBIDDEN,
+    NOT_FOUND,
+    Api,
+    already_open,
+    basic,
+    items,
+    remote_for,
+)
 
 TOKEN_MARGIN = 300.0
 ACCEPT = "application/vnd.github+json"
@@ -44,7 +52,10 @@ class GitHubAppTokens:
         return jwt.encode({"iat": now - 60, "exp": now + 540, "iss": app_id}, private_key, algorithm="RS256")
 
     async def token(self, api_url: str, app_id: str, private_key: str, installation_id: str) -> str:
-        key = f"sources:gh-token:{app_id}:{installation_id}"
+        # App and installation ids are only unique per GitHub host: github.com and a GitHub Enterprise Server
+        # can both have app 3 / installation 7.
+        host = hashlib.sha256(api_url.rstrip("/").lower().encode()).hexdigest()[:16]
+        key = f"sources:gh-token:{host}:{app_id}:{installation_id}"
         cached = await self._store.get(key)
         if cached is not None:
             return self._box.open(cached.decode()).decode()
@@ -150,38 +161,49 @@ class GitHubClient(Api):
         return sorted(str(item.get("name")) for item in found if item.get("name"))
 
     async def remote(self, repo: str, clone_url: str | None) -> Remote:
-        return Remote(clone_url or f"{self._web}/{repo}.git", header=basic("x-access-token", await self._bearer()))
+        return remote_for(self._web, self._base, repo, clone_url, basic("x-access-token", await self._bearer()))
 
     async def review_requirement(self, repo: str, branch: str) -> tuple[int, list[str]] | None:
         status, body = await self.request(
             "GET", f"/repos/{repo}/rules/branches/{quote(branch, safe='')}", allow=frozenset({NOT_FOUND, FORBIDDEN})
         )
+        # Every ruleset that applies (organisation and repository) and classic branch protection are all enforced:
+        # the strictest count wins. GitHub names no approving teams here (``dismissal_restrictions`` says who may
+        # dismiss reviews, not who must give them), so none are listed.
+        counts: list[int] = []
         if status not in {NOT_FOUND, FORBIDDEN}:
             for rule in items(body):
                 if rule.get("type") == "pull_request":
                     parameters = cast("dict[str, Any]", rule.get("parameters") or {})
-                    return int(parameters.get("required_approving_review_count") or 0), []
+                    counts.append(int(parameters.get("required_approving_review_count") or 0))
         status, body = await self.request(
             "GET",
             f"/repos/{repo}/branches/{quote(branch, safe='')}/protection/required_pull_request_reviews",
             allow=frozenset({NOT_FOUND, FORBIDDEN}),
         )
-        if status == FORBIDDEN:
+        if status == FORBIDDEN and not counts:
             return None
-        if status == NOT_FOUND or not isinstance(body, dict):
-            return (0, [])
-        data = cast("dict[str, Any]", body)
-        restrictions = cast("dict[str, Any]", data.get("dismissal_restrictions") or {})
-        teams = [team_label(str(team.get("slug") or "")) for team in items(restrictions.get("teams"))]
-        return int(data.get("required_approving_review_count") or 0), [team for team in teams if team]
+        if status not in {NOT_FOUND, FORBIDDEN} and isinstance(body, dict):
+            counts.append(int(cast("dict[str, Any]", body).get("required_approving_review_count") or 0))
+        return max(counts, default=0), []
 
     async def open_pull_request(self, repo: str, *, head: str, base: str, title: str, body: str) -> OpenedPullRequest:
-        created = cast(
-            "dict[str, Any]",
-            await self.json(
-                "POST", f"/repos/{repo}/pulls", json={"title": title, "head": head, "base": base, "body": body}
-            ),
-        )
+        try:
+            created = cast(
+                "dict[str, Any]",
+                await self.json(
+                    "POST", f"/repos/{repo}/pulls", json={"title": title, "head": head, "base": base, "body": body}
+                ),
+            )
+        except ProviderError as exc:
+            # A retry after a lost answer: the pull request was opened the first time.
+            if already_open(exc):
+                owner = repo.split("/", 1)[0]
+                params: dict[str, str | int] = {"head": f"{owner}:{head}", "base": base, "state": "open"}
+                found = items(await self.json("GET", f"/repos/{repo}/pulls", params=params))
+                if found:
+                    return OpenedPullRequest(int(found[0]["number"]), str(found[0].get("html_url") or ""))
+            raise
         return OpenedPullRequest(int(created["number"]), str(created.get("html_url") or ""))
 
     async def pull_request(self, repo: str, number: int) -> PullRequestState:

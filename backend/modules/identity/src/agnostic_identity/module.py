@@ -21,7 +21,7 @@ from agnostic_kernel.modules import AuditActionDecl, BaseModule, RouterSpec, Sea
 
 class IdentityModule(BaseModule):
     name = "identity"
-    version = "0.1.0"
+    version = "0.2.0"
     depends_on = ("audit",)
 
     def settings_model(self) -> type[BaseSettings] | None:

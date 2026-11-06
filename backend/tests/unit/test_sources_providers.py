@@ -17,6 +17,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 
 from agnostic_kernel.crypto import SecretBox
 from agnostic_kernel.ephemeral import MemoryStore
+from agnostic_sources.application.connections import github_app_install_page
 from agnostic_sources.application.ports import GitError, ProviderError, Remote, Secrets
 from agnostic_sources.domain.model import Connection
 from agnostic_sources.infrastructure.http import SourcesHttp
@@ -62,6 +63,9 @@ def test_github_app_trades_a_signed_jwt_for_a_cached_installation_token() -> Non
             _ = mock.get("/repos/northwind/agent-platform/rules/branches/main").respond(
                 200, json=[{"type": "pull_request", "parameters": {"required_approving_review_count": 1}}]
             )
+            _ = mock.get(
+                "/repos/northwind/agent-platform/branches/main/protection/required_pull_request_reviews"
+            ).respond(404, json={"message": "Branch not protected"})
             _ = mock.post("/repos/northwind/agent-platform/pulls").respond(
                 201, json={"number": 12, "html_url": "https://github.com/northwind/agent-platform/pull/12"}
             )
@@ -307,6 +311,12 @@ def test_github_search_queries_stay_within_the_length_limit() -> None:
             "https://api.ghe.northwind.test",
             "https://api.ghe.northwind.test/user",
             "https://ghe.northwind.test/northwind/agents.git",
+        ),
+        (
+            "https://northwind.ghe.com",
+            None,
+            "https://api.northwind.ghe.com/user",
+            "https://northwind.ghe.com/northwind/agents.git",
         ),
     ],
 )
@@ -582,4 +592,149 @@ async def test_gitea_protections_hidden_from_the_token_fall_back_to_the_branch()
     assert await client.review_requirement("northwind/agents", "main") == (2, [])
     assert await client.review_requirement("northwind/agents", "feature/x") == (0, [])
     assert await client.review_requirement("northwind/agents", "gone") is None, "unknown, not a failure"
+    await http.aclose()
+
+
+async def test_a_github_enterprise_web_url_alone_never_sends_the_token_to_github_com() -> None:
+    host = Host({})
+    host.routes = {"GET /api/v3/user": respond({"login": "sam"})}
+    http = host.http()
+    settings = SourcesSettings(github_web_url="https://ghe.northwind.test")
+    connection = Connection(id="scn_s", name="GHE", provider="github", auth_kind="token")
+    assert await clients(http, settings).client(connection, Secrets(token="ghp_token")).verify() == "sam"
+    assert str(host.requests[0].url) == "https://ghe.northwind.test/api/v3/user"
+    await http.aclose()
+
+
+@pytest.mark.parametrize(
+    ("clone_url", "credentials"),
+    [
+        (None, True),
+        ("https://GitLab.northwind.test/northwind/agents.git", True),
+        ("https://mirror.elsewhere.test/northwind/agents.git", False),
+        ("git@gitlab.northwind.test:northwind/agents.git", False),
+    ],
+)
+async def test_a_typed_clone_url_gets_the_token_only_on_the_connections_host(
+    clone_url: str | None, credentials: bool
+) -> None:
+    async with httpx.AsyncClient() as http:
+        client = GitLabClient(http, "https://gitlab.northwind.test/api/v4", "https://gitlab.northwind.test", "glpat")
+        remote = await client.remote("northwind/agents", clone_url)
+    assert remote.url == (clone_url or "https://gitlab.northwind.test/northwind/agents.git")
+    assert (remote.header is not None) is credentials
+
+
+async def test_github_app_tokens_are_cached_per_github_host() -> None:
+    pem, _ = rsa_pair()
+    issued: list[str] = []
+
+    def issue(request: httpx.Request) -> httpx.Response:
+        issued.append(request.url.host)
+        return httpx.Response(201, json={"token": f"ghs_{request.url.host}"})
+
+    store = MemoryStore()
+    async with httpx.AsyncClient() as http:
+        tokens = GitHubAppTokens(http, store, SecretBox(b"k" * 32))
+        with respx.mock() as mock:
+            _ = mock.post(url__regex=r".*/app/installations/7/access_tokens").mock(side_effect=issue)
+            dotcom = await tokens.token(API, "3", pem, "7")
+            server = await tokens.token("https://ghe.northwind.test/api/v3", "3", pem, "7")
+    assert (dotcom, server) == ("ghs_api.github.com", "ghs_ghe.northwind.test")
+    assert issued == ["api.github.com", "ghe.northwind.test"]
+
+
+async def test_github_review_requirement_takes_the_strictest_rule() -> None:
+    host = Host(
+        {
+            "GET /repos/northwind/agents/rules/branches/main": respond(
+                [
+                    {"type": "pull_request", "parameters": {"required_approving_review_count": 1}},
+                    {"type": "pull_request", "parameters": {"required_approving_review_count": 2}},
+                ]
+            ),
+            "GET /repos/northwind/agents/branches/main/protection/required_pull_request_reviews": respond(
+                {"required_approving_review_count": 3, "dismissal_restrictions": {"teams": [{"slug": "release"}]}}
+            ),
+        }
+    )
+    http = host.http()
+    connection = Connection(id="scn_r", name="GitHub", provider="github", auth_kind="token")
+    client = clients(http).client(connection, Secrets(token="t"))
+    assert await client.review_requirement("northwind/agents", "main") == (3, [])
+    await http.aclose()
+
+
+@pytest.mark.parametrize(
+    ("web_url", "expected"),
+    [
+        ("https://github.com/", "https://github.com/apps/agnostic/installations/new"),
+        ("https://northwind.ghe.com", "https://northwind.ghe.com/apps/agnostic/installations/new"),
+        ("https://ghe.northwind.test", "https://ghe.northwind.test/github-apps/agnostic/installations/new"),
+    ],
+)
+def test_the_github_app_install_page_follows_the_github_flavour(web_url: str, expected: str) -> None:
+    assert github_app_install_page(web_url, "agnostic") == expected
+
+
+async def test_a_retried_pull_request_that_already_opened_is_picked_up() -> None:
+    def listed(request: httpx.Request) -> httpx.Response:
+        params = request.url.params
+        if (params.get("head"), params.get("base"), params.get("state")) != ("northwind:studio/x-v1", "main", "open"):
+            return httpx.Response(200, json=[])
+        return httpx.Response(200, json=[{"number": 5, "html_url": "https://github.com/northwind/agents/pull/5"}])
+
+    host = Host(
+        {
+            "POST /repos/northwind/agents/pulls": respond({"message": "A pull request already exists"}, 422),
+            "GET /repos/northwind/agents/pulls": listed,
+        }
+    )
+    http = host.http()
+    connection = Connection(id="scn_p", name="GitHub", provider="github", auth_kind="token")
+    client = clients(http).client(connection, Secrets(token="t"))
+    opened = await client.open_pull_request("northwind/agents", head="studio/x-v1", base="main", title="t", body="b")
+    assert opened.number == 5
+    with pytest.raises(ProviderError):
+        _ = await client.open_pull_request("northwind/agents", head="studio/y-v1", base="main", title="t", body="b")
+    await http.aclose()
+
+
+async def test_a_retried_merge_request_that_already_opened_is_picked_up() -> None:
+    project = "/api/v4/projects/northwind%2Fagents/merge_requests"
+    host = Host(
+        {
+            f"POST {project}": respond({"message": ["Another open merge request already exists"]}, 409),
+            f"GET {project}": respond(
+                [{"iid": 8, "web_url": "https://gitlab.test/northwind/agents/-/merge_requests/8"}]
+            ),
+        }
+    )
+    http = host.http()
+    connection = Connection(
+        id="scn_m", name="GitLab", provider="gitlab", auth_kind="token", web_url="https://gitlab.test"
+    )
+    client = clients(http).client(connection, Secrets(token="t"))
+    opened = await client.open_pull_request("northwind/agents", head="studio/x-v1", base="main", title="t", body="b")
+    assert opened.number == 8
+    listed = host.seen("GET", project)[0].url.params
+    assert (listed["source_branch"], listed["target_branch"], listed["state"]) == ("studio/x-v1", "main", "opened")
+    await http.aclose()
+
+
+async def test_a_retried_gitea_pull_request_that_already_opened_is_picked_up() -> None:
+    pulls = [
+        {"number": 2, "html_url": "https://git.test/p/2", "head": {"ref": "studio/other-v1"}, "base": {"ref": "main"}},
+        {"number": 3, "html_url": "https://git.test/p/3", "head": {"ref": "studio/x-v1"}, "base": {"ref": "main"}},
+    ]
+    host = Host(
+        {
+            "POST /api/v1/repos/northwind/agents/pulls": respond({"message": "pull request already exists"}, 409),
+            "GET /api/v1/repos/northwind/agents/pulls": respond(pulls),
+        }
+    )
+    http = host.http()
+    client = clients(http).client(gitea_connection(), Secrets(token="t"))
+    opened = await client.open_pull_request("northwind/agents", head="studio/x-v1", base="main", title="t", body="b")
+    assert opened.number == 3
     await http.aclose()

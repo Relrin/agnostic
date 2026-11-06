@@ -5,7 +5,7 @@ from __future__ import annotations
 import time
 from dataclasses import dataclass, replace
 from typing import Any, cast
-from urllib.parse import quote
+from urllib.parse import quote, urlsplit
 
 import orjson
 
@@ -29,6 +29,20 @@ from agnostic_sources.domain.remote import ssh_address
 
 INSTALL_STATE_TTL = 1800
 PROVIDERS = frozenset({"github", "gitlab", "gitea", "forgejo"})
+
+
+def github_app_install_page(web_url: str, slug: str) -> str:
+    """Where a GitHub App is installed.
+
+    github.com and GitHub Enterprise Cloud (``*.ghe.com``) serve app pages under ``/apps``, GitHub Enterprise
+    Server under ``/github-apps``.
+    """
+    web = web_url.rstrip("/")
+    host = (urlsplit(web).hostname or "").lower()
+    pages = "apps" if host in {"github.com", "www.github.com"} or host.endswith(".ghe.com") else "github-apps"
+    return f"{web}/{pages}/{quote(slug)}/installations/new"
+
+
 _KIND: dict[str, str] = {
     "github_app": "the GitHub App",
     "token": "a token",
@@ -238,8 +252,8 @@ class Connections:
                 }
             )
         )
-        web = (connection.web_url or self._settings.github_web_url).rstrip("/")
-        return f"{web}/apps/{quote(connection.app_slug)}/installations/new?state={quote(state)}"
+        web = connection.web_url or self._settings.github_web_url
+        return f"{github_app_install_page(web, connection.app_slug)}?state={quote(state)}"
 
     async def complete_install(
         self, principal: Principal, state: str, installation_id: str

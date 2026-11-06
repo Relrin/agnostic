@@ -17,7 +17,15 @@ from agnostic_sources.application.ports import (
     RepoSummary,
 )
 from agnostic_sources.domain.outcomes import team_label
-from agnostic_sources.infrastructure.providers.base import FORBIDDEN, NOT_FOUND, UNPROCESSABLE, Api, basic
+from agnostic_sources.infrastructure.providers.base import (
+    FORBIDDEN,
+    NOT_FOUND,
+    UNPROCESSABLE,
+    Api,
+    already_open,
+    basic,
+    remote_for,
+)
 
 
 class GiteaClient(Api):
@@ -62,7 +70,7 @@ class GiteaClient(Api):
 
     async def remote(self, repo: str, clone_url: str | None) -> Remote:
         login = self._login or await self.verify()
-        return Remote(clone_url or f"{self._web}/{repo}.git", header=basic(login or "agnostic", self._token))
+        return remote_for(self._web, self._base, repo, clone_url, basic(login or "agnostic", self._token))
 
     async def review_requirement(self, repo: str, branch: str) -> tuple[int, list[str]] | None:
         try:
@@ -96,12 +104,26 @@ class GiteaClient(Api):
         return (approvals, []) if isinstance(approvals, int) else None
 
     async def open_pull_request(self, repo: str, *, head: str, base: str, title: str, body: str) -> OpenedPullRequest:
-        created = cast(
-            "dict[str, Any]",
-            await self.json(
-                "POST", f"/repos/{_path(repo)}/pulls", json={"head": head, "base": base, "title": title, "body": body}
-            ),
-        )
+        try:
+            created = cast(
+                "dict[str, Any]",
+                await self.json(
+                    "POST",
+                    f"/repos/{_path(repo)}/pulls",
+                    json={"head": head, "base": base, "title": title, "body": body},
+                ),
+            )
+        except ProviderError as exc:
+            # A retry after a lost answer: the pull request was opened the first time.
+            if already_open(exc):
+                for pull in await self.pages(
+                    f"/repos/{_path(repo)}/pulls", params={"state": "open"}, page_param="limit"
+                ):
+                    pull_head = cast("dict[str, Any]", pull.get("head") or {})
+                    pull_base = cast("dict[str, Any]", pull.get("base") or {})
+                    if (pull_head.get("ref"), pull_base.get("ref")) == (head, base):
+                        return OpenedPullRequest(int(pull["number"]), str(pull.get("html_url") or ""))
+            raise
         return OpenedPullRequest(int(created["number"]), str(created.get("html_url") or ""))
 
     async def pull_request(self, repo: str, number: int) -> PullRequestState:

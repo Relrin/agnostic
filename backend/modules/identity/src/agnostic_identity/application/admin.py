@@ -114,14 +114,19 @@ def _carried_over(before: Mapping[str, Any], changes: Mapping[str, Any]) -> dict
     Values a preset fills in (issuer, instance URL, scopes) don't carry over to another preset:
     a GitHub provider switched to GitLab must not keep ``https://github.com`` as its GitLab URL.
     For GitLab the instance URL and the issuer are one setting and the URL wins, so changing the URL drops the
-    stored issuer.
+    stored issuer. An issuer naming another self-managed instance moves the URL with it (it would lose to the
+    stored URL otherwise); the gitlab.com issuer alone never moves a self-managed provider back to gitlab.com.
     """
     kept = dict(before)
     if "preset" in changes and changes["preset"] != before.get("preset"):
         for key in _PRESET_DERIVED:
             _ = kept.pop(key, None)
-    elif (changes.get("preset") or before.get("preset")) == Preset.GITLAB.value and "base_url" in changes:
-        _ = kept.pop("issuer", None)
+    elif (changes.get("preset") or before.get("preset")) == Preset.GITLAB.value:
+        issuer = str(changes.get("issuer") or "").strip().rstrip("/")
+        if "base_url" in changes:
+            _ = kept.pop("issuer", None)
+        elif issuer and issuer.lower() != PRESETS[Preset.GITLAB].default_issuer:
+            _ = kept.pop("base_url", None)
     return kept
 
 

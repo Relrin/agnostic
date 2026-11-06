@@ -173,6 +173,10 @@ class FakeGitea:
         pull.state, pull.merged, pull.merge_sha = "closed", True, sha
         return sha
 
+    def close(self, number: int) -> None:
+        """Close a pull request without merging it."""
+        self.pulls[number].state = "closed"
+
     def secret(self) -> str:
         assert self.hooks, "the source registered no webhook"
         return str(next(iter(self.hooks.values()))["config"]["secret"])

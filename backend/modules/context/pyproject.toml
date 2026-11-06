@@ -1,6 +1,6 @@
 [project]
 name = "agnostic-context"
-version = "0.1.0"
+version = "0.2.0"
 description = "Context: memory duplicates, provenance and optimization, knowledge bases and content, learning counts and data deletion, file provenance"
 requires-python = "==3.15.*"
 license = "BSD-3-Clause"

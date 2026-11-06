@@ -50,6 +50,8 @@ class CommitPreview:
 PUSHED_BRANCH = "pushed_branch"
 PUSHED_SHA = "pushed_sha"
 PUSHED = frozenset({PUSHED_BRANCH, PUSHED_SHA})
+COMMIT_ERROR = "commit_error"
+"""Why the last commit of a change didn't go through (cleared once one does)."""
 
 
 def pushed(change: Change | None) -> dict[str, str]:
@@ -357,7 +359,17 @@ class Committer:
         if source is None:
             return None
         instance = await self._access.of(source)
-        changes = await self._outgoing(source, change_ids)
+        try:
+            changes = await self._outgoing(source, change_ids)
+        except (NotFoundError, ConflictError, ValidationFailedError) as exc:
+            # A change was superseded or blocked by a fetch after the commit was asked for: give the others back.
+            for change_id in change_ids:
+                change = await self._store.change(change_id)
+                if change is not None and change.source_id == source.id and change.status == "committing":
+                    await self._store.save_change(_given_back(change, exc))
+            await self._store.commit()
+            log.warning("sources.commit_refused", source_id=source.id, error=str(exc))
+            return None
         try:
             preview = await self._preview(source, changes, instance.display_name, actor_name)
         except (ValidationFailedError, GitError, ProviderError) as exc:
@@ -365,7 +377,7 @@ class Committer:
             # commit was asked for: put the changes back, so they can be committed again once it's fixed instead of
             # staying "committing".
             for change in changes:
-                await self._store.save_change(replace(change, status="pending"))
+                await self._store.save_change(_given_back(change, exc))
             await self._store.commit()
             log.warning("sources.commit_refused", source_id=source.id, error=str(exc))
             return None
@@ -384,7 +396,12 @@ class Committer:
                             f"{change.path} changed in the folder meanwhile; fetch and review again."
                         )
                 for change in changes:
-                    self._files.folders.write(source.local_path or "", change.path, (change.after_code or "").encode())
+                    try:
+                        self._files.folders.write(
+                            source.local_path or "", change.path, (change.after_code or "").encode()
+                        )
+                    except OSError as exc:
+                        raise GitError(f"Couldn't write {change.path} in the folder: {exc}") from exc
             else:
                 snapshot = await self._files.fetch(source)
                 for change in changes:
@@ -421,7 +438,12 @@ class Committer:
                         base_branch=source.branch,
                         head_sha=sha,
                         components=tuple(
-                            {"component_id": change.component_id, "version": change.draft_version, "path": change.path}
+                            {
+                                "component_id": change.component_id,
+                                "version": change.draft_version,
+                                "path": change.path,
+                                "change_id": change.id,
+                            }
                             for change in changes
                         ),
                         review_requirement=preview.review_requirement,
@@ -441,12 +463,13 @@ class Committer:
                     outcome = {key: value for key, value in change.outcome.items() if key not in PUSHED}
                 else:
                     outcome = change.outcome
-                await self._store.save_change(replace(change, status="pending", outcome=outcome))
+                await self._store.save_change(_given_back(replace(change, outcome=outcome), exc))
             await self._store.commit()
             log.warning("sources.commit_failed", source_id=source.id, error=str(exc))
             raise
         for change in changes:
-            await self._store.save_change(replace(change, status="committed"))
+            outcome = {key: value for key, value in change.outcome.items() if key != COMMIT_ERROR}
+            await self._store.save_change(replace(change, status="committed", outcome=outcome))
         _ = await self._audit.record(
             AuditEntry(
                 action="sources.commit",
@@ -542,7 +565,7 @@ class PullRequestTracker:
                 )
                 if state.status == "closed":
                     for change in await self._store.changes(source.id, "outgoing", ["committed"]):
-                        if any(item.get("path") == change.path for item in pull.components):
+                        if _in_pull_request(pull, change):
                             await self._store.save_change(replace(change, status="pending"))
             await self._store.save_pull_request(fresh)
             updated.append(fresh)
@@ -552,6 +575,26 @@ class PullRequestTracker:
         if updated:
             await self._jobs.announce(source.instance_id, "sources.changed", {"source_id": source.id})
         return updated
+
+
+def _given_back(change: Change, exc: Exception) -> Change:
+    """``change`` back to pending, with the reason its commit didn't go through for the people who asked for it."""
+    reason = str(getattr(exc, "detail", None) or exc)
+    return replace(change, status="pending", outcome={**change.outcome, COMMIT_ERROR: reason})
+
+
+def _in_pull_request(pull: PullRequest, change: Change) -> bool:
+    """Whether a closed pull request carried ``change``: only its own changes go back to pending.
+
+    Pull requests opened before their components named the change match on path and version.
+    """
+    for item in pull.components:
+        if "change_id" in item:
+            if item["change_id"] == change.id:
+                return True
+        elif item.get("path") == change.path and item.get("version") == change.draft_version:
+            return True
+    return False
 
 
 class SourcePublishHold:

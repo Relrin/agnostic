@@ -35,7 +35,7 @@ from agnostic_kernel.security_headers import ConnectSources
 
 class InstancesModule(BaseModule):
     name = "instances"
-    version = "0.1.0"
+    version = "0.2.0"
     depends_on = ("audit",)
 
     def settings_model(self) -> type[BaseSettings] | None:

@@ -27,5 +27,6 @@ describe("provider form", () => {
   it("shows which issuer GitLab sign-in uses", () => {
     expect(gitlabIssuer("")).toBe("https://gitlab.com");
     expect(gitlabIssuer("https://gitlab.corp.test//")).toBe("https://gitlab.corp.test");
+    expect(gitlabIssuer("HTTPS://GitLab.Corp.test/Sub/")).toBe("https://gitlab.corp.test/Sub");
   });
 });

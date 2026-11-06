@@ -70,7 +70,8 @@ class LocalWatchSupervisor:
             stop.set()
             _ = task.cancel()
         for source_id, root in wanted.items():
-            if source_id not in self._watchers:
+            # A watcher that stopped on its own (the folder was unmounted or removed) is started again.
+            if source_id not in self._watchers or self._watchers[source_id][0].done():
                 stop = asyncio.Event()
                 self._watchers[source_id] = (asyncio.create_task(self._watch(source_id, root, stop)), stop)
 

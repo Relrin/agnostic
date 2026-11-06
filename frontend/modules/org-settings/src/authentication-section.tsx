@@ -170,9 +170,11 @@ export function withPreset(form: ProviderForm, preset: OidcPreset): ProviderForm
   return { ...form, preset, issuer: "", baseUrl: "", scopes: "" };
 }
 
-/** The issuer GitLab sign-in will use: the instance URL, or gitlab.com. */
+/** The issuer GitLab sign-in will use: the instance URL (scheme and host lowercased, as the server does), or gitlab.com. */
 export function gitlabIssuer(baseUrl: string): string {
-  return baseUrl.trim().replace(/\/+$/, "") || "https://gitlab.com";
+  const url = baseUrl.trim().replace(/\/+$/, "");
+  const [, origin, path = ""] = /^([a-z][a-z0-9+.-]*:\/\/[^/]*)(.*)$/i.exec(url) ?? [];
+  return (origin ? `${origin.toLowerCase()}${path}` : url) || "https://gitlab.com";
 }
 
 /** The flat create/update body: only what the kind (and SAML source) uses; an empty secret keeps the saved one. */

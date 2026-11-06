@@ -2,6 +2,7 @@
 
 from typing import Any
 
+import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
@@ -100,3 +101,18 @@ def test_merge_identities(base: dict[str, Any], side: dict[str, Any]) -> None:
     assert three_way(base, side, base).merged == side
     assert three_way(base, base, side).merged == side
     assert three_way(base, side, side).merged == side
+
+
+@pytest.mark.parametrize("deleted", [0, 1, 2])
+def test_a_step_deleted_in_studio_and_edited_in_the_repo_resolves_without_touching_the_others(deleted: int) -> None:
+    steps = [{"name": name, "agent": name} for name in "abc"]
+    edited = {**steps[deleted], "agent": "changed"}
+    ours = {"steps": [step for index, step in enumerate(steps) if index != deleted]}
+    theirs = {"steps": [edited if index == deleted else step for index, step in enumerate(steps)]}
+    result = three_way({"steps": steps}, ours, theirs)
+    assert [conflict.path for conflict in result.conflicts] == [f"steps[{deleted}]"]
+    conflict = result.conflicts[0]
+    assert (conflict.ours, conflict.theirs) == (MISSING, edited)
+
+    assert apply_resolutions(result.merged, {conflict.path: MISSING}) == ours
+    assert apply_resolutions(result.merged, {conflict.path: conflict.theirs}) == theirs

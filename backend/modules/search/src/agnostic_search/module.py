@@ -19,7 +19,7 @@ from agnostic_search.settings import SearchSettings
 
 class SearchModule(BaseModule):
     name = "search"
-    version = "0.1.0"
+    version = "0.2.0"
     depends_on = ("instances",)
 
     def settings_model(self) -> type[BaseSettings] | None:

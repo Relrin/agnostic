@@ -15,7 +15,15 @@ from agnostic_sources.application.ports import (
     Remote,
     RepoSummary,
 )
-from agnostic_sources.infrastructure.providers.base import FORBIDDEN, NOT_FOUND, Api, basic, items
+from agnostic_sources.infrastructure.providers.base import (
+    FORBIDDEN,
+    NOT_FOUND,
+    Api,
+    already_open,
+    basic,
+    items,
+    remote_for,
+)
 
 
 class GitLabClient(Api):
@@ -46,7 +54,7 @@ class GitLabClient(Api):
         return sorted(str(item.get("name")) for item in found if item.get("name"))
 
     async def remote(self, repo: str, clone_url: str | None) -> Remote:
-        return Remote(clone_url or f"{self._web}/{repo}.git", header=basic("oauth2", self._token))
+        return remote_for(self._web, self._base, repo, clone_url, basic("oauth2", self._token))
 
     async def review_requirement(self, repo: str, branch: str) -> tuple[int, list[str]] | None:
         status, body = await self.request(
@@ -90,14 +98,23 @@ class GitLabClient(Api):
         return [str(item.get("name")) for item in found if item.get("name")]
 
     async def open_pull_request(self, repo: str, *, head: str, base: str, title: str, body: str) -> OpenedPullRequest:
-        created = cast(
-            "dict[str, Any]",
-            await self.json(
-                "POST",
-                f"/projects/{_id(repo)}/merge_requests",
-                json={"source_branch": head, "target_branch": base, "title": title, "description": body},
-            ),
-        )
+        try:
+            created = cast(
+                "dict[str, Any]",
+                await self.json(
+                    "POST",
+                    f"/projects/{_id(repo)}/merge_requests",
+                    json={"source_branch": head, "target_branch": base, "title": title, "description": body},
+                ),
+            )
+        except ProviderError as exc:
+            # A retry after a lost answer: the merge request was opened the first time.
+            if already_open(exc):
+                params: dict[str, str | int] = {"source_branch": head, "target_branch": base, "state": "opened"}
+                found = items(await self.json("GET", f"/projects/{_id(repo)}/merge_requests", params=params))
+                if found:
+                    return OpenedPullRequest(int(found[0]["iid"]), str(found[0].get("web_url") or ""))
+            raise
         return OpenedPullRequest(int(created["iid"]), str(created.get("web_url") or ""))
 
     async def pull_request(self, repo: str, number: int) -> PullRequestState:

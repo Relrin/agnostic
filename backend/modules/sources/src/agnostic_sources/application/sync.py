@@ -38,7 +38,7 @@ from agnostic_sources.domain.model import (
     SourceStatus,
 )
 from agnostic_sources.domain.outcomes import Outcome
-from agnostic_sources.domain.paths import component_target
+from agnostic_sources.domain.paths import MAX_FOLDER_FILES, component_target
 from agnostic_sources.domain.paths import counts as mapping_counts
 from agnostic_studio.facade import RepositoryDraft, StudioFacade
 
@@ -161,7 +161,7 @@ class IncomingComputer:
         self._jobs = jobs
         self._settings = settings
 
-    async def compute(  # noqa: C901, PLR0912
+    async def compute(  # noqa: C901, PLR0912, PLR0915
         self, source_id: str, reason: str, snapshot: Snapshot | None = None
     ) -> list[Change]:
         source = await self._store.source(source_id)
@@ -221,8 +221,13 @@ class IncomingComputer:
                 )
                 if change is not None:
                     kept.add((change.path, change.component_id))
+        # A folder listing stops at MAX_FOLDER_FILES: a bound file it left out isn't gone, only unread.
+        truncated = source.is_local and len(snapshot.files) >= MAX_FOLDER_FILES
         for path, items in by_path.items():
             if path in snapshot.files:
+                continue
+            if truncated and await self._files.local_hash(source, path) is not None:
+                kept.update((path, binding.component_id) for binding in items)
                 continue
             for binding in items:
                 key = (path, binding.component_id)

@@ -8,12 +8,21 @@ from urllib.parse import urlsplit, urlunsplit
 
 import httpx
 
-from agnostic_sources.application.ports import ProviderError
+from agnostic_sources.application.ports import ProviderError, Remote
 
 NOT_FOUND = 404
 FORBIDDEN = 403
 UNAUTHORIZED = 401
 UNPROCESSABLE = 422
+CONFLICT = 409
+ALREADY_OPEN = frozenset({CONFLICT, UNPROCESSABLE})
+"""How hosts refuse a second pull request for the same branches (GitHub 422; GitLab, Gitea and Forgejo 409)."""
+
+
+def already_open(exc: ProviderError) -> bool:
+    return exc.extra.get("upstream_status") in ALREADY_OPEN
+
+
 MAX_PAGES = 20
 """Pages a list call follows at most (2,000 repositories or branches at 100 a page)."""
 PER_PAGE = 100
@@ -21,6 +30,20 @@ PER_PAGE = 100
 
 def basic(user: str, password: str) -> str:
     return "Basic " + base64.b64encode(f"{user}:{password}".encode()).decode()
+
+
+def remote_for(web_url: str, api_url: str, repo: str, clone_url: str | None, header: str) -> Remote:
+    """The repository's https remote with the connection's credentials.
+
+    A clone URL typed for the source gets them only when it's on the connection's own host (its web or API
+    address): the token never goes to another server, and an ssh URL has no use for an http header.
+    """
+    if not clone_url:
+        return Remote(f"{web_url.rstrip('/')}/{repo}.git", header=header)
+    parts = urlsplit(clone_url)
+    hosts = {(urlsplit(url).hostname or "").lower() for url in (web_url, api_url)}
+    same_host = parts.scheme in {"https", "http"} and (parts.hostname or "").lower() in hosts
+    return Remote(clone_url, header=header if same_host else None)
 
 
 class Api:

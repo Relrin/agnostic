@@ -380,7 +380,7 @@ class Sources:
     async def _webhook(self, source: Source) -> Source:
         if source.is_local or source.webhook_id:
             return source
-        url = self._hooks.url(source.provider)
+        url = self._hooks.url(source.provider, source.id)
         client = await self._files.client(source)
         if url is None or client is None:
             return source

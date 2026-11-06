@@ -15,7 +15,7 @@ from agnostic_kernel.modules import AuditActionDecl, BaseModule, RouterSpec
 
 class ContextModule(BaseModule):
     name = "context"
-    version = "0.1.0"
+    version = "0.2.0"
     depends_on = ("access", "audit", "instances", "gateway")
 
     def settings_model(self) -> type[BaseSettings] | None:

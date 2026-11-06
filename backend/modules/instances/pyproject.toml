@@ -1,6 +1,6 @@
 [project]
 name = "agnostic-instances"
-version = "0.1.0"
+version = "0.2.0"
 description = "AgentOS instance registry: connect wizard, diagnostics, per-instance JWT keys and JWKS, health, capabilities"
 requires-python = "==3.15.*"
 license = "BSD-3-Clause"

@@ -245,8 +245,12 @@ class Folders(Protocol):
 
 
 class WebhookUrls(Protocol):
-    def url(self, provider: str) -> str | None:
-        """The public URL git hosts post to (``None`` without a public URL: no webhook is registered)."""
+    def url(self, provider: str, source_id: str | None = None) -> str | None:
+        """The public URL git hosts post to (``None`` without a public URL: no webhook is registered).
+
+        With ``source_id`` the URL is that source's own: GitHub refuses a second hook with the same URL on a
+        repository, so two sources of one repository each need theirs.
+        """
         ...
 
 

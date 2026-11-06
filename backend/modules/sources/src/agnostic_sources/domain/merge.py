@@ -239,7 +239,12 @@ def _merge_keyed(
     order = first + [name for name in second if name not in first]
     merged: list[Any] = []
     for name in order:
+        conflicts = len(result.conflicts)
         value = _merge(b.get(name, MISSING), o.get(name, MISSING), t.get(name, MISSING), [*parts, len(merged)], result)
+        if value is MISSING and len(result.conflicts) > conflicts and name in t:
+            # Deleted in Studio, edited in the repository: the repository's item keeps the conflict's index, so
+            # keeping Studio's side removes exactly it and keeping the repository's sets exactly it.
+            value = t[name]
         if value is not MISSING:
             merged.append(value)
     return merged

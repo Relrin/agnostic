@@ -14,6 +14,8 @@ from agnostic_sources.infrastructure.providers.gitlab import GitLabClient
 from agnostic_sources.settings import SourcesSettings
 
 GITHUB_HOSTS = frozenset({"github.com", "www.github.com"})
+GITHUB_API = "https://api.github.com"
+GHE_CLOUD_SUFFIX = ".ghe.com"
 
 
 class HttpProviderClients:
@@ -40,8 +42,7 @@ class HttpProviderClients:
         match connection.provider:
             case "github":
                 web = self.web_url(connection)
-                default = self._settings.github_api_url
-                api = connection.api_url or (github_api_url(web, default) if connection.web_url else default)
+                api = self._github_api(connection, web)
                 if connection.auth_kind == "github_app":
                     if not (secrets.app_id and secrets.private_key and connection.installation_id):
                         raise ProviderError("The GitHub App connection isn't installed yet.")
@@ -58,6 +59,15 @@ class HttpProviderClients:
             case "local":
                 raise ProviderError("Local folders don't have a git host.")
 
+    def _github_api(self, connection: Connection, web: str) -> str:
+        default = self._settings.github_api_url
+        if connection.api_url:
+            return connection.api_url
+        if not connection.web_url and default != GITHUB_API:
+            return default  # the operator named the API next to their own GitHub web URL
+        # Derived from the web URL, so a GitHub Enterprise web URL never sends the token to github.com.
+        return github_api_url(web, default)
+
     def web_url(self, connection: Connection) -> str:
         match connection.provider:
             case "github":
@@ -71,10 +81,16 @@ class HttpProviderClients:
 
 
 def github_api_url(web_url: str, default: str) -> str:
-    """github.com's API is ``api.github.com``; GitHub Enterprise Server serves it under ``/api/v3``."""
+    """The REST API next to a GitHub web URL.
+
+    github.com's is ``api.github.com``; GitHub Enterprise Cloud with data residency (``<name>.ghe.com``) serves
+    it at ``api.<name>.ghe.com``; GitHub Enterprise Server under ``/api/v3``.
+    """
     host = (urlsplit(web_url).hostname or "").lower()
     if not host or host in GITHUB_HOSTS:
         return default
+    if host.endswith(GHE_CLOUD_SUFFIX):
+        return f"https://api.{host}"
     return f"{web_url.rstrip('/')}/api/v3"
 
 

@@ -1,6 +1,6 @@
 {
   "name": "@agnostic/module-tool-catalog",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "description": "Tool catalog: approved MCP servers and Agno toolkits for the organization, teams and builders, and how each runtime pulls them",

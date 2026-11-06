@@ -103,7 +103,8 @@ the authorize endpoint that document names. A typo in scheme, host or path shows
 Changing the GitLab URL takes effect on the next sign-in. Clearing it switches back to gitlab.com.
 
 To map GitLab groups to directory groups, Agnostic reads the full list from GitLab's userinfo (`groups`). The ID
-token only carries `groups_direct`, which is used when userinfo isn't reachable.
+token only carries `groups_direct`, which is used when GitLab names no userinfo endpoint. When userinfo is named but
+fails, sign-in goes ahead and the person's groups are left as they were (`groups_direct` misses inherited groups).
 
 Agnostic only returns to relative paths after sign-in, so the web app and the API must be served from the same origin
 as `PUBLIC_URL`. The reverse proxy in the deploy bundle and the dev server's `/api` proxy both do that.

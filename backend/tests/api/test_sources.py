@@ -18,7 +18,9 @@ import pytest
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 
+from agnostic_sources.application import sync
 from agnostic_sources.application.tasks import SourceJobs
+from agnostic_sources.infrastructure import local_folders
 from tests.api.test_instances_gateway import connect
 from tests.support.fake_agentos import FakeAgentOS
 from tests.support.fake_git_provider import TOKEN, FakeGitea
@@ -260,7 +262,7 @@ async def bound(stack: Stack, tmp_path: Path, *, access: str = "read_write") -> 
     assert activated.status_code == 200, activated.text
     assert activated.json()["status"] == "active"
     assert activated.json()["webhook"] is True
-    assert here.gitea.hooks["1"]["config"]["url"] == "http://agnostic.test/hooks/gitea"
+    assert here.gitea.hooks["1"]["config"]["url"] == f"http://agnostic.test/hooks/gitea?source={here.source_id}"
 
     async def three() -> list[dict[str, Any]] | None:
         incoming = (await here.changes())["incoming"]
@@ -537,6 +539,49 @@ async def test_a_local_folder_syncs_with_a_development_instance(stack: Stack, tm
     _ = await eventually(synced, "the binding to follow the folder")
 
 
+async def test_a_bound_file_the_folder_listing_left_out_is_not_removed(
+    stack: Stack, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    owner = await stack.owner()
+    dev = stack.runtime("dev.agentos.test", os_id="fake-dev", name="Fake dev")
+    await connect(owner, dev, "http://dev.agentos.test:7777", display_name="dev-agentos", env_tag="development")
+    folder = tmp_path / "local" / "app"
+    (folder / "agents").mkdir(parents=True)
+    (folder / "agents" / "support_triage.py").write_text(SUPPORT_TRIAGE, encoding="utf-8")
+    sources = "/api/v1/instances/dev-agentos/studio/sources"
+    created = await owner.post(sources, json={"provider": "local", "local_path": str(folder)})
+    assert created.status_code == 201, created.text
+    source = f"{sources}/{created.json()['id']}"
+
+    async def scanned() -> dict[str, Any] | None:
+        report = (await owner.get(f"{source}/scan")).json()
+        return report if report["status"] == "ready" else None
+
+    _ = await eventually(scanned, "the scan")
+    assert (await owner.post(f"{source}/activate", json={})).status_code == 200
+
+    async def incoming() -> list[dict[str, Any]] | None:
+        return (await owner.get(f"{source}/changes")).json()["incoming"] or None
+
+    [change] = await eventually(incoming, "the folder's agent")
+    assert (await owner.post(f"{source}/pull", json={"change_ids": [change["id"]]})).status_code == 200
+
+    # The listing now stops after one file, before it reaches agents/.
+    monkeypatch.setattr(local_folders, "MAX_FOLDER_FILES", 1)
+    monkeypatch.setattr(sync, "MAX_FOLDER_FILES", 1)
+    (folder / "README.md").write_text("# app", encoding="utf-8")
+    before = (await owner.get(source)).json()["last_fetched_at"]
+    assert (await owner.post(f"{source}/fetch")).status_code == 202
+
+    async def fetched() -> dict[str, Any] | None:
+        card = (await owner.get(source)).json()
+        return card if card["last_fetched_at"] != before else None
+
+    _ = await eventually(fetched, "the fetch")
+    changes = (await owner.get(f"{source}/changes")).json()
+    assert [item for item in changes["incoming"] if item["outcome"].get("action") == "removed"] == []
+
+
 # ---------------------------------------------------------------- failures, retries, limits and connection rules
 
 
@@ -558,6 +603,24 @@ async def source_status(owner: httpx.AsyncClient, source: str, status: str) -> d
     return card if card["status"] == status else None
 
 
+async def test_a_closed_pull_request_gives_back_only_its_own_changes(stack: Stack, tmp_path: Path) -> None:
+    here = await bound(stack, tmp_path)
+    await here.save_draft("support-triage", 1, lambda config: config.update(description="Sorts tickets."))
+    first = await outgoing_for(here, "support-triage")
+    assert (await here.owner.post(f"{here.source}/commit", json={"change_ids": [first["id"]]})).status_code == 202
+    _ = await eventually(lambda: asyncio.sleep(0, here.gitea.pulls.get(1)), "the first pull request")
+    await here.save_draft("support-triage", 1, lambda config: config.update(description="Sorts every ticket."))
+    second = await outgoing_for(here, "support-triage")
+    assert (await here.owner.post(f"{here.source}/commit", json={"change_ids": [second["id"]]})).status_code == 202
+    _ = await eventually(lambda: asyncio.sleep(0, here.gitea.pulls.get(2)), "the second pull request")
+
+    here.gitea.close(1)
+    assert (await here.webhook(here.gitea.pull_merged(1))).status_code == 202
+    _ = await eventually(lambda: change_status(here, first["id"], "pending"), "the closed one to give back")
+    pending = [change["id"] for change in (await here.changes())["outgoing"] if change["status"] == "pending"]
+    assert pending == [first["id"]], "the change in the open pull request stays committed"
+
+
 async def test_a_pull_request_that_failed_to_open_is_retried_on_the_branch_it_pushed(
     stack: Stack, tmp_path: Path
 ) -> None:
@@ -567,7 +630,8 @@ async def test_a_pull_request_that_failed_to_open_is_retried_on_the_branch_it_pu
     here.gitea.fail_pulls = 1
     first = await here.owner.post(f"{here.source}/commit", json={"change_ids": [change["id"]]})
     assert first.status_code == 202, first.text
-    _ = await eventually(lambda: change_status(here, change["id"], "pending"), "the failed commit to give back")
+    failed = await eventually(lambda: change_status(here, change["id"], "pending"), "the failed commit to give back")
+    assert failed["outcome"]["commit_error"], "the reason is kept for the people who asked for the commit"
     assert "studio/support-triage-v1" in here.upstream.branches(), "the push went through before the PR failed"
     assert here.gitea.pulls == {}
 

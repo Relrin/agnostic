@@ -1,6 +1,6 @@
 {
   "name": "@agnostic/module-sources",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "description": "Code sources: repositories and local folders synced with Studio, their changes, pull requests and conflicts",

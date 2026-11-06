@@ -6,7 +6,7 @@ import time
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any, cast
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlsplit
 
 import httpx
 import jwt
@@ -20,6 +20,8 @@ log = get_logger(__name__)
 DISCOVERY_TTL = 3600.0
 ALLOWED_ALGORITHMS = ("RS256", "RS384", "RS512", "PS256", "PS384", "PS512", "ES256", "ES384", "ES512", "EdDSA")
 CLOCK_LEEWAY = 60
+GITHUB_HOSTS = frozenset({"github.com", "www.github.com"})
+GOOGLE_ISSUER = "https://accounts.google.com"
 _CLAIMS_KEPT = ("sub", "iss", "email", "email_verified", "name", "preferred_username", "hd", "groups", "login", "id")
 
 
@@ -90,7 +92,9 @@ class OidcClient:
             "code_challenge_method": "S256",
             **self.config.extra_authorize_params,
         }
-        return f"{metadata['authorization_endpoint']}?{urlencode(params)}"
+        endpoint = str(metadata["authorization_endpoint"])
+        # Some IdPs name an endpoint that already has a query (Azure AD B2C: ``?p=<policy>``).
+        return f"{endpoint}{'&' if '?' in endpoint else '?'}{urlencode(params)}"
 
     async def complete(self, *, redirect_uri: str, code: str, code_verifier: str, nonce: str) -> ExternalProfile:
         metadata = await self._metadata()
@@ -164,13 +168,16 @@ class OidcClient:
         supported = metadata.get("id_token_signing_alg_values_supported") or ["RS256"]
         algorithms = [alg for alg in supported if alg in ALLOWED_ALGORITHMS]
         key = await self._signing_key(metadata, header.get("kid"))
+        issuer = str(metadata["issuer"])
+        # Google signs some ID tokens with the bare host as ``iss``; both forms are its issuer.
+        issuers = [issuer, "accounts.google.com"] if issuer == GOOGLE_ISSUER else [issuer]
         try:
             claims: dict[str, Any] = jwt.decode(
                 id_token,
                 key=key,
                 algorithms=algorithms,
                 audience=self.config.client_id,
-                issuer=str(metadata["issuer"]),
+                issuer=issuers,
                 leeway=CLOCK_LEEWAY,
                 options={"require": ["exp", "iat", "sub"]},
             )
@@ -198,9 +205,11 @@ class GitHubClient:
     def __init__(self, config: ProviderConfig, http: httpx.AsyncClient) -> None:
         self.config = config
         self._http = http
-        base = config.base_url or "https://github.com"
-        self._web = base
-        self._api = "https://api.github.com" if base == "https://github.com" else f"{base}/api/v3"
+        base = (config.base_url or "https://github.com").rstrip("/")
+        if (urlsplit(base).hostname or "").lower() in GITHUB_HOSTS:
+            self._web, self._api = "https://github.com", "https://api.github.com"
+        else:
+            self._web, self._api = base, f"{base}/api/v3"  # GitHub Enterprise Server
 
     async def authorization_url(self, *, redirect_uri: str, state: str, nonce: str, code_challenge: str) -> str:  # noqa: ARG002
         params = {
