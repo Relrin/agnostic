@@ -28,6 +28,7 @@ from agnostic_sources.infrastructure.providers.base import FORBIDDEN, NOT_FOUND,
 
 TOKEN_MARGIN = 300.0
 ACCEPT = "application/vnd.github+json"
+SEARCH_LIMIT = 256
 
 
 class GitHubAppTokens:
@@ -118,21 +119,35 @@ class GitHubClient(Api):
         return str(user.get("login") or "")
 
     async def repos(self, query: str | None = None) -> list[RepoSummary]:
-        if self._app is not None:
-            found = items(
-                await self.json("GET", "/installation/repositories", params={"per_page": 100}), "repositories"
-            )
-        else:
-            found = items(await self.json("GET", "/user/repos", params={"per_page": 100, "sort": "pushed"}))
-        repos = [_repo(item) for item in found]
-        return [repo for repo in repos if not query or query.lower() in repo.full_name.lower()]
+        if not query:
+            if self._app is not None:
+                found = await self.pages("/installation/repositories", key="repositories")
+            else:
+                found = await self.pages("/user/repos", params={"sort": "pushed"})
+            return [_repo(item) for item in found]
+        # Search on the server, narrowed to the accounts the connection reaches (search alone covers all of GitHub).
+        seen: dict[str, RepoSummary] = {}
+        for search in _searches(query, await self._owners()):
+            for item in await self.pages("/search/repositories", params={"q": search}, key="items", max_pages=3):
+                repo = _repo(item)
+                seen.setdefault(repo.full_name, repo)
+        return list(seen.values())
+
+    async def _owners(self) -> list[str]:
+        if self._app is not None and self._tokens is not None:
+            app_id, key, installation = self._app
+            account = await self._tokens.installation(self._api, app_id, key, installation)
+            return [account] if account else []
+        login = await self.verify()
+        orgs = [str(item.get("login")) for item in await self.pages("/user/orgs") if item.get("login")]
+        return [owner for owner in (login, *orgs) if owner]
 
     async def repo(self, repo: str) -> RepoSummary:
         return _repo(cast("dict[str, Any]", await self.json("GET", f"/repos/{repo}")))
 
     async def branches(self, repo: str) -> list[str]:
-        body = await self.json("GET", f"/repos/{repo}/branches", params={"per_page": 100})
-        return sorted(str(item.get("name")) for item in items(body) if item.get("name"))
+        found = await self.pages(f"/repos/{repo}/branches")
+        return sorted(str(item.get("name")) for item in found if item.get("name"))
 
     async def remote(self, repo: str, clone_url: str | None) -> Remote:
         return Remote(clone_url or f"{self._web}/{repo}.git", header=basic("x-access-token", await self._bearer()))
@@ -196,6 +211,23 @@ class GitHubClient(Api):
 
     async def delete_webhook(self, repo: str, hook_id: str) -> None:
         _ = await self.request("DELETE", f"/repos/{repo}/hooks/{hook_id}", allow=frozenset({NOT_FOUND}))
+
+
+def _searches(query: str, owners: list[str]) -> list[str]:
+    """Search queries for ``query`` in the owners' repositories, each within GitHub's 256-character limit."""
+    base = f"{query.strip()[:100]} in:name"
+    if not owners:
+        return [base]
+    searches: list[str] = []
+    current = base
+    for owner in owners:
+        term = f" user:{owner}"
+        if current != base and len(current) + len(term) > SEARCH_LIMIT:
+            searches.append(current)
+            current = base
+        current += term
+    searches.append(current)
+    return searches
 
 
 def _repo(data: dict[str, Any]) -> RepoSummary:

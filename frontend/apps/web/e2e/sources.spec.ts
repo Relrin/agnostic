@@ -1,11 +1,12 @@
 // Code sources against stubbed APIs: the sidebar's conflict dot, the GitHub source's incoming changes with what
-// pulling does, the outgoing change with its branch and review requirement, and a conflict resolved by keeping the
-// repository's value.
-import { expect, test } from "@playwright/test";
+// pulling does, the outgoing change with its branch and review requirement, a conflict resolved by keeping the
+// repository's value, a connection edited (only what changed is sent) and verified, and a source disconnected.
+import { expect, test, type Page } from "@playwright/test";
 
-import { instances, stubApi } from "./stubs";
+import { access, instances, stubApi } from "./stubs";
 
 const SOURCES = /\/api\/v1\/instances\/[^/]+\/studio\/sources/;
+const CONNECTIONS = /\/api\/v1\/studio\/connections/;
 const policy = {
   pull_mode: "on_demand",
   publish_mode: "open_pr",
@@ -103,8 +104,50 @@ const conflict = {
   resolved_by_name: null,
 };
 
+const connection = {
+  id: "scn_github",
+  name: "Northwind GitHub",
+  provider: "github",
+  provider_label: "GitHub",
+  auth_kind: "token",
+  access: "read_write",
+  api_url: null,
+  web_url: null,
+  app_slug: null,
+  installation_id: null,
+  account: "agnostic-bot",
+  status: "verified",
+  last_error: null,
+  last_checked_at: new Date(Date.now() - 3600 * 1000).toISOString(),
+  version: 3,
+};
+
+/** The org's connections: every PATCH body and verify are kept. */
+async function stubConnections(page: Page) {
+  const seen = { patches: [] as Record<string, unknown>[], verified: 0 };
+  await page.route(CONNECTIONS, async (route) => {
+    const url = new URL(route.request().url());
+    const method = route.request().method();
+    if (url.pathname === "/api/v1/studio/connections" && method === "GET") {
+      return route.fulfill({ json: [connection] });
+    }
+    if (url.pathname === "/api/v1/studio/connections/scn_github" && method === "PATCH") {
+      const body = route.request().postDataJSON() as Record<string, unknown>;
+      seen.patches.push(body);
+      return route.fulfill({ json: { ...connection, ...body, version: 4 } });
+    }
+    if (url.pathname === "/api/v1/studio/connections/scn_github/verify" && method === "POST") {
+      seen.verified += 1;
+      return route.fulfill({ json: connection });
+    }
+    return route.fulfill({ status: 404, json: { title: "Not stubbed", status: 404 } });
+  });
+  return seen;
+}
+
 test("sources: the conflict dot, the changes and a conflict kept from the repository", async ({ page }) => {
   await stubApi(page);
+  await stubConnections(page);
   const resolved: string[] = [];
   await page.route(SOURCES, async (route) => {
     const url = new URL(route.request().url());
@@ -168,4 +211,68 @@ test("sources: the conflict dot, the changes and a conflict kept from the reposi
   await article.getByRole("button", { name: "Keep repo" }).click();
   await expect(article).toBeHidden();
   expect(resolved).toEqual(["keep_repo"]);
+});
+
+test("sources: a connection edited for GitHub Enterprise and verified, and a source disconnected", async ({
+  page,
+}) => {
+  await stubApi(page);
+  // Someone who manages sources (the shared stub's owner has no studio scopes).
+  const manager = {
+    ...access,
+    control_plane_scopes: [...access.control_plane_scopes, "studio:sources:write", "studio:sources:delete"],
+  };
+  await page.route(/\/api\/v1\/me\/access/, (route) => route.fulfill({ json: manager }));
+  const seen = await stubConnections(page);
+  const deleted: string[] = [];
+  await page.route(SOURCES, async (route) => {
+    const url = new URL(route.request().url());
+    const path = url.pathname.replace(/^\/api\/v1\/instances\/[^/]+\/studio\/sources/, "");
+    const method = route.request().method();
+    if (path === "/conflicts/count")
+      return route.fulfill({ json: { instance_id: instances[1]?.id, count: 0 } });
+    if (path === "" && method === "GET") return route.fulfill({ json: deleted.length ? [] : [github] });
+    if (path === "/src_github/changes") {
+      return route.fulfill({
+        json: {
+          remote: { ref: "origin/main", head_sha: null, fetched_at: null },
+          incoming: [],
+          outgoing: [],
+          conflicts: [],
+          pull_requests: [],
+        },
+      });
+    }
+    if (path === "/src_github" && method === "DELETE") {
+      deleted.push("src_github");
+      return route.fulfill({ status: 204 });
+    }
+    return route.fulfill({
+      status: 404,
+      json: { title: "Not stubbed", status: 404, detail: `${method} ${path}` },
+    });
+  });
+
+  await page.goto("/i/staging-agentos/studio/sources");
+  const item = page
+    .getByRole("list", { name: "Connections" })
+    .getByRole("listitem", { name: "Northwind GitHub" });
+  await expect(item).toContainText("Token · read & write · agnostic-bot");
+  await item.getByRole("button", { name: "Verify Northwind GitHub" }).click();
+  await expect.poll(() => seen.verified).toBe(1);
+
+  await item.getByRole("button", { name: "Edit Northwind GitHub" }).click();
+  const dialog = page.getByRole("dialog", { name: "Edit Northwind GitHub" });
+  await dialog.getByRole("textbox", { name: "Server URL" }).fill("https://ghe.northwind.test");
+  await dialog.getByRole("button", { name: "Save" }).click();
+  await expect(dialog).toBeHidden();
+  expect(seen.patches).toEqual([{ version: 3, web_url: "https://ghe.northwind.test" }]);
+
+  await page.getByRole("button", { name: "Disconnect source" }).click();
+  await page
+    .getByRole("dialog", { name: "Disconnect northwind/agent-platform · main?" })
+    .getByRole("button", { name: "Disconnect" })
+    .click();
+  await expect(page.getByText("No code sources yet")).toBeVisible();
+  expect(deleted).toEqual(["src_github"]);
 });

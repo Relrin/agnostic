@@ -1,4 +1,5 @@
 import {
+  sampleConnections,
   sampleOrgHandlers,
   renderPage,
   sourcesCalls,
@@ -11,6 +12,8 @@ import userEvent from "@testing-library/user-event";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
+import { usable } from "./connect-wizard";
+import { connectionPatch } from "./connections";
 import { SourcesPage as Page } from "./sources-page";
 
 function SourcesPage() {
@@ -128,6 +131,129 @@ describe("SourcesPage", () => {
     await user.click(await screen.findByRole("radio", { name: "On every push to main, as drafts" }));
     await waitFor(() => {
       expect(calls.updates[0]).toMatchObject({ policy: { pull_mode: "on_push_as_drafts" }, version: 3 });
+    });
+  });
+
+  it("lists the connections and edits only what changed", async () => {
+    const user = userEvent.setup();
+    renderPage(SourcesPage, { path: PATH, url: URL });
+    const list = await screen.findByRole("list", { name: "Connections" });
+    const gitlab = within(list).getByRole("listitem", { name: "Data GitLab" });
+    expect(gitlab).toHaveTextContent("Token · pull only");
+    expect(gitlab).toHaveTextContent("GitLab refused the connection's credentials: 401 Unauthorized");
+    expect(gitlab).toHaveTextContent("https://gitlab.northwind.test");
+    expect(within(list).getByRole("listitem", { name: "Northwind GitHub" })).toHaveTextContent(
+      "GitHub App · read & write · northwind",
+    );
+
+    await user.click(within(gitlab).getByRole("button", { name: "Edit Data GitLab" }));
+    const dialog = await screen.findByRole("dialog", { name: "Edit Data GitLab" });
+    const server = within(dialog).getByRole("textbox", { name: "Server URL" });
+    await user.clear(server);
+    await user.type(server, "https://gitlab.northwind.example/");
+    await user.type(within(dialog).getByLabelText("New token"), "glpat-rotated");
+    await user.click(within(dialog).getByRole("button", { name: "Save" }));
+    await waitFor(() => {
+      expect(calls.connectionUpdates).toEqual([
+        {
+          connection: "scn_gitlab",
+          body: { version: 4, web_url: "https://gitlab.northwind.example", token: "glpat-rotated" },
+        },
+      ]);
+    });
+  });
+
+  it("verifies and removes a connection", async () => {
+    const user = userEvent.setup();
+    renderPage(SourcesPage, { path: PATH, url: URL });
+    const list = await screen.findByRole("list", { name: "Connections" });
+    await user.click(within(list).getByRole("button", { name: "Verify Data GitLab" }));
+    await waitFor(() => {
+      expect(calls.verified).toEqual(["scn_gitlab"]);
+    });
+    await user.click(within(list).getByRole("button", { name: "Remove Northwind Gitea" }));
+    const dialog = await screen.findByRole("dialog", { name: "Remove Northwind Gitea?" });
+    await user.click(within(dialog).getByRole("button", { name: "Remove" }));
+    await waitFor(() => {
+      expect(calls.deletedConnections).toEqual(["scn_gitea"]);
+    });
+  });
+
+  it("disconnects the selected source after asking", async () => {
+    const user = userEvent.setup();
+    renderPage(SourcesPage, { path: PATH, url: URL });
+    await user.click(await screen.findByRole("button", { name: "Disconnect source" }));
+    const dialog = await screen.findByRole("dialog", { name: "Disconnect northwind/agent-platform · main?" });
+    expect(dialog).toHaveTextContent("Its components stay in Studio");
+    await user.click(within(dialog).getByRole("button", { name: "Disconnect" }));
+    await waitFor(() => {
+      expect(calls.deletedSources).toEqual(["src_github"]);
+    });
+  });
+
+  it("resumes the wizard at the repository after the GitHub App install, and searches on the server", async () => {
+    const user = userEvent.setup();
+    renderPage(SourcesPage, { path: PATH, url: `${URL}?connect=1&connection=scn_github` });
+    const dialog = await screen.findByRole("dialog", { name: "Connect source" });
+    expect(within(dialog).getByRole("listitem", { current: "step" })).toHaveTextContent("Repository");
+    await waitFor(() => {
+      expect(calls.repoQueries).toEqual([null]);
+    });
+    await user.type(within(dialog).getByRole("searchbox", { name: "Search repositories" }), "data");
+    await waitFor(() => {
+      expect(calls.repoQueries).toContain("data");
+    });
+  });
+
+  it("asks for GitHub Enterprise's server and API URLs on a new GitHub connection", async () => {
+    const user = userEvent.setup();
+    renderPage(SourcesPage, { path: PATH, url: URL });
+    await user.click(await screen.findByRole("button", { name: "Connect source" }));
+    const dialog = await screen.findByRole("dialog", { name: "Connect source" });
+    await user.click(within(dialog).getByRole("button", { name: "Continue" }));
+    expect(within(dialog).getByRole("textbox", { name: "Server URL" })).toBeInTheDocument();
+    expect(within(dialog).getByRole("textbox", { name: "API URL" })).toBeInTheDocument();
+  });
+});
+
+describe("connections", () => {
+  const sample = (id: string) => {
+    const found = sampleConnections.find((item) => item.id === id);
+    if (!found) throw new Error(`no sample connection ${id}`);
+    return found;
+  };
+  const github = sample("scn_github");
+  const gitlab = sample("scn_gitlab");
+  const gitea = sample("scn_gitea");
+
+  it("are offered across Gitea and Forgejo both ways, and nowhere else", () => {
+    const forgejo = { ...gitea, id: "scn_forgejo", provider: "forgejo" };
+    expect(usable(gitea, "forgejo")).toBe(true);
+    expect(usable(forgejo, "gitea")).toBe(true);
+    expect(usable(forgejo, "forgejo")).toBe(true);
+    expect(usable(gitea, "github")).toBe(false);
+    expect(usable(github, "gitlab")).toBe(false);
+  });
+
+  it("send only the fields that changed, and a secret only when one is typed", () => {
+    const form = {
+      name: gitlab.name,
+      web_url: gitlab.web_url ?? "",
+      api_url: "",
+      access: gitlab.access,
+      secret: "",
+    };
+    expect(connectionPatch(gitlab, form)).toEqual({ version: 4 });
+    expect(connectionPatch(gitlab, { ...form, web_url: "", access: "read_write" })).toEqual({
+      version: 4,
+      web_url: null,
+      access: "read_write",
+    });
+    expect(
+      connectionPatch(github, { ...form, name: "GitHub", web_url: "", access: "read_write", secret: "x" }),
+    ).toEqual({
+      version: 2,
+      name: "GitHub",
     });
   });
 });

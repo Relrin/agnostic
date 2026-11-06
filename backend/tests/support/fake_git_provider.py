@@ -1,7 +1,8 @@
 """A fake Gitea (the API code sources use) in front of an :class:`Upstream` repository on disk.
 
 Pull requests are real branches in the upstream bare repository; ``merge`` merges one as the host's "Merge" button
-does. Webhooks the source registers are kept, so tests can send deliveries signed with their secret.
+does. Webhooks the source registers are kept, so tests can send deliveries signed with their secret. ``refuse_token``
+makes the host turn the token down (every fetch fails), and ``fail_pulls`` makes the next pull requests fail to open.
 """
 
 from __future__ import annotations
@@ -39,12 +40,14 @@ class FakeGitea:
     teams: list[str] = field(default_factory=lambda: ["platform"])
     pulls: dict[int, FakePull] = field(default_factory=dict[int, FakePull])
     hooks: dict[str, dict[str, Any]] = field(default_factory=dict[str, dict[str, Any]])
+    refuse_token: bool = False
+    fail_pulls: int = 0
 
     def __post_init__(self) -> None:
         self.app = self._build()
 
     def _check(self, authorization: str | None) -> None:
-        if authorization != f"token {TOKEN}":
+        if self.refuse_token or authorization != f"token {TOKEN}":
             raise HTTPException(401, "bad token")
 
     def _repo(self, owner: str, name: str) -> None:
@@ -66,12 +69,20 @@ class FakeGitea:
         @app.get("/api/v1/user")
         async def user(authorization: Annotated[str | None, Header()] = None) -> dict[str, Any]:
             fake._check(authorization)
-            return {"login": "agnostic-bot"}
+            return {"id": 7, "login": "agnostic-bot"}
+
+        @app.get("/api/v1/user/repos")
+        async def user_repos(authorization: Annotated[str | None, Header()] = None) -> list[Any]:
+            fake._check(authorization)
+            return [fake._summary()]
 
         @app.get("/api/v1/repos/search")
-        async def search(authorization: Annotated[str | None, Header()] = None) -> dict[str, Any]:
+        async def search(
+            q: str = "", uid: int | None = None, authorization: Annotated[str | None, Header()] = None
+        ) -> dict[str, Any]:
             fake._check(authorization)
-            return {"ok": True, "data": [fake._summary()]}
+            found = [fake._summary()] if uid == 7 and q.lower() in fake.repo.lower() else []
+            return {"ok": True, "data": found}
 
         @app.get("/api/v1/repos/{owner}/{name}")
         async def repo(owner: str, name: str, authorization: Annotated[str | None, Header()] = None) -> dict[str, Any]:
@@ -85,15 +96,20 @@ class FakeGitea:
             fake._repo(owner, name)
             return [{"name": branch} for branch in fake.upstream.branches()]
 
-        @app.get("/api/v1/repos/{owner}/{name}/branch_protections/{branch}")
-        async def protection(
-            owner: str, name: str, branch: str, authorization: Annotated[str | None, Header()] = None
-        ) -> dict[str, Any]:
+        @app.get("/api/v1/repos/{owner}/{name}/branch_protections")
+        async def protections(
+            owner: str, name: str, authorization: Annotated[str | None, Header()] = None
+        ) -> list[dict[str, Any]]:
             fake._check(authorization)
             fake._repo(owner, name)
-            if branch != fake.upstream.branch:
-                raise HTTPException(404, "no protection")
-            return {"required_approvals": fake.required_approvals, "approvals_whitelist_teams": fake.teams}
+            return [
+                {"rule_name": "release/*", "required_approvals": 3, "approvals_whitelist_teams": []},
+                {
+                    "rule_name": fake.upstream.branch,
+                    "required_approvals": fake.required_approvals,
+                    "approvals_whitelist_teams": fake.teams,
+                },
+            ]
 
         @app.post("/api/v1/repos/{owner}/{name}/pulls", status_code=201)
         async def open_pull(
@@ -102,6 +118,9 @@ class FakeGitea:
             fake._check(authorization)
             fake._repo(owner, name)
             body = await request.json()
+            if fake.fail_pulls > 0:
+                fake.fail_pulls -= 1
+                raise HTTPException(500, "the host had a hiccup")
             if body["head"] not in fake.upstream.branches():
                 raise HTTPException(422, "head branch doesn't exist")
             number = len(fake.pulls) + 1

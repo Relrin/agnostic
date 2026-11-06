@@ -28,6 +28,12 @@ from agnostic_sources.domain.model import Access, AuthKind, Connection, Provider
 
 INSTALL_STATE_TTL = 1800
 PROVIDERS = frozenset({"github", "gitlab", "gitea", "forgejo"})
+_KIND: dict[str, str] = {
+    "github_app": "the GitHub App",
+    "token": "a token",
+    "deploy_key": "a deploy key",
+    "local": "a local folder",
+}
 
 
 @dataclass(frozen=True, slots=True)
@@ -36,6 +42,22 @@ class ConnectionDraft:
     provider: Provider
     auth_kind: AuthKind
     access: Access = "read_write"
+    api_url: str | None = None
+    web_url: str | None = None
+    app_slug: str | None = None
+    installation_id: str | None = None
+    secrets: Secrets | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class ConnectionPatch:
+    """A change to a connection: only the fields named in ``given`` change (a URL given as ``None`` is cleared)."""
+
+    given: frozenset[str]
+    name: str | None = None
+    provider: Provider | None = None
+    auth_kind: AuthKind | None = None
+    access: Access | None = None
     api_url: str | None = None
     web_url: str | None = None
     app_slug: str | None = None
@@ -77,6 +99,8 @@ class Connections:
     async def create(self, principal: Principal, draft: ConnectionDraft) -> Connection:
         await self._access.require(principal, SOURCES_WRITE)
         _check(draft)
+        if draft.auth_kind == "deploy_key" and not (draft.secrets and draft.secrets.private_key):
+            raise ValidationFailedError("Paste the deploy key's private key (the public half goes on the repository).")
         connection = Connection(
             id=new_id("scn"),
             name=draft.name.strip(),
@@ -98,30 +122,54 @@ class Connections:
         return saved
 
     async def update(
-        self, principal: Principal, connection_id: str, draft: ConnectionDraft, expected_version: int | None
+        self, principal: Principal, connection_id: str, patch: ConnectionPatch, expected_version: int | None
     ) -> Connection:
         await self._access.require(principal, SOURCES_WRITE)
         existing = await self._found(connection_id)
-        _check(draft)
+        given = patch.given
+        if "provider" in given and patch.provider not in {None, existing.provider}:
+            raise ValidationFailedError(
+                f"{existing.name} connects to {existing.provider}; connect {patch.provider} as a new connection."
+            )
+        if "auth_kind" in given and patch.auth_kind not in {None, existing.auth_kind}:
+            # The secrets a connection keeps belong to its kind (a token, an app key, a deploy key): switching kinds
+            # would leave the wrong ones behind, so it is a new connection.
+            raise ValidationFailedError(
+                f"{existing.name} signs in with {_KIND[existing.auth_kind]}; it can't switch to "
+                f"{_KIND[patch.auth_kind or existing.auth_kind]}. Connect again with the new kind, then move the "
+                "sources over."
+            )
         updated = replace(
             existing,
-            name=draft.name.strip(),
-            access=draft.access,
-            api_url=_url(draft.api_url),
-            web_url=_url(draft.web_url),
-            app_slug=draft.app_slug or existing.app_slug,
-            installation_id=draft.installation_id or existing.installation_id,
+            name=(patch.name or "").strip() if "name" in given else existing.name,
+            access=patch.access or existing.access if "access" in given else existing.access,
+            api_url=_url(patch.api_url) if "api_url" in given else existing.api_url,
+            web_url=_url(patch.web_url) if "web_url" in given else existing.web_url,
+            app_slug=patch.app_slug or existing.app_slug if "app_slug" in given else existing.app_slug,
+            installation_id=patch.installation_id or existing.installation_id
+            if "installation_id" in given
+            else existing.installation_id,
+        )
+        _check(
+            ConnectionDraft(
+                name=updated.name,
+                provider=updated.provider,
+                auth_kind=updated.auth_kind,
+                access=updated.access,
+                api_url=updated.api_url,
+                web_url=updated.web_url,
+            )
         )
         secrets = None
-        if draft.secrets is not None and any(
-            (draft.secrets.token, draft.secrets.private_key, draft.secrets.app_id, draft.secrets.webhook_secret)
+        if patch.secrets is not None and any(
+            (patch.secrets.token, patch.secrets.private_key, patch.secrets.app_id, patch.secrets.webhook_secret)
         ):
             old = await self._store.connection_secrets(connection_id)
             secrets = Secrets(
-                token=draft.secrets.token or old.token,
-                private_key=draft.secrets.private_key or old.private_key,
-                app_id=draft.secrets.app_id or old.app_id,
-                webhook_secret=draft.secrets.webhook_secret or old.webhook_secret,
+                token=patch.secrets.token or old.token,
+                private_key=patch.secrets.private_key or old.private_key,
+                app_id=patch.secrets.app_id or old.app_id,
+                webhook_secret=patch.secrets.webhook_secret or old.webhook_secret,
             )
         saved = await self._store.save_connection(updated, secrets, expected_version=expected_version)
         saved = await self._verify(saved)

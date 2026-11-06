@@ -7,7 +7,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
-from agnostic_sources.application.connections import ConnectionDraft
+from agnostic_sources.application.connections import ConnectionDraft, ConnectionPatch
 from agnostic_sources.application.outgoing import CommitPreview
 from agnostic_sources.application.ports import RepoSummary, Secrets
 from agnostic_sources.application.sources import BindingDecision, SourceDraft, SourcePatch
@@ -52,6 +52,48 @@ class ConnectionIn(BaseModel):
 
     def draft(self) -> ConnectionDraft:
         return ConnectionDraft(
+            name=self.name,
+            provider=self.provider,
+            auth_kind=self.auth_kind,
+            access=self.access,
+            api_url=self.api_url,
+            web_url=self.web_url,
+            app_slug=self.app_slug,
+            installation_id=self.installation_id,
+            secrets=Secrets(
+                token=self.token,
+                private_key=self.private_key,
+                app_id=self.app_id,
+                webhook_secret=self.webhook_secret,
+            ),
+        )
+
+
+class ConnectionPatchIn(BaseModel):
+    """Only the fields sent change; send a URL as ``null`` to clear it, and a secret only to replace it."""
+
+    name: str | None = Field(default=None, min_length=1, max_length=200)
+    provider: Literal["github", "gitlab", "gitea", "forgejo"] | None = Field(
+        default=None, description="Can't change; sent only to be checked."
+    )
+    auth_kind: Literal["github_app", "token", "deploy_key"] | None = Field(
+        default=None, description="Can't change; a different kind is refused (connect again instead)."
+    )
+    access: Literal["read_write", "read_only"] | None = None
+    api_url: str | None = Field(default=None, max_length=500)
+    web_url: str | None = Field(default=None, max_length=500)
+    app_slug: str | None = Field(default=None, max_length=200)
+    installation_id: str | None = Field(default=None, max_length=40)
+    app_id: str | None = Field(default=None, max_length=40)
+    private_key: str | None = Field(default=None, max_length=20_000)
+    token: str | None = Field(default=None, max_length=2000)
+    webhook_secret: str | None = Field(default=None, max_length=500)
+    version: int | None = Field(default=None, description="Expected version (optimistic concurrency).")
+
+    def patch(self) -> ConnectionPatch:
+        given = frozenset(self.model_fields_set - {"version", "app_id", "private_key", "token", "webhook_secret"})
+        return ConnectionPatch(
+            given=given,
             name=self.name,
             provider=self.provider,
             auth_kind=self.auth_kind,

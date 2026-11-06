@@ -1,9 +1,10 @@
-"""What the git host API clients share: JSON calls with errors people can act on."""
+"""What the git host API clients share: JSON calls with errors people can act on, and paging through lists."""
 
 from __future__ import annotations
 
 import base64
-from typing import Any, cast
+from typing import Any, NoReturn, cast
+from urllib.parse import urlsplit
 
 import httpx
 
@@ -12,6 +13,10 @@ from agnostic_sources.application.ports import ProviderError
 NOT_FOUND = 404
 FORBIDDEN = 403
 UNAUTHORIZED = 401
+UNPROCESSABLE = 422
+MAX_PAGES = 20
+"""Pages a list call follows at most (2,000 repositories or branches at 100 a page)."""
+PER_PAGE = 100
 
 
 def basic(user: str, password: str) -> str:
@@ -27,6 +32,26 @@ class Api:
     async def headers(self) -> dict[str, str]:
         raise NotImplementedError
 
+    async def _send(
+        self, method: str, url: str, *, params: dict[str, str | int] | None = None, json: object = None
+    ) -> tuple[httpx.Response, Any]:
+        try:
+            response = await self._client.request(method, url, params=params, json=json, headers=await self.headers())
+        except httpx.HTTPError as exc:
+            raise ProviderError(f"{self._host} couldn't be reached: {exc}") from exc
+        body: Any = None
+        if response.content:
+            try:
+                body = response.json()
+            except ValueError:
+                body = response.text[:300]
+        return response, body
+
+    def _raise(self, response: httpx.Response, body: object) -> NoReturn:
+        raise ProviderError(
+            _message(self._host, response.status_code, body), extra={"upstream_status": response.status_code}
+        )
+
     async def request(
         self,
         method: str,
@@ -36,27 +61,60 @@ class Api:
         json: object = None,
         allow: frozenset[int] = frozenset(),
     ) -> tuple[int, Any]:
-        try:
-            response = await self._client.request(
-                method, f"{self._base}{path}", params=params, json=json, headers=await self.headers()
-            )
-        except httpx.HTTPError as exc:
-            raise ProviderError(f"{self._host} couldn't be reached: {exc}") from exc
-        body: Any = None
-        if response.content:
-            try:
-                body = response.json()
-            except ValueError:
-                body = response.text[:300]
+        response, body = await self._send(method, f"{self._base}{path}", params=params, json=json)
         if response.is_success or response.status_code in allow:
             return response.status_code, body
-        raise ProviderError(
-            _message(self._host, response.status_code, body), extra={"upstream_status": response.status_code}
-        )
+        return self._raise(response, body)
 
     async def json(self, method: str, path: str, **kwargs: Any) -> Any:  # noqa: ANN401
         _, body = await self.request(method, path, **kwargs)
         return body
+
+    async def pages(
+        self,
+        path: str,
+        *,
+        params: dict[str, str | int] | None = None,
+        key: str | None = None,
+        page_param: str = "per_page",
+        max_pages: int = MAX_PAGES,
+    ) -> list[dict[str, Any]]:
+        """Every item of a list call, up to ``max_pages`` pages.
+
+        Pages follow the ``Link: rel="next"`` header (GitHub, Gitea, Forgejo) or ``X-Next-Page`` (GitLab).
+        """
+        query: dict[str, str | int] = {page_param: PER_PAGE, **(params or {})}
+        url: str | None = f"{self._base}{path}"
+        found: list[dict[str, Any]] = []
+        for _ in range(max_pages):
+            if url is None:
+                break
+            # No ``params`` when following a ``Link``: httpx would replace the URL's own query with an empty one.
+            response, body = await self._send("GET", url, params=query or None)
+            if not response.is_success:
+                self._raise(response, body)
+            found.extend(items(body, key))
+            url, query = self._next(response, url, query)
+        return found
+
+    def _next(
+        self, response: httpx.Response, url: str, query: dict[str, str | int]
+    ) -> tuple[str | None, dict[str, str | int]]:
+        link = response.links.get("next", {}).get("url")
+        if link:
+            # The next page's URL carries its own query; never follow it to another host (it gets the token).
+            if _origin(link) != _origin(self._base):
+                return None, query
+            return link, {}
+        page = response.headers.get("X-Next-Page", "").strip()
+        if page.isdigit():
+            return url, {**query, "page": int(page)}
+        return None, query
+
+
+def _origin(url: str) -> tuple[str, str]:
+    parts = urlsplit(url)
+    return parts.scheme, parts.netloc.lower()
 
 
 def _message(host: str, status: int, body: object) -> str:

@@ -109,7 +109,9 @@ class SourcesProvider(Provider):
         return GitHubAppTokens(http.client, ephemeral, box)
 
     @provide(scope=Scope.APP)
-    def clients(self, http: SourcesHttp, settings: SourcesSettings, tokens: GitHubAppTokens) -> ProviderClients:
-        return HttpProviderClients(http, settings, tokens)
+    def clients(
+        self, http: SourcesHttp, settings: SourcesSettings, tokens: GitHubAppTokens, git: GitRepo
+    ) -> ProviderClients:
+        return HttpProviderClients(http, settings, tokens, git)
 
     hooks = provide(PublicWebhookUrls, provides=WebhookUrls, scope=Scope.APP)

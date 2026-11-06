@@ -50,6 +50,14 @@ def writable(source: Source, binding: FileBinding) -> bool:
     return mapping is not None and mapping.effective_writable
 
 
+async def read_only(store: SourceStore, source: Source) -> bool:
+    """Whether the source's connection only pulls (Studio never writes back through it)."""
+    if source.connection_id is None:
+        return False
+    connection = await store.connection(source.connection_id)
+    return connection is not None and connection.access == "read_only"
+
+
 class OutgoingPreparer:
     def __init__(
         self, store: SourceStore, files: SourceFiles, access: SourcesAccess, studio: StudioFacade, jobs: SourceJobs
@@ -201,10 +209,19 @@ class Committer:
             values["summary"] = f"{len(changes)} components from Studio"
         message = commit_message(source.policy.commit_template, values).strip()
         mode = "local" if source.is_local else source.policy.publish_mode
+        connection = await self._files.connection(source)
+        if connection is not None and connection.access == "read_only" and mode != "no_write_back":
+            raise ValidationFailedError(f"{connection.name} is read-only; Studio doesn't write back through it.")
+        if connection is not None and connection.auth_kind == "deploy_key" and mode == "open_pr":
+            raise ValidationFailedError(
+                f"{connection.name} uses a deploy key, which can't open pull requests; change the source's sync "
+                "policy to commit directly to the branch."
+            )
         review: str | None = None
         if mode == "open_pr":
-            existing: list[str] = [pull.branch for pull in await self._store.pull_requests(source.id)]
-            branch = unique_branch(branch_name(render_template(source.policy.branch_template, values)), existing)
+            branch = unique_branch(
+                branch_name(render_template(source.policy.branch_template, values)), await self._taken(source)
+            )
             client = await self._files.client(source)
             if client is not None:
                 try:
@@ -222,6 +239,19 @@ class Committer:
         else:
             raise ValidationFailedError("This source doesn't write back (its policy is \"Don't write back\").")
         return CommitPreview(branch, source.branch, mode, message, review, sentence)
+
+    async def _taken(self, source: Source) -> set[str]:
+        """Branch names a new pull request can't use.
+
+        Earlier pull requests' branches, and every branch on the remote: a push whose pull request failed to open
+        leaves its branch behind, and pushing to it again would be rejected.
+        """
+        taken = {pull.branch for pull in await self._store.pull_requests(source.id)}
+        try:
+            taken.update(await self._files.git.branches(source.id, await self._files.remote(source)))
+        except (GitError, ProviderError) as exc:
+            log.warning("sources.remote_branches_failed", source_id=source.id, error=str(exc))
+        return taken
 
     async def request(
         self, principal: Principal, ref: str, source_id: str, change_ids: Sequence[str], message: str | None
@@ -277,6 +307,11 @@ class Committer:
         pull_request: PullRequest | None = None
         try:
             if source.is_local:
+                for change in changes:
+                    if await self._files.local_hash(source, change.path) != change.blob:
+                        raise ConflictError(  # noqa: TRY301
+                            f"{change.path} changed in the folder meanwhile; fetch and review again."
+                        )
                 for change in changes:
                     self._files.folders.write(source.local_path or "", change.path, (change.after_code or "").encode())
             else:
@@ -460,7 +495,7 @@ class SourcePublishHold:
 
     async def check(self, instance_id: str, component_id: str, version: int) -> HoldCheck:  # noqa: PLR0911
         for source, binding in await self._store.bindings_for_component(instance_id, component_id):
-            if not writable(source, binding) or source.status != "active":
+            if not writable(source, binding) or source.status != "active" or await read_only(self._store, source):
                 continue
             policy = source.policy
             if source.is_local:
@@ -515,6 +550,9 @@ class OnPublished:
             if not writable(source, binding) or source.status != "active":
                 continue
             if source.policy.publish_mode == "no_write_back" and not source.is_local:
+                continue
+            if await read_only(self._store, source):
+                log.info("sources.write_back_skipped", source_id=source.id, reason="read_only")
                 continue
             if source.policy.block_publish_until_merged:
                 continue

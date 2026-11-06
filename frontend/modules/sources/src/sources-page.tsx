@@ -1,9 +1,11 @@
 // Code sources: the repositories (and local folders) Studio syncs with on this instance. Left, the source cards with
-// their path mappings and sync policy; right, the selected source's changes: incoming (repo → Studio drafts),
-// outgoing (Studio → repo) with the commit composer, conflicts with both sides, and pull requests.
+// their path mappings and sync policy, and the org's connections to git hosts; right, the selected source's changes:
+// incoming (repo → Studio drafts), outgoing (Studio → repo) with the commit composer, conflicts with both sides, and
+// pull requests.
 import {
   describeError,
   sourcesChangeDiff,
+  sourcesDeleteSource,
   sourcesFetchSource,
   sourcesIncludeChange,
   sourcesPullChanges,
@@ -25,6 +27,12 @@ import {
   Callout,
   Card,
   Checkbox,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
   EmptyState,
   ErrorState,
   Input,
@@ -49,6 +57,7 @@ import { ArrowDown, ArrowUp, Folder, GitBranch, Plus, RefreshCw, TriangleAlert }
 import { useState } from "react";
 
 import { ConnectWizard } from "./connect-wizard";
+import { ConnectionsCard } from "./connections";
 import {
   PUBLISH_MODES,
   PULL_MODES,
@@ -117,6 +126,75 @@ function SourceCard({
         {source.status_detail && <span className="text-[12px] text-warning">{source.status_detail}</span>}
       </button>
     </li>
+  );
+}
+
+function DisconnectSource({
+  instance,
+  source,
+  onDone,
+}: {
+  instance: string;
+  source: CodeSourceOut;
+  onDone: () => void;
+}) {
+  const refresh = useRefresh();
+  const [open, setOpen] = useState(false);
+  const remove = useMutation({
+    mutationFn: async () =>
+      sourcesDeleteSource({ path: { instance, source_id: source.id }, throwOnError: true }),
+    onSuccess: () => {
+      toast.success(`Disconnected ${source.repo}; its components stay in Studio.`);
+      setOpen(false);
+      refresh();
+      onDone();
+    },
+    onError: (error) => toast.error(describeError(error).reason),
+  });
+  const label = source.provider === "local" ? source.repo : `${source.repo} · ${source.branch}`;
+  return (
+    <>
+      <Button
+        variant="destructive-outline"
+        size="28"
+        className="self-start"
+        onClick={() => {
+          setOpen(true);
+        }}
+      >
+        Disconnect source
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{`Disconnect ${label}?`}</DialogTitle>
+            <DialogDescription>
+              Its components stay in Studio, unbound. Pending changes and conflicts are dropped, and the
+              webhook and the mirror are removed.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setOpen(false);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive-outline"
+              disabled={remove.isPending}
+              onClick={() => {
+                remove.mutate();
+              }}
+            >
+              Disconnect
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
@@ -892,8 +970,11 @@ export function SourcesPage() {
   const instance = params.instance ?? "";
   const sources = useSources(instance);
   const canConfigure = useCan("studio:sources:write", instance).allowed === true;
+  const canDelete = useCan("studio:sources:delete", instance).allowed === true;
   const canWrite = useCan("components:write", instance).allowed === true;
   const [connecting, setConnecting] = useState(search.connect !== undefined);
+  // Back from installing the GitHub App (`?connect=1&connection=scn_…`): the wizard picks up at the repository.
+  const resumeConnection = typeof search.connection === "string" ? search.connection : undefined;
   const list = sources.data ?? [];
   const wanted = typeof search.source === "string" ? search.source : undefined;
   const selected = list.find((item) => item.id === wanted) ?? list[0];
@@ -928,6 +1009,16 @@ export function SourcesPage() {
         edit the same agents, teams and workflows in Studio and in code.
       </EmptyState>
     );
+    if (canConfigure) {
+      body = (
+        <div className="flex flex-col gap-4">
+          {body}
+          <div className="max-w-[380px]">
+            <ConnectionsCard canEdit={canConfigure} canDelete={canDelete} />
+          </div>
+        </div>
+      );
+    }
   } else {
     body = (
       <div className="grid gap-4 lg:grid-cols-[minmax(300px,380px)_1fr]">
@@ -944,8 +1035,18 @@ export function SourcesPage() {
               />
             ))}
           </ul>
+          {canDelete && (
+            <DisconnectSource
+              instance={instance}
+              source={selected}
+              onDone={() => {
+                void navigate({ to: ".", search: {}, replace: true });
+              }}
+            />
+          )}
           <PathMappingCard instance={instance} source={selected} canEdit={canConfigure} />
           <SyncPolicyCard instance={instance} source={selected} canEdit={canConfigure} />
+          {canConfigure && <ConnectionsCard canEdit={canConfigure} canDelete={canDelete} />}
         </div>
         <ChangesPanel instance={instance} source={selected} canWrite={canWrite} />
       </div>
@@ -980,9 +1081,11 @@ export function SourcesPage() {
       {connecting && (
         <ConnectWizard
           instance={instance}
+          resumeConnection={resumeConnection}
           onClose={(created) => {
             setConnecting(false);
             if (created) select(created);
+            else if (search.connect !== undefined) void navigate({ to: ".", search: {}, replace: true });
           }}
         />
       )}

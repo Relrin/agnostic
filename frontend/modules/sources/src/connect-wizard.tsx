@@ -1,6 +1,7 @@
 // Connect source: provider → authentication → repository and branch → path mappings → registry convention → sync
 // policy → the initial scan (files found, how each reads, what it matches in Studio, the proposed binding) → start
-// syncing. A source that is created keeps scanning in the background; the wizard waits for the report.
+// syncing. A source that is created keeps scanning in the background; the wizard waits for the report. Back from
+// installing the GitHub App, the wizard picks up at the repository with the new connection.
 import {
   describeError,
   sourcesActivateSource,
@@ -38,8 +39,9 @@ import {
   toast,
 } from "@agnostic/ui";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
+import { SERVER_PLACEHOLDER } from "./connections";
 import { PUBLISH_MODES, PULL_MODES, TARGET_LABEL, useConnections, useRefresh } from "./sources-api";
 
 type Provider = "github" | "gitlab" | "gitea" | "forgejo" | "local";
@@ -73,6 +75,31 @@ const DEFAULT_MAPPINGS: PathMappingIo[] = [
   { glob: "registry.py", target_kind: "registry", writable: false },
   { glob: "tests/, utils/", target_kind: "ignored", writable: false },
 ];
+
+const GITEA_FAMILY: readonly string[] = ["gitea", "forgejo"];
+const REPO_NAME = /^[\w.-]+(\/[\w.-]+){1,5}$/;
+
+/** Connections a provider's source may use: its own, and Gitea's and Forgejo's for each other (same API). */
+export function usable(connection: ConnectionOut, provider: Provider): boolean {
+  return (
+    connection.provider === provider ||
+    (GITEA_FAMILY.includes(provider) && GITEA_FAMILY.includes(connection.provider))
+  );
+}
+
+/** `value`, once it has stopped changing for `delay` ms (search as you type without a request per key). */
+function useDebounced<T>(value: T, delay = 300): T {
+  const [settled, setSettled] = useState(value);
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setSettled(value);
+    }, delay);
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [value, delay]);
+  return settled;
+}
 
 function Progress({ stage }: { stage: Stage }) {
   const at = STAGES.findIndex((item) => item.id === stage);
@@ -225,22 +252,28 @@ function ScanReport({
 /** The Connect source dialog; `onClose` gets the new source's id when one was created. */
 export function ConnectWizard({
   instance,
+  resumeConnection,
   onClose,
 }: {
   instance: string;
+  /** A GitHub App connection that was just installed (so the provider is GitHub): start at the repository step. */
+  resumeConnection?: string | undefined;
   onClose: (created?: string) => void;
 }) {
   const refresh = useRefresh();
-  const [stage, setStage] = useState<Stage>("provider");
+  const [stage, setStage] = useState<Stage>(resumeConnection ? "repo" : "provider");
   const [provider, setProvider] = useState<Provider>("github");
-  const [connectionId, setConnectionId] = useState<string | undefined>(undefined);
+  const [connectionId, setConnectionId] = useState<string | undefined>(resumeConnection);
   const [newConnection, setNewConnection] = useState({
     name: "",
     web_url: "",
+    api_url: "",
     token: "",
     app: false,
     app_slug: "",
   });
+  const [repoQuery, setRepoQuery] = useState("");
+  const query = useDebounced(repoQuery.trim());
   const [repo, setRepo] = useState("");
   const [branch, setBranch] = useState("main");
   const [localPath, setLocalPath] = useState("");
@@ -250,20 +283,26 @@ export function ConnectWizard({
   const [sourceId, setSourceId] = useState<string | undefined>(undefined);
   const local = provider === "local";
   const connections = useConnections(!local);
-  const matching = (connections.data ?? []).filter(
-    (item: ConnectionOut) =>
-      item.provider === provider || (provider === "forgejo" && item.provider === "gitea"),
-  );
+  const matching = (connections.data ?? []).filter((item: ConnectionOut) => usable(item, provider));
   const roots = useQuery({
     ...withQueryFn(sourcesLocalRootsOptions({ path: { instance } })),
     enabled: local,
     retry: false,
   });
   const repos = useQuery({
-    ...withQueryFn(sourcesConnectionReposOptions({ path: { connection_id: connectionId ?? "" } })),
+    ...withQueryFn(
+      sourcesConnectionReposOptions({
+        path: { connection_id: connectionId ?? "" },
+        query: { q: query || null },
+      }),
+    ),
     enabled: Boolean(connectionId) && stage === "repo",
     retry: false,
   });
+  const found = (repos.data ?? []).map((item) => item.full_name);
+  // A repository the list can't show (a deploy key lists nothing): use the name as typed.
+  const typed = REPO_NAME.test(query) && !found.includes(query) ? [query] : [];
+  const choices = [...new Set([...found, ...typed, ...(repo ? [repo] : [])])];
   const branches = useQuery({
     ...withQueryFn(
       sourcesConnectionBranchesOptions({ path: { connection_id: connectionId ?? "" }, query: { repo } }),
@@ -281,7 +320,8 @@ export function ConnectWizard({
               : (PROVIDERS.find((item) => item.value === provider)?.label ?? provider),
             provider: provider as "github" | "gitlab" | "gitea" | "forgejo",
             auth_kind: newConnection.app ? "github_app" : "token",
-            web_url: newConnection.web_url || null,
+            web_url: newConnection.web_url.trim() || null,
+            api_url: provider === "github" ? newConnection.api_url.trim() || null : null,
             token: newConnection.app ? null : newConnection.token || null,
             app_slug: newConnection.app ? newConnection.app_slug || null : null,
           },
@@ -293,7 +333,9 @@ export function ConnectWizard({
       if (created.auth_kind === "github_app") {
         const install = await sourcesGithubInstall({
           path: { connection_id: created.id },
-          query: { return_to: `/i/${instance}/studio/sources?connect=1` },
+          query: {
+            return_to: `/i/${instance}/studio/sources?connect=1&connection=${encodeURIComponent(created.id)}`,
+          },
           throwOnError: true,
         });
         window.location.assign(install.data.url);
@@ -399,13 +441,21 @@ export function ConnectWizard({
                 }}
               />
             )}
-            {provider !== "github" && (
+            <Input
+              aria-label="Server URL"
+              placeholder={SERVER_PLACEHOLDER[provider]}
+              value={newConnection.web_url}
+              onChange={(event) => {
+                setNewConnection({ ...newConnection, web_url: event.target.value });
+              }}
+            />
+            {provider === "github" && (
               <Input
-                aria-label="Server URL"
-                placeholder={provider === "gitlab" ? "https://gitlab.com" : "https://git.example.com"}
-                value={newConnection.web_url}
+                aria-label="API URL"
+                placeholder="API URL (GitHub Enterprise, when it isn't …/api/v3)"
+                value={newConnection.api_url}
                 onChange={(event) => {
-                  setNewConnection({ ...newConnection, web_url: event.target.value });
+                  setNewConnection({ ...newConnection, api_url: event.target.value });
                 }}
               />
             )}
@@ -448,14 +498,31 @@ export function ConnectWizard({
       body = (
         <div className="flex flex-col gap-3">
           {repos.isError && <Callout tone="danger">{describeError(repos.error).reason}</Callout>}
+          <Input
+            type="search"
+            aria-label="Search repositories"
+            placeholder="Search repositories, or type owner/name"
+            value={repoQuery}
+            onChange={(event) => {
+              setRepoQuery(event.target.value);
+            }}
+          />
           <Select value={repo} onValueChange={setRepo}>
             <SelectTrigger aria-label="Repository">
-              <SelectValue placeholder={repos.isPending ? "Loading repositories…" : "Pick a repository"} />
+              <SelectValue
+                placeholder={
+                  repos.isFetching
+                    ? "Loading repositories…"
+                    : choices.length
+                      ? "Pick a repository"
+                      : "No repositories match"
+                }
+              />
             </SelectTrigger>
             <SelectContent>
-              {(repos.data ?? []).map((item) => (
-                <SelectItem key={item.full_name} value={item.full_name}>
-                  {item.full_name}
+              {choices.map((item) => (
+                <SelectItem key={item} value={item}>
+                  {item}
                 </SelectItem>
               ))}
             </SelectContent>

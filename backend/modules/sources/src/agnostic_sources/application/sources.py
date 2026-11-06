@@ -24,10 +24,11 @@ from agnostic_sources.application.access import (
 )
 from agnostic_sources.application.files import SourceFiles, mapped_files
 from agnostic_sources.application.ports import GitError, ProviderError, SourceLimits, SourceStore, WebhookUrls
-from agnostic_sources.application.sync import content_hash
+from agnostic_sources.application.sync import content_hash, settled_status
 from agnostic_sources.application.tasks import SourceJobs
 from agnostic_sources.domain.model import (
     KIND_OF_TARGET,
+    Connection,
     FileBinding,
     PathMapping,
     Provider,
@@ -149,6 +150,7 @@ class Sources:
                 raise SourceRuleError("That connection doesn't exist any more.")
             if connection.provider != draft.provider and {connection.provider, draft.provider} != {"gitea", "forgejo"}:
                 raise SourceRuleError(f"The connection is for {connection.provider}, not {draft.provider}.")
+            check_writes(connection, policy)
         clone_url = (
             check_clone_url(draft.clone_url, allow_file=self._settings.allow_file_remotes) if draft.clone_url else None
         )
@@ -175,6 +177,10 @@ class Sources:
                 if patch.convention is not None
                 else source.convention,
             )
+            if patch.policy is not None and source.connection_id is not None:
+                connection = await self._store.connection(source.connection_id)
+                if connection is not None:
+                    check_writes(connection, updated.policy)
         except SourceRuleError as exc:
             raise rule(exc) from exc
         rescan = updated.branch != source.branch or updated.mappings != source.mappings
@@ -301,7 +307,7 @@ class Sources:
             "found": sum(len(item["components"]) for item in report_files),
             "scanned_at": utcnow().isoformat(),
         }
-        status = "active" if source.status == "active" else "ready"
+        status = "active" if await settled_status(self._store, source) == "active" else "ready"
         saved = await self._store.save_source(
             replace(
                 source,
@@ -399,6 +405,15 @@ class Sources:
                 scope_checked=SOURCES_DELETE if action.endswith("delete") else SOURCES_WRITE,
                 fields={"source": source.label, "branch": source.branch, "instance": instance.display_name},
             )
+        )
+
+
+def check_writes(connection: Connection, policy: SyncPolicy) -> None:
+    """Refuse a policy the connection can't carry out: a deploy key reaches git over SSH, not the host's API."""
+    if connection.auth_kind == "deploy_key" and policy.publish_mode == "open_pr":
+        raise SourceRuleError(
+            f"{connection.name} uses a deploy key, which can't open pull requests: pick \"Commit directly to the "
+            'branch" or "Don\'t write back" (or connect with a token).'
         )
 
 

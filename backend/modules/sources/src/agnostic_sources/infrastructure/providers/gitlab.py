@@ -2,12 +2,19 @@
 
 from __future__ import annotations
 
+from fnmatch import fnmatchcase
 from typing import Any, cast
 from urllib.parse import quote
 
 import httpx
 
-from agnostic_sources.application.ports import OpenedPullRequest, PullRequestState, Remote, RepoSummary
+from agnostic_sources.application.ports import (
+    OpenedPullRequest,
+    ProviderError,
+    PullRequestState,
+    Remote,
+    RepoSummary,
+)
 from agnostic_sources.infrastructure.providers.base import FORBIDDEN, NOT_FOUND, Api, basic, items
 
 
@@ -25,31 +32,52 @@ class GitLabClient(Api):
         return str(user.get("username") or user.get("name") or "")
 
     async def repos(self, query: str | None = None) -> list[RepoSummary]:
-        params: dict[str, str | int] = {"membership": "true", "simple": "true", "per_page": 50}
+        # Not ``simple=true``: the simple view leaves out ``visibility``, so every project would read as private.
+        params: dict[str, str | int] = {"membership": "true", "order_by": "last_activity_at"}
         if query:
             params["search"] = query
-        return [_repo(item) for item in items(await self.json("GET", "/projects", params=params))]
+        return [_repo(item) for item in await self.pages("/projects", params=params)]
 
     async def repo(self, repo: str) -> RepoSummary:
         return _repo(cast("dict[str, Any]", await self.json("GET", f"/projects/{_id(repo)}")))
 
     async def branches(self, repo: str) -> list[str]:
-        body = await self.json("GET", f"/projects/{_id(repo)}/repository/branches", params={"per_page": 100})
-        return sorted(str(item.get("name")) for item in items(body) if item.get("name"))
+        found = await self.pages(f"/projects/{_id(repo)}/repository/branches")
+        return sorted(str(item.get("name")) for item in found if item.get("name"))
 
     async def remote(self, repo: str, clone_url: str | None) -> Remote:
         return Remote(clone_url or f"{self._web}/{repo}.git", header=basic("oauth2", self._token))
 
-    async def review_requirement(self, repo: str, branch: str) -> tuple[int, list[str]] | None:  # noqa: ARG002
+    async def review_requirement(self, repo: str, branch: str) -> tuple[int, list[str]] | None:
         status, body = await self.request(
             "GET", f"/projects/{_id(repo)}/approval_rules", allow=frozenset({NOT_FOUND, FORBIDDEN})
         )
         if status in {NOT_FOUND, FORBIDDEN}:
             return None
-        rules = items(body)
-        required = sum(int(rule.get("approvals_required") or 0) for rule in rules)
-        teams = [str(rule.get("name")) for rule in rules if rule.get("approvals_required") and rule.get("name")]
+        protected: list[str] | None = None
+        applying: list[dict[str, Any]] = []
+        for rule in items(body):
+            names = [str(item.get("name") or "") for item in items(rule.get("protected_branches"))]
+            if rule.get("applies_to_all_protected_branches"):
+                if protected is None:
+                    protected = await self._protected(repo)
+                names = protected
+            elif not names:
+                applying.append(rule)  # a rule without branches applies to every branch
+                continue
+            if any(_matches(name, branch) for name in names):
+                applying.append(rule)
+        # Every applying rule must be met on its own: the strictest one is what the merge request needs.
+        required = max((int(rule.get("approvals_required") or 0) for rule in applying), default=0)
+        teams = [str(rule.get("name")) for rule in applying if rule.get("approvals_required") and rule.get("name")]
         return required, teams
+
+    async def _protected(self, repo: str) -> list[str]:
+        try:
+            found = await self.pages(f"/projects/{_id(repo)}/protected_branches")
+        except ProviderError:
+            return []
+        return [str(item.get("name")) for item in found if item.get("name")]
 
     async def open_pull_request(self, repo: str, *, head: str, base: str, title: str, body: str) -> OpenedPullRequest:
         created = cast(
@@ -69,7 +97,8 @@ class GitLabClient(Api):
         if state == "merged":
             sha = data.get("merge_commit_sha") or data.get("squash_commit_sha")
             return PullRequestState("merged", str(sha) if sha else None, head)
-        return PullRequestState("closed" if state in {"closed", "locked"} else "open", None, head)
+        # ``locked`` is a merge in progress: still open, so the next refresh sees it merged.
+        return PullRequestState("closed" if state == "closed" else "open", None, head)
 
     async def register_webhook(self, repo: str, url: str, secret: str) -> str | None:
         created = cast(
@@ -88,6 +117,11 @@ class GitLabClient(Api):
 
 def _id(repo: str) -> str:
     return quote(repo, safe="")
+
+
+def _matches(pattern: str, branch: str) -> bool:
+    """GitLab protected branch names are exact or wildcards (``release/*``)."""
+    return pattern == branch or ("*" in pattern and fnmatchcase(branch, pattern))
 
 
 def _repo(data: dict[str, Any]) -> RepoSummary:

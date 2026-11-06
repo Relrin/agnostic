@@ -1,11 +1,14 @@
 // Code sources fixtures from the design (northwind/agent-platform on GitHub with two incoming changes, one outgoing
-// and a conflict on billing_agent's instructions[2]; a read-only GitLab source; a local folder) and their handlers.
+// and a conflict on billing_agent's instructions[2]; a read-only GitLab source; a local folder), the org's
+// connections (the GitHub App, a GitLab token whose check failed, a Gitea server) and their handlers.
 import type {
   ChangeOut,
   ChangesOut,
   CodeSourceOut,
   ConflictOut,
+  ConnectionOut,
   MappingOut,
+  RepoOut,
   PullResultOut,
   SyncPolicyIo,
 } from "@agnostic/api";
@@ -186,23 +189,100 @@ export const sampleChanges: ChangesOut = {
   pull_requests: [],
 };
 
+function connection(overrides: Partial<ConnectionOut>): ConnectionOut {
+  return {
+    id: "scn_github",
+    name: "Northwind GitHub",
+    provider: "github",
+    provider_label: "GitHub",
+    auth_kind: "github_app",
+    access: "read_write",
+    api_url: null,
+    web_url: null,
+    app_slug: "agnostic-northwind",
+    installation_id: "777",
+    account: "northwind",
+    status: "verified",
+    last_error: null,
+    last_checked_at: "2026-11-03T09:00:00Z",
+    version: 2,
+    ...overrides,
+  };
+}
+
+export const sampleConnections: ConnectionOut[] = [
+  connection({}),
+  connection({
+    id: "scn_gitlab",
+    name: "Data GitLab",
+    provider: "gitlab",
+    provider_label: "GitLab",
+    auth_kind: "token",
+    access: "read_only",
+    web_url: "https://gitlab.northwind.test",
+    app_slug: null,
+    installation_id: null,
+    account: null,
+    status: "failed",
+    last_error: "GitLab refused the connection's credentials: 401 Unauthorized",
+    version: 4,
+  }),
+  connection({
+    id: "scn_gitea",
+    name: "Northwind Gitea",
+    provider: "gitea",
+    provider_label: "Gitea",
+    auth_kind: "token",
+    web_url: "https://git.northwind.test",
+    app_slug: null,
+    installation_id: null,
+    account: "agnostic-bot",
+    version: 1,
+  }),
+];
+
+export const sampleRepos: RepoOut[] = [
+  { full_name: "northwind/agent-platform", default_branch: "main", private: true },
+  { full_name: "northwind/data-agents", default_branch: "main", private: true },
+  { full_name: "northwind/handbook", default_branch: "main", private: false },
+];
+
 export type SourcesCalls = {
   pulls: string[][];
   resolutions: { conflict: string; resolution: string }[];
   commits: { change_ids: string[]; message: string | null | undefined }[];
   includes: { change: string; included: boolean }[];
   updates: Record<string, unknown>[];
+  deletedSources: string[];
+  connectionUpdates: { connection: string; body: Record<string, unknown> }[];
+  verified: string[];
+  deletedConnections: string[];
+  repoQueries: (string | null)[];
 };
 
 export function sourcesCalls(): SourcesCalls {
-  return { pulls: [], resolutions: [], commits: [], includes: [], updates: [] };
+  return {
+    pulls: [],
+    resolutions: [],
+    commits: [],
+    includes: [],
+    updates: [],
+    deletedSources: [],
+    connectionUpdates: [],
+    verified: [],
+    deletedConnections: [],
+    repoQueries: [],
+  };
 }
 
 export function sourcesHandlers(
   calls: SourcesCalls = sourcesCalls(),
   sources: CodeSourceOut[] = sampleSources,
+  connections: ConnectionOut[] = sampleConnections,
 ) {
   const base = `${API}/instances/:instance/studio/sources`;
+  const connectionsBase = `${API}/studio/connections`;
+  const findConnection = (id: unknown) => connections.find((item) => item.id === id);
   return [
     http.get(`${base}/conflicts/count`, () => HttpResponse.json({ instance_id: "ins_staging", count: 1 })),
     http.get(base, () => HttpResponse.json(sources)),
@@ -265,6 +345,39 @@ export function sourcesHandlers(
       calls.resolutions.push({ conflict: String(params.conflictId), resolution: body.resolution });
       return HttpResponse.json({ ...sampleConflict, status: "resolved", resolution: body.resolution });
     }),
-    http.get(`${API}/studio/connections`, () => HttpResponse.json([])),
+    http.delete(`${base}/:sourceId`, ({ params }) => {
+      calls.deletedSources.push(String(params.sourceId));
+      return new HttpResponse(null, { status: 204 });
+    }),
+    http.get(connectionsBase, () => HttpResponse.json(connections)),
+    http.patch(`${connectionsBase}/:connectionId`, async ({ params, request }) => {
+      const body = (await request.json()) as Record<string, unknown>;
+      calls.connectionUpdates.push({ connection: String(params.connectionId), body });
+      const found = findConnection(params.connectionId) ?? connections[0];
+      const changed = Object.fromEntries(
+        Object.entries(body).filter(([key]) => ["name", "web_url", "api_url", "access"].includes(key)),
+      );
+      return HttpResponse.json({ ...found, ...changed, status: "verified", last_error: null });
+    }),
+    http.post(`${connectionsBase}/:connectionId/verify`, ({ params }) => {
+      calls.verified.push(String(params.connectionId));
+      return HttpResponse.json({
+        ...findConnection(params.connectionId),
+        status: "verified",
+        last_error: null,
+      });
+    }),
+    http.delete(`${connectionsBase}/:connectionId`, ({ params }) => {
+      calls.deletedConnections.push(String(params.connectionId));
+      return new HttpResponse(null, { status: 204 });
+    }),
+    http.get(`${connectionsBase}/:connectionId/repos`, ({ request }) => {
+      const query = new URL(request.url).searchParams.get("q");
+      calls.repoQueries.push(query);
+      return HttpResponse.json(
+        query ? sampleRepos.filter((repo) => repo.full_name.includes(query)) : sampleRepos,
+      );
+    }),
+    http.get(`${connectionsBase}/:connectionId/branches`, () => HttpResponse.json(["dev", "main"])),
   ];
 }

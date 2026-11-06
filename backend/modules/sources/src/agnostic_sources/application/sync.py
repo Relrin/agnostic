@@ -35,6 +35,7 @@ from agnostic_sources.domain.model import (
     Resolution,
     Side,
     Source,
+    SourceStatus,
 )
 from agnostic_sources.domain.outcomes import Outcome
 from agnostic_sources.domain.paths import component_target
@@ -44,6 +45,19 @@ from agnostic_studio.facade import RepositoryDraft, StudioFacade
 log = get_logger(__name__)
 
 PULLABLE = frozenset({"new_draft", "new_component"})
+SETTLED = frozenset({"active", "ready", "scanning", "setup"})
+TOO_MANY = "files changed in this fetch"
+
+
+async def settled_status(store: SourceStore, source: Source) -> SourceStatus:
+    """The status a source returns to once it fetches again (after a failure or being over quota).
+
+    A source keeps its status while it is set up, scanned, ready or syncing; one that failed goes back to syncing
+    only if it was activated (it has bindings), and otherwise to its scan being ready to review.
+    """
+    if source.status in SETTLED:
+        return source.status
+    return "active" if await store.bindings(source.id) else "ready"
 
 
 def content_hash(code: str) -> str:
@@ -98,7 +112,7 @@ class Fetcher:
             _ = await self._store.save_source(over)
             await self._store.commit()
             return over
-        status = source.status if source.status in {"active", "ready", "scanning", "setup"} else "active"
+        status = await settled_status(self._store, source)
         fetched = replace(
             source,
             head_sha=snapshot.head,
@@ -110,7 +124,8 @@ class Fetcher:
         fetched = await self._store.save_source(fetched)
         await self._store.commit()
         if fetched.status == "active":
-            await self._incoming.compute(fetched.id, reason, snapshot)
+            _ = await self._incoming.compute(fetched.id, reason, snapshot)
+            return await self._store.source(fetched.id) or fetched
         return fetched
 
 
@@ -151,11 +166,14 @@ class IncomingComputer:
             for change in await self._store.changes(source.id, "incoming", ["pending"])
         }
         mapped = mapped_files(source, snapshot.files)
-        changed = [
+        every = [
             path
             for path, blob in sorted(mapped.items())
             if path not in by_path or any(binding.content_hash != blob for binding in by_path[path])
-        ][: self._settings.max_changed_files]
+        ]
+        limit = self._settings.max_changed_files
+        changed = every[:limit]
+        source = await self._report_limit(source, len(every), limit)
         kept: set[tuple[str, str | None]] = set()
         for path in changed:
             blob = mapped[path]
@@ -422,6 +440,21 @@ class IncomingComputer:
         await self._studio.bind(
             source.instance_id, component_id, kind, binding_id=binding.id, code_path=path, convention=source.convention
         )
+
+    async def _report_limit(self, source: Source, found: int, limit: int) -> Source:
+        """Say on the source when a fetch brought more changed files than are read at once (and stop saying it)."""
+        detail = source.status_detail
+        if found > limit:
+            detail = (
+                f"{found} {TOO_MANY}; Studio read the first {limit}. Pull those, then fetch again for the rest "
+                "(or raise AGNOSTIC_SOURCES__MAX_CHANGED_FILES)."
+            )
+            log.warning("sources.too_many_changes", source_id=source.id, found=found, limit=limit)
+        elif detail and TOO_MANY in detail:
+            detail = None
+        if detail == source.status_detail:
+            return source
+        return await self._store.save_source(replace(source, status_detail=detail))
 
     async def _announce(self, source: Source) -> None:
         count = await self._store.open_conflict_count(source.instance_id)

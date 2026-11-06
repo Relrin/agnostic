@@ -22,6 +22,7 @@ from agnostic_sources.api.schemas import (
     ConflictOut,
     ConnectionIn,
     ConnectionOut,
+    ConnectionPatchIn,
     IncludeIn,
     InstallUrlOut,
     JobOut,
@@ -93,11 +94,14 @@ async def get_connection(
     return ConnectionOut.of(await connections.get(principal, connection_id))
 
 
-@org_router.patch("/studio/connections/{connection_id}", summary="Change a connection (secrets only when given)")
+@org_router.patch("/studio/connections/{connection_id}", summary="Change a connection (only the fields sent)")
 async def update_connection(
-    connection_id: str, body: ConnectionIn, principal: FromDishka[Principal], connections: FromDishka[Connections]
+    connection_id: str,
+    body: ConnectionPatchIn,
+    principal: FromDishka[Principal],
+    connections: FromDishka[Connections],
 ) -> ConnectionOut:
-    return ConnectionOut.of(await connections.update(principal, connection_id, body.draft(), body.version))
+    return ConnectionOut.of(await connections.update(principal, connection_id, body.patch(), body.version))
 
 
 @org_router.delete("/studio/connections/{connection_id}", status_code=status.HTTP_204_NO_CONTENT, summary="Remove")

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 from dataclasses import dataclass
 
 from agnostic_kernel.db import utcnow
@@ -16,7 +17,7 @@ from agnostic_sources.application.ports import (
     SourceLimits,
     SourceStore,
 )
-from agnostic_sources.domain.model import CommitInfo, Source
+from agnostic_sources.domain.model import CommitInfo, Connection, Source
 from agnostic_sources.domain.paths import component_target, folder_digest
 from agnostic_sources.domain.remote import check_clone_url
 
@@ -53,13 +54,25 @@ class SourceFiles:
     def folders(self) -> Folders:
         return self._folders
 
-    async def client(self, source: Source) -> ProviderClient | None:
+    async def connection(self, source: Source) -> Connection | None:
+        """The source's connection (``None`` for local folders and public clone URLs)."""
         if source.connection_id is None:
             return None
         connection = await self._store.connection(source.connection_id)
         if connection is None:
             raise NotFoundError("The source's connection was removed.")
+        return connection
+
+    async def client(self, source: Source) -> ProviderClient | None:
+        connection = await self.connection(source)
+        if connection is None:
+            return None
         return self._clients.client(connection, await self._store.connection_secrets(connection.id))
+
+    async def local_hash(self, source: Source, path: str) -> str | None:
+        """The hash of a local folder's file as it is on disk now (``None`` when it is gone)."""
+        data = self._folders.read(source.local_path or "", path)
+        return hashlib.sha256(data).hexdigest() if data is not None else None
 
     async def remote(self, source: Source) -> Remote:
         client = await self.client(source)
