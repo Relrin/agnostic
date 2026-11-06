@@ -131,7 +131,7 @@ type ProviderForm = {
   refreshMetadata: boolean;
 };
 
-function formFrom(provider: ProviderOut | undefined, kind: "oidc" | "saml" = "oidc"): ProviderForm {
+export function formFrom(provider: ProviderOut | undefined, kind: "oidc" | "saml" = "oidc"): ProviderForm {
   const oidc = provider?.oidc;
   const saml = provider?.saml;
   return {
@@ -144,7 +144,7 @@ function formFrom(provider: ProviderOut | undefined, kind: "oidc" | "saml" = "oi
     jit: provider?.jit_provisioning ?? false,
     trustUnverified: provider?.trust_unverified_email ?? false,
     issuer: oidc?.issuer ?? "",
-    baseUrl: oidc?.base_url ?? "",
+    baseUrl: oidc?.base_url && oidc.base_url !== "https://github.com" ? oidc.base_url : "",
     clientId: oidc?.client_id ?? "",
     clientSecret: "",
     scopes: oidc?.scopes.join(" ") ?? "",
@@ -164,6 +164,17 @@ function formFrom(provider: ProviderOut | undefined, kind: "oidc" | "saml" = "oi
 
 const orNull = (value: string) => (value.trim() === "" ? null : value.trim());
 
+/** Switching presets drops what the old preset filled in (a GitHub URL is no GitLab URL). */
+export function withPreset(form: ProviderForm, preset: OidcPreset): ProviderForm {
+  if (preset === form.preset) return form;
+  return { ...form, preset, issuer: "", baseUrl: "", scopes: "" };
+}
+
+/** The issuer GitLab sign-in will use: the instance URL, or gitlab.com. */
+export function gitlabIssuer(baseUrl: string): string {
+  return baseUrl.trim().replace(/\/+$/, "") || "https://gitlab.com";
+}
+
 /** The flat create/update body: only what the kind (and SAML source) uses; an empty secret keeps the saved one. */
 export function providerBody(form: ProviderForm): Omit<ProviderCreate, "id" | "kind"> & ProviderUpdate {
   const common = {
@@ -179,7 +190,7 @@ export function providerBody(form: ProviderForm): Omit<ProviderCreate, "id" | "k
       preset: form.preset,
       client_id: form.clientId.trim(),
       ...(form.clientSecret ? { client_secret: form.clientSecret } : {}),
-      ...(form.preset === "gitlab" ? { base_url: orNull(form.baseUrl) } : {}),
+      ...(form.preset === "gitlab" || form.preset === "github" ? { base_url: orNull(form.baseUrl) } : {}),
       ...(["oidc", "okta", "google"].includes(form.preset) ? { issuer: orNull(form.issuer) } : {}),
       ...(form.scopes.trim() ? { scopes: form.scopes.trim().split(/[\s,]+/) } : {}),
     };
@@ -437,7 +448,7 @@ function ProviderFormBody({
                 <Select
                   value={form.preset}
                   onValueChange={(value) => {
-                    set("preset")(value as OidcPreset);
+                    setForm(withPreset(form, value as OidcPreset));
                   }}
                   disabled={readOnly}
                 >
@@ -473,6 +484,16 @@ function ProviderFormBody({
                 value={form.baseUrl}
                 onChange={set("baseUrl")}
                 placeholder="https://gitlab.com"
+                hint={`Self-managed: the instance's external_url, which is also its issuer. Sign-in uses ${gitlabIssuer(form.baseUrl)}.`}
+              />
+            )}
+            {form.preset === "github" && (
+              <TextField
+                label="GitHub Enterprise URL"
+                value={form.baseUrl}
+                onChange={set("baseUrl")}
+                placeholder="https://github.com"
+                hint="Only for GitHub Enterprise Server. Empty uses github.com."
               />
             )}
             <div className="grid grid-cols-2 gap-3">

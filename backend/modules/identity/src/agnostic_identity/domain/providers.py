@@ -177,6 +177,20 @@ class ProviderConfigError(ValueError):
     pass
 
 
+def _gitlab_urls(issuer: str | None, base_url: str | None) -> tuple[str | None, str | None]:
+    """GitLab's OIDC issuer is the instance URL (its ``external_url``), so the two are one setting.
+
+    The instance URL wins: a provider stored with the gitlab.com default issuer next to a
+    self-managed URL signs in against the self-managed instance. An issuer given alone (the
+    older way to point at a self-managed GitLab) still works and becomes the instance URL.
+    """
+    url = (base_url or "").strip().rstrip("/") or (issuer or "").strip().rstrip("/") or None
+    default = PRESETS[Preset.GITLAB].default_issuer
+    if url is None or url == default:
+        return default, None
+    return url, url
+
+
 def resolve_provider(
     provider_id: str,
     *,
@@ -195,8 +209,8 @@ def resolve_provider(
     version: str = "",
 ) -> ProviderConfig:
     spec = PRESETS[preset]
-    if preset is Preset.GITLAB and not issuer and base_url:
-        issuer = base_url  # a self-managed GitLab's URL is its OIDC issuer
+    if preset is Preset.GITLAB:
+        issuer, base_url = _gitlab_urls(issuer, base_url)
     resolved_issuer = (issuer or spec.default_issuer or "").rstrip("/") or None
     if spec.protocol is SignInProtocol.OIDC and resolved_issuer is None:
         raise ProviderConfigError(f"sign-in provider {provider_id!r} ({preset.value}) needs an issuer URL")

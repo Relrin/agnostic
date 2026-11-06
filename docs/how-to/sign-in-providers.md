@@ -88,6 +88,26 @@ GitHub uses the account's **verified primary** address, so invite people by that
 organisation grants nothing by itself. Google's `hd` only preselects accounts: invitations and JIT domains still
 decide who gets in.
 
+### Self-managed GitLab
+
+1. In GitLab, open **Admin › Applications** (or a group's or your profile's **Applications**) and add an application:
+   - redirect URI `<PUBLIC_URL>/api/v1/auth/sso/<id>/callback`, the same URL the provider dialog shows;
+   - **Confidential** on;
+   - scopes `openid`, `profile`, `email`.
+2. Set the *GitLab URL* (`__BASE_URL`) to the instance's `external_url`, for example `https://gitlab.example.com`, or
+   `https://example.com/gitlab` under a relative URL root.
+
+That URL is also the OIDC issuer. Agnostic reads `<GitLab URL>/.well-known/openid-configuration`, and sends people to
+the authorize endpoint that document names. A typo in scheme, host or path shows up as "discovery issuer … != …".
+
+Changing the GitLab URL takes effect on the next sign-in. Clearing it switches back to gitlab.com.
+
+To map GitLab groups to directory groups, Agnostic reads the full list from GitLab's userinfo (`groups`). The ID
+token only carries `groups_direct`, which is used when userinfo isn't reachable.
+
+Agnostic only returns to relative paths after sign-in, so the web app and the API must be served from the same origin
+as `PUBLIC_URL`. The reverse proxy in the deploy bundle and the dev server's `/api` proxy both do that.
+
 Generic OIDC providers:
 
 | Provider | Issuer | Notes |

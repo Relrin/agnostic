@@ -215,3 +215,33 @@ async def test_github_sign_in(stack: Stack) -> None:
         "Pavel Nair",
         "administrator",
     )
+
+
+async def test_gitlab_groups_come_from_userinfo(stack: Stack, idp_key: rsa.RSAPrivateKey) -> None:
+    owner = await stack.owner()
+    created = await owner.post(
+        "/api/v1/auth/admin/providers",
+        json={
+            "id": "gitlab",
+            "kind": "oidc",
+            "preset": "gitlab",
+            "base_url": ISSUER,
+            "client_id": "agnostic",
+            "client_secret": "s3cret",
+            "jit_provisioning": True,
+            "allowed_email_domains": ["localhost.company"],
+        },
+    )
+    assert created.status_code == 201, created.text
+    with respx.mock(assert_all_called=False) as router:
+        idp = Idp(router, idp_key)
+        userinfo = router.get(f"{ISSUER}/userinfo").respond(json={"sub": "gl-1", "groups": ["corp/platform"]})
+        idp.claims = {"sub": "gl-1", "email": "ana@localhost.company", "groups_direct": ["corp"]}
+        signed_in = await sso_sign_in(stack.client(), idp, provider="gitlab")
+        assert signed_in.headers["location"] == "/", signed_in.headers["location"]
+        assert userinfo.call_count == 1
+
+        # Groups are a bonus: an unreachable userinfo doesn't stop someone the id_token already names.
+        userinfo.respond(500)
+        again = await sso_sign_in(stack.client(), idp, provider="gitlab")
+        assert again.headers["location"] == "/"

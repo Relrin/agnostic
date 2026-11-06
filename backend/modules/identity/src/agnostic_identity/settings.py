@@ -41,7 +41,8 @@ class SignInProviderSettings(BaseModel):
     """OIDC issuer (Okta: ``https://<org>.okta.com/oauth2/default``; any OIDC IdP: its issuer URL;
     self-managed GitLab: its URL). Google and gitlab.com need none."""
     base_url: str | None = None
-    """GitHub Enterprise Server URL (``https://github.example.com``); github.com needs none."""
+    """GitHub Enterprise Server URL (``https://github.example.com``) or a self-managed GitLab's URL
+    (``https://gitlab.example.com``, which is also its issuer); github.com and gitlab.com need none."""
     scopes: Annotated[list[str], NoDecode] = []
     allowed_email_domains: Annotated[list[str], NoDecode] = []
     jit_provisioning: bool = False

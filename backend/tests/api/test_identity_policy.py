@@ -436,3 +436,82 @@ async def test_step_up_gates_sensitive_changes(stack: Stack, idp: TestIdp) -> No
     by_code = await owner.post("/api/v1/auth/step-up", json={"code": totp.totp(key, time.time() + 30)})
     assert by_code.status_code == 200, by_code.text
     assert set((await owner.get("/api/v1/auth/step-up")).json()["methods"]) == {"password", "totp"}
+
+
+def _gitlab_discovery(router: respx.MockRouter, base: str) -> None:
+    router.get(f"{base}/.well-known/openid-configuration").respond(
+        json={
+            "issuer": base,
+            "authorization_endpoint": f"{base}/oauth/authorize",
+            "token_endpoint": f"{base}/oauth/token",
+            "jwks_uri": f"{base}/oauth/discovery/keys",
+            "userinfo_endpoint": f"{base}/oauth/userinfo",
+        }
+    )
+
+
+async def _authorize_host(client: httpx.AsyncClient, provider: str) -> str:
+    start = await client.get(f"/api/v1/auth/sso/{provider}/start", params={"next": "/"})
+    assert start.status_code == 302, start.text
+    location = httpx.URL(start.headers["location"])
+    assert location.params["redirect_uri"] == f"{PUBLIC_URL}/api/v1/auth/sso/{provider}/callback"
+    return f"{location.scheme}://{location.host}{location.path}"
+
+
+async def test_self_managed_gitlab_signs_in_at_its_own_url(stack: Stack) -> None:
+    owner = await stack.owner()
+    created = await owner.post(
+        "/api/v1/auth/admin/providers",
+        json={
+            "id": "gitlab",
+            "kind": "oidc",
+            "preset": "gitlab",
+            "base_url": "https://gitlab.corp.test/",
+            "client_id": "c",
+        },
+    )
+    assert created.status_code == 201, created.text
+    assert created.json()["oidc"]["issuer"] == "https://gitlab.corp.test"
+
+    with respx.mock(assert_all_called=False) as router:
+        for base in ("https://gitlab.corp.test", "https://git.corp.test", "https://gitlab.com"):
+            _gitlab_discovery(router, base)
+
+        assert await _authorize_host(stack.client(), "gitlab") == "https://gitlab.corp.test/oauth/authorize"
+
+        # A stored gitlab.com issuer next to the GitLab URL doesn't send anyone to gitlab.com.
+        pinned = await owner.patch("/api/v1/auth/admin/providers/gitlab", json={"issuer": "https://gitlab.com"})
+        assert pinned.status_code == 200, pinned.text
+        assert await _authorize_host(stack.client(), "gitlab") == "https://gitlab.corp.test/oauth/authorize"
+
+        # Changing the URL takes effect on the next sign-in.
+        moved = await owner.patch("/api/v1/auth/admin/providers/gitlab", json={"base_url": "https://git.corp.test"})
+        assert moved.json()["oidc"]["issuer"] == "https://git.corp.test"
+        assert await _authorize_host(stack.client(), "gitlab") == "https://git.corp.test/oauth/authorize"
+
+        # Clearing it goes back to gitlab.com.
+        cleared = await owner.patch("/api/v1/auth/admin/providers/gitlab", json={"base_url": None})
+        assert (cleared.json()["oidc"]["issuer"], cleared.json()["oidc"]["base_url"]) == ("https://gitlab.com", None)
+        assert await _authorize_host(stack.client(), "gitlab") == "https://gitlab.com/oauth/authorize"
+
+
+async def test_switching_presets_drops_the_old_preset_urls(stack: Stack) -> None:
+    owner = await stack.owner()
+    created = await owner.post(
+        "/api/v1/auth/admin/providers", json={"id": "forge", "kind": "oidc", "preset": "github", "client_id": "c"}
+    )
+    assert created.json()["oidc"]["base_url"] == "https://github.com"
+
+    as_gitlab = await owner.patch("/api/v1/auth/admin/providers/forge", json={"preset": "gitlab"})
+    assert as_gitlab.status_code == 200, as_gitlab.text
+    oidc = as_gitlab.json()["oidc"]
+    assert (oidc["issuer"], oidc["base_url"], oidc["scopes"]) == (
+        "https://gitlab.com",
+        None,
+        ["openid", "profile", "email"],
+    )
+
+    hosted = await owner.patch("/api/v1/auth/admin/providers/forge", json={"base_url": "https://gitlab.corp.test"})
+    assert hosted.json()["oidc"]["issuer"] == "https://gitlab.corp.test"
+    back = await owner.patch("/api/v1/auth/admin/providers/forge", json={"preset": "github"})
+    assert back.json()["oidc"]["base_url"] == "https://github.com"

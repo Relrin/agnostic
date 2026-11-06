@@ -12,7 +12,7 @@ import httpx
 import jwt
 
 from agnostic_identity.application.ports import LoginProviderRepository
-from agnostic_identity.domain.providers import ExternalProfile, ProviderConfig, SignInProtocol, SsoError
+from agnostic_identity.domain.providers import ExternalProfile, Preset, ProviderConfig, SignInProtocol, SsoError
 from agnostic_kernel.logging import get_logger
 
 log = get_logger(__name__)
@@ -100,12 +100,18 @@ class OidcClient:
             raise _provider_error(self.config, "the token response has no id_token")
         claims = await self._verify(metadata, id_token, nonce)
 
-        if (
-            not claims.get("email")
-            and metadata.get("userinfo_endpoint")
-            and isinstance(tokens.get("access_token"), str)
-        ):
-            claims = {**await self._userinfo(str(metadata["userinfo_endpoint"]), str(tokens["access_token"])), **claims}
+        # GitLab keeps the full group list in userinfo; its id_token only carries ``groups_direct``.
+        needs_email = not claims.get("email")
+        wants_groups = self.config.preset is Preset.GITLAB and "groups" not in claims
+        access_token = tokens.get("access_token")
+        if (needs_email or wants_groups) and metadata.get("userinfo_endpoint") and isinstance(access_token, str):
+            try:
+                claims = {**await self._userinfo(str(metadata["userinfo_endpoint"]), access_token), **claims}
+            except SsoError:
+                if needs_email:
+                    raise  # without an email nobody can be signed in; for groups alone, keep going
+        if "groups" not in claims and isinstance(claims.get("groups_direct"), list):
+            claims = {**claims, "groups": claims["groups_direct"]}
 
         name = claims.get("name") or claims.get("preferred_username")
         return ExternalProfile(

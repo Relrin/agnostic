@@ -110,20 +110,27 @@ def test_provider_presets() -> None:
     assert not google.jit_allows("marcus@localhost.company")  # JIT off by default
     gitlab = resolve_provider("gitlab", preset=Preset.GITLAB, client_id="c", client_secret=None)
     assert gitlab.issuer == "https://gitlab.com"
-    # Self-managed GitLab: the admin form's "GitLab URL" (base_url) is the issuer; an explicit issuer still wins.
+    assert gitlab.base_url is None
+    # Self-managed GitLab: the admin form's "GitLab URL" (base_url) is the issuer.
     hosted = resolve_provider(
         "gitlab", preset=Preset.GITLAB, client_id="c", client_secret=None, base_url="https://gitlab.corp/"
     )
-    assert hosted.issuer == "https://gitlab.corp"
-    explicit = resolve_provider(
+    assert (hosted.issuer, hosted.base_url) == ("https://gitlab.corp", "https://gitlab.corp")
+    # A row stored with the gitlab.com default issuer next to a self-managed URL signs in at the self-managed one.
+    stored = resolve_provider(
         "gitlab",
         preset=Preset.GITLAB,
         client_id="c",
         client_secret=None,
-        issuer="https://sso.corp/gitlab",
+        issuer="https://gitlab.com",
         base_url="https://gitlab.corp",
     )
-    assert explicit.issuer == "https://sso.corp/gitlab"
+    assert stored.issuer == "https://gitlab.corp"
+    # An issuer alone (env settings from before the GitLab URL existed) still points at the instance.
+    issuer_only = resolve_provider(
+        "gitlab", preset=Preset.GITLAB, client_id="c", client_secret=None, issuer="https://example.com/gitlab/"
+    )
+    assert (issuer_only.issuer, issuer_only.base_url) == ("https://example.com/gitlab", "https://example.com/gitlab")
     okta = resolve_provider(
         "okta",
         preset=Preset.OKTA,

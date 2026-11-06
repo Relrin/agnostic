@@ -105,6 +105,26 @@ def _values(config: ProviderConfig, enabled: bool) -> dict[str, Any]:
     return values
 
 
+_PRESET_DERIVED = ("issuer", "base_url", "scopes")
+
+
+def _carried_over(before: Mapping[str, Any], changes: Mapping[str, Any]) -> dict[str, Any]:
+    """The stored values an update keeps unless it sets them.
+
+    Values a preset fills in (issuer, instance URL, scopes) don't carry over to another preset:
+    a GitHub provider switched to GitLab must not keep ``https://github.com`` as its GitLab URL.
+    For GitLab the instance URL and the issuer are one setting, so changing the URL drops the
+    stored issuer.
+    """
+    kept = dict(before)
+    if "preset" in changes and changes["preset"] != before.get("preset"):
+        for key in _PRESET_DERIVED:
+            _ = kept.pop(key, None)
+    elif (changes.get("preset") or before.get("preset")) == Preset.GITLAB.value and "base_url" in changes:
+        _ = kept.pop("issuer", None)
+    return kept
+
+
 def _public(values: Mapping[str, Any]) -> dict[str, Any]:
     return {key: value for key, value in values.items() if key != "client_secret"}
 
@@ -335,7 +355,7 @@ class UpdateLoginProvider(_ProviderAdmin):
         before = _values(stored.config, stored.enabled)
         if "kind" in changes and changes["kind"] != before["kind"]:
             raise ValidationFailedError("A provider's kind can't change; create a new provider instead.")
-        merged = {**before, **changes, "_explicit": set(changes)}
+        merged = {**_carried_over(before, changes), **changes, "_explicit": set(changes)}
         refetch = refresh_metadata or (
             "metadata_url" in changes and changes["metadata_url"] != before.get("metadata_url")
         )
