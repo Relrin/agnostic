@@ -51,6 +51,9 @@ from agnostic_observe.domain.overview import (
 log = get_logger(__name__)
 
 TRACE_PAGE = 100
+# AgentOS serves at most 100 components per page (`limit` is capped at 100).
+COMPONENT_PAGE = 100
+MAX_COMPONENT_PAGES = 10
 MAX_SCHEDULES = 20
 ACTIVITY_ACTIONS = ("approvals.*", "instances.*", "access.*", "gateway.elevated", "gateway.denied")
 
@@ -100,7 +103,7 @@ class BuildOverview:
             ),
             self._safe(lambda: self._traces(instance, window)),
             self._safe(lambda: self._trace_totals(instance, window.previous)),
-            self._safe(lambda: self._get(instance, "/components", {"limit": 200})),
+            self._safe(lambda: self._components(instance)),
             self._safe(lambda: self._approvals(instance)),
             self._safe(lambda: self._schedules(instance)),
         )
@@ -110,7 +113,7 @@ class BuildOverview:
             overview.unavailable["primitives"] = config.reason
         else:
             body = cast("dict[str, Any]", config) if isinstance(config, dict) else {}
-            component_items = [] if isinstance(components, Unavailable) else page_items(components)[0]
+            component_items = [] if isinstance(components, Unavailable) else cast("list[dict[str, Any]]", components)
             overview.counts = component_counts(body)
             overview.primitives = primitives(body, component_items, sample.rows if sample else [])
 
@@ -200,6 +203,15 @@ class BuildOverview:
         if status:
             params["status"] = status
         return page_items(await self._get(instance, "/traces", params))
+
+    async def _components(self, instance: Instance) -> list[dict[str, Any]]:
+        items: list[dict[str, Any]] = []
+        for page in range(1, MAX_COMPONENT_PAGES + 1):
+            batch, total = page_items(await self._get(instance, "/components", {"limit": COMPONENT_PAGE, "page": page}))
+            items.extend(batch)
+            if len(batch) < COMPONENT_PAGE or (total is not None and len(items) >= total):
+                break
+        return items
 
     async def _traces(self, instance: Instance, window: Window) -> TraceSample:
         rows: list[TraceRow] = []

@@ -1101,6 +1101,8 @@ class FakeAgentOS:
             guarded = await self._guard(request, "components:read")
             if isinstance(guarded, Response):
                 return guarded
+            if int(request.query_params.get("limit", "20")) > 100:  # agno: Query(le=100)
+                return JSONResponse({"detail": "limit: Input should be less than or equal to 100"}, status_code=422)
             kind = request.query_params.get("component_type")
             deleted = request.query_params.get("include_deleted") == "true"
             items = [

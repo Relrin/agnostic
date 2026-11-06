@@ -108,7 +108,9 @@ if ${build_runtime}; then
 fi
 
 echo
-if ${push}; then
+if ! ${build_agnostic}; then
+  if ${push}; then echo "Pushed: $(name agnostic-runtime):${version}"; else echo "Built: $(name agnostic-runtime):${version}"; fi
+elif ${push}; then
   echo "Pushed. Deploy by digest: AGNOSTIC_IMAGE=$(name agnostic)@sha256:<digest above>"
 else
   echo "Built. In deploy/compose/.env: AGNOSTIC_IMAGE=$(name agnostic):${version}"

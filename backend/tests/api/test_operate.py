@@ -260,6 +260,29 @@ async def test_overview_aggregates_and_filters(stack: Stack) -> None:
     assert fresh["pending_approvals"] is None
 
 
+async def test_overview_reads_component_versions_past_the_first_page(stack: Stack) -> None:
+    owner = await stack.owner()
+    fake = stack.runtime("prod.agentos.test")
+    await connect(owner, fake)
+    # AgentOS lists at most 100 components per page: the one the overview needs sits on the second page.
+    for index in range(130):
+        fake.components[f"filler-{index}"] = {
+            "component_id": f"filler-{index}",
+            "component_type": "agent",
+            "current_version": 1,
+        }
+    fake.components["support-triage"] = {
+        "component_id": "support-triage",
+        "component_type": "agent",
+        "current_version": 3,
+        "latest_version": 4,
+    }
+
+    overview = (await owner.get("/api/v1/instances/prod-agentos/overview", params={"refresh": "true"})).json()
+    triage = next(item for item in overview["primitives"] if item["id"] == "support-triage")
+    assert (triage["live_version"], triage["draft_version"]) == (3, 4)
+
+
 async def test_overview_hides_what_the_viewer_cannot_see(stack: Stack) -> None:
     owner = await stack.owner()
     fake = stack.runtime("prod.agentos.test")

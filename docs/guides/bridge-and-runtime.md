@@ -36,7 +36,7 @@ app = install(agent_os)          # instead of agent_os.get_app()
 
 | agnostic-bridge | Agno | Python |
 |---|---|---|
-| 1.0.x | 3.1.x (3.1.12 or newer) | 3.10–3.13 |
+| 0.1.x | 3.1.x (3.1.12 or newer) | 3.10–3.13 |
 
 It depends on compatible ranges (`agno[os]>=3.1.12,<3.2`, FastAPI, pydantic), so it installs into existing apps. A new
 agno minor needs a new bridge version.
