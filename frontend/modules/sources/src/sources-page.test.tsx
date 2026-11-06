@@ -269,7 +269,14 @@ describe("connections", () => {
       private_key: "-----BEGIN PRIVATE KEY-----",
       app_id: "12345",
     });
-    expect(connectionPatch(gitlab, { ...form, name: gitlab.name, web_url: gitlab.web_url ?? "", access: gitlab.access })).toEqual({
+    expect(
+      connectionPatch(gitlab, {
+        ...form,
+        name: gitlab.name,
+        web_url: gitlab.web_url ?? "",
+        access: gitlab.access,
+      }),
+    ).toEqual({
       version: gitlab.version,
       token: "-----BEGIN PRIVATE KEY-----",
     });

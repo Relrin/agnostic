@@ -98,6 +98,10 @@ class Upstream:
     def read(self, path: str, branch: str | None = None) -> str:
         return self._git("show", f"refs/heads/{branch or self.branch}:{path}", cwd=self.bare)
 
+    def move(self, branch: str, to: str) -> None:
+        """Point ``branch`` at commit ``to`` (someone else pushing to it)."""
+        self._git("update-ref", f"refs/heads/{branch}", to, cwd=self.bare)
+
     def branches(self) -> list[str]:
         refs = self._git("for-each-ref", "--format=%(refname:short)", "refs/heads", cwd=self.bare)
         return sorted(refs.split()) if refs else []

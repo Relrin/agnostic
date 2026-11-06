@@ -49,6 +49,7 @@ class CommitPreview:
 
 PUSHED_BRANCH = "pushed_branch"
 PUSHED_SHA = "pushed_sha"
+PUSHED = frozenset({PUSHED_BRANCH, PUSHED_SHA})
 
 
 def pushed(change: Change | None) -> dict[str, str]:
@@ -433,7 +434,13 @@ class Committer:
         except (GitError, ProviderError, ConflictError) as exc:
             for change in changes:
                 # A branch pushed for a pull request that didn't open is remembered: the retry goes to it again.
-                outcome = {**change.outcome, **sent} if sent else change.outcome
+                # Once someone else has pushed to it, it's forgotten: the retry picks a new branch.
+                if sent:
+                    outcome = {**change.outcome, **sent}
+                elif isinstance(exc, ConflictError):
+                    outcome = {key: value for key, value in change.outcome.items() if key not in PUSHED}
+                else:
+                    outcome = change.outcome
                 await self._store.save_change(replace(change, status="pending", outcome=outcome))
             await self._store.commit()
             log.warning("sources.commit_failed", source_id=source.id, error=str(exc))

@@ -589,6 +589,31 @@ async def test_a_pull_request_that_failed_to_open_is_retried_on_the_branch_it_pu
     )
 
 
+async def test_a_retry_moves_to_a_new_branch_once_someone_else_pushed_to_the_old_one(
+    stack: Stack, tmp_path: Path
+) -> None:
+    here = await bound(stack, tmp_path)
+    await here.save_draft("support-triage", 1, lambda config: config.update(description="Sorts tickets."))
+    change = await outgoing_for(here, "support-triage")
+    here.gitea.fail_pulls = 1
+    first = await here.owner.post(f"{here.source}/commit", json={"change_ids": [change["id"]]})
+    assert first.status_code == 202, first.text
+    _ = await eventually(lambda: change_status(here, change["id"], "pending"), "the failed commit to give back")
+    here.upstream.move("studio/support-triage-v1", here.upstream.head())
+
+    rejected = await here.owner.post(f"{here.source}/commit", json={"change_ids": [change["id"]]})
+    assert rejected.status_code == 202, rejected.text
+    _ = await eventually(lambda: change_status(here, change["id"], "pending"), "the rejected push to give back")
+    assert here.upstream.head("studio/support-triage-v1") == here.upstream.head(), "the other push is kept"
+
+    preview = (await here.owner.get(f"{here.source}/commit-preview", params={"change_ids": change["id"]})).json()
+    assert preview["branch"] == "studio/support-triage-v1-2", "the branch someone else pushed to is left alone"
+    retried = await here.owner.post(f"{here.source}/commit", json={"change_ids": [change["id"]]})
+    assert retried.status_code == 202, retried.text
+    pull = await eventually(lambda: asyncio.sleep(0, here.gitea.pulls.get(1)), "the pull request")
+    assert pull.head == "studio/support-triage-v1-2"
+
+
 async def test_a_commit_preview_says_when_the_remote_branches_cant_be_listed(stack: Stack, tmp_path: Path) -> None:
     here = await bound(stack, tmp_path)
     await here.save_draft("support-triage", 1, lambda config: config.update(description="Sorts tickets."))

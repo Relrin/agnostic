@@ -224,7 +224,10 @@ function EditConnection({ connection, onClose }: { connection: ConnectionOut; on
                   />
                 )}
               </Field>
-              <Field label="New private key" hint="The app's private key (PEM); leave empty to keep the current one.">
+              <Field
+                label="New private key"
+                hint="The app's private key (PEM); leave empty to keep the current one."
+              >
                 {({ id, describedBy }) => (
                   <Textarea
                     id={id}
