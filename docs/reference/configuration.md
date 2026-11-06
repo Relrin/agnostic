@@ -105,7 +105,7 @@ See [sign-in providers](../how-to/sign-in-providers.md) for setup per identity p
 | `AGNOSTIC_IDENTITY__PROVIDERS__<ID>__PRESET` | `oidc` | `github`, `gitlab`, `google`, `okta` or `oidc` (any OIDC IdP) |
 | `…__<ID>__CLIENT_ID` / `__CLIENT_SECRET` | — | OAuth client registered at the provider; callback URL `{PUBLIC_URL}/api/v1/auth/sso/<id>/callback` |
 | `…__<ID>__ISSUER` | preset default | OIDC issuer (required for Okta and generic OIDC; self-managed GitLab) |
-| `…__<ID>__BASE_URL` | — (the `github` preset implies github.com) | GitHub Enterprise Server URL |
+| `…__<ID>__BASE_URL` | — (the `github` preset implies github.com) | GitHub Enterprise Server URL; for the `gitlab` preset, a self-managed GitLab's URL (its issuer, unless `__ISSUER` is set) |
 | `…__<ID>__DISPLAY_NAME` / `__SCOPES` | preset default | button label; requested scopes |
 | `…__<ID>__JIT_PROVISIONING` | `false` | people without an invitation join as Members on first sign-in… |
 | `…__<ID>__ALLOWED_EMAIL_DOMAINS` | — | …when their email domain is listed (Google: also preselects the Workspace domain) |

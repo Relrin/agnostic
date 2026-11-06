@@ -15676,7 +15676,7 @@
                 "type": "null"
               }
             ],
-            "description": "GitHub Enterprise Server URL",
+            "description": "GitHub Enterprise Server URL, or a self-managed GitLab's URL",
             "title": "Base Url"
           },
           "certificates": {
@@ -16081,7 +16081,7 @@
                 "type": "null"
               }
             ],
-            "description": "GitHub Enterprise Server URL",
+            "description": "GitHub Enterprise Server URL, or a self-managed GitLab's URL",
             "title": "Base Url"
           },
           "certificates": {

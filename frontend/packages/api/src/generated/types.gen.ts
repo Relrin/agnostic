@@ -8290,7 +8290,7 @@ export type ProviderCreate = {
     /**
      * Base Url
      *
-     * GitHub Enterprise Server URL
+     * GitHub Enterprise Server URL, or a self-managed GitLab's URL
      */
     base_url?: string | null;
     /**
@@ -8447,7 +8447,7 @@ export type ProviderUpdate = {
     /**
      * Base Url
      *
-     * GitHub Enterprise Server URL
+     * GitHub Enterprise Server URL, or a self-managed GitLab's URL
      */
     base_url?: string | null;
     /**

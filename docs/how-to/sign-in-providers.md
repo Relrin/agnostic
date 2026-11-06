@@ -79,7 +79,7 @@ and refusals are audited (`auth.login`, `auth.login_failed` with the reason).
 | Preset | Register at the provider | Settings beyond id and secret |
 |---|---|---|
 | `github` | **Settings › Developer settings › OAuth Apps** (or the organisation's); callback URL as above. Scopes `read:user`, `user:email` | `__BASE_URL` for GitHub Enterprise Server (github.com needs none) |
-| `gitlab` | **Applications** (profile, group or instance); confidential; scopes `openid`, `profile`, `email` | `__ISSUER` for self-managed GitLab (gitlab.com needs none) |
+| `gitlab` | **Applications** (profile, group or instance); confidential; scopes `openid`, `profile`, `email` | `__ISSUER` (or `__BASE_URL`, the *GitLab URL* in the app) for self-managed GitLab: its URL, e.g. `https://gitlab.example.com` (gitlab.com needs none) |
 | `google` | Cloud console: OAuth consent screen (**Internal** for a Workspace), then an OAuth client ID of type **Web application** | `__ALLOWED_EMAIL_DOMAINS`; with exactly one domain the account chooser is limited to it (`hd`) |
 | `okta` | **Applications › Create App Integration › OIDC › Web Application**, grant type Authorization Code; assign the people or groups who may use Agnostic | `__ISSUER`: `https://<org>.okta.com/oauth2/default` (or another custom server), or `https://<org>.okta.com` |
 | `oidc` | any provider with `/.well-known/openid-configuration` under its issuer that puts `email` in the ID token or userinfo | `__ISSUER`; `__SCOPES` (default `openid,profile,email`) |

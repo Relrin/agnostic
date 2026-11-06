@@ -27,7 +27,9 @@ class _ProviderFields(BaseModel):
     trust_unverified_email: bool | None = None
     # OIDC / OAuth 2
     issuer: str | None = Field(default=None, max_length=500, description="OIDC issuer (discovery) URL")
-    base_url: str | None = Field(default=None, max_length=500, description="GitHub Enterprise Server URL")
+    base_url: str | None = Field(
+        default=None, max_length=500, description="GitHub Enterprise Server URL, or a self-managed GitLab's URL"
+    )
     client_id: str | None = Field(default=None, max_length=300)
     client_secret: str | None = Field(
         default=None, max_length=2000, description="Write-only; omit to keep the current one, null to remove it"

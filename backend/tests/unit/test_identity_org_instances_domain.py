@@ -110,6 +110,20 @@ def test_provider_presets() -> None:
     assert not google.jit_allows("marcus@localhost.company")  # JIT off by default
     gitlab = resolve_provider("gitlab", preset=Preset.GITLAB, client_id="c", client_secret=None)
     assert gitlab.issuer == "https://gitlab.com"
+    # Self-managed GitLab: the admin form's "GitLab URL" (base_url) is the issuer; an explicit issuer still wins.
+    hosted = resolve_provider(
+        "gitlab", preset=Preset.GITLAB, client_id="c", client_secret=None, base_url="https://gitlab.corp/"
+    )
+    assert hosted.issuer == "https://gitlab.corp"
+    explicit = resolve_provider(
+        "gitlab",
+        preset=Preset.GITLAB,
+        client_id="c",
+        client_secret=None,
+        issuer="https://sso.corp/gitlab",
+        base_url="https://gitlab.corp",
+    )
+    assert explicit.issuer == "https://sso.corp/gitlab"
     okta = resolve_provider(
         "okta",
         preset=Preset.OKTA,

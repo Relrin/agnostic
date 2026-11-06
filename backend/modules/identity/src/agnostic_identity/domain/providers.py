@@ -195,6 +195,8 @@ def resolve_provider(
     version: str = "",
 ) -> ProviderConfig:
     spec = PRESETS[preset]
+    if preset is Preset.GITLAB and not issuer and base_url:
+        issuer = base_url  # a self-managed GitLab's URL is its OIDC issuer
     resolved_issuer = (issuer or spec.default_issuer or "").rstrip("/") or None
     if spec.protocol is SignInProtocol.OIDC and resolved_issuer is None:
         raise ProviderConfigError(f"sign-in provider {provider_id!r} ({preset.value}) needs an issuer URL")
