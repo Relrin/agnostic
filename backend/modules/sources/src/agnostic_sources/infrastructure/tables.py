@@ -57,6 +57,7 @@ class SourceRow(TimestampMixin, SourcesBase):
     scan_report: Mapped[dict[str, Any] | None] = mapped_column(JsonDocument)
     webhook_id: Mapped[str | None] = mapped_column(String(100))
     webhook_secret_enc: Mapped[str | None] = mapped_column(Text)
+    activated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_by: Mapped[str | None] = mapped_column(String(40))
     version: Mapped[int] = mapped_column(Integer, default=1)
 

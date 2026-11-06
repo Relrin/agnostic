@@ -185,12 +185,14 @@ class Sources:
             raise rule(exc) from exc
         rescan = updated.branch != source.branch or updated.mappings != source.mappings
         if rescan:
-            updated = replace(updated, status="scanning" if source.status != "active" else "active")
+            updated = replace(updated, status="scanning" if source.activated_at is None else "active")
         saved = await self._store.save_source(updated, expected_version=expected_version)
         await self._audited(principal, instance, "sources.source.update", saved)
         await self._store.commit()
         if rescan:
-            _ = await (self._jobs.scan(saved.id) if saved.status != "active" else self._jobs.fetch(saved.id, "manual"))
+            _ = await (
+                self._jobs.scan(saved.id) if saved.activated_at is None else self._jobs.fetch(saved.id, "manual")
+            )
         return saved
 
     async def delete(self, principal: Principal, ref: str, source_id: str) -> None:
@@ -233,7 +235,7 @@ class Sources:
             )
         )
         await self._store.commit()
-        if source.status in {"setup", "scanning", "ready", "failed"} and source.head_sha is None:
+        if source.activated_at is None and not source.scanned:
             return await self._jobs.scan(source.id)
         return await self._jobs.fetch(source.id, "manual")
 
@@ -307,7 +309,7 @@ class Sources:
             "found": sum(len(item["components"]) for item in report_files),
             "scanned_at": utcnow().isoformat(),
         }
-        status = "active" if await settled_status(self._store, source) == "active" else "ready"
+        status = "active" if settled_status(source) == "active" else "ready"
         saved = await self._store.save_source(
             replace(
                 source,
@@ -367,7 +369,7 @@ class Sources:
                         convention=source.convention,
                     )
                 await self._store.save_binding(binding)
-        activated = replace(source, status="active")
+        activated = replace(source, status="active", activated_at=source.activated_at or utcnow())
         activated = await self._webhook(activated)
         saved = await self._store.save_source(activated)
         await self._audited(principal, instance, "sources.source.update", saved)

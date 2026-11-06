@@ -3305,6 +3305,8 @@ export type ConnectionIn = {
     access?: 'read_write' | 'read_only';
     /**
      * Api Url
+     *
+     * The API, when it isn't at the usual place. For a deploy key, the host's SSH address instead (ssh://git@git.example.com:2222) when SSH isn't on port 22.
      */
     api_url?: string | null;
     /**
@@ -3437,6 +3439,8 @@ export type ConnectionPatchIn = {
     access?: 'read_write' | 'read_only' | null;
     /**
      * Api Url
+     *
+     * The API, when it isn't at the usual place. For a deploy key, the host's SSH address instead (ssh://git@git.example.com:2222) when SSH isn't on port 22.
      */
     api_url?: string | null;
     /**
@@ -3459,6 +3463,8 @@ export type ConnectionPatchIn = {
     installation_id?: string | null;
     /**
      * Name
+     *
+     * ``null`` keeps the name.
      */
     name?: string | null;
     /**

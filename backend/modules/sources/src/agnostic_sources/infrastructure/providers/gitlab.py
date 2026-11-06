@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from fnmatch import fnmatchcase
+import re
 from typing import Any, cast
 from urllib.parse import quote
 
@@ -55,12 +55,21 @@ class GitLabClient(Api):
         if status in {NOT_FOUND, FORBIDDEN}:
             return None
         protected: list[str] | None = None
+        unknown = False
         applying: list[dict[str, Any]] = []
         for rule in items(body):
+            if rule.get("rule_type") == "report_approver":
+                continue  # security and coverage approvals: asked for only when a report finds something
             names = [str(item.get("name") or "") for item in items(rule.get("protected_branches"))]
             if rule.get("applies_to_all_protected_branches"):
-                if protected is None:
+                if protected is None and not unknown:
                     protected = await self._protected(repo)
+                    unknown = protected is None
+                if protected is None:
+                    # The protected branches can't be read with this token: the branch a merge request targets
+                    # is protected almost always, so count the rule rather than ask for too few approvals.
+                    applying.append(rule)
+                    continue
                 names = protected
             elif not names:
                 applying.append(rule)  # a rule without branches applies to every branch
@@ -72,11 +81,12 @@ class GitLabClient(Api):
         teams = [str(rule.get("name")) for rule in applying if rule.get("approvals_required") and rule.get("name")]
         return required, teams
 
-    async def _protected(self, repo: str) -> list[str]:
+    async def _protected(self, repo: str) -> list[str] | None:
+        """The project's protected branch names (``None`` when the token can't read them)."""
         try:
             found = await self.pages(f"/projects/{_id(repo)}/protected_branches")
         except ProviderError:
-            return []
+            return None
         return [str(item.get("name")) for item in found if item.get("name")]
 
     async def open_pull_request(self, repo: str, *, head: str, base: str, title: str, body: str) -> OpenedPullRequest:
@@ -120,8 +130,10 @@ def _id(repo: str) -> str:
 
 
 def _matches(pattern: str, branch: str) -> bool:
-    """GitLab protected branch names are exact or wildcards (``release/*``)."""
-    return pattern == branch or ("*" in pattern and fnmatchcase(branch, pattern))
+    """GitLab protected branch names are exact, or wildcards where ``*`` matches anything (``release/*``)."""
+    if "*" not in pattern:
+        return pattern == branch
+    return re.fullmatch(".*".join(re.escape(part) for part in pattern.split("*")), branch) is not None
 
 
 def _repo(data: dict[str, Any]) -> RepoSummary:

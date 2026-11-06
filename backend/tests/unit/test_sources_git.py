@@ -85,3 +85,28 @@ def test_file_remotes_are_refused_unless_allowed(tmp_path: Path) -> None:
     git = GitCli(SourcesSettings(mirrors_dir=tmp_path / "mirrors"))
     with pytest.raises(Exception, match="git clone"):
         _ = asyncio.run(git.fetch("src_3", Remote(upstream.url), "main"))
+
+
+def test_a_leased_push_replaces_only_the_commit_it_expects_and_reads_the_default_branch(tmp_path: Path) -> None:
+    upstream = Upstream(tmp_path)
+    base = upstream.commit({"agents/triage.py": "x = 1\n"}, "First")
+    git = cli(tmp_path)
+    remote = Remote(upstream.url)
+
+    async def scenario() -> None:
+        _ = await git.fetch("src_1", remote, "main")
+        assert await git.default_branch(remote) == "main"
+        people = (("A", "a@x.test"), ("A", "a@x.test"))
+        old = await git.commit("src_1", base, {"agents/triage.py": b"x = 2\n"}, "two\n", *people)
+        await git.push("src_1", remote, old, "studio/triage-v2")
+        new = await git.commit("src_1", base, {"agents/triage.py": b"x = 3\n"}, "three\n", *people)
+        with pytest.raises(ConflictError):
+            await git.push("src_1", remote, new, "studio/triage-v2")
+        await git.push("src_1", remote, new, "studio/triage-v2", lease=old)
+        assert upstream.read("agents/triage.py", "studio/triage-v2") == "x = 3"
+        other = await git.commit("src_1", base, {"agents/triage.py": b"x = 4\n"}, "four\n", *people)
+        with pytest.raises(ConflictError):
+            await git.push("src_1", remote, other, "studio/triage-v2", lease=old)
+        assert upstream.read("agents/triage.py", "studio/triage-v2") == "x = 3", "someone else's commit stays"
+
+    asyncio.run(scenario())

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import hashlib
 from dataclasses import dataclass
 
 from agnostic_kernel.db import utcnow
@@ -70,9 +69,8 @@ class SourceFiles:
         return self._clients.client(connection, await self._store.connection_secrets(connection.id))
 
     async def local_hash(self, source: Source, path: str) -> str | None:
-        """The hash of a local folder's file as it is on disk now (``None`` when it is gone)."""
-        data = self._folders.read(source.local_path or "", path)
-        return hashlib.sha256(data).hexdigest() if data is not None else None
+        """The hash of a local folder's file as it is on disk now, as a fetch lists it (``None`` when it is gone)."""
+        return self._folders.digest(source.local_path or "", path)
 
     async def remote(self, source: Source) -> Remote:
         client = await self.client(source)

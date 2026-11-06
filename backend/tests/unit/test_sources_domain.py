@@ -13,7 +13,7 @@ from agnostic_sources.domain.paths import (
     match,
     pathspecs,
 )
-from agnostic_sources.domain.remote import check_clone_url, check_repo, redact
+from agnostic_sources.domain.remote import check_clone_url, check_repo, redact, ssh_address
 from agnostic_sources.domain.templates import (
     DEFAULT_BRANCH_TEMPLATE,
     branch_name,
@@ -162,6 +162,14 @@ def test_remote_rules() -> None:
     with pytest.raises(SourceRuleError):
         _ = check_clone_url("file:///tmp/repo")
     assert check_clone_url("file:///tmp/repo", allow_file=True)
+    scp = "git@git.northwind.test:northwind/agents.git"
+    assert check_clone_url(scp) == scp
+    with pytest.raises(SourceRuleError):
+        _ = check_clone_url("git@git.northwind.test:-oProxyCommand=x")
+    assert ssh_address("ssh://git@git.northwind.test:2222/") == "ssh://git@git.northwind.test:2222"
+    for wrong in ("https://git.northwind.test", "ssh://git@host:22x", "ssh://git@host:2222/owner/repo.git"):
+        with pytest.raises(SourceRuleError):
+            _ = ssh_address(wrong)
     text = "fatal: https://x-access-token:ghs_abcdefghijklmnopqrstuvwxyz@github.com Authorization: Basic Zm9vOmJhcg=="
     assert "ghs_" not in redact(text)
     assert "Zm9v" not in redact(text)

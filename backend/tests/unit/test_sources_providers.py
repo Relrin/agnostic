@@ -6,7 +6,7 @@ import asyncio
 import base64
 import json
 from collections.abc import Callable
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 import httpx
 import jwt
@@ -17,7 +17,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 
 from agnostic_kernel.crypto import SecretBox
 from agnostic_kernel.ephemeral import MemoryStore
-from agnostic_sources.application.ports import ProviderError, Secrets
+from agnostic_sources.application.ports import GitError, ProviderError, Remote, Secrets
 from agnostic_sources.domain.model import Connection
 from agnostic_sources.infrastructure.http import SourcesHttp
 from agnostic_sources.infrastructure.providers import HttpProviderClients
@@ -392,6 +392,30 @@ async def test_gitlab_review_requirement_counts_only_the_target_branchs_rules_an
         assert await client.review_requirement("northwind/agents", "feature/x") == (1, ["Everyone"])
 
 
+async def test_gitlab_counts_rules_for_every_protected_branch_even_when_the_list_is_hidden() -> None:
+    rules = [
+        {"name": "Everyone", "approvals_required": 1, "protected_branches": []},
+        {"name": "Protected", "approvals_required": 2, "applies_to_all_protected_branches": True},
+        {"name": "Vulnerabilities", "approvals_required": 4, "rule_type": "report_approver", "protected_branches": []},
+        {"name": "Hotfixes", "approvals_required": 3, "protected_branches": [{"name": "hotfix/*"}]},
+    ]
+    hidden = respond({"message": "403 Forbidden"}, 403)
+    host = Host(
+        {
+            "GET /api/v4/projects/northwind%2Fagents/approval_rules": respond(rules),
+            "GET /api/v4/projects/northwind%2Fagents/protected_branches": hidden,
+        }
+    )
+    async with httpx.AsyncClient(transport=httpx.MockTransport(host)) as raw:
+        client = GitLabClient(raw, "https://gitlab.test/api/v4", "https://gitlab.test", "glpat-token")
+        assert await client.review_requirement("northwind/agents", "main") == (2, ["Everyone", "Protected"])
+        assert await client.review_requirement("northwind/agents", "hotfix/2026/11") == (
+            3,
+            ["Everyone", "Protected", "Hotfixes"],
+        ), "GitLab's * matches across folders"
+    assert len(host.seen("GET", "/api/v4/projects/northwind%2Fagents/protected_branches")) == 2
+
+
 async def test_pages_stop_at_the_limit_and_never_follow_a_link_to_another_host() -> None:
     def endless(request: httpx.Request) -> httpx.Response:
         page = int(request.url.params.get("page", "1"))
@@ -451,4 +475,111 @@ async def test_a_deploy_key_reaches_git_over_ssh_and_skips_the_api() -> None:
         _ = await garbage.verify()
     with pytest.raises(ProviderError, match="no deploy key"):
         _ = clients(http).client(connection, Secrets(token="t"))
+    await http.aclose()
+
+
+class SshGit:
+    """``git ls-remote`` over SSH as a host answers it: ``answer`` is what git prints when it fails."""
+
+    def __init__(self, answer: str | None = None, head: str | None = "trunk") -> None:
+        self.answer = answer
+        self.head = head
+        self.remotes: list[Remote] = []
+
+    async def branches(self, source_id: str, remote: Remote) -> list[str]:
+        self.remotes.append(remote)
+        if self.answer is not None:
+            raise GitError(f"git ls-remote: {self.answer}")
+        return ["main"]
+
+    async def default_branch(self, remote: Remote) -> str | None:
+        self.remotes.append(remote)
+        return self.head
+
+
+def deploy_key(git: SshGit, *, ssh: str | None = None) -> Any:
+    http = SourcesHttp()
+    connection = Connection(
+        id="scn_k",
+        name="Deploy key",
+        provider="forgejo",
+        auth_kind="deploy_key",
+        web_url="https://git.northwind.test",
+        api_url=ssh,
+    )
+    tokens = GitHubAppTokens(http.client, MemoryStore(), SecretBox(b"k" * 32))
+    pem, _ = rsa_pair()
+    return HttpProviderClients(http, SourcesSettings(), tokens, cast("Any", git)).client(
+        connection, Secrets(private_key=pem)
+    )
+
+
+async def test_a_deploy_key_is_checked_over_ssh_at_the_hosts_ssh_port() -> None:
+    accepted = SshGit("ERROR: Repository not found.\nfatal: Could not read from remote repository.")
+    assert await deploy_key(accepted, ssh="ssh://git@git.northwind.test:2222").verify() == "deploy key"
+    assert accepted.remotes[0].url == "ssh://git@git.northwind.test:2222/agnostic/deploy-key-check.git"
+    assert accepted.remotes[0].ssh_key
+
+    refused = SshGit("git@git.northwind.test: Permission denied (publickey).")
+    with pytest.raises(ProviderError, match="turned the deploy key down"):
+        _ = await deploy_key(refused).verify()
+    assert refused.remotes[0].url == "ssh://git@git.northwind.test/agnostic/deploy-key-check.git"
+    unreachable = SshGit("ssh: connect to host git.northwind.test port 22: Connection refused")
+    with pytest.raises(ProviderError, match=r"Couldn't reach git.northwind.test over SSH.*ssh://git@host:2222"):
+        _ = await deploy_key(unreachable).verify()
+
+
+async def test_a_deploy_key_keeps_the_clone_url_it_is_given_and_reads_the_default_branch() -> None:
+    git = SshGit()
+    client = deploy_key(git, ssh="ssh://git@git.northwind.test:2222")
+    scp = await client.remote("northwind/agents", "git@git.northwind.test:northwind/agents.git")
+    assert scp.url == "git@git.northwind.test:northwind/agents.git"
+    own = await client.remote("northwind/agents", "https://git.northwind.test/northwind/agents.git")
+    assert own.url == "ssh://git@git.northwind.test:2222/northwind/agents.git", "a deploy key reaches git over SSH"
+    summary = await client.repo("northwind/agents")
+    assert (summary.default_branch, summary.clone_url) == (
+        "trunk",
+        "ssh://git@git.northwind.test:2222/northwind/agents.git",
+    )
+    assert (await deploy_key(SshGit(head=None)).repo("northwind/agents")).default_branch == "main"
+
+
+async def test_gitea_globs_keep_a_star_inside_one_folder_like_gitea() -> None:
+    rules = [
+        {"rule_name": "release/*", "required_approvals": 2},
+        {"rule_name": "release/**", "required_approvals": 3},
+        {"rule_name": "{hotfix,fix}-?", "required_approvals": 4},
+        {"rule_name": "Main", "required_approvals": 1},
+        {"rule_name": "m*", "required_approvals": 5},
+    ]
+    host = Host({"GET /api/v1/repos/northwind/agents/branch_protections": respond(rules)})
+    http = host.http()
+    client = clients(http).client(gitea_connection(), Secrets(token="tok"))
+    assert await client.review_requirement("northwind/agents", "release/2026") == (2, [])
+    assert await client.review_requirement("northwind/agents", "release/2026/rc1") == (3, []), "* stops at a /"
+    assert await client.review_requirement("northwind/agents", "fix-1") == (4, [])
+    assert await client.review_requirement("northwind/agents", "fix-12") == (0, [])
+    assert await client.review_requirement("northwind/agents", "main") == (1, []), "a plain name wins, any case"
+    assert await client.review_requirement("northwind/agents", "mine") == (5, [])
+    await http.aclose()
+
+
+async def test_gitea_protections_hidden_from_the_token_fall_back_to_the_branch() -> None:
+    forbidden = respond({"message": "user should be an owner or a collaborator with admin write"}, 403)
+    host = Host(
+        {
+            "GET /api/v1/repos/northwind/agents/branch_protections": forbidden,
+            "GET /api/v1/repos/northwind/agents/branches/main": respond(
+                {"name": "main", "protected": True, "required_approvals": 2}
+            ),
+            "GET /api/v1/repos/northwind/agents/branches/feature%2Fx": respond(
+                {"name": "feature/x", "protected": False}
+            ),
+        }
+    )
+    http = host.http()
+    client = clients(http).client(gitea_connection(), Secrets(token="tok"))
+    assert await client.review_requirement("northwind/agents", "main") == (2, [])
+    assert await client.review_requirement("northwind/agents", "feature/x") == (0, [])
+    assert await client.review_requirement("northwind/agents", "gone") is None, "unknown, not a failure"
     await http.aclose()

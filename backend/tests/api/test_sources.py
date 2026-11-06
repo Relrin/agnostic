@@ -2,8 +2,9 @@
 through a signed webhook as a draft next to Studio's, a publish written back as a pull request whose merge moves the
 binding, publishing held until that merge, the same field edited in both places as a conflict resolved each way,
 edits in different fields merging on their own, the sidebar's conflict count, who may do what, a pull request retried
-after it failed to open, the status a source returns to after a failed fetch, read-only and deploy-key connections,
-connection updates, a local write refused when the file changed on disk, and the changed-files limit."""
+on the branch it pushed after it failed to open, the status a source returns to after a failed fetch or scan,
+read-only and deploy-key connections, connection updates, a local write refused when the file changed on disk, and
+the changed-files limit."""
 
 import asyncio
 import copy
@@ -17,6 +18,7 @@ import pytest
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 
+from agnostic_sources.application.tasks import SourceJobs
 from tests.api.test_instances_gateway import connect
 from tests.support.fake_agentos import FakeAgentOS
 from tests.support.fake_git_provider import TOKEN, FakeGitea
@@ -177,7 +179,7 @@ class World:
         return (await self.owner.get(f"{COMPONENTS}/{component_id}/source")).json()
 
 
-async def world(stack: Stack, tmp_path: Path, *, access: str = "read_write") -> World:
+async def world(stack: Stack, tmp_path: Path, *, access: str = "read_write", fail_scan: bool = False) -> World:
     owner = await stack.owner()
     staging = stack.runtime("staging.agentos.test", os_id="fake-staging", name="Fake staging")
     await connect(owner, staging, "http://staging.agentos.test:7777", display_name="staging-agentos", env_tag="staging")
@@ -211,6 +213,7 @@ async def world(stack: Stack, tmp_path: Path, *, access: str = "read_write") -> 
     connection_id = created.json()["id"]
     repos = (await owner.get(f"/api/v1/studio/connections/{connection_id}/repos")).json()
     assert [repo["full_name"] for repo in repos] == ["northwind/agent-platform"]
+    here.gitea.refuse_token = fail_scan
     source = await owner.post(
         SOURCES,
         json={
@@ -555,7 +558,9 @@ async def source_status(owner: httpx.AsyncClient, source: str, status: str) -> d
     return card if card["status"] == status else None
 
 
-async def test_a_pull_request_that_failed_to_open_is_retried_on_a_new_branch(stack: Stack, tmp_path: Path) -> None:
+async def test_a_pull_request_that_failed_to_open_is_retried_on_the_branch_it_pushed(
+    stack: Stack, tmp_path: Path
+) -> None:
     here = await bound(stack, tmp_path)
     await here.save_draft("support-triage", 1, lambda config: config.update(description="Sorts tickets."))
     change = await outgoing_for(here, "support-triage")
@@ -567,17 +572,31 @@ async def test_a_pull_request_that_failed_to_open_is_retried_on_a_new_branch(sta
     assert here.gitea.pulls == {}
 
     preview = (await here.owner.get(f"{here.source}/commit-preview", params={"change_ids": change["id"]})).json()
-    assert preview["branch"] == "studio/support-triage-v1-2"
-    again = await here.owner.post(f"{here.source}/commit", json={"change_ids": [change["id"]]})
-    assert again.status_code == 202, again.text
+    assert preview["branch"] == "studio/support-triage-v1", "the branch left behind is used again, not -2, -3, ..."
+    await here.save_draft("support-triage", 1, lambda config: config.update(description="Sorts every ticket."))
+    again = await outgoing_for(here, "support-triage")
+    assert again["id"] != change["id"]
+    retried = await here.owner.post(f"{here.source}/commit", json={"change_ids": [again["id"]]})
+    assert retried.status_code == 202, retried.text
     pull = await eventually(lambda: asyncio.sleep(0, here.gitea.pulls.get(1)), "the pull request")
-    assert pull.head == "studio/support-triage-v1-2"
+    assert pull.head == "studio/support-triage-v1"
     assert [(item["branch"], item["status"]) for item in (await here.changes())["pull_requests"]] == [
-        ("studio/support-triage-v1-2", "open")
+        ("studio/support-triage-v1", "open")
     ]
-    assert 'description="Sorts tickets."' in here.upstream.read(
-        "agents/support_triage.py", "studio/support-triage-v1-2"
+    assert sorted(here.upstream.branches()) == ["main", "studio/support-triage-v1"]
+    assert 'description="Sorts every ticket."' in here.upstream.read(
+        "agents/support_triage.py", "studio/support-triage-v1"
     )
+
+
+async def test_a_commit_preview_says_when_the_remote_branches_cant_be_listed(stack: Stack, tmp_path: Path) -> None:
+    here = await bound(stack, tmp_path)
+    await here.save_draft("support-triage", 1, lambda config: config.update(description="Sorts tickets."))
+    change = await outgoing_for(here, "support-triage")
+    here.gitea.refuse_token = True
+    preview = await here.owner.get(f"{here.source}/commit-preview", params={"change_ids": change["id"]})
+    assert preview.status_code == 502
+    assert "Couldn't list the branches of northwind/agent-platform" in preview.json()["detail"]
 
 
 async def test_a_config_edit_of_a_code_backed_draft_writes_the_new_value(stack: Stack, tmp_path: Path) -> None:
@@ -615,6 +634,39 @@ async def test_a_fetch_after_a_failure_restores_the_status_the_source_had(stack:
     here.gitea.refuse_token = False
     assert (await here.owner.post(f"{here.source}/fetch")).status_code == 202
     _ = await eventually(lambda: source_status(here.owner, here.source, "active"), "the source to sync again")
+
+
+async def test_a_source_activated_with_nothing_bound_still_syncs_after_a_failure(stack: Stack, tmp_path: Path) -> None:
+    here = await world(stack, tmp_path)
+    report = (await eventually(lambda: source_status(here.owner, f"{here.source}/scan", "ready"), "the scan"))["report"]
+    skipped = [
+        {"path": entry["path"], "component_id": component["id"], "bind": False}
+        for entry in report["files"]
+        for component in entry["components"]
+        if component["id"]
+    ]
+    activated = await here.owner.post(f"{here.source}/activate", json={"bindings": skipped})
+    assert activated.status_code == 200, activated.text
+    assert activated.json()["status"] == "active"
+
+    here.gitea.refuse_token = True
+    assert (await here.owner.post(f"{here.source}/fetch")).status_code == 202
+    _ = await eventually(lambda: source_status(here.owner, here.source, "failed"), "the fetch to fail")
+    here.gitea.refuse_token = False
+    assert (await here.owner.post(f"{here.source}/fetch")).status_code == 202
+    _ = await eventually(lambda: source_status(here.owner, here.source, "active"), "the source to sync again")
+
+
+async def test_a_source_whose_scan_failed_scans_again_on_its_next_fetch(stack: Stack, tmp_path: Path) -> None:
+    here = await world(stack, tmp_path, fail_scan=True)
+    failed = await eventually(lambda: source_status(here.owner, here.source, "failed"), "the scan to fail")
+    assert "refused the connection's credentials" in failed["status_detail"]
+    here.gitea.refuse_token = False
+    async with stack.container() as request:
+        _ = await (await request.get(SourceJobs)).fetch(here.source_id, "push")
+    scan = await eventually(lambda: source_status(here.owner, f"{here.source}/scan", "ready"), "the scan to run")
+    assert scan["report"]["scanned_at"], "the source is ready only with a scan to review"
+    assert {entry["path"] for entry in scan["report"]["files"]} >= {"agents/support_triage.py"}
 
 
 async def test_a_read_only_connection_never_writes_back(stack: Stack, tmp_path: Path) -> None:
@@ -668,6 +720,10 @@ async def test_a_connection_update_changes_only_what_it_sends(stack: Stack, tmp_
     assert cleared.status_code == 422
     assert "server's URL" in cleared.json()["detail"]
 
+    kept = await here.owner.patch(url, json={"name": None, "access": "read_write"})
+    assert kept.status_code == 200, kept.text
+    assert (kept.json()["name"], kept.json()["access"]) == ("Northwind Gitea (prod)", "read_write")
+
     stale = await here.owner.patch(url, json={"name": "Old", "version": 1})
     assert stale.status_code == 409
 
@@ -694,8 +750,20 @@ async def test_a_deploy_key_connection_commits_but_never_opens_pull_requests(sta
         },
     )
     assert created.status_code == 201, created.text
-    assert (created.json()["status"], created.json()["account"]) == ("verified", "deploy key")
+    assert created.json()["status"] == "failed", "the key is tried over SSH, and nothing answers at gitea.test"
+    assert "over SSH" in created.json()["last_error"]
     connection_id = created.json()["id"]
+    bad_address = await here.owner.patch(
+        f"/api/v1/studio/connections/{connection_id}", json={"api_url": "https://gitea.test:2222"}
+    )
+    assert bad_address.status_code == 422
+    assert "SSH address" in bad_address.json()["detail"]
+    address = await here.owner.patch(
+        f"/api/v1/studio/connections/{connection_id}", json={"api_url": "ssh://git@gitea.test:2222"}
+    )
+    assert address.status_code == 200, address.text
+    assert address.json()["api_url"] == "ssh://git@gitea.test:2222"
+    assert "gitea.test:2222" in address.json()["last_error"]
     assert (await here.owner.get(f"/api/v1/studio/connections/{connection_id}/repos")).json() == []
 
     body = {"provider": "gitea", "connection_id": connection_id, "repo": "northwind/agents", "branch": "main"}

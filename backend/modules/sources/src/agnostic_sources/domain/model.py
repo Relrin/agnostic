@@ -97,6 +97,8 @@ class Source:
     last_fetched_at: datetime | None = None
     scan_report: dict[str, Any] | None = None
     webhook_id: str | None = None
+    activated_at: datetime | None = None
+    """When the scan was first accepted: from then on the source syncs, even with no file bound."""
     created_by: str | None = None
     created_at: datetime | None = None
     version: int = 1
@@ -108,6 +110,11 @@ class Source:
     @property
     def label(self) -> str:
         return self.local_path or self.repo
+
+    @property
+    def scanned(self) -> bool:
+        """Whether the initial scan finished and left a report to review."""
+        return bool((self.scan_report or {}).get("scanned_at"))
 
 
 @dataclass(frozen=True, slots=True)

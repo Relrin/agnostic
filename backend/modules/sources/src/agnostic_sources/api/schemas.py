@@ -31,6 +31,11 @@ from agnostic_sources.domain.outcomes import Outcome, sentence
 type ProviderIn = Literal["github", "gitlab", "gitea", "forgejo", "local"]
 type TargetIn = Literal["agents", "teams", "workflows", "registry", "ignored"]
 
+API_URL = (
+    "The API, when it isn't at the usual place. For a deploy key, the host's SSH address instead "
+    "(ssh://git@git.example.com:2222) when SSH isn't on port 22."
+)
+
 
 # ---------------------------------------------------------------- connections
 
@@ -40,7 +45,7 @@ class ConnectionIn(BaseModel):
     provider: Literal["github", "gitlab", "gitea", "forgejo"]
     auth_kind: Literal["github_app", "token", "deploy_key"] = "token"
     access: Literal["read_write", "read_only"] = "read_write"
-    api_url: str | None = Field(default=None, max_length=500)
+    api_url: str | None = Field(default=None, max_length=500, description=API_URL)
     web_url: str | None = Field(default=None, max_length=500, description="The server (Gitea, Forgejo, self-managed).")
     app_slug: str | None = Field(default=None, max_length=200)
     installation_id: str | None = Field(default=None, max_length=40)
@@ -72,7 +77,7 @@ class ConnectionIn(BaseModel):
 class ConnectionPatchIn(BaseModel):
     """Only the fields sent change; send a URL as ``null`` to clear it, and a secret only to replace it."""
 
-    name: str | None = Field(default=None, min_length=1, max_length=200)
+    name: str | None = Field(default=None, min_length=1, max_length=200, description="``null`` keeps the name.")
     provider: Literal["github", "gitlab", "gitea", "forgejo"] | None = Field(
         default=None, description="Can't change; sent only to be checked."
     )
@@ -80,7 +85,7 @@ class ConnectionPatchIn(BaseModel):
         default=None, description="Can't change; a different kind is refused (connect again instead)."
     )
     access: Literal["read_write", "read_only"] | None = None
-    api_url: str | None = Field(default=None, max_length=500)
+    api_url: str | None = Field(default=None, max_length=500, description=API_URL)
     web_url: str | None = Field(default=None, max_length=500)
     app_slug: str | None = Field(default=None, max_length=200)
     installation_id: str | None = Field(default=None, max_length=40)

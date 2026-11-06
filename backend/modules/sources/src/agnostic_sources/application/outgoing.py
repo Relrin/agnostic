@@ -8,7 +8,7 @@ request merged), the next fetch moves the binding to that commit and version.
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, replace
 from typing import Any
 
@@ -25,7 +25,7 @@ from agnostic_sources.application.ports import GitError, ProviderError, SourceLi
 from agnostic_sources.application.tasks import SourceJobs
 from agnostic_sources.domain.model import Change, FileBinding, PullRequest, Source
 from agnostic_sources.domain.outcomes import review_sentence
-from agnostic_sources.domain.paths import match
+from agnostic_sources.domain.paths import MAX_FOLDER_FILES, match
 from agnostic_sources.domain.templates import branch_name, commit_message, unique_branch
 from agnostic_sources.domain.templates import render as render_template
 from agnostic_spec.v3_1 import parse
@@ -43,6 +43,28 @@ class CommitPreview:
     review_requirement: str | None
     sentence: str
     """``Branch studio/support-triage-v4 · PR into main · 1 review from Platform required``."""
+    lease: str | None = None
+    """The commit an earlier push left on ``branch`` (its pull request failed to open): the push replaces it."""
+
+
+PUSHED_BRANCH = "pushed_branch"
+PUSHED_SHA = "pushed_sha"
+
+
+def pushed(change: Change | None) -> dict[str, str]:
+    """The branch (and commit) a change was pushed to whose pull request never opened."""
+    if change is None or not change.outcome.get(PUSHED_BRANCH) or not change.outcome.get(PUSHED_SHA):
+        return {}
+    return {PUSHED_BRANCH: str(change.outcome[PUSHED_BRANCH]), PUSHED_SHA: str(change.outcome[PUSHED_SHA])}
+
+
+def leftover(changes: Sequence[Change]) -> tuple[str, str] | None:
+    """The branch these changes were pushed to together before, when its pull request failed to open."""
+    found = {(item[PUSHED_BRANCH], item[PUSHED_SHA]) if item else None for item in map(pushed, changes)}
+    if len(found) != 1:
+        return None
+    [only] = found
+    return only
 
 
 def writable(source: Source, binding: FileBinding) -> bool:
@@ -143,6 +165,7 @@ class OutgoingPreparer:
                 outcome={
                     "action": "blocked" if blocked else ("rewrite" if rewritten else "edit"),
                     "stage": snap.stage,
+                    **pushed(existing),
                 },
                 draft_version=number,
                 summary=summary,
@@ -194,6 +217,8 @@ class Committer:
         self._audit = audit
         self._jobs = jobs
         self._settings = settings
+        self._branches: dict[str, set[str]] = {}
+        """The remote's branches, listed once per request or job."""
 
     async def preview(self, principal: Principal, ref: str, source_id: str, change_ids: Sequence[str]) -> CommitPreview:
         instance = await self._access.instance(principal, ref, COMPONENTS_READ)
@@ -226,10 +251,9 @@ class Committer:
                 "policy to commit directly to the branch."
             )
         review: str | None = None
+        lease: str | None = None
         if mode == "open_pr":
-            branch = unique_branch(
-                branch_name(render_template(source.policy.branch_template, values)), await self._taken(source)
-            )
+            branch, lease = await self._branch(source, changes, values)
             client = await self._files.client(source)
             if client is not None:
                 try:
@@ -242,24 +266,51 @@ class Committer:
             branch = source.branch
             sentence = f"Commits straight to {source.branch}"
         elif mode == "local":
+            await self._check_listed(source, changes)
             branch = source.branch
             sentence = "Writes to the folder; the runtime reloads it"
         else:
             raise ValidationFailedError("This source doesn't write back (its policy is \"Don't write back\").")
-        return CommitPreview(branch, source.branch, mode, message, review, sentence)
+        return CommitPreview(branch, source.branch, mode, message, review, sentence, lease)
 
-    async def _taken(self, source: Source) -> set[str]:
-        """Branch names a new pull request can't use.
+    async def _branch(
+        self, source: Source, changes: Sequence[Change], values: Mapping[str, object]
+    ) -> tuple[str, str | None]:
+        """The pull request's branch, and the commit a push may replace on it.
 
-        Earlier pull requests' branches, and every branch on the remote: a push whose pull request failed to open
-        leaves its branch behind, and pushing to it again would be rejected.
+        A push whose pull request failed to open left its branch behind with no pull request: the same changes go
+        to it again (replacing only that commit). Otherwise a new name, free of earlier pull requests' branches and
+        of every branch on the remote.
         """
-        taken = {pull.branch for pull in await self._store.pull_requests(source.id)}
-        try:
-            taken.update(await self._files.git.branches(source.id, await self._files.remote(source)))
-        except (GitError, ProviderError) as exc:
-            log.warning("sources.remote_branches_failed", source_id=source.id, error=str(exc))
-        return taken
+        pulls = {pull.branch for pull in await self._store.pull_requests(source.id)}
+        remote = await self._remote_branches(source)
+        earlier = leftover(changes)
+        if earlier is not None and earlier[0] not in pulls:
+            name, sha = earlier
+            return name, sha if name in remote else None
+        name = branch_name(render_template(source.policy.branch_template, values))
+        return unique_branch(name, pulls | remote), None
+
+    async def _check_listed(self, source: Source, changes: Sequence[Change]) -> None:
+        """Refuse to overwrite a file the folder listing left out: there is nothing to tell whether it changed."""
+        for change in changes:
+            if change.blob is None and await self._files.local_hash(source, change.path) is not None:
+                raise ValidationFailedError(
+                    f"{change.path} wasn't among the files Studio read from the folder (it reads at most "
+                    f"{MAX_FOLDER_FILES:,}); fetch again, or sync a smaller folder."
+                )
+
+    async def _remote_branches(self, source: Source) -> set[str]:
+        if source.id not in self._branches:
+            try:
+                found = await self._files.git.branches(source.id, await self._files.remote(source))
+            except (GitError, ProviderError) as exc:
+                log.warning("sources.remote_branches_failed", source_id=source.id, error=str(exc))
+                raise ProviderError(
+                    f"Couldn't list the branches of {source.label} to pick one for the pull request: {exc}"
+                ) from exc
+            self._branches[source.id] = set(found)
+        return self._branches[source.id]
 
     async def request(
         self, principal: Principal, ref: str, source_id: str, change_ids: Sequence[str], message: str | None
@@ -291,7 +342,7 @@ class Committer:
             raise ValidationFailedError("Pick at least one outgoing change.")
         return changes
 
-    async def run(  # noqa: C901, PLR0912
+    async def run(  # noqa: C901, PLR0912, PLR0915
         self,
         source_id: str,
         change_ids: Sequence[str],
@@ -308,9 +359,10 @@ class Committer:
         changes = await self._outgoing(source, change_ids)
         try:
             preview = await self._preview(source, changes, instance.display_name, actor_name)
-        except ValidationFailedError as exc:
-            # The connection turned read-only (or lost its write access) after the commit was asked for: put the
-            # changes back, so they can be committed again once it's fixed instead of staying "committing".
+        except (ValidationFailedError, GitError, ProviderError) as exc:
+            # The connection turned read-only (or lost its write access, or the host can't be reached) after the
+            # commit was asked for: put the changes back, so they can be committed again once it's fixed instead of
+            # staying "committing".
             for change in changes:
                 await self._store.save_change(replace(change, status="pending"))
             await self._store.commit()
@@ -322,6 +374,7 @@ class Committer:
         )
         actor = actor_of(_principal(actor_id, actor_name, actor_email))
         pull_request: PullRequest | None = None
+        sent: dict[str, str] = {}
         try:
             if source.is_local:
                 for change in changes:
@@ -348,7 +401,9 @@ class Committer:
                     (self._settings.committer_name, self._settings.committer_email),
                 )
                 remote = await self._files.remote(source)
-                await self._files.git.push(source.id, remote, sha, preview.branch)
+                await self._files.git.push(source.id, remote, sha, preview.branch, lease=preview.lease)
+                if preview.mode == "open_pr":
+                    sent = {PUSHED_BRANCH: preview.branch, PUSHED_SHA: sha}
                 if preview.mode == "open_pr":
                     client = await self._files.client(source)
                     if client is None:
@@ -377,7 +432,9 @@ class Committer:
                     await self._store.save_pull_request(pull_request)
         except (GitError, ProviderError, ConflictError) as exc:
             for change in changes:
-                await self._store.save_change(replace(change, status="pending"))
+                # A branch pushed for a pull request that didn't open is remembered: the retry goes to it again.
+                outcome = {**change.outcome, **sent} if sent else change.outcome
+                await self._store.save_change(replace(change, status="pending", outcome=outcome))
             await self._store.commit()
             log.warning("sources.commit_failed", source_id=source.id, error=str(exc))
             raise

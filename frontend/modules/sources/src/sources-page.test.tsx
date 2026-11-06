@@ -249,11 +249,29 @@ describe("connections", () => {
       web_url: null,
       access: "read_write",
     });
-    expect(
-      connectionPatch(github, { ...form, name: "GitHub", web_url: "", access: "read_write", secret: "x" }),
-    ).toEqual({
+    expect(connectionPatch(github, { ...form, name: "GitHub", web_url: "", access: "read_write" })).toEqual({
       version: 2,
       name: "GitHub",
+    });
+  });
+
+  it("send a GitHub App's new private key and app ID", () => {
+    const form = {
+      name: github.name,
+      web_url: github.web_url ?? "",
+      api_url: github.api_url ?? "",
+      access: github.access,
+      secret: "-----BEGIN PRIVATE KEY-----",
+      app_id: " 12345 ",
+    };
+    expect(connectionPatch(github, form)).toEqual({
+      version: github.version,
+      private_key: "-----BEGIN PRIVATE KEY-----",
+      app_id: "12345",
+    });
+    expect(connectionPatch(gitlab, { ...form, name: gitlab.name, web_url: gitlab.web_url ?? "", access: gitlab.access })).toEqual({
+      version: gitlab.version,
+      token: "-----BEGIN PRIVATE KEY-----",
     });
   });
 });

@@ -272,6 +272,14 @@ class GitCli:
                 names.append(ref.removeprefix("refs/heads/"))
         return sorted(names)
 
+    async def default_branch(self, remote: Remote) -> str | None:
+        completed = await self._run(["ls-remote", "--symref", remote.url, "HEAD"], remote=remote)
+        for line in completed.stdout.decode(errors="replace").splitlines():
+            target, _, ref = line.partition("\t")
+            if ref == "HEAD" and target.startswith("ref: refs/heads/"):
+                return target.removeprefix("ref: refs/heads/")
+        return None
+
     # ---------------------------------------------------------------- writes
 
     async def commit(
@@ -308,9 +316,10 @@ class GitCli:
             await asyncio.to_thread(index.unlink, missing_ok=True)
         return created.stdout.decode().strip()
 
-    async def push(self, source_id: str, remote: Remote, sha: str, branch: str) -> None:
+    async def push(self, source_id: str, remote: Remote, sha: str, branch: str, *, lease: str | None = None) -> None:
+        force = [f"--force-with-lease=refs/heads/{branch}:{lease}"] if lease else []
         completed = await self._run(
-            ["push", "--porcelain", "origin", f"{sha}:refs/heads/{branch}"],
+            ["push", "--porcelain", *force, "origin", f"{sha}:refs/heads/{branch}"],
             git_dir=self._mirror(source_id),
             remote=remote,
             seconds=self._settings.fetch_timeout_seconds,

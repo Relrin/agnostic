@@ -22,6 +22,8 @@ DEFAULT_MAPPINGS: tuple[PathMapping, ...] = (
 )
 TARGET_KINDS: frozenset[str] = frozenset({"agents", "teams", "workflows", "registry", "ignored"})
 MAX_MAPPINGS = 50
+MAX_FOLDER_FILES = 20_000
+"""A local folder's files beyond this many aren't listed (nor synced)."""
 _GLOB_CHARS = re.compile(r"[*?\[]")
 
 

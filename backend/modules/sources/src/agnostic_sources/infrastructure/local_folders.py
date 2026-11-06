@@ -8,11 +8,10 @@ import tempfile
 from pathlib import Path
 
 from agnostic_sources.domain.model import SourceRuleError
-from agnostic_sources.domain.paths import check_path
+from agnostic_sources.domain.paths import MAX_FOLDER_FILES, check_path
 from agnostic_sources.settings import SourcesSettings
 
 SKIPPED = frozenset({".git", ".hg", ".venv", "venv", "__pycache__", "node_modules", ".mypy_cache", ".ruff_cache"})
-MAX_FILES = 20_000
 
 
 class LocalFolders:
@@ -50,17 +49,21 @@ class LocalFolders:
                 full = Path(folder) / name
                 if full.is_symlink() or not full.is_file():
                     continue
-                relative = full.relative_to(base).as_posix()
-                if full.stat().st_size > self._max_bytes:
-                    continue
-                found[relative] = hashlib.sha256(full.read_bytes()).hexdigest()
-                if len(found) >= MAX_FILES:
+                # Files too large to read are listed too: their hash is what a write-back compares against.
+                found[full.relative_to(base).as_posix()] = _digest(full)
+                if len(found) >= MAX_FOLDER_FILES:
                     return found
         return found
 
-    def read(self, root: str, path: str) -> bytes | None:
+    def digest(self, root: str, path: str) -> str | None:
         target = self._file(root, path)
         if target.is_symlink() or not target.is_file():
+            return None
+        return _digest(target)
+
+    def read(self, root: str, path: str) -> bytes | None:
+        target = self._file(root, path)
+        if target.is_symlink() or not target.is_file() or target.stat().st_size > self._max_bytes:
             return None
         return target.read_bytes()
 
@@ -75,3 +78,8 @@ class LocalFolders:
         except BaseException:
             Path(temporary).unlink(missing_ok=True)
             raise
+
+
+def _digest(file: Path) -> str:
+    with file.open("rb") as stream:
+        return hashlib.file_digest(stream, "sha256").hexdigest()

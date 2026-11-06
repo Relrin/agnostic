@@ -34,6 +34,7 @@ class HttpProviderClients:
                 self.web_url(connection),
                 secrets.private_key,
                 PROVIDER_LABEL.get(connection.provider, connection.provider),
+                ssh_address=connection.api_url,
             )
         client = self._http.client
         match connection.provider:

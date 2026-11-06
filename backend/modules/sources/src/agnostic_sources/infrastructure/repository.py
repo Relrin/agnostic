@@ -143,6 +143,7 @@ class SqlSourceStore:
             last_fetched_at=aware_or_none(row.last_fetched_at),
             scan_report=row.scan_report,
             webhook_id=row.webhook_id,
+            activated_at=aware_or_none(row.activated_at),
             created_by=row.created_by,
             created_at=aware_or_none(row.created_at),
             version=row.version,
@@ -169,6 +170,7 @@ class SqlSourceStore:
         row.last_fetched_at = source.last_fetched_at
         row.scan_report = source.scan_report
         row.webhook_id = source.webhook_id
+        row.activated_at = source.activated_at
         row.version = (row.version or 0) + 1
         _ = await self._session.execute(delete(PathMappingRow).where(PathMappingRow.source_id == source.id))
         for position, mapping in enumerate(source.mappings):

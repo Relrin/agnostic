@@ -49,15 +49,18 @@ SETTLED = frozenset({"active", "ready", "scanning", "setup"})
 TOO_MANY = "files changed in this fetch"
 
 
-async def settled_status(store: SourceStore, source: Source) -> SourceStatus:
+def settled_status(source: Source) -> SourceStatus:
     """The status a source returns to once it fetches again (after a failure or being over quota).
 
-    A source keeps its status while it is set up, scanned, ready or syncing; one that failed goes back to syncing
-    only if it was activated (it has bindings), and otherwise to its scan being ready to review.
+    A source keeps its status while it is set up, scanned, ready or syncing. One that failed goes back to syncing if
+    it was ever activated (bound or not), to its scan being ready to review if the scan finished, and otherwise
+    back to scanning: it has nothing to review yet.
     """
+    if source.activated_at is not None:
+        return "active"
     if source.status in SETTLED:
         return source.status
-    return "active" if await store.bindings(source.id) else "ready"
+    return "ready" if source.scanned else "scanning"
 
 
 def content_hash(code: str) -> str:
@@ -80,11 +83,13 @@ class Fetcher:
         files: SourceFiles,
         incoming: IncomingComputer,
         settings: SourceLimits,
+        jobs: SourceJobs,
     ) -> None:
         self._store = store
         self._files = files
         self._incoming = incoming
         self._settings = settings
+        self._jobs = jobs
 
     async def fetch(self, source_id: str, reason: str) -> Source | None:
         source = await self._store.source(source_id)
@@ -112,12 +117,13 @@ class Fetcher:
             _ = await self._store.save_source(over)
             await self._store.commit()
             return over
-        status = await settled_status(self._store, source)
+        if not source.scanned and source.activated_at is None:
+            return await self._scan_instead(source)
         fetched = replace(
             source,
             head_sha=snapshot.head,
             last_fetched_at=utcnow(),
-            status=status,
+            status=settled_status(source),
             status_detail=None,
             scan_report={**(source.scan_report or {}), "counts": mapping_counts(source.mappings, snapshot.files)},
         )
@@ -127,6 +133,15 @@ class Fetcher:
             _ = await self._incoming.compute(fetched.id, reason, snapshot)
             return await self._store.source(fetched.id) or fetched
         return fetched
+
+    async def _scan_instead(self, source: Source) -> Source:
+        """The initial scan never finished: a fetch alone would leave nothing to review, so scan instead."""
+        if source.status == "scanning":
+            return source  # the scan is queued already
+        scanning = await self._store.save_source(replace(source, status="scanning", status_detail=None))
+        await self._store.commit()
+        _ = await self._jobs.scan(source.id)
+        return scanning
 
 
 class IncomingComputer:

@@ -94,3 +94,33 @@ def test_migrations_match_models(sqlite_database: str) -> None:
 
     remaining = [diff for diff in diffs if not (isinstance(diff, tuple) and _ignored(diff))]
     assert not remaining, "migrations and models differ:\n" + "\n".join(_describe(diff) for diff in remaining)
+
+
+def test_sources_that_were_activated_keep_counting_as_activated(sqlite_database: str) -> None:
+    runner = CliRunner()
+    assert runner.invoke(app, ["db", "upgrade", "x0001_sources"]).exit_code == 0
+    engine = sa.create_engine(sqlite_database)
+    columns = "id, instance_id, provider, repo, branch, status, version, created_at, updated_at"
+    with engine.begin() as connection:
+        for source_id, status in (("src_active", "active"), ("src_bound", "failed"), ("src_ready", "ready")):
+            _ = connection.execute(
+                sa.text(
+                    f"INSERT INTO src_sources ({columns}) VALUES "
+                    "(:id, 'ins_1', 'gitea', 'northwind/agents', 'main', :status, 1, '2026-11-01', '2026-11-02')"
+                ),
+                {"id": source_id, "status": status},
+            )
+        _ = connection.execute(
+            sa.text(
+                "INSERT INTO src_file_bindings (id, source_id, path, component_kind, component_id) "
+                "VALUES ('sfb_1', 'src_bound', 'agents/a.py', 'agent', 'a')"
+            )
+        )
+    upgraded = runner.invoke(app, ["db", "upgrade"])
+    assert upgraded.exit_code == 0, upgraded.output
+    with engine.connect() as connection:
+        rows = dict(connection.execute(sa.text("SELECT id, activated_at FROM src_sources")).all())
+    engine.dispose()
+    assert rows["src_active"] is not None
+    assert rows["src_bound"] is not None, "a source with bindings was activated, whatever its status now"
+    assert rows["src_ready"] is None

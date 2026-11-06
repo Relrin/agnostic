@@ -65,11 +65,18 @@ export function connectionLine(connection: ConnectionOut): string {
     .join(" · ");
 }
 
+/** The edit form: `secret` is the token, deploy key or GitHub App private key (by the connection's kind). */
+export type ConnectionForm = {
+  name: string;
+  web_url: string;
+  api_url: string;
+  access: string;
+  secret: string;
+  app_id?: string;
+};
+
 /** The body of a PATCH: only what changed (empty URLs clear, empty secrets keep the old ones). */
-export function connectionPatch(
-  connection: ConnectionOut,
-  form: { name: string; web_url: string; api_url: string; access: string; secret: string },
-): ConnectionPatchIn {
+export function connectionPatch(connection: ConnectionOut, form: ConnectionForm): ConnectionPatchIn {
   const body: ConnectionPatchIn = { version: connection.version };
   const url = (value: string) => value.trim().replace(/\/+$/, "") || null;
   if (form.name.trim() && form.name.trim() !== connection.name) body.name = form.name.trim();
@@ -78,9 +85,11 @@ export function connectionPatch(
   if (form.access !== connection.access)
     body.access = form.access === "read_only" ? "read_only" : "read_write";
   if (form.secret.trim()) {
-    if (connection.auth_kind === "deploy_key") body.private_key = form.secret;
+    if (connection.auth_kind === "deploy_key" || connection.auth_kind === "github_app")
+      body.private_key = form.secret;
     else if (connection.auth_kind === "token") body.token = form.secret.trim();
   }
+  if (connection.auth_kind === "github_app" && form.app_id?.trim()) body.app_id = form.app_id.trim();
   return body;
 }
 
@@ -92,7 +101,9 @@ function EditConnection({ connection, onClose }: { connection: ConnectionOut; on
     api_url: connection.api_url ?? "",
     access: connection.access,
     secret: "",
+    app_id: "",
   });
+  const deployKey = connection.auth_kind === "deploy_key";
   const save = useMutation({
     mutationFn: async () =>
       (
@@ -151,8 +162,12 @@ function EditConnection({ connection, onClose }: { connection: ConnectionOut; on
             )}
           </Field>
           <Field
-            label="API URL"
-            hint="Only when the API isn't at the usual place (…/api/v3, /api/v4, /api/v1)."
+            label={deployKey ? "SSH address" : "API URL"}
+            hint={
+              deployKey
+                ? "Only when SSH isn't on port 22 (ssh://git@git.example.com:2222)."
+                : "Only when the API isn't at the usual place (…/api/v3, /api/v4, /api/v1)."
+            }
           >
             {({ id, describedBy }) => (
               <Input
@@ -195,6 +210,33 @@ function EditConnection({ connection, onClose }: { connection: ConnectionOut; on
                 />
               )}
             </Field>
+          )}
+          {connection.auth_kind === "github_app" && (
+            <>
+              <Field label="New app ID" hint="Leave empty to keep the current one.">
+                {({ id, describedBy }) => (
+                  <Input
+                    id={id}
+                    mono
+                    aria-describedby={describedBy}
+                    value={form.app_id}
+                    onChange={set("app_id")}
+                  />
+                )}
+              </Field>
+              <Field label="New private key" hint="The app's private key (PEM); leave empty to keep the current one.">
+                {({ id, describedBy }) => (
+                  <Textarea
+                    id={id}
+                    rows={4}
+                    className="font-mono"
+                    aria-describedby={describedBy}
+                    value={form.secret}
+                    onChange={set("secret")}
+                  />
+                )}
+              </Field>
+            </>
           )}
           {connection.auth_kind === "deploy_key" && (
             <Field label="New deploy key" hint="The private key; leave empty to keep the current one.">

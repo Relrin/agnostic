@@ -6502,6 +6502,7 @@
                 "type": "null"
               }
             ],
+            "description": "The API, when it isn't at the usual place. For a deploy key, the host's SSH address instead (ssh://git@git.example.com:2222) when SSH isn't on port 22.",
             "title": "Api Url"
           },
           "app_id": {
@@ -6797,6 +6798,7 @@
                 "type": "null"
               }
             ],
+            "description": "The API, when it isn't at the usual place. For a deploy key, the host's SSH address instead (ssh://git@git.example.com:2222) when SSH isn't on port 22.",
             "title": "Api Url"
           },
           "app_id": {
@@ -6863,6 +6865,7 @@
                 "type": "null"
               }
             ],
+            "description": "``null`` keeps the name.",
             "title": "Name"
           },
           "private_key": {

@@ -24,7 +24,8 @@ from agnostic_sources.application.ports import (
     SourceLimits,
     SourceStore,
 )
-from agnostic_sources.domain.model import Access, AuthKind, Connection, Provider
+from agnostic_sources.domain.model import Access, AuthKind, Connection, Provider, SourceRuleError
+from agnostic_sources.domain.remote import ssh_address
 
 INSTALL_STATE_TTL = 1800
 PROVIDERS = frozenset({"github", "gitlab", "gitea", "forgejo"})
@@ -107,7 +108,7 @@ class Connections:
             provider=draft.provider,
             auth_kind=draft.auth_kind,
             access=draft.access,
-            api_url=_url(draft.api_url),
+            api_url=_api_url(draft.auth_kind, draft.api_url),
             web_url=_url(draft.web_url),
             app_slug=draft.app_slug or (self._settings.github_app_slug if draft.auth_kind == "github_app" else None),
             installation_id=draft.installation_id,
@@ -141,9 +142,9 @@ class Connections:
             )
         updated = replace(
             existing,
-            name=(patch.name or "").strip() if "name" in given else existing.name,
+            name=patch.name.strip() if "name" in given and patch.name is not None else existing.name,
             access=patch.access or existing.access if "access" in given else existing.access,
-            api_url=_url(patch.api_url) if "api_url" in given else existing.api_url,
+            api_url=_api_url(existing.auth_kind, patch.api_url) if "api_url" in given else existing.api_url,
             web_url=_url(patch.web_url) if "web_url" in given else existing.web_url,
             app_slug=patch.app_slug or existing.app_slug if "app_slug" in given else existing.app_slug,
             installation_id=patch.installation_id or existing.installation_id
@@ -294,3 +295,13 @@ def _url(value: str | None) -> str | None:
     if not value.startswith(("https://", "http://")):
         raise ValidationFailedError(f"{value} isn't an http(s) URL.")
     return value
+
+
+def _api_url(kind: AuthKind, value: str | None) -> str | None:
+    """The API's URL; for a deploy key, which never calls the API, the host's SSH address instead."""
+    if kind != "deploy_key" or not value:
+        return _url(value)
+    try:
+        return ssh_address(value)
+    except SourceRuleError as exc:
+        raise ValidationFailedError(str(exc)) from exc

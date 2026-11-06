@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from fnmatch import fnmatchcase
+import re
+from functools import lru_cache
 from typing import Any, cast
 from urllib.parse import quote
 
@@ -16,7 +17,7 @@ from agnostic_sources.application.ports import (
     RepoSummary,
 )
 from agnostic_sources.domain.outcomes import team_label
-from agnostic_sources.infrastructure.providers.base import NOT_FOUND, UNPROCESSABLE, Api, basic
+from agnostic_sources.infrastructure.providers.base import FORBIDDEN, NOT_FOUND, UNPROCESSABLE, Api, basic
 
 
 class GiteaClient(Api):
@@ -67,14 +68,32 @@ class GiteaClient(Api):
         try:
             rules = await self.pages(f"/repos/{_path(repo)}/branch_protections", page_param="limit")
         except ProviderError as exc:
-            if exc.extra.get("upstream_status") == NOT_FOUND:
+            status = exc.extra.get("upstream_status")
+            if status == NOT_FOUND:
                 return (0, [])
+            if status == FORBIDDEN:
+                # Reading protection rules takes admin on the repository; the branch itself says what applies.
+                return await self._branch_requirement(repo, branch)
             raise
         rule = _protection(rules, branch)
         if rule is None:
             return (0, [])
         teams = [team_label(str(team)) for team in cast("list[Any]", rule.get("approvals_whitelist_teams") or [])]
         return int(rule.get("required_approvals") or 0), teams
+
+    async def _branch_requirement(self, repo: str, branch: str) -> tuple[int, list[str]] | None:
+        """The approvals the branch's effective rule asks for (its teams aren't shown); ``None`` when unknown."""
+        try:
+            data = await self.json("GET", f"/repos/{_path(repo)}/branches/{quote(branch, safe='')}")
+        except ProviderError:
+            return None
+        if not isinstance(data, dict):
+            return None
+        found = cast("dict[str, Any]", data)
+        if not found.get("protected"):
+            return (0, [])
+        approvals = found.get("required_approvals")
+        return (approvals, []) if isinstance(approvals, int) else None
 
     async def open_pull_request(self, repo: str, *, head: str, base: str, title: str, body: str) -> OpenedPullRequest:
         created = cast(
@@ -120,15 +139,89 @@ def _path(repo: str) -> str:
 
 
 def _protection(rules: list[dict[str, Any]], branch: str) -> dict[str, Any] | None:
-    """The protection rule for ``branch``: one named after it, else the first whose glob matches."""
+    """The rule Gitea applies to ``branch``: by priority, plain names before globs, then oldest first.
+
+    Names match case-insensitively, the way Gitea matches them.
+    """
     named = [(str(rule.get("rule_name") or rule.get("branch_name") or ""), rule) for rule in rules]
-    for name, rule in named:
-        if name == branch:
-            return rule
-    for name, rule in named:
-        if name and fnmatchcase(branch, name):
+    ordered = sorted(
+        (item for item in named if item[0]),
+        key=lambda item: (_priority(item[1]), bool(_SPECIAL.search(item[0]))),
+    )
+    for name, rule in ordered:
+        if _glob(name.lower()).fullmatch(branch.lower()):
             return rule
     return None
+
+
+_SPECIAL = re.compile(r"[*?\[\]{}\\]")
+
+
+def _priority(rule: dict[str, Any]) -> int:
+    value = rule.get("priority")
+    return value if isinstance(value, int) else 0
+
+
+@lru_cache(maxsize=256)
+def _glob(pattern: str) -> re.Pattern[str]:
+    """Gitea's branch globs (gobwas/glob with ``/`` as the separator) as a regular expression.
+
+    ``*`` and ``?`` stay inside one path segment, ``**`` crosses them, ``[abc]`` / ``[!a-z]`` are character classes,
+    ``{a,b}`` alternatives, and a backslash escapes the next character.
+    """
+    regex, _ = _translate(pattern, 0, inside=False)
+    try:
+        return re.compile(regex)
+    except re.error:
+        return re.compile(re.escape(pattern))
+
+
+def _translate(pattern: str, start: int, *, inside: bool) -> tuple[str, int]:  # noqa: C901, PLR0912
+    out: list[str] = []
+    index = start
+    while index < len(pattern):
+        char = pattern[index]
+        if char == "\\" and index + 1 < len(pattern):
+            out.append(re.escape(pattern[index + 1]))
+            index += 2
+            continue
+        if char == "*":
+            if pattern.startswith("**", index):
+                out.append(".*")
+                index += 2
+            else:
+                out.append("[^/]*")
+                index += 1
+            continue
+        if char == "?":
+            out.append("[^/]")
+        elif char == "[":
+            end = pattern.find("]", index + 1)
+            if end == -1:
+                out.append(re.escape(char))
+            else:
+                body = pattern[index + 1 : end]
+                negate = body.startswith("!")
+                body = body.removeprefix("!").replace("\\", "\\\\")
+                out.append(f"[{'^' if negate else ''}{body}]")
+                index = end + 1
+                continue
+        elif char == "{":
+            options: list[str] = []
+            index += 1
+            while True:
+                option, index = _translate(pattern, index, inside=True)
+                options.append(option)
+                if index >= len(pattern) or pattern[index] == "}":
+                    break
+                index += 1  # past the comma
+            out.append(f"(?:{'|'.join(options)})")
+        elif inside and char in ",}":
+            return "".join(out), index
+        else:
+            out.append(re.escape(char))
+        index += 1
+    return "".join(out), index
 
 
 def _repo(data: dict[str, Any]) -> RepoSummary:
