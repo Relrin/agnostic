@@ -113,7 +113,7 @@ def _carried_over(before: Mapping[str, Any], changes: Mapping[str, Any]) -> dict
 
     Values a preset fills in (issuer, instance URL, scopes) don't carry over to another preset:
     a GitHub provider switched to GitLab must not keep ``https://github.com`` as its GitLab URL.
-    For GitLab the instance URL and the issuer are one setting, so changing the URL drops the
+    For GitLab the instance URL and the issuer are one setting and the URL wins, so changing the URL drops the
     stored issuer.
     """
     kept = dict(before)

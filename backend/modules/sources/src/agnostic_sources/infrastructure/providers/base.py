@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import base64
 from typing import Any, NoReturn, cast
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, urlunsplit
 
 import httpx
 
@@ -100,15 +100,20 @@ class Api:
     def _next(
         self, response: httpx.Response, url: str, query: dict[str, str | int]
     ) -> tuple[str | None, dict[str, str | int]]:
-        link = response.links.get("next", {}).get("url")
-        if link:
-            # The next page's URL carries its own query; never follow it to another host (it gets the token).
-            if _origin(link) != _origin(self._base):
-                return None, query
-            return link, {}
         page = response.headers.get("X-Next-Page", "").strip()
+        link = response.links.get("next", {}).get("url")
+        if link and _origin(link) == _origin(self._base):
+            return link, {}  # the next page's URL carries its own query
         if page.isdigit():
             return url, {**query, "page": int(page)}
+        if link:
+            # Built from the server's public URL (GitLab's external_url, Gitea's ROOT_URL), which can differ from
+            # the address the connection uses. Follow it here, and only within this API: the token never goes to
+            # another host, nor anywhere but the next page of the same listing.
+            parts = urlsplit(link)
+            base = urlsplit(self._base)
+            if parts.path.startswith(base.path.rstrip("/") + "/"):
+                return urlunsplit((base.scheme, base.netloc, parts.path, parts.query, "")), {}
         return None, query
 
 

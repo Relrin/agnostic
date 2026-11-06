@@ -43,6 +43,7 @@
     "@agnostic/module-studio-teams": "workspace:*",
     "@agnostic/module-studio-workflows": "workspace:*",
     "@agnostic/module-system": "workspace:*",
+    "@agnostic/module-tool-catalog": "workspace:*",
     "@agnostic/module-traces": "workspace:*",
     "@agnostic/ui": "workspace:*",
     "@tanstack/react-query": "5.105.0",

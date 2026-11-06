@@ -30,6 +30,7 @@ import { studioAgentsModule } from "@agnostic/module-studio-agents";
 import { studioTeamsModule } from "@agnostic/module-studio-teams";
 import { studioWorkflowsModule } from "@agnostic/module-studio-workflows";
 import { systemModule } from "@agnostic/module-system";
+import { toolCatalogModule } from "@agnostic/module-tool-catalog";
 import { tracesModule } from "@agnostic/module-traces";
 
 export const MODULES: readonly ModuleManifest[] = [
@@ -43,6 +44,7 @@ export const MODULES: readonly ModuleManifest[] = [
   accessPeopleModule,
   accessRolesModule,
   serviceAccountsModule,
+  toolCatalogModule,
   auditModule,
   homeModule,
   chatModule,

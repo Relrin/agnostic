@@ -31,6 +31,7 @@ members = [
     "agnostic-spec",
     "agnostic-studio",
     "agnostic-system",
+    "agnostic-tool-catalog",
     "agnostic-workspace",
 ]
 
@@ -998,6 +999,47 @@ requires-dist = [
 ]
 
 [[package]]
+name = "agnostic-tool-catalog"
+version = "0.1.0"
+source = { editable = "modules/tool_catalog" }
+dependencies = [
+    { name = "agnostic-access" },
+    { name = "agnostic-agentos-client" },
+    { name = "agnostic-audit" },
+    { name = "agnostic-directory" },
+    { name = "agnostic-instances" },
+    { name = "agnostic-kernel" },
+    { name = "agnostic-service-accounts" },
+    { name = "agnostic-spec" },
+    { name = "agnostic-studio" },
+    { name = "alembic" },
+    { name = "dishka" },
+    { name = "fastapi" },
+    { name = "procrastinate" },
+    { name = "pydantic" },
+    { name = "sqlalchemy", extra = ["asyncio"] },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "agnostic-access", editable = "modules/access" },
+    { name = "agnostic-agentos-client", editable = "packages/agnostic-agentos-client" },
+    { name = "agnostic-audit", editable = "modules/audit" },
+    { name = "agnostic-directory", editable = "modules/directory" },
+    { name = "agnostic-instances", editable = "modules/instances" },
+    { name = "agnostic-kernel", editable = "packages/agnostic-kernel" },
+    { name = "agnostic-service-accounts", editable = "modules/service_accounts" },
+    { name = "agnostic-spec", editable = "packages/agnostic-spec" },
+    { name = "agnostic-studio", editable = "modules/studio" },
+    { name = "alembic", specifier = "==1.20.1" },
+    { name = "dishka", specifier = "==1.10.1" },
+    { name = "fastapi", specifier = "==0.162.0" },
+    { name = "procrastinate", specifier = "==3.10.0" },
+    { name = "pydantic", specifier = "==2.14.2" },
+    { name = "sqlalchemy", extras = ["asyncio"], specifier = "==2.1.6" },
+]
+
+[[package]]
 name = "agnostic-workspace"
 version = "0.1.0"
 source = { virtual = "." }
@@ -1029,6 +1071,7 @@ dependencies = [
     { name = "agnostic-spec" },
     { name = "agnostic-studio" },
     { name = "agnostic-system" },
+    { name = "agnostic-tool-catalog" },
 ]
 
 [package.dev-dependencies]
@@ -1081,6 +1124,7 @@ requires-dist = [
     { name = "agnostic-spec", editable = "packages/agnostic-spec" },
     { name = "agnostic-studio", editable = "modules/studio" },
     { name = "agnostic-system", editable = "modules/system" },
+    { name = "agnostic-tool-catalog", editable = "modules/tool_catalog" },
 ]
 
 [package.metadata.requires-dev]

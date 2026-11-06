@@ -213,3 +213,14 @@ def test_audit_summaries_and_partitions() -> None:
     bound = "FOR VALUES FROM ('2026-10-01 00:00:00+00') TO ('2026-11-01 00:00:00+00')"
     assert upper_bound(bound) == datetime(2026, 11, 1, tzinfo=UTC)
     assert upper_bound("DEFAULT") is None
+
+
+def test_gitlab_url_scheme_and_host_ignore_case() -> None:
+    mixed = resolve_provider(
+        "gl", preset=Preset.GITLAB, client_id="c", client_secret=None, base_url="HTTPS://GitLab.com/"
+    )
+    assert (mixed.issuer, mixed.base_url) == ("https://gitlab.com", None)
+    hosted = resolve_provider(
+        "gl", preset=Preset.GITLAB, client_id="c", client_secret=None, base_url="https://Git.Corp.test/GitLab"
+    )
+    assert hosted.issuer == "https://git.corp.test/GitLab"

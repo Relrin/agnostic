@@ -59,6 +59,9 @@
       "path": "../../modules/traces"
     },
     {
+      "path": "../../modules/tool-catalog"
+    },
+    {
       "path": "../../modules/metrics"
     },
     {

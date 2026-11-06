@@ -245,3 +245,14 @@ async def test_gitlab_groups_come_from_userinfo(stack: Stack, idp_key: rsa.RSAPr
         userinfo.respond(500)
         again = await sso_sign_in(stack.client(), idp, provider="gitlab")
         assert again.headers["location"] == "/"
+        # ...and leaves their groups alone: groups_direct would drop the ones they're in through a parent group.
+        groups = (await owner.get("/api/v1/directory/groups")).json()
+        claimed = [group for group in groups if group["source"] == "oidc_claim"]
+        assert [group["name"] for group in claimed] == ["platform"]  # still corp/platform, not groups_direct's corp
+        members = (await owner.get(f"/api/v1/directory/groups/{claimed[0]['id']}")).json()
+        assert len(members["members"]) == 1
+
+        # A userinfo answer that isn't a JSON object is treated as unreachable, not a crash.
+        userinfo.respond(json=["not", "an", "object"])
+        odd = await sso_sign_in(stack.client(), idp, provider="gitlab")
+        assert odd.headers["location"] == "/"

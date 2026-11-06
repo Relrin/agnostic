@@ -177,6 +177,18 @@ class ProviderConfigError(ValueError):
     pass
 
 
+def _origin_lower(url: str) -> str:
+    """``HTTPS://GitLab.Corp/Sub`` → ``https://gitlab.corp/Sub``: scheme and host aren't case-sensitive, paths are.
+
+    GitLab's discovery document names its issuer in lowercase, and the issuer check compares exactly.
+    """
+    scheme, sep, rest = url.partition("://")
+    if not sep:
+        return url
+    host, slash, path = rest.partition("/")
+    return f"{scheme.lower()}://{host.lower()}{slash}{path}"
+
+
 def _gitlab_urls(issuer: str | None, base_url: str | None) -> tuple[str | None, str | None]:
     """GitLab's OIDC issuer is the instance URL (its ``external_url``), so the two are one setting.
 
@@ -184,7 +196,7 @@ def _gitlab_urls(issuer: str | None, base_url: str | None) -> tuple[str | None, 
     self-managed URL signs in against the self-managed instance. An issuer given alone (the
     older way to point at a self-managed GitLab) still works and becomes the instance URL.
     """
-    url = (base_url or "").strip().rstrip("/") or (issuer or "").strip().rstrip("/") or None
+    url = _origin_lower((base_url or "").strip().rstrip("/") or (issuer or "").strip().rstrip("/")) or None
     default = PRESETS[Preset.GITLAB].default_issuer
     if url is None or url == default:
         return default, None

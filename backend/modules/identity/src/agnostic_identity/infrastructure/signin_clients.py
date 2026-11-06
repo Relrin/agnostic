@@ -104,13 +104,17 @@ class OidcClient:
         needs_email = not claims.get("email")
         wants_groups = self.config.preset is Preset.GITLAB and "groups" not in claims
         access_token = tokens.get("access_token")
+        groups_unknown = False
         if (needs_email or wants_groups) and metadata.get("userinfo_endpoint") and isinstance(access_token, str):
             try:
                 claims = {**await self._userinfo(str(metadata["userinfo_endpoint"]), access_token), **claims}
             except SsoError:
                 if needs_email:
                     raise  # without an email nobody can be signed in; for groups alone, keep going
-        if "groups" not in claims and isinstance(claims.get("groups_direct"), list):
+                # ``groups_direct`` leaves out the groups someone is in through a parent group: syncing from it
+                # would take those memberships away until the next sign-in. Leave the groups as they are.
+                groups_unknown = True
+        if "groups" not in claims and not groups_unknown and isinstance(claims.get("groups_direct"), list):
             claims = {**claims, "groups": claims["groups_direct"]}
 
         name = claims.get("name") or claims.get("preferred_username")
@@ -180,9 +184,12 @@ class OidcClient:
         try:
             response = await self._http.get(url, headers={"Authorization": f"Bearer {access_token}"})
             response.raise_for_status()
-            return cast("dict[str, Any]", response.json())
+            body: object = response.json()
         except (httpx.HTTPError, ValueError) as exc:
             raise _provider_error(self.config, f"userinfo request failed ({exc})") from exc
+        if not isinstance(body, dict):
+            raise _provider_error(self.config, "the userinfo response is not a JSON object")
+        return cast("dict[str, Any]", body)
 
 
 class GitHubClient:

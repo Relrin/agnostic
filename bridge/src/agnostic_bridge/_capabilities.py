@@ -37,6 +37,18 @@ class BridgeQueueFeatures(BaseModel):
     max_concurrency: int | None = Field(description="Background runs per replica; None = process default")
 
 
+class BridgeToolCatalogFeatures(BaseModel):
+    """The tool catalog puller (``AGNOSTIC_TOOL_CATALOG_*``)."""
+
+    enabled: bool = Field(description="The control plane URL, instance id and sync token are set")
+    local_allowed: bool = Field(
+        description="Tools that run commands here may be built (AGNOSTIC_TOOL_CATALOG_ALLOW_LOCAL)"
+    )
+    interval_seconds: int | None = None
+    last_sync_at: str | None = Field(default=None, description="ISO time of this replica's last pull")
+    entries: int = Field(default=0, description="Catalog entries this replica built and connected")
+
+
 class BridgeFeatures(BaseModel):
     """Switches set on the AgentOS object. The control plane still probes the routes before relying on them."""
 
@@ -53,6 +65,7 @@ class BridgeFeatures(BaseModel):
     telemetry: bool
     interfaces: list[str] = Field(description="Interface types mounted on the OS (a2a, slack, ...)")
     cel: bool = Field(description="cel-python is installed, so workflows evaluate CEL (agno[cel])")
+    tool_catalog: BridgeToolCatalogFeatures | None = Field(default=None, description="Absent on older bridges")
 
 
 class BridgeCapabilities(BaseModel):
@@ -98,8 +111,24 @@ def _interface_types(agent_os: AgentOS) -> list[str]:
     return sorted(names)
 
 
+def _catalog_features(catalog: Any) -> BridgeToolCatalogFeatures:
+    """From the tool catalog holder (``_catalog.CatalogHolder``), without importing it here."""
+    config = getattr(catalog, "config", None)
+    if config is None:
+        return BridgeToolCatalogFeatures(enabled=False, local_allowed=False)
+    sync = getattr(catalog, "sync", None)
+    report = sync.report() if sync is not None else None
+    return BridgeToolCatalogFeatures(
+        enabled=True,
+        local_allowed=bool(config.allow_local),
+        interval_seconds=int(config.interval),
+        last_sync_at=report.last_sync_at.isoformat() if report is not None and report.last_sync_at else None,
+        entries=sum(1 for entry in report.entries if entry.state == "connected") if report is not None else 0,
+    )
+
+
 def build_capabilities(
-    agent_os: AgentOS, app: FastAPI | Any, replica_id: str, endpoints: list[str]
+    agent_os: AgentOS, app: FastAPI | Any, replica_id: str, endpoints: list[str], *, catalog: Any = None
 ) -> BridgeCapabilities:
     state = app.state
     return BridgeCapabilities(
@@ -125,6 +154,7 @@ def build_capabilities(
             telemetry=bool(agent_os.telemetry),
             interfaces=_interface_types(agent_os),
             cel=agno_cel.CEL_AVAILABLE,
+            tool_catalog=_catalog_features(catalog),
         ),
         endpoints=endpoints,
     )

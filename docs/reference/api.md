@@ -388,7 +388,7 @@ they're described by the runtime's own OpenAPI document and not repeated here.
 | `POST` | `/api/v1/studio/connections` | Connect a git host |
 | `GET` | `/api/v1/studio/connections/github/callback` | Where GitHub returns after the app was installed |
 | `GET` | `/api/v1/studio/connections/{connection_id}` | One connection |
-| `PATCH` | `/api/v1/studio/connections/{connection_id}` | Change a connection (secrets only when given) |
+| `PATCH` | `/api/v1/studio/connections/{connection_id}` | Change a connection (only the fields sent) |
 | `DELETE` | `/api/v1/studio/connections/{connection_id}` | Remove |
 | `GET` | `/api/v1/studio/connections/{connection_id}/branches` | Branches of a repository |
 | `GET` | `/api/v1/studio/connections/{connection_id}/github/install` | Where to install the GitHub App |
@@ -452,3 +452,21 @@ they're described by the runtime's own OpenAPI document and not repeated here.
 | `GET` | `/api/v1/system/status` | System overview: versions, job queues, cache, instance polling, backlogs |
 | `GET` | `/healthz` | Healthz |
 | `GET` | `/readyz` | Readyz |
+
+## tool_catalog
+
+| Method | Path | Does |
+|---|---|---|
+| `GET` | `/api/v1/tool-catalog/entries` | Tool catalog entries you can see |
+| `POST` | `/api/v1/tool-catalog/entries` | Add an MCP server or toolkit |
+| `GET` | `/api/v1/tool-catalog/entries/{entry_id}` | One entry |
+| `PATCH` | `/api/v1/tool-catalog/entries/{entry_id}` | Change an entry (name, level and kind stay) |
+| `DELETE` | `/api/v1/tool-catalog/entries/{entry_id}` | Remove an entry |
+| `POST` | `/api/v1/tool-catalog/entries/{entry_id}/disable` | Stop offering the entry (runtimes drop it) |
+| `POST` | `/api/v1/tool-catalog/entries/{entry_id}/discover` | List the tools an MCP server offers, from an instance's runtime |
+| `POST` | `/api/v1/tool-catalog/entries/{entry_id}/enable` | Offer the entry again |
+| `GET` | `/api/v1/tool-catalog/instances/{instance}/status` | How an instance's runtime is doing with the catalog |
+| `POST` | `/api/v1/tool-catalog/instances/{instance}/sync` | Ask the instance's runtime to pull the catalog now |
+| `POST` | `/api/v1/tool-catalog/instances/{instance}/sync-token` | Issue the token the instance's bridge pulls with (replaces the previous one) |
+| `GET` | `/api/v1/tool-catalog/sync/{instance}/manifest` | The catalog for one instance, as its bridge pulls it |
+| `GET` | `/api/v1/tool-catalog/toolkits` | Agno toolkits an entry can name |

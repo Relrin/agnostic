@@ -412,6 +412,19 @@ async def test_pages_stop_at_the_limit_and_never_follow_a_link_to_another_host()
     assert len(await client.pages("/repos/o/r/branches", max_pages=3)) == 3
     assert len(host.seen("GET", "/api/v1/repos/o/r/branches")) == 3
     assert await client.branches("o/other") == ["main"]
+
+
+async def test_a_next_link_from_the_public_url_is_followed_on_the_connection_host() -> None:
+    def branches(request: httpx.Request) -> httpx.Response:
+        page = int(request.url.params.get("page", "1"))
+        link = '<https://git.example.com/api/v1/repos/o/r/branches?page=2>; rel="next"' if page == 1 else ""
+        return httpx.Response(200, json=[{"name": f"b{page}"}], headers={"Link": link} if link else {})
+
+    host = Host({"GET /api/v1/repos/o/r/branches": branches})
+    http = host.http()
+    # The connection uses the internal address; Gitea's ROOT_URL (in its links) is the public one.
+    client = GiteaClient(http.client, "https://git.test/api/v1", "https://git.test", "tok", "gitea")
+    assert await client.branches("o/r") == ["b1", "b2"]
     assert {request.url.host for request in host.requests} == {"git.test"}
     await http.aclose()
 

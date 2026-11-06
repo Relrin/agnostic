@@ -22,11 +22,24 @@ import {
   TabsTrigger,
   cn,
   toast,
+  Badge,
 } from "@agnostic/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "@tanstack/react-router";
 import { RefreshCw, ShieldAlert } from "lucide-react";
 import { useState } from "react";
+
+const LEVEL_TONE = { org: "success", team: "info", custom: "outline" } as const;
+
+/** Where a tool comes from in the tool catalog (Organization, Team · Data, Custom), when it does. */
+function CatalogBadge({ entry }: { entry: RegistryEntryOut }) {
+  if (!entry.catalog) return null;
+  return (
+    <Badge tone={LEVEL_TONE[entry.catalog.level]} title={`Tool catalog · ${entry.catalog.display_name}`}>
+      {entry.catalog.level_label}
+    </Badge>
+  );
+}
 
 const TYPES: readonly { type: string; label: string }[] = [
   { type: "tool", label: "Tools" },
@@ -85,6 +98,7 @@ function EntryDetail({ instance, type, name }: { instance: string; type: string;
           {type.replace(/_/g, " ")}
         </span>
         <StatusPill status={entry.status.toUpperCase()} />
+        <CatalogBadge entry={entry} />
       </div>
       <h2 className="font-mono text-[17px] font-semibold">{entry.name}</h2>
       <p className="text-[12.5px] text-fg-secondary">{entry.blurb}</p>
@@ -299,7 +313,10 @@ export function RegistryPage() {
                         {entry.meta}
                       </td>
                       <td className="px-2 py-2">
-                        <StatusPill status={entry.status.toUpperCase()} />
+                        <span className="inline-flex items-center gap-1">
+                          <StatusPill status={entry.status.toUpperCase()} />
+                          <CatalogBadge entry={entry} />
+                        </span>
                       </td>
                       <td className="px-3 py-2 text-right tabular-nums">{entry.used_by_count}</td>
                     </tr>

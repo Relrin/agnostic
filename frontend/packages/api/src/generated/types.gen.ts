@@ -1603,6 +1603,62 @@ export type BreakGlassUserOut = {
 };
 
 /**
+ * BridgeEntryOut
+ */
+export type BridgeEntryOut = {
+    /**
+     * Detail
+     */
+    detail?: string | null;
+    /**
+     * Functions
+     */
+    functions?: Array<string>;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * State
+     */
+    state: string;
+};
+
+/**
+ * BridgeReportOut
+ */
+export type BridgeReportOut = {
+    /**
+     * Enabled
+     */
+    enabled?: boolean;
+    /**
+     * Entries
+     */
+    entries?: Array<BridgeEntryOut>;
+    /**
+     * Interval Seconds
+     */
+    interval_seconds?: number | null;
+    /**
+     * Last Error
+     */
+    last_error?: string | null;
+    /**
+     * Last Sync At
+     */
+    last_sync_at?: string | null;
+    /**
+     * Local Allowed
+     */
+    local_allowed?: boolean;
+    /**
+     * Replica Id
+     */
+    replica_id?: string | null;
+};
+
+/**
  * BudgetOut
  */
 export type BudgetOut = {
@@ -1852,6 +1908,60 @@ export type CasesIn = {
      * Cases
      */
     cases: Array<CaseIn>;
+};
+
+/**
+ * CatalogInfoOut
+ *
+ * Where a tool comes from in the tool catalog: the level badge, and how the runtime is doing with it.
+ */
+export type CatalogInfoOut = {
+    /**
+     * Detail
+     */
+    detail: string | null;
+    /**
+     * Display Name
+     */
+    display_name: string;
+    /**
+     * Entry Id
+     */
+    entry_id: string;
+    /**
+     * Icon
+     */
+    icon: string | null;
+    /**
+     * Kind
+     */
+    kind: 'mcp' | 'toolkit';
+    /**
+     * Level
+     */
+    level: 'org' | 'team' | 'custom';
+    /**
+     * Level Label
+     */
+    level_label: string;
+    /**
+     * Same As
+     *
+     * Registry names of other catalog entries offering the same tool
+     */
+    same_as: Array<string>;
+    /**
+     * State
+     */
+    state: string;
+    /**
+     * Toolkit Key
+     */
+    toolkit_key: string | null;
+    /**
+     * Transport
+     */
+    transport: string | null;
 };
 
 /**
@@ -3316,6 +3426,72 @@ export type ConnectionOut = {
 };
 
 /**
+ * ConnectionPatchIn
+ *
+ * Only the fields sent change; send a URL as ``null`` to clear it, and a secret only to replace it.
+ */
+export type ConnectionPatchIn = {
+    /**
+     * Access
+     */
+    access?: 'read_write' | 'read_only' | null;
+    /**
+     * Api Url
+     */
+    api_url?: string | null;
+    /**
+     * App Id
+     */
+    app_id?: string | null;
+    /**
+     * App Slug
+     */
+    app_slug?: string | null;
+    /**
+     * Auth Kind
+     *
+     * Can't change; a different kind is refused (connect again instead).
+     */
+    auth_kind?: 'github_app' | 'token' | 'deploy_key' | null;
+    /**
+     * Installation Id
+     */
+    installation_id?: string | null;
+    /**
+     * Name
+     */
+    name?: string | null;
+    /**
+     * Private Key
+     */
+    private_key?: string | null;
+    /**
+     * Provider
+     *
+     * Can't change; sent only to be checked.
+     */
+    provider?: 'github' | 'gitlab' | 'gitea' | 'forgejo' | null;
+    /**
+     * Token
+     */
+    token?: string | null;
+    /**
+     * Version
+     *
+     * Expected version (optimistic concurrency).
+     */
+    version?: number | null;
+    /**
+     * Web Url
+     */
+    web_url?: string | null;
+    /**
+     * Webhook Secret
+     */
+    webhook_secret?: string | null;
+};
+
+/**
  * ContentCountsOut
  */
 export type ContentCountsOut = {
@@ -4159,6 +4335,20 @@ export type DisabledNoteOut = {
 };
 
 /**
+ * DiscoveredToolOut
+ */
+export type DiscoveredToolOut = {
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Name
+     */
+    name: string;
+};
+
+/**
  * DiscoveryOut
  */
 export type DiscoveryOut = {
@@ -4294,6 +4484,230 @@ export type EnrolledOut = {
      * Recovery Codes
      */
     recovery_codes: Array<string>;
+};
+
+/**
+ * EntryIn
+ */
+export type EntryIn = {
+    /**
+     * Config
+     *
+     * MCP: url, headers, command, args, env, include_tools, exclude_tools, tool_name_prefix, timeout_seconds. Toolkit: params. Credentials as {'env': NAME, 'format': 'Bearer {}'}.
+     */
+    config?: {
+        [key: string]: unknown;
+    };
+    /**
+     * Description
+     */
+    description?: string;
+    /**
+     * Display Name
+     */
+    display_name: string;
+    /**
+     * Icon
+     */
+    icon?: string | null;
+    /**
+     * Instance Ids
+     *
+     * Ids or slugs; empty: every instance
+     */
+    instance_ids?: Array<string>;
+    /**
+     * Kind
+     */
+    kind: 'mcp' | 'toolkit';
+    /**
+     * Level
+     */
+    level: 'org' | 'team' | 'custom';
+    /**
+     * Owner Group Id
+     *
+     * Team entries: the group; custom: optional
+     */
+    owner_group_id?: string | null;
+    /**
+     * Requires Confirmation Tools
+     */
+    requires_confirmation_tools?: Array<string>;
+    /**
+     * Slug
+     *
+     * Short name (linear); the registry name adds the level in front
+     */
+    slug: string;
+    /**
+     * Toolkit Key
+     */
+    toolkit_key?: string | null;
+    /**
+     * Transport
+     */
+    transport?: 'streamable-http' | 'sse' | 'stdio' | null;
+};
+
+/**
+ * EntryOut
+ */
+export type EntryOut = {
+    /**
+     * Config
+     *
+     * Credentials are {'env': NAME} references, never values
+     */
+    config: {
+        [key: string]: unknown;
+    };
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Created By
+     */
+    created_by: string | null;
+    /**
+     * Description
+     */
+    description: string;
+    /**
+     * Display Name
+     */
+    display_name: string;
+    /**
+     * Editable
+     */
+    editable: boolean;
+    /**
+     * Icon
+     */
+    icon: string | null;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Instance Ids
+     *
+     * Empty: every instance
+     */
+    instance_ids: Array<string>;
+    /**
+     * Kind
+     */
+    kind: 'mcp' | 'toolkit';
+    /**
+     * Level
+     */
+    level: 'org' | 'team' | 'custom';
+    /**
+     * Level Label
+     *
+     * Organization, Team · <group> or Custom: the badge on the block
+     */
+    level_label: string;
+    /**
+     * Local
+     *
+     * Runs commands on the runtime: privileged, and the runtime must opt in
+     */
+    local: boolean;
+    /**
+     * Owner Group Id
+     */
+    owner_group_id: string | null;
+    /**
+     * Owner Group Name
+     */
+    owner_group_name: string | null;
+    /**
+     * Registry Name
+     *
+     * The toolkit name on the runtime, level first (org-linear)
+     */
+    registry_name: string;
+    /**
+     * Requires Confirmation Tools
+     */
+    requires_confirmation_tools: Array<string>;
+    /**
+     * Same As
+     *
+     * Other entries you can use that offer the same tool
+     */
+    same_as: Array<SameToolOut>;
+    /**
+     * Slug
+     */
+    slug: string;
+    /**
+     * Status
+     */
+    status: 'active' | 'disabled';
+    /**
+     * Toolkit Key
+     */
+    toolkit_key: string | null;
+    /**
+     * Transport
+     */
+    transport: 'streamable-http' | 'sse' | 'stdio' | null;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+    /**
+     * Version
+     */
+    version: number;
+};
+
+/**
+ * EntryPatch
+ *
+ * Name, level, kind and toolkit stay: the runtime knows the tool by them (add a new entry instead).
+ */
+export type EntryPatch = {
+    /**
+     * Config
+     */
+    config?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Display Name
+     */
+    display_name?: string | null;
+    /**
+     * Icon
+     */
+    icon?: string | null;
+    /**
+     * Instance Ids
+     */
+    instance_ids?: Array<string> | null;
+    /**
+     * Requires Confirmation Tools
+     */
+    requires_confirmation_tools?: Array<string> | null;
+    /**
+     * Transport
+     */
+    transport?: 'streamable-http' | 'sse' | 'stdio' | null;
+    /**
+     * Version
+     *
+     * Expected version (optimistic concurrency)
+     */
+    version: number;
 };
 
 export type EnvTagName = 'production' | 'staging' | 'development';
@@ -7333,6 +7747,16 @@ export type NotificationOut = {
     title: string;
 };
 
+/**
+ * NudgeOut
+ */
+export type NudgeOut = {
+    /**
+     * Reached
+     */
+    reached: boolean;
+};
+
 export type ObjectLockMode = 'off' | 'governance' | 'compliance';
 
 /**
@@ -9147,6 +9571,10 @@ export type RegistryEntryOut = {
      */
     blurb: string;
     /**
+     * Set for tools that come from the tool catalog
+     */
+    catalog?: CatalogInfoOut | null;
+    /**
      * Code
      */
     code: string | null;
@@ -9772,6 +10200,32 @@ export type RunsPageOut = {
      * Total
      */
     total: number | null;
+};
+
+/**
+ * SameToolOut
+ */
+export type SameToolOut = {
+    /**
+     * Display Name
+     */
+    display_name: string;
+    /**
+     * Entry Id
+     */
+    entry_id: string;
+    /**
+     * Level
+     */
+    level: 'org' | 'team' | 'custom';
+    /**
+     * Level Label
+     */
+    level_label: string;
+    /**
+     * Registry Name
+     */
+    registry_name: string;
 };
 
 /**
@@ -11510,6 +11964,63 @@ export type SyncPolicyIo = {
 };
 
 /**
+ * SyncStatusOut
+ */
+export type SyncStatusOut = {
+    bridge: BridgeReportOut | null;
+    /**
+     * Bridge Version
+     */
+    bridge_version: string | null;
+    /**
+     * Entries
+     */
+    entries: number;
+    /**
+     * Instance Id
+     */
+    instance_id: string;
+    /**
+     * Instance Name
+     */
+    instance_name: string;
+    /**
+     * Last Pulled At
+     */
+    last_pulled_at: string | null;
+    /**
+     * Reachable
+     *
+     * The bridge answered for its tool catalog status
+     */
+    reachable: boolean;
+};
+
+/**
+ * SyncTokenOut
+ */
+export type SyncTokenOut = {
+    /**
+     * Env
+     *
+     * Set these on the runtime
+     */
+    env: {
+        [key: string]: string;
+    };
+    /**
+     * Service Account
+     */
+    service_account: string;
+    /**
+     * Token
+     *
+     * Shown once
+     */
+    token: string;
+};
+
+/**
  * SystemFeatures
  */
 export type SystemFeatures = {
@@ -11832,6 +12343,102 @@ export type ToolCallOut = {
      * Status
      */
     status: 'running' | 'done' | 'denied' | 'not_found' | 'error';
+};
+
+/**
+ * ToolkitOut
+ */
+export type ToolkitOut = {
+    /**
+     * Category
+     */
+    category: string;
+    /**
+     * Description
+     */
+    description: string;
+    /**
+     * Extra
+     *
+     * The package the runtime needs for it
+     */
+    extra: string | null;
+    /**
+     * Importable
+     *
+     * The runtime can build it (from the runtime's own list)
+     */
+    importable?: boolean | null;
+    /**
+     * Key
+     */
+    key: string;
+    /**
+     * Label
+     */
+    label: string;
+    /**
+     * Local
+     */
+    local: boolean;
+    /**
+     * Params
+     */
+    params: Array<ToolkitParamOut>;
+};
+
+/**
+ * ToolkitParamOut
+ */
+export type ToolkitParamOut = {
+    /**
+     * Choices
+     */
+    choices: Array<unknown>;
+    /**
+     * Default
+     */
+    default?: unknown;
+    /**
+     * Description
+     */
+    description: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Required
+     */
+    required: boolean;
+    /**
+     * Secret
+     */
+    secret: boolean;
+    /**
+     * Type
+     */
+    type: string;
+};
+
+/**
+ * ToolkitsOut
+ */
+export type ToolkitsOut = {
+    /**
+     * Agno Version
+     */
+    agno_version: string;
+    /**
+     * From Instance
+     *
+     * The instance's bridge answered with its own list
+     */
+    from_instance: boolean;
+    /**
+     * Toolkits
+     */
+    toolkits: Array<ToolkitOut>;
 };
 
 /**
@@ -23105,7 +23712,7 @@ export type SourcesGetConnectionResponses = {
 export type SourcesGetConnectionResponse = SourcesGetConnectionResponses[keyof SourcesGetConnectionResponses];
 
 export type SourcesUpdateConnectionData = {
-    body: ConnectionIn;
+    body: ConnectionPatchIn;
     path: {
         /**
          * Connection Id
@@ -23682,6 +24289,483 @@ export type SystemSystemStatusResponses = {
 };
 
 export type SystemSystemStatusResponse = SystemSystemStatusResponses[keyof SystemSystemStatusResponses];
+
+export type ToolCatalogListEntriesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Kind
+         */
+        kind?: 'mcp' | 'toolkit' | null;
+        /**
+         * Level
+         */
+        level?: 'org' | 'team' | 'custom' | null;
+        /**
+         * Instance
+         *
+         * Only entries that apply to this instance
+         */
+        instance?: string | null;
+        /**
+         * Q
+         *
+         * Search the name and description
+         */
+        q?: string | null;
+    };
+    url: '/api/v1/tool-catalog/entries';
+};
+
+export type ToolCatalogListEntriesErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ToolCatalogListEntriesError = ToolCatalogListEntriesErrors[keyof ToolCatalogListEntriesErrors];
+
+export type ToolCatalogListEntriesResponses = {
+    /**
+     * Response Tool Catalog List Entries
+     *
+     * Successful Response
+     */
+    200: Array<EntryOut>;
+};
+
+export type ToolCatalogListEntriesResponse = ToolCatalogListEntriesResponses[keyof ToolCatalogListEntriesResponses];
+
+export type ToolCatalogCreateEntryData = {
+    body: EntryIn;
+    path?: never;
+    query?: never;
+    url: '/api/v1/tool-catalog/entries';
+};
+
+export type ToolCatalogCreateEntryErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ToolCatalogCreateEntryError = ToolCatalogCreateEntryErrors[keyof ToolCatalogCreateEntryErrors];
+
+export type ToolCatalogCreateEntryResponses = {
+    /**
+     * Successful Response
+     */
+    201: EntryOut;
+};
+
+export type ToolCatalogCreateEntryResponse = ToolCatalogCreateEntryResponses[keyof ToolCatalogCreateEntryResponses];
+
+export type ToolCatalogDeleteEntryData = {
+    body?: never;
+    path: {
+        /**
+         * Entry Id
+         */
+        entry_id: string;
+    };
+    query?: {
+        /**
+         * Force
+         *
+         * Remove it even though components use it
+         */
+        force?: boolean;
+    };
+    url: '/api/v1/tool-catalog/entries/{entry_id}';
+};
+
+export type ToolCatalogDeleteEntryErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ToolCatalogDeleteEntryError = ToolCatalogDeleteEntryErrors[keyof ToolCatalogDeleteEntryErrors];
+
+export type ToolCatalogDeleteEntryResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type ToolCatalogDeleteEntryResponse = ToolCatalogDeleteEntryResponses[keyof ToolCatalogDeleteEntryResponses];
+
+export type ToolCatalogGetEntryData = {
+    body?: never;
+    path: {
+        /**
+         * Entry Id
+         */
+        entry_id: string;
+    };
+    query?: never;
+    url: '/api/v1/tool-catalog/entries/{entry_id}';
+};
+
+export type ToolCatalogGetEntryErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ToolCatalogGetEntryError = ToolCatalogGetEntryErrors[keyof ToolCatalogGetEntryErrors];
+
+export type ToolCatalogGetEntryResponses = {
+    /**
+     * Successful Response
+     */
+    200: EntryOut;
+};
+
+export type ToolCatalogGetEntryResponse = ToolCatalogGetEntryResponses[keyof ToolCatalogGetEntryResponses];
+
+export type ToolCatalogUpdateEntryData = {
+    body: EntryPatch;
+    path: {
+        /**
+         * Entry Id
+         */
+        entry_id: string;
+    };
+    query?: never;
+    url: '/api/v1/tool-catalog/entries/{entry_id}';
+};
+
+export type ToolCatalogUpdateEntryErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ToolCatalogUpdateEntryError = ToolCatalogUpdateEntryErrors[keyof ToolCatalogUpdateEntryErrors];
+
+export type ToolCatalogUpdateEntryResponses = {
+    /**
+     * Successful Response
+     */
+    200: EntryOut;
+};
+
+export type ToolCatalogUpdateEntryResponse = ToolCatalogUpdateEntryResponses[keyof ToolCatalogUpdateEntryResponses];
+
+export type ToolCatalogDisableEntryData = {
+    body?: never;
+    path: {
+        /**
+         * Entry Id
+         */
+        entry_id: string;
+    };
+    query?: never;
+    url: '/api/v1/tool-catalog/entries/{entry_id}/disable';
+};
+
+export type ToolCatalogDisableEntryErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ToolCatalogDisableEntryError = ToolCatalogDisableEntryErrors[keyof ToolCatalogDisableEntryErrors];
+
+export type ToolCatalogDisableEntryResponses = {
+    /**
+     * Successful Response
+     */
+    200: EntryOut;
+};
+
+export type ToolCatalogDisableEntryResponse = ToolCatalogDisableEntryResponses[keyof ToolCatalogDisableEntryResponses];
+
+export type ToolCatalogDiscoverToolsData = {
+    body?: never;
+    path: {
+        /**
+         * Entry Id
+         */
+        entry_id: string;
+    };
+    query: {
+        /**
+         * Instance
+         *
+         * The instance whose runtime connects
+         */
+        instance: string;
+    };
+    url: '/api/v1/tool-catalog/entries/{entry_id}/discover';
+};
+
+export type ToolCatalogDiscoverToolsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ToolCatalogDiscoverToolsError = ToolCatalogDiscoverToolsErrors[keyof ToolCatalogDiscoverToolsErrors];
+
+export type ToolCatalogDiscoverToolsResponses = {
+    /**
+     * Response Tool Catalog Discover Tools
+     *
+     * Successful Response
+     */
+    200: Array<DiscoveredToolOut>;
+};
+
+export type ToolCatalogDiscoverToolsResponse = ToolCatalogDiscoverToolsResponses[keyof ToolCatalogDiscoverToolsResponses];
+
+export type ToolCatalogEnableEntryData = {
+    body?: never;
+    path: {
+        /**
+         * Entry Id
+         */
+        entry_id: string;
+    };
+    query?: never;
+    url: '/api/v1/tool-catalog/entries/{entry_id}/enable';
+};
+
+export type ToolCatalogEnableEntryErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ToolCatalogEnableEntryError = ToolCatalogEnableEntryErrors[keyof ToolCatalogEnableEntryErrors];
+
+export type ToolCatalogEnableEntryResponses = {
+    /**
+     * Successful Response
+     */
+    200: EntryOut;
+};
+
+export type ToolCatalogEnableEntryResponse = ToolCatalogEnableEntryResponses[keyof ToolCatalogEnableEntryResponses];
+
+export type ToolCatalogSyncStatusData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/tool-catalog/instances/{instance}/status';
+};
+
+export type ToolCatalogSyncStatusErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ToolCatalogSyncStatusError = ToolCatalogSyncStatusErrors[keyof ToolCatalogSyncStatusErrors];
+
+export type ToolCatalogSyncStatusResponses = {
+    /**
+     * Successful Response
+     */
+    200: SyncStatusOut;
+};
+
+export type ToolCatalogSyncStatusResponse = ToolCatalogSyncStatusResponses[keyof ToolCatalogSyncStatusResponses];
+
+export type ToolCatalogNudgeData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/tool-catalog/instances/{instance}/sync';
+};
+
+export type ToolCatalogNudgeErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ToolCatalogNudgeError = ToolCatalogNudgeErrors[keyof ToolCatalogNudgeErrors];
+
+export type ToolCatalogNudgeResponses = {
+    /**
+     * Successful Response
+     */
+    200: NudgeOut;
+};
+
+export type ToolCatalogNudgeResponse = ToolCatalogNudgeResponses[keyof ToolCatalogNudgeResponses];
+
+export type ToolCatalogSyncTokenData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/tool-catalog/instances/{instance}/sync-token';
+};
+
+export type ToolCatalogSyncTokenErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ToolCatalogSyncTokenError = ToolCatalogSyncTokenErrors[keyof ToolCatalogSyncTokenErrors];
+
+export type ToolCatalogSyncTokenResponses = {
+    /**
+     * Successful Response
+     */
+    201: SyncTokenOut;
+};
+
+export type ToolCatalogSyncTokenResponse = ToolCatalogSyncTokenResponses[keyof ToolCatalogSyncTokenResponses];
+
+export type ToolCatalogManifestData = {
+    body?: never;
+    headers?: {
+        /**
+         * If-None-Match
+         */
+        'if-none-match'?: string | null;
+    };
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/tool-catalog/sync/{instance}/manifest';
+};
+
+export type ToolCatalogManifestErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ToolCatalogManifestError = ToolCatalogManifestErrors[keyof ToolCatalogManifestErrors];
+
+export type ToolCatalogManifestResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
+
+export type ToolCatalogListToolkitsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Instance
+         *
+         * Ask this instance's runtime for its own list
+         */
+        instance?: string | null;
+    };
+    url: '/api/v1/tool-catalog/toolkits';
+};
+
+export type ToolCatalogListToolkitsErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ToolCatalogListToolkitsError = ToolCatalogListToolkitsErrors[keyof ToolCatalogListToolkitsErrors];
+
+export type ToolCatalogListToolkitsResponses = {
+    /**
+     * Successful Response
+     */
+    200: ToolkitsOut;
+};
+
+export type ToolCatalogListToolkitsResponse = ToolCatalogListToolkitsResponses[keyof ToolCatalogListToolkitsResponses];
 
 export type SystemLivenessData = {
     body?: never;

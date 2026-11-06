@@ -50,3 +50,4 @@ export {
 } from "./source-bar";
 export { MODE_BLURB, MODE_LABEL, flowSteps, sectionSummary } from "./summaries";
 export { TestPane, checkStructured } from "./test-pane";
+export { LevelBadge, StateBadge, ToolCard, ToolIcon, ToolPicker } from "./tool-blocks";

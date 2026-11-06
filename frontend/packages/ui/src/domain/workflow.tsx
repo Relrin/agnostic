@@ -150,6 +150,12 @@ export type FlowRow =
   | { kind: "in" | "out"; id: string; label: string; port: PortType; note?: string | undefined }
   | { kind: "field"; label: string; value: string; mono?: boolean | undefined }
   | { kind: "area"; label: string; lines: readonly string[] }
+  /** Small blocks in one line (an agent's tools); `tone` marks where each comes from. */
+  | {
+      kind: "chips";
+      label: string;
+      items: readonly { label: string; tone?: "org" | "team" | "custom" | undefined }[];
+    }
   | { kind: "sep" };
 
 /** Fixed row heights, so the layout knows a node's size before it renders. */
@@ -159,6 +165,7 @@ export const FLOW_ROW_HEIGHTS = {
   in: 28,
   out: 28,
   field: 54,
+  chips: 54,
   sep: 9,
   areaBase: 32,
   areaLine: 18,
@@ -295,6 +302,29 @@ function Row({ row, port }: { row: FlowRow; port?: ReactNode }) {
             )}
           >
             <span className="truncate">{row.value}</span>
+          </span>
+        </div>
+      );
+    case "chips":
+      return (
+        <div style={style} className="flex flex-col gap-1 px-3 pt-1">
+          <span className="text-[11.5px] text-fg-secondary">{row.label}</span>
+          <span className="flex h-[28px] items-center gap-1 overflow-hidden">
+            {row.items.map((item) => (
+              <span
+                key={item.label}
+                title={item.label}
+                className={cn(
+                  "inline-flex h-[22px] max-w-[140px] shrink-0 items-center rounded-[5px] border px-1.5 font-mono text-[10.5px]",
+                  item.tone === "org" && "border-accent/40 bg-accent/10 text-accent",
+                  item.tone === "team" && "border-info/40 bg-[var(--info-tint)] text-info",
+                  item.tone === "custom" && "border-border-strong bg-inset text-fg-secondary",
+                  !item.tone && "border-border-input bg-inset text-fg",
+                )}
+              >
+                <span className="truncate">{item.label}</span>
+              </span>
+            ))}
           </span>
         </div>
       );

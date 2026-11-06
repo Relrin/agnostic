@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Any, Literal, cast
 
 type EntryType = Literal[
@@ -104,6 +104,31 @@ class Availability:
 
 
 @dataclass(frozen=True, slots=True)
+class CatalogInfo:
+    """Set when a registry tool comes from the tool catalog: which entry, at which level, and how it is doing."""
+
+    entry_id: str
+    level: str
+    """``org``, ``team`` or ``custom``."""
+    level_label: str
+    """``Organization``, ``Team · Data``, ``Custom``: the badge on the block."""
+    display_name: str
+    kind: str
+    """``mcp`` or ``toolkit``."""
+    state: str
+    """``connected``, ``pending``, ``failed``, ``stdio_disabled``, ``missing_env``, ``conflict`` or ``not_on_instance``.
+
+    ``stdio_disabled`` covers every tool that runs commands on a runtime that hasn't opted in.
+    """
+    icon: str | None = None
+    transport: str | None = None
+    toolkit_key: str | None = None
+    detail: str | None = None
+    same_as: tuple[str, ...] = ()
+    """Registry names of other entries the viewer can use that offer the same toolkit or server."""
+
+
+@dataclass(frozen=True, slots=True)
 class RegistryEntry:
     type: EntryType
     name: str
@@ -120,6 +145,7 @@ class RegistryEntry:
     functions: list[Function] = field(default_factory=list[Function])
     metadata: dict[str, Any] = field(default_factory=dict[str, Any])
     source: Source | None = None
+    catalog: CatalogInfo | None = None
 
     @property
     def studio_available(self) -> bool:
@@ -163,6 +189,45 @@ def normalize(raw: Mapping[str, Any], source: Source | None = None) -> RegistryE
         functions=functions,
         metadata=metadata,
         source=source,
+    )
+
+
+CATALOG_STATES: dict[str, tuple[str, str]] = {
+    "pending": ("Connecting.", "The runtime is connecting to this tool; it shows up here once it answers."),
+    "failed": ("Not connected.", "The runtime couldn't connect to this tool. See the tool catalog for why."),
+    "stdio_disabled": (
+        "Not allowed on this runtime.",
+        "It runs a command on the runtime, which this runtime doesn't allow (AGNOSTIC_TOOL_CATALOG_ALLOW_LOCAL).",
+    ),
+    "missing_env": ("Missing a credential.", "The runtime doesn't have the environment variable this tool reads."),
+    "conflict": ("Name taken.", "A tool registered in the runtime's code already uses this name."),
+    "not_on_instance": ("Not on this instance yet.", "The runtime hasn't pulled the tool catalog since it was added."),
+}
+
+
+def with_catalog(entry: RegistryEntry, info: CatalogInfo) -> RegistryEntry:
+    """A registry tool marked as coming from the tool catalog (its badge, level and state)."""
+    return replace(entry, catalog=info, description=entry.description or None)
+
+
+def catalog_placeholder(name: str, description: str | None, info: CatalogInfo) -> RegistryEntry:
+    """A catalog tool the runtime doesn't list yet: shown so builders see it, but not attachable until it is."""
+    title, text = CATALOG_STATES.get(info.state, CATALOG_STATES["not_on_instance"])
+    kind = "MCP server" if info.kind == "mcp" else "Agno toolkit"
+    return RegistryEntry(
+        type="tool",
+        name=name,
+        id=None,
+        description=description,
+        meta=f"{kind} · {info.level_label}",
+        status="registered",
+        details=[],
+        code=None,
+        code_label=None,
+        requires_approval=False,
+        approval_type=None,
+        availability=Availability("unavailable", title, text),
+        catalog=info,
     )
 
 

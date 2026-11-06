@@ -13,11 +13,20 @@ eval route runs AgentOS's own eval helpers, which call models and store the resu
 provenance route reads the traces AgentOS already stores; its workers route describes the replica that answers; its
 events route reads the approvals and schedule runs AgentOS already stores; its component routes rebuild configs with
 agno's ``from_dict`` without storing them; its introspection routes read code-defined components and registry entries;
-its CEL route evaluates a workflow expression with agno's own CEL evaluation.
+its CEL route evaluates a workflow expression with agno's own CEL evaluation. With the tool catalog on, it
+pulls the control plane's approved MCP servers and toolkits and keeps them in the AgentOS registry while
+the process runs; its tool catalog routes report and refresh what it built.
 """
 
 from agnostic_bridge._app import BRIDGE_PREFIX, SCOPE_MAPPINGS, create_router, install
-from agnostic_bridge._capabilities import BridgeCapabilities, BridgeFeatures, BridgeQueueFeatures, __version__
+from agnostic_bridge._capabilities import (
+    BridgeCapabilities,
+    BridgeFeatures,
+    BridgeQueueFeatures,
+    BridgeToolCatalogFeatures,
+    __version__,
+)
+from agnostic_bridge._catalog import CatalogStatus, ToolCatalogConfig, ToolCatalogSync
 from agnostic_bridge._cel import EVALUATE_CEL_PATH, CelEvaluation, CelEvaluationError, CelEvaluationInput
 from agnostic_bridge._components import (
     NORMALIZE_PATH,
@@ -50,6 +59,8 @@ __all__ = [
     "BridgeEvent",
     "BridgeFeatures",
     "BridgeQueueFeatures",
+    "BridgeToolCatalogFeatures",
+    "CatalogStatus",
     "CelEvaluation",
     "CelEvaluationError",
     "CelEvaluationInput",
@@ -61,6 +72,8 @@ __all__ = [
     "FileProvenanceResponse",
     "NormalizedConfig",
     "RegistrySource",
+    "ToolCatalogConfig",
+    "ToolCatalogSync",
     "ValidationResult",
     "WorkersQueueConfig",
     "WorkersResponse",

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import hashlib
 from collections.abc import Iterable
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Any, cast
 
 from pydantic import ValidationError
@@ -22,9 +22,17 @@ from agnostic_studio.application.access import (
     StudioAccess,
     page_items,
 )
-from agnostic_studio.application.ports import StudioStore
+from agnostic_studio.application.ports import StudioStore, ToolCatalogLookup
 from agnostic_studio.domain.model import FAMILY, Kind
-from agnostic_studio.domain.registry import ENTRY_TYPES, EntryType, RegistryEntry, Source, normalize
+from agnostic_studio.domain.registry import (
+    ENTRY_TYPES,
+    EntryType,
+    RegistryEntry,
+    Source,
+    catalog_placeholder,
+    normalize,
+    with_catalog,
+)
 from agnostic_studio.domain.usage import IndexEntry, Use, UsedBy, index
 
 SOURCE_TTL = 300.0
@@ -57,9 +65,10 @@ class Catalog:
 
 
 class RegistryCatalog:
-    def __init__(self, access: StudioAccess, store: StudioStore) -> None:
+    def __init__(self, access: StudioAccess, store: StudioStore, tools: ToolCatalogLookup) -> None:
         self._access = access
         self._store = store
+        self._tools = tools
 
     async def entries(self, principal: Principal, instance: Instance) -> list[RegistryEntry]:
         raw = await self._access.pages(principal, instance, "/registry")
@@ -72,9 +81,27 @@ class RegistryCatalog:
                 else None
             )
             entries.append(normalize(item, source))
+        entries = await self._with_catalog(principal, instance, entries)
         return sorted(
             entries, key=lambda entry: (ENTRY_TYPES.index(entry.type) if entry.type in ENTRY_TYPES else 99, entry.name)
         )
+
+    async def _with_catalog(
+        self, principal: Principal, instance: Instance, entries: list[RegistryEntry]
+    ) -> list[RegistryEntry]:
+        """Mark the tools that come from the tool catalog, and list the ones the runtime hasn't loaded yet."""
+        offered = {tool.registry_name: tool for tool in await self._tools.for_instance(principal, instance)}
+        if not offered:
+            return entries
+        marked: list[RegistryEntry] = []
+        for entry in entries:
+            tool = offered.pop(entry.name, None) if entry.type == "tool" else None
+            if tool is not None and tool.info.state == "not_on_instance":
+                # The runtime lists it, so it has it, whatever an older (or absent) bridge report says.
+                tool = replace(tool, info=replace(tool.info, state="connected"))
+            marked.append(with_catalog(entry, tool.info) if tool is not None else entry)
+        marked.extend(catalog_placeholder(tool.registry_name, tool.description, tool.info) for tool in offered.values())
+        return marked
 
     async def catalog(self, principal: Principal, ref: str) -> tuple[Instance, Catalog]:
         instance = await self._access.instance(principal, ref, REGISTRY_SCOPE)

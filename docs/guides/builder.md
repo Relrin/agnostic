@@ -87,3 +87,13 @@ convention** the repository uses (`from app.registry import tools, models`).
 - Reference registry objects as attributes (`tools.lookup_order`, `models.gpt_precise`), imported the way the
   source's convention says.
 - Keep dynamic code (helpers, f-strings, hooks) in the repository; Studio leaves it untouched and read-only.
+
+## Tools from the tool catalog
+
+*Add a tool* in an agent's or team's Tools section opens a picker with the tools your organization approved, your
+teams' tools, custom tools set up on this instance, the runtime's own registered tools, and every Agno toolkit. Each
+block says where it comes from (*Organization*, *Team · Data*, *Custom*) and whether the runtime has it connected.
+When the organization or a team already offers a toolkit, its tile says so; you can still set up your own: pick the
+toolkit, fill in its settings (credentials as environment variable names on the runtime) and it becomes a custom
+tool for this instance, ready once the runtime pulls the catalog.
+

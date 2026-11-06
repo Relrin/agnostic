@@ -3,11 +3,15 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from dataclasses import dataclass
 from typing import Protocol
 
+from agnostic_instances.facade import Instance
+from agnostic_kernel.auth import Principal
 from agnostic_kernel.errors import AppError
 from agnostic_studio.domain.model import CanvasLayout, CodeDocument, ComponentMeta, HoldCheck, VersionMeta
 from agnostic_studio.domain.promotion import Promotion
+from agnostic_studio.domain.registry import CatalogInfo
 from agnostic_studio.domain.usage import IndexEntry
 
 
@@ -65,3 +69,23 @@ class PublishHold(Protocol):
 class NoPublishHold:
     async def check(self, instance_id: str, component_id: str, version: int) -> HoldCheck:  # noqa: ARG002
         return HoldCheck()
+
+
+@dataclass(frozen=True, slots=True)
+class CatalogTool:
+    """A tool catalog entry the viewer may build with on an instance (provided by the tool catalog module)."""
+
+    registry_name: str
+    description: str | None
+    info: CatalogInfo
+
+
+class ToolCatalogLookup(Protocol):
+    """Lets the tool catalog module mark registry tools that come from it; Studio alone knows of none."""
+
+    async def for_instance(self, principal: Principal, instance: Instance) -> list[CatalogTool]: ...
+
+
+class NoToolCatalog:
+    async def for_instance(self, principal: Principal, instance: Instance) -> list[CatalogTool]:  # noqa: ARG002
+        return []

@@ -106,7 +106,15 @@ class OutgoingPreparer:
             if binding.synced_config is not None and snap.config == binding.synced_config:
                 continue
             existing = pending.get(key)
-            if existing is not None and existing.draft_version == number and existing.config == snap.config:
+            if (
+                existing is not None
+                and existing.draft_version == number
+                and existing.config == snap.config
+                and existing.blob == files.get(binding.path)
+                and existing.base_sha == source.head_sha
+            ):
+                # Reused only while the file it was prepared against is still the one there: after a fetch it is
+                # prepared again (new blob, base and before-code), so a conflict a fetch resolved doesn't come back.
                 prepared.append(existing)
                 continue
             repo_code = await self._files.read(source, source.head_sha, binding.path) if binding.path in files else None
@@ -298,7 +306,16 @@ class Committer:
             return None
         instance = await self._access.of(source)
         changes = await self._outgoing(source, change_ids)
-        preview = await self._preview(source, changes, instance.display_name, actor_name)
+        try:
+            preview = await self._preview(source, changes, instance.display_name, actor_name)
+        except ValidationFailedError as exc:
+            # The connection turned read-only (or lost its write access) after the commit was asked for: put the
+            # changes back, so they can be committed again once it's fixed instead of staying "committing".
+            for change in changes:
+                await self._store.save_change(replace(change, status="pending"))
+            await self._store.commit()
+            log.warning("sources.commit_refused", source_id=source.id, error=str(exc))
+            return None
         text = (message or preview.message).strip() or preview.message
         body = "\n".join(
             f"- {change.path}: {change.component_id} v{change.draft_version} · {change.summary}" for change in changes

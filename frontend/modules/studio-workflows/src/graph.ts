@@ -132,6 +132,12 @@ function component(id: string, parent: string | undefined, type: NodeType, rows:
   };
 }
 
+/** A tool block on an agent node; tool catalog names start with their level (org-, team-, custom-). */
+export function toolChip(name: string): { label: string; tone?: "org" | "team" | "custom" } {
+  const level = /^(org|team|custom)-/.exec(name)?.[1] as "org" | "team" | "custom" | undefined;
+  return level ? { label: name, tone: level } : { label: name };
+}
+
 /** The rows a node shows, from its config (and what's known about its executor). */
 export function rowsOf(node: WorkflowNode, details?: DetailsLookup): FlowRow[] {
   const type = nodeType(node);
@@ -148,7 +154,8 @@ export function rowsOf(node: WorkflowNode, details?: DetailsLookup): FlowRow[] {
         input,
       ];
       if (known?.model) rows.push({ kind: "field", label: "Model", value: known.model });
-      if (known?.tools?.length) rows.push({ kind: "field", label: "Tools", value: known.tools.join(", ") });
+      if (known?.tools?.length)
+        rows.push({ kind: "chips", label: "Tools", items: known.tools.map(toolChip) });
       rows.push({ kind: "sep" }, { kind: "out", id: "out", label: "Response", port: "message" });
       return rows;
     }

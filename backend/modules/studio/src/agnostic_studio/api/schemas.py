@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 from pydantic import BaseModel, Field
 
@@ -22,7 +22,7 @@ from agnostic_studio.application.workflows import CelEvaluation, StepRun, Workfl
 from agnostic_studio.domain.diff import FieldChange
 from agnostic_studio.domain.model import CanvasLayout
 from agnostic_studio.domain.promotion import Promotion
-from agnostic_studio.domain.registry import RegistryEntry, tool_entry
+from agnostic_studio.domain.registry import CatalogInfo, RegistryEntry, tool_entry
 from agnostic_studio.domain.templates import Template
 from agnostic_studio.domain.usage import UsedBy
 
@@ -77,6 +77,38 @@ class UsedByOut(BaseModel):
         )
 
 
+class CatalogInfoOut(BaseModel):
+    """Where a tool comes from in the tool catalog: the level badge, and how the runtime is doing with it."""
+
+    entry_id: str
+    level: Literal["org", "team", "custom"]
+    level_label: str
+    display_name: str
+    kind: Literal["mcp", "toolkit"]
+    state: str
+    icon: str | None
+    transport: str | None
+    toolkit_key: str | None
+    detail: str | None
+    same_as: list[str] = Field(description="Registry names of other catalog entries offering the same tool")
+
+    @classmethod
+    def of(cls, info: CatalogInfo) -> CatalogInfoOut:
+        return cls(
+            entry_id=info.entry_id,
+            level=cast("Literal['org', 'team', 'custom']", info.level),
+            level_label=info.level_label,
+            display_name=info.display_name,
+            kind=cast("Literal['mcp', 'toolkit']", info.kind),
+            state=info.state,
+            icon=info.icon,
+            transport=info.transport,
+            toolkit_key=info.toolkit_key,
+            detail=info.detail,
+            same_as=list(info.same_as),
+        )
+
+
 class RegistryEntryOut(BaseModel):
     type: str
     name: str
@@ -94,6 +126,7 @@ class RegistryEntryOut(BaseModel):
     availability: AvailabilityOut
     functions: list[FunctionOut]
     source: SourceOut | None
+    catalog: CatalogInfoOut | None = Field(default=None, description="Set for tools that come from the tool catalog")
     used_by_count: int
     config_value: Any = Field(
         description="What a config stores when a builder picks this entry (a model ref, tool dicts, a knowledge ref…)."
@@ -131,6 +164,7 @@ class RegistryEntryOut(BaseModel):
             source=SourceOut(module=entry.source.module, file=entry.source.file, line=entry.source.line)
             if entry.source is not None and (entry.source.module or entry.source.file)
             else None,
+            catalog=CatalogInfoOut.of(entry.catalog) if entry.catalog is not None else None,
             used_by_count=len(used_by),
             config_value=config_value(entry),
         )

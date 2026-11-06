@@ -14,7 +14,14 @@ from agnostic_studio.application.catalog import RegistryCatalog
 from agnostic_studio.application.codegen import Codegen
 from agnostic_studio.application.components import Components
 from agnostic_studio.application.drafts import Drafts
-from agnostic_studio.application.ports import NoPublishHold, PublishHold, SourceRunner, StudioStore
+from agnostic_studio.application.ports import (
+    NoPublishHold,
+    NoToolCatalog,
+    PublishHold,
+    SourceRunner,
+    StudioStore,
+    ToolCatalogLookup,
+)
 from agnostic_studio.application.promotions import Promotions
 from agnostic_studio.application.publishing import Publisher
 from agnostic_studio.application.source import SourceCode
@@ -42,6 +49,7 @@ class StudioProvider(Provider):
     draft_runs = provide(DraftRuns)
     source = provide(SourceCode)
     publish_hold = provide(NoPublishHold, provides=PublishHold)
+    tool_catalog = provide(NoToolCatalog, provides=ToolCatalogLookup)
     facade = provide(StudioFacadeImpl, provides=StudioFacade)
 
     @provide(scope=Scope.APP)

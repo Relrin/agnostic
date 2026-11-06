@@ -23,6 +23,7 @@ export * from "./org-settings";
 export * from "./studio";
 export * from "./sources";
 export * from "./assistant";
+export * from "./tool-catalog";
 
 export function renderWithProviders(ui: ReactElement): RenderResult & { queryClient: QueryClient } {
   configureTestApi();

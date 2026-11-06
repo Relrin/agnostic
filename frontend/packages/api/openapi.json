@@ -3367,6 +3367,110 @@
         "title": "BreakGlassUserOut",
         "type": "object"
       },
+      "BridgeEntryOut": {
+        "properties": {
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
+          "functions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Functions",
+            "type": "array"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "state": {
+            "title": "State",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "state"
+        ],
+        "title": "BridgeEntryOut",
+        "type": "object"
+      },
+      "BridgeReportOut": {
+        "properties": {
+          "enabled": {
+            "default": true,
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/BridgeEntryOut"
+            },
+            "title": "Entries",
+            "type": "array"
+          },
+          "interval_seconds": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interval Seconds"
+          },
+          "last_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Error"
+          },
+          "last_sync_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Sync At"
+          },
+          "local_allowed": {
+            "default": false,
+            "title": "Local Allowed",
+            "type": "boolean"
+          },
+          "replica_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Replica Id"
+          }
+        },
+        "title": "BridgeReportOut",
+        "type": "object"
+      },
       "BudgetOut": {
         "properties": {
           "month": {
@@ -3836,6 +3940,111 @@
           "cases"
         ],
         "title": "CasesIn",
+        "type": "object"
+      },
+      "CatalogInfoOut": {
+        "description": "Where a tool comes from in the tool catalog: the level badge, and how the runtime is doing with it.",
+        "properties": {
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
+          "display_name": {
+            "title": "Display Name",
+            "type": "string"
+          },
+          "entry_id": {
+            "title": "Entry Id",
+            "type": "string"
+          },
+          "icon": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Icon"
+          },
+          "kind": {
+            "enum": [
+              "mcp",
+              "toolkit"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "level": {
+            "enum": [
+              "org",
+              "team",
+              "custom"
+            ],
+            "title": "Level",
+            "type": "string"
+          },
+          "level_label": {
+            "title": "Level Label",
+            "type": "string"
+          },
+          "same_as": {
+            "description": "Registry names of other catalog entries offering the same tool",
+            "items": {
+              "type": "string"
+            },
+            "title": "Same As",
+            "type": "array"
+          },
+          "state": {
+            "title": "State",
+            "type": "string"
+          },
+          "toolkit_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Toolkit Key"
+          },
+          "transport": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Transport"
+          }
+        },
+        "required": [
+          "entry_id",
+          "level",
+          "level_label",
+          "display_name",
+          "kind",
+          "state",
+          "icon",
+          "transport",
+          "toolkit_key",
+          "detail",
+          "same_as"
+        ],
+        "title": "CatalogInfoOut",
         "type": "object"
       },
       "CelCheckIn": {
@@ -6560,6 +6769,184 @@
         "title": "ConnectionOut",
         "type": "object"
       },
+      "ConnectionPatchIn": {
+        "description": "Only the fields sent change; send a URL as ``null`` to clear it, and a secret only to replace it.",
+        "properties": {
+          "access": {
+            "anyOf": [
+              {
+                "enum": [
+                  "read_write",
+                  "read_only"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Access"
+          },
+          "api_url": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Url"
+          },
+          "app_id": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "App Id"
+          },
+          "app_slug": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "App Slug"
+          },
+          "auth_kind": {
+            "anyOf": [
+              {
+                "enum": [
+                  "github_app",
+                  "token",
+                  "deploy_key"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Can't change; a different kind is refused (connect again instead).",
+            "title": "Auth Kind"
+          },
+          "installation_id": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Installation Id"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "private_key": {
+            "anyOf": [
+              {
+                "maxLength": 20000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Private Key"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "enum": [
+                  "github",
+                  "gitlab",
+                  "gitea",
+                  "forgejo"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Can't change; sent only to be checked.",
+            "title": "Provider"
+          },
+          "token": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Token"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Expected version (optimistic concurrency).",
+            "title": "Version"
+          },
+          "web_url": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Web Url"
+          },
+          "webhook_secret": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Webhook Secret"
+          }
+        },
+        "title": "ConnectionPatchIn",
+        "type": "object"
+      },
       "ContentCountsOut": {
         "properties": {
           "by_kind": {
@@ -7942,6 +8329,30 @@
         "title": "DisabledNoteOut",
         "type": "object"
       },
+      "DiscoveredToolOut": {
+        "properties": {
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "DiscoveredToolOut",
+        "type": "object"
+      },
       "DiscoveryOut": {
         "properties": {
           "agent_count": {
@@ -8168,6 +8579,431 @@
           "recovery_codes"
         ],
         "title": "EnrolledOut",
+        "type": "object"
+      },
+      "EntryIn": {
+        "properties": {
+          "config": {
+            "additionalProperties": true,
+            "description": "MCP: url, headers, command, args, env, include_tools, exclude_tools, tool_name_prefix, timeout_seconds. Toolkit: params. Credentials as {'env': NAME, 'format': 'Bearer {}'}.",
+            "title": "Config",
+            "type": "object"
+          },
+          "description": {
+            "default": "",
+            "title": "Description",
+            "type": "string"
+          },
+          "display_name": {
+            "title": "Display Name",
+            "type": "string"
+          },
+          "icon": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Icon"
+          },
+          "instance_ids": {
+            "description": "Ids or slugs; empty: every instance",
+            "items": {
+              "type": "string"
+            },
+            "title": "Instance Ids",
+            "type": "array"
+          },
+          "kind": {
+            "enum": [
+              "mcp",
+              "toolkit"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "level": {
+            "enum": [
+              "org",
+              "team",
+              "custom"
+            ],
+            "title": "Level",
+            "type": "string"
+          },
+          "owner_group_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Team entries: the group; custom: optional",
+            "title": "Owner Group Id"
+          },
+          "requires_confirmation_tools": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Requires Confirmation Tools",
+            "type": "array"
+          },
+          "slug": {
+            "description": "Short name (linear); the registry name adds the level in front",
+            "title": "Slug",
+            "type": "string"
+          },
+          "toolkit_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Toolkit Key"
+          },
+          "transport": {
+            "anyOf": [
+              {
+                "enum": [
+                  "streamable-http",
+                  "sse",
+                  "stdio"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Transport"
+          }
+        },
+        "required": [
+          "slug",
+          "level",
+          "display_name",
+          "kind"
+        ],
+        "title": "EntryIn",
+        "type": "object"
+      },
+      "EntryOut": {
+        "properties": {
+          "config": {
+            "additionalProperties": true,
+            "description": "Credentials are {'env': NAME} references, never values",
+            "title": "Config",
+            "type": "object"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "created_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created By"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "display_name": {
+            "title": "Display Name",
+            "type": "string"
+          },
+          "editable": {
+            "title": "Editable",
+            "type": "boolean"
+          },
+          "icon": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Icon"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "instance_ids": {
+            "description": "Empty: every instance",
+            "items": {
+              "type": "string"
+            },
+            "title": "Instance Ids",
+            "type": "array"
+          },
+          "kind": {
+            "enum": [
+              "mcp",
+              "toolkit"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "level": {
+            "enum": [
+              "org",
+              "team",
+              "custom"
+            ],
+            "title": "Level",
+            "type": "string"
+          },
+          "level_label": {
+            "description": "Organization, Team · <group> or Custom: the badge on the block",
+            "title": "Level Label",
+            "type": "string"
+          },
+          "local": {
+            "description": "Runs commands on the runtime: privileged, and the runtime must opt in",
+            "title": "Local",
+            "type": "boolean"
+          },
+          "owner_group_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner Group Id"
+          },
+          "owner_group_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner Group Name"
+          },
+          "registry_name": {
+            "description": "The toolkit name on the runtime, level first (org-linear)",
+            "title": "Registry Name",
+            "type": "string"
+          },
+          "requires_confirmation_tools": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Requires Confirmation Tools",
+            "type": "array"
+          },
+          "same_as": {
+            "description": "Other entries you can use that offer the same tool",
+            "items": {
+              "$ref": "#/components/schemas/SameToolOut"
+            },
+            "title": "Same As",
+            "type": "array"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "active",
+              "disabled"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "toolkit_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Toolkit Key"
+          },
+          "transport": {
+            "anyOf": [
+              {
+                "enum": [
+                  "streamable-http",
+                  "sse",
+                  "stdio"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Transport"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "registry_name",
+          "level",
+          "level_label",
+          "owner_group_id",
+          "owner_group_name",
+          "display_name",
+          "description",
+          "icon",
+          "kind",
+          "transport",
+          "toolkit_key",
+          "config",
+          "requires_confirmation_tools",
+          "instance_ids",
+          "status",
+          "local",
+          "version",
+          "editable",
+          "same_as",
+          "created_by",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "EntryOut",
+        "type": "object"
+      },
+      "EntryPatch": {
+        "additionalProperties": false,
+        "description": "Name, level, kind and toolkit stay: the runtime knows the tool by them (add a new entry instead).",
+        "properties": {
+          "config": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Config"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "display_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name"
+          },
+          "icon": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Icon"
+          },
+          "instance_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instance Ids"
+          },
+          "requires_confirmation_tools": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requires Confirmation Tools"
+          },
+          "transport": {
+            "anyOf": [
+              {
+                "enum": [
+                  "streamable-http",
+                  "sse",
+                  "stdio"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Transport"
+          },
+          "version": {
+            "description": "Expected version (optimistic concurrency)",
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "version"
+        ],
+        "title": "EntryPatch",
         "type": "object"
       },
       "EnvTagName": {
@@ -13882,6 +14718,19 @@
         "title": "NotificationOut",
         "type": "object"
       },
+      "NudgeOut": {
+        "properties": {
+          "reached": {
+            "title": "Reached",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "reached"
+        ],
+        "title": "NudgeOut",
+        "type": "object"
+      },
       "ObjectLockMode": {
         "enum": [
           "off",
@@ -17516,6 +18365,17 @@
             "title": "Blurb",
             "type": "string"
           },
+          "catalog": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CatalogInfoOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Set for tools that come from the tool catalog"
+          },
           "code": {
             "anyOf": [
               {
@@ -18645,6 +19505,44 @@
           "total"
         ],
         "title": "RunsPageOut",
+        "type": "object"
+      },
+      "SameToolOut": {
+        "properties": {
+          "display_name": {
+            "title": "Display Name",
+            "type": "string"
+          },
+          "entry_id": {
+            "title": "Entry Id",
+            "type": "string"
+          },
+          "level": {
+            "enum": [
+              "org",
+              "team",
+              "custom"
+            ],
+            "title": "Level",
+            "type": "string"
+          },
+          "level_label": {
+            "title": "Level Label",
+            "type": "string"
+          },
+          "registry_name": {
+            "title": "Registry Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "entry_id",
+          "registry_name",
+          "level",
+          "level_label",
+          "display_name"
+        ],
+        "title": "SameToolOut",
         "type": "object"
       },
       "SamlSettingsOut": {
@@ -21936,6 +22834,99 @@
         "title": "SyncPolicyIO",
         "type": "object"
       },
+      "SyncStatusOut": {
+        "properties": {
+          "bridge": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BridgeReportOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "bridge_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bridge Version"
+          },
+          "entries": {
+            "title": "Entries",
+            "type": "integer"
+          },
+          "instance_id": {
+            "title": "Instance Id",
+            "type": "string"
+          },
+          "instance_name": {
+            "title": "Instance Name",
+            "type": "string"
+          },
+          "last_pulled_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Pulled At"
+          },
+          "reachable": {
+            "description": "The bridge answered for its tool catalog status",
+            "title": "Reachable",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "instance_id",
+          "instance_name",
+          "last_pulled_at",
+          "entries",
+          "bridge_version",
+          "reachable",
+          "bridge"
+        ],
+        "title": "SyncStatusOut",
+        "type": "object"
+      },
+      "SyncTokenOut": {
+        "properties": {
+          "env": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Set these on the runtime",
+            "title": "Env",
+            "type": "object"
+          },
+          "service_account": {
+            "title": "Service Account",
+            "type": "string"
+          },
+          "token": {
+            "description": "Shown once",
+            "title": "Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "token",
+          "service_account",
+          "env"
+        ],
+        "title": "SyncTokenOut",
+        "type": "object"
+      },
       "SystemFeatures": {
         "properties": {
           "features": {
@@ -22521,6 +23512,141 @@
           "detail"
         ],
         "title": "ToolCallOut",
+        "type": "object"
+      },
+      "ToolkitOut": {
+        "properties": {
+          "category": {
+            "title": "Category",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "extra": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The package the runtime needs for it",
+            "title": "Extra"
+          },
+          "importable": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The runtime can build it (from the runtime's own list)",
+            "title": "Importable"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "local": {
+            "title": "Local",
+            "type": "boolean"
+          },
+          "params": {
+            "items": {
+              "$ref": "#/components/schemas/ToolkitParamOut"
+            },
+            "title": "Params",
+            "type": "array"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "description",
+          "category",
+          "local",
+          "extra",
+          "params"
+        ],
+        "title": "ToolkitOut",
+        "type": "object"
+      },
+      "ToolkitParamOut": {
+        "properties": {
+          "choices": {
+            "items": {},
+            "title": "Choices",
+            "type": "array"
+          },
+          "default": {
+            "title": "Default"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "required": {
+            "title": "Required",
+            "type": "boolean"
+          },
+          "secret": {
+            "title": "Secret",
+            "type": "boolean"
+          },
+          "type": {
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "type",
+          "required",
+          "choices",
+          "secret",
+          "description"
+        ],
+        "title": "ToolkitParamOut",
+        "type": "object"
+      },
+      "ToolkitsOut": {
+        "properties": {
+          "agno_version": {
+            "title": "Agno Version",
+            "type": "string"
+          },
+          "from_instance": {
+            "description": "The instance's bridge answered with its own list",
+            "title": "From Instance",
+            "type": "boolean"
+          },
+          "toolkits": {
+            "items": {
+              "$ref": "#/components/schemas/ToolkitOut"
+            },
+            "title": "Toolkits",
+            "type": "array"
+          }
+        },
+        "required": [
+          "agno_version",
+          "from_instance",
+          "toolkits"
+        ],
+        "title": "ToolkitsOut",
         "type": "object"
       },
       "TotalsOut": {
@@ -42126,7 +43252,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ConnectionIn"
+                "$ref": "#/components/schemas/ConnectionPatchIn"
               }
             }
           },
@@ -42166,7 +43292,7 @@
             "description": "Server error"
           }
         },
-        "summary": "Change a connection (secrets only when given)",
+        "summary": "Change a connection (only the fields sent)",
         "tags": [
           "sources"
         ]
@@ -43050,6 +44176,829 @@
         "summary": "System overview: versions, job queues, cache, instance polling, backlogs",
         "tags": [
           "system"
+        ]
+      }
+    },
+    "/api/v1/tool-catalog/entries": {
+      "get": {
+        "operationId": "tool_catalog_list_entries",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "kind",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "mcp",
+                    "toolkit"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Kind"
+            }
+          },
+          {
+            "in": "query",
+            "name": "level",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "org",
+                    "team",
+                    "custom"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Level"
+            }
+          },
+          {
+            "description": "Only entries that apply to this instance",
+            "in": "query",
+            "name": "instance",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only entries that apply to this instance",
+              "title": "Instance"
+            }
+          },
+          {
+            "description": "Search the name and description",
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Search the name and description",
+              "title": "Q"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/EntryOut"
+                  },
+                  "title": "Response Tool Catalog List Entries",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Tool catalog entries you can see",
+        "tags": [
+          "tool_catalog"
+        ]
+      },
+      "post": {
+        "operationId": "tool_catalog_create_entry",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EntryIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntryOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Add an MCP server or toolkit",
+        "tags": [
+          "tool_catalog"
+        ]
+      }
+    },
+    "/api/v1/tool-catalog/entries/{entry_id}": {
+      "delete": {
+        "operationId": "tool_catalog_delete_entry",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "entry_id",
+            "required": true,
+            "schema": {
+              "title": "Entry Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Remove it even though components use it",
+            "in": "query",
+            "name": "force",
+            "required": false,
+            "schema": {
+              "default": false,
+              "description": "Remove it even though components use it",
+              "title": "Force",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Remove an entry",
+        "tags": [
+          "tool_catalog"
+        ]
+      },
+      "get": {
+        "operationId": "tool_catalog_get_entry",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "entry_id",
+            "required": true,
+            "schema": {
+              "title": "Entry Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntryOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "One entry",
+        "tags": [
+          "tool_catalog"
+        ]
+      },
+      "patch": {
+        "operationId": "tool_catalog_update_entry",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "entry_id",
+            "required": true,
+            "schema": {
+              "title": "Entry Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EntryPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntryOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Change an entry (name, level and kind stay)",
+        "tags": [
+          "tool_catalog"
+        ]
+      }
+    },
+    "/api/v1/tool-catalog/entries/{entry_id}/disable": {
+      "post": {
+        "operationId": "tool_catalog_disable_entry",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "entry_id",
+            "required": true,
+            "schema": {
+              "title": "Entry Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntryOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Stop offering the entry (runtimes drop it)",
+        "tags": [
+          "tool_catalog"
+        ]
+      }
+    },
+    "/api/v1/tool-catalog/entries/{entry_id}/discover": {
+      "post": {
+        "operationId": "tool_catalog_discover_tools",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "entry_id",
+            "required": true,
+            "schema": {
+              "title": "Entry Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "The instance whose runtime connects",
+            "in": "query",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "description": "The instance whose runtime connects",
+              "title": "Instance",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DiscoveredToolOut"
+                  },
+                  "title": "Response Tool Catalog Discover Tools",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "List the tools an MCP server offers, from an instance's runtime",
+        "tags": [
+          "tool_catalog"
+        ]
+      }
+    },
+    "/api/v1/tool-catalog/entries/{entry_id}/enable": {
+      "post": {
+        "operationId": "tool_catalog_enable_entry",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "entry_id",
+            "required": true,
+            "schema": {
+              "title": "Entry Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntryOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Offer the entry again",
+        "tags": [
+          "tool_catalog"
+        ]
+      }
+    },
+    "/api/v1/tool-catalog/instances/{instance}/status": {
+      "get": {
+        "operationId": "tool_catalog_sync_status",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncStatusOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "How an instance's runtime is doing with the catalog",
+        "tags": [
+          "tool_catalog"
+        ]
+      }
+    },
+    "/api/v1/tool-catalog/instances/{instance}/sync": {
+      "post": {
+        "operationId": "tool_catalog_nudge",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NudgeOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Ask the instance's runtime to pull the catalog now",
+        "tags": [
+          "tool_catalog"
+        ]
+      }
+    },
+    "/api/v1/tool-catalog/instances/{instance}/sync-token": {
+      "post": {
+        "operationId": "tool_catalog_sync_token",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncTokenOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Issue the token the instance's bridge pulls with (replaces the previous one)",
+        "tags": [
+          "tool_catalog"
+        ]
+      }
+    },
+    "/api/v1/tool-catalog/sync/{instance}/manifest": {
+      "get": {
+        "operationId": "tool_catalog_manifest",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "if-none-match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "If-None-Match"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "304": {
+            "description": "The bridge already has this version"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "The catalog for one instance, as its bridge pulls it",
+        "tags": [
+          "tool_catalog"
+        ]
+      }
+    },
+    "/api/v1/tool-catalog/toolkits": {
+      "get": {
+        "operationId": "tool_catalog_list_toolkits",
+        "parameters": [
+          {
+            "description": "Ask this instance's runtime for its own list",
+            "in": "query",
+            "name": "instance",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Ask this instance's runtime for its own list",
+              "title": "Instance"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolkitsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Agno toolkits an entry can name",
+        "tags": [
+          "tool_catalog"
         ]
       }
     },

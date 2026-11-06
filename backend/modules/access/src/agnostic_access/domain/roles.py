@@ -178,7 +178,17 @@ def org_role_scopes(org_role: str, control_plane_scopes: Iterable[str]) -> froze
         return every - {"os:delete", "os:keys:rotate", "org:delete", "org:system:manage"}
     if org_role == "member":
         return (
-            frozenset({"org:read", "os:read", "org:members:read", "org:roles:read", "settings:read", "assistant:use"})
+            frozenset(
+                {
+                    "org:read",
+                    "os:read",
+                    "org:members:read",
+                    "org:roles:read",
+                    "settings:read",
+                    "assistant:use",
+                    "tool_catalog:read",
+                }
+            )
             & every
         )
     return frozenset()

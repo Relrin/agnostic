@@ -14,12 +14,23 @@ Where the routes go, and why:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+from typing import TYPE_CHECKING, Any
 
 from fastapi import APIRouter, Request
 from starlette.routing import BaseRoute, Mount
 
 from agnostic_bridge._capabilities import BridgeCapabilities, build_capabilities, default_replica_id
+from agnostic_bridge._catalog import (
+    PROBE_PATH,
+    STATUS_PATH,
+    SYNC_PATH,
+    TOOLKITS_PATH,
+    CatalogHolder,
+    ToolCatalogConfig,
+    add_catalog_routes,
+)
 from agnostic_bridge._cel import EVALUATE_CEL_PATH, add_cel_routes
 from agnostic_bridge._components import NORMALIZE_PATH, VALIDATE_PATH, add_component_routes
 from agnostic_bridge._evals import RUN_EVAL_PATH, add_eval_routes
@@ -48,13 +59,26 @@ SCOPE_MAPPINGS: dict[str, list[str]] = {
     f"GET {BRIDGE_PREFIX}{INTROSPECT_COMPONENTS_PATH}": ["components:read"],
     f"GET {BRIDGE_PREFIX}{REGISTRY_SOURCE_PATH}": ["registry:read"],
     f"POST {BRIDGE_PREFIX}{EVALUATE_CEL_PATH}": ["components:read"],
+    f"GET {BRIDGE_PREFIX}{STATUS_PATH}": ["registry:read"],
+    f"POST {BRIDGE_PREFIX}{SYNC_PATH}": ["config:write"],
+    # Admin: probing connects to a server from this runtime with the runtime's credentials.
+    f"POST {BRIDGE_PREFIX}{PROBE_PATH}": ["agent_os:admin"],
+    f"GET {BRIDGE_PREFIX}{TOOLKITS_PATH}": ["registry:read"],
 }
 
 
-def create_router(agent_os: AgentOS, *, replica_id: str | None = None, include_in_schema: bool = True) -> APIRouter:
+def create_router(
+    agent_os: AgentOS,
+    *,
+    replica_id: str | None = None,
+    include_in_schema: bool = True,
+    catalog: CatalogHolder | None = None,
+) -> APIRouter:
     """The bridge routes as a router. :func:`install` is the usual entry point; use this to include the routes
-    yourself (then also merge :data:`SCOPE_MAPPINGS` into ``app.state.scope_mappings`` after ``get_app()``)."""
+    yourself (then also merge :data:`SCOPE_MAPPINGS` into ``app.state.scope_mappings`` after ``get_app()``, and
+    run ``catalog.lifespan()`` inside the app's lifespan when the tool catalog is on)."""
     replica = replica_id or default_replica_id()
+    holder = catalog or CatalogHolder(agent_os, None, replica)
     endpoints = sorted(SCOPE_MAPPINGS)
     router = APIRouter(prefix=BRIDGE_PREFIX, tags=["Agnostic bridge"], include_in_schema=include_in_schema)
 
@@ -66,7 +90,7 @@ def create_router(agent_os: AgentOS, *, replica_id: str | None = None, include_i
         response_model=BridgeCapabilities,
     )
     async def get_capabilities(request: Request) -> BridgeCapabilities:
-        return build_capabilities(agent_os, request.app, replica, endpoints)
+        return build_capabilities(agent_os, request.app, replica, endpoints, catalog=holder)
 
     add_eval_routes(router, agent_os)
     add_file_routes(router, agent_os)
@@ -75,10 +99,17 @@ def create_router(agent_os: AgentOS, *, replica_id: str | None = None, include_i
     add_component_routes(router, agent_os)
     add_introspect_routes(router, agent_os)
     add_cel_routes(router, agent_os)
+    add_catalog_routes(router, holder)
     return router
 
 
-def install(agent_os: AgentOS, *, replica_id: str | None = None, include_in_schema: bool = True) -> FastAPI:
+def install(
+    agent_os: AgentOS,
+    *,
+    replica_id: str | None = None,
+    include_in_schema: bool = True,
+    tool_catalog: ToolCatalogConfig | None = None,
+) -> FastAPI:
     """Build the AgentOS app (``agent_os.get_app()``), add the bridge routes and their scopes, and return the app.
 
     Serve the returned app; don't call ``get_app()`` again afterwards (without a ``base_app`` that builds a new app
@@ -89,9 +120,14 @@ def install(agent_os: AgentOS, *, replica_id: str | None = None, include_in_sche
         replica_id: identifies this process in ``/capabilities`` and ``/workers``; defaults to
             ``AGNOSTIC_BRIDGE_REPLICA_ID`` or ``<hostname>:<pid>``.
         include_in_schema: list the bridge routes in the app's OpenAPI document.
+        tool_catalog: pull the control plane's tool catalog and register its entries; defaults to
+            :meth:`ToolCatalogConfig.from_env` (off unless ``AGNOSTIC_CONTROL_PLANE_URL``,
+            ``AGNOSTIC_INSTANCE_ID`` and ``AGNOSTIC_TOOL_CATALOG_TOKEN`` are set).
     """
     app = agent_os.get_app()
-    router = create_router(agent_os, replica_id=replica_id, include_in_schema=include_in_schema)
+    replica = replica_id or default_replica_id()
+    holder = CatalogHolder(agent_os, tool_catalog or ToolCatalogConfig.from_env(), replica)
+    router = create_router(agent_os, replica_id=replica, include_in_schema=include_in_schema, catalog=holder)
 
     existing = {id(route) for route in app.router.routes}
     app.include_router(router)
@@ -104,8 +140,23 @@ def install(agent_os: AgentOS, *, replica_id: str | None = None, include_in_sche
     else:  # get_app() always sets it in 3.1.x; keep the table discoverable if a later agno stops doing so
         app.state.scope_mappings = dict(SCOPE_MAPPINGS)
 
+    _wrap_lifespan(app, holder)
     app.openapi_schema = None  # drop a cached document so /openapi.json lists the new routes
     return app
+
+
+def _wrap_lifespan(app: FastAPI, holder: CatalogHolder) -> None:
+    """Run the tool catalog puller inside the app's lifespan, after AgentOS's own (MCP connects, db)."""
+    if holder.config is None:
+        return
+    inner = app.router.lifespan_context
+
+    @asynccontextmanager
+    async def lifespan(app_: Any) -> AsyncIterator[Any]:
+        async with inner(app_) as state, holder.lifespan():
+            yield state
+
+    app.router.lifespan_context = lifespan
 
 
 def _move_ahead_of_mounts(routes: list[BaseRoute], added: list[BaseRoute]) -> None:

@@ -18,24 +18,39 @@ from agnostic_kernel.db import utcnow
 from agnostic_kernel.errors import ConflictError, NotFoundError, ValidationFailedError, VersionConflictError
 from agnostic_spec.v3_1 import parse, shape_errors
 from agnostic_studio.application.access import CONFLICT, NOT_FOUND, StudioAccess, detail, raise_for
+from agnostic_studio.application.catalog import UsedByIndex
 from agnostic_studio.application.components import Reader, component_of, version_of
-from agnostic_studio.application.ports import NoPublishHold, PublishHold, StudioStore
+from agnostic_studio.application.ports import (
+    CatalogTool,
+    NoPublishHold,
+    NoToolCatalog,
+    PublishHold,
+    StudioStore,
+    ToolCatalogLookup,
+)
 from agnostic_studio.application.publishing import PUBLISHED_EVENT
-from agnostic_studio.application.source import SourceCode
+from agnostic_studio.application.source import SourceCode, config_hash
 from agnostic_studio.domain.diff import diff
 from agnostic_studio.domain.model import ComponentMeta, EditableKind, HoldCheck, Kind, VersionMeta, latest, open_draft
+from agnostic_studio.domain.registry import CatalogInfo
 from agnostic_studio.domain.summaries import change_summary
+from agnostic_studio.domain.usage import UsedBy
 
 __all__ = [
     "PUBLISHED_EVENT",
+    "CatalogInfo",
+    "CatalogTool",
     "ComponentState",
     "DraftCreated",
     "HoldCheck",
     "NoPublishHold",
+    "NoToolCatalog",
     "PublishHold",
     "RepositoryDraft",
     "StudioFacade",
     "StudioFacadeImpl",
+    "ToolCatalogLookup",
+    "UsedBy",
     "VersionSnapshot",
 ]
 
@@ -62,7 +77,8 @@ class VersionSnapshot:
     stage: str
     config: dict[str, Any]
     code: str | None
-    """The draft's own code when it is code-backed."""
+    """The draft's own code when it is code-backed and still reads as ``config`` (``None`` once the config was saved
+    without it, so a caller never writes code that says an older config)."""
     author_id: str | None
     author_name: str | None
     updated_at: datetime | None
@@ -150,6 +166,10 @@ class StudioFacade(Protocol):
         """Record (or with ``binding_id=None`` clear) the repository file the component is synced with."""
         ...
 
+    async def used_by(self, instance: Instance, entry_type: str, name: str) -> list[UsedBy]:
+        """Components (stored drafts and versions, and code) that use a registry entry, as the control plane."""
+        ...
+
 
 class StudioFacadeImpl:
     def __init__(self, access: StudioAccess, store: StudioStore, source: SourceCode, audit: AuditLog) -> None:
@@ -210,12 +230,14 @@ class StudioFacadeImpl:
         stored = await self._reader.version(principal, instance, component_id, version)
         meta = await self._store.version_meta(instance.id, component_id, version)
         document = await self._store.code_document(instance.id, component_id, version)
+        config = dict(stored.config or {})
+        current = document is not None and document.config_hash == config_hash(config)
         return VersionSnapshot(
             component_id=component_id,
             version=version,
             stage=stored.stage,
-            config=dict(stored.config or {}),
-            code=document.code if document is not None else None,
+            config=config,
+            code=document.code if document is not None and current else None,
             author_id=(meta.updated_by or meta.author_id) if meta else None,
             author_name=(meta.updated_by_name or meta.author_name) if meta else None,
             updated_at=(meta.updated_at if meta else None) or stored.updated_at or stored.created_at,
@@ -382,3 +404,7 @@ class StudioFacadeImpl:
             )
         )
         await self._store.commit()
+
+    async def used_by(self, instance: Instance, entry_type: str, name: str) -> list[UsedBy]:
+        index = await UsedByIndex(self._access, self._store).ensure(instance)
+        return index.get((entry_type, name), [])

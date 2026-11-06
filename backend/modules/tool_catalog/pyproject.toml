@@ -1,0 +1,41 @@
+[project]
+name = "agnostic-tool-catalog"
+version = "0.1.0"
+description = "Tool catalog: approved MCP servers and Agno toolkits at org, team and custom level, pulled by each runtime's bridge"
+requires-python = "==3.15.*"
+license = "BSD-3-Clause"
+dependencies = [
+  "agnostic-access",
+  "agnostic-agentos-client",
+  "agnostic-audit",
+  "agnostic-directory",
+  "agnostic-instances",
+  "agnostic-kernel",
+  "agnostic-service-accounts",
+  "agnostic-spec",
+  "agnostic-studio",
+  "alembic==1.20.1",
+  "dishka==1.10.1",
+  "fastapi==0.162.0",
+  "procrastinate==3.10.0",
+  "pydantic==2.14.2",
+  "sqlalchemy[asyncio]==2.1.6",
+]
+
+[project.entry-points."agnostic.modules"]
+tool_catalog = "agnostic_tool_catalog.module:ToolCatalogModule"
+
+[tool.uv.sources]
+agnostic-access = { workspace = true }
+agnostic-agentos-client = { workspace = true }
+agnostic-audit = { workspace = true }
+agnostic-directory = { workspace = true }
+agnostic-instances = { workspace = true }
+agnostic-kernel = { workspace = true }
+agnostic-service-accounts = { workspace = true }
+agnostic-spec = { workspace = true }
+agnostic-studio = { workspace = true }
+
+[build-system]
+requires = ["uv_build==0.13.6"]
+build-backend = "uv_build"

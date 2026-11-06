@@ -37,6 +37,7 @@ import {
 } from "./config";
 import type { FieldInfo, Section } from "./document";
 import { sectionSummary } from "./summaries";
+import { ToolCard, ToolPicker } from "./tool-blocks";
 
 const OPEN_BY_DEFAULT = new Set(["model", "instructions", "tools", "team", "members"]);
 const REF_KEYS: Record<string, string> = {
@@ -65,6 +66,8 @@ export type FormContext = {
     find: (type: string, name: string) => RegistryEntryOut | undefined;
   };
   readOnly?: boolean | undefined;
+  /** The instance the component is on (the tool picker sets custom tools up for it). */
+  instance?: string | undefined;
   /** Fields set in code in a way the form can't edit: shown read-only with a way to the code. */
   isCodeOwned?: ((path: string) => boolean) | undefined;
   onEditInCode?: ((path: string) => void) | undefined;
@@ -323,74 +326,41 @@ function toolKey(tool: ToolEntry): string {
 function ToolsField({ name, ctx }: { name: string; ctx: FormContext }) {
   const attached = tools(ctx.config);
   const [adding, setAdding] = useState(false);
-  const available = ctx.registry
-    .byType("tool")
-    .filter((entry) => entry.studio_available && !attached.some((tool) => toolKey(tool) === entry.name));
+  const all = ctx.registry.byType("tool");
+  const available = all.filter((entry) => !attached.some((tool) => toolKey(tool) === entry.name));
   const groups = [...new Set(attached.map(toolKey))];
   return (
     <div className="flex flex-col gap-2">
-      <ul className="flex flex-wrap gap-1.5" aria-label="Attached tools">
+      <ul className="flex flex-wrap gap-2" aria-label="Attached tools">
         {groups.map((group) => {
           const index = attached.findIndex((tool) => toolKey(tool) === group);
+          const members = attached.filter((tool) => toolKey(tool) === group);
           const first = attached[index];
-          const approval = attached.some((tool) => toolKey(tool) === group && needsApproval(tool));
+          const approval = members.some(needsApproval);
           const entry = ctx.registry.find("tool", group);
           const path = `${name}[${String(index)}]`;
           return (
-            <li
+            <ToolCard
               key={group}
-              className={cn(
-                "inline-flex h-7 items-center gap-1.5 rounded-[7px] border bg-surface pr-1 pl-2 font-mono text-[12px]",
-                approval ? "border-warning/45" : "border-border-input",
-                !entry && "border-danger/45",
-              )}
-            >
-              {first?.toolkit ?? first?.name}
-              {approval && <span className="font-sans text-[10.5px] text-warning">needs approval</span>}
-              {!entry && <span className="font-sans text-[10.5px] text-danger">not registered</span>}
-              <LineLink path={path} ctx={ctx} />
-              {!ctx.readOnly && (
-                <Button
-                  variant="icon"
-                  size="28"
-                  className="size-5"
-                  aria-label={`Remove ${group}`}
-                  onClick={() => {
-                    const next = attached.filter((tool) => toolKey(tool) !== group);
-                    ctx.onChange((config) => withField(config, name, next.length ? next : undefined));
-                  }}
-                >
-                  <X aria-hidden />
-                </Button>
-              )}
-            </li>
+              name={first?.toolkit ?? first?.name ?? group}
+              entry={entry}
+              functions={first?.toolkit ? members.length : 0}
+              approval={approval}
+              lineLink={<LineLink path={path} ctx={ctx} />}
+              onRemove={
+                ctx.readOnly
+                  ? undefined
+                  : () => {
+                      const next = attached.filter((tool) => toolKey(tool) !== group);
+                      ctx.onChange((config) => withField(config, name, next.length ? next : undefined));
+                    }
+              }
+            />
           );
         })}
       </ul>
-      {!ctx.readOnly &&
-        (adding ? (
-          <Combobox
-            aria-label="Add a tool from the registry"
-            mono
-            value={undefined}
-            placeholder="Pick a tool"
-            searchPlaceholder="Search tools…"
-            emptyText="Every registered tool is attached already."
-            group="From Registry"
-            options={available.map((entry) => ({
-              value: entry.name,
-              label: entry.name,
-              hint: entry.requires_approval ? "needs approval" : entry.meta,
-            }))}
-            onValueChange={(picked) => {
-              const entry = available.find((item) => item.name === picked);
-              setAdding(false);
-              if (!entry || !Array.isArray(entry.config_value)) return;
-              const added = entry.config_value as ToolEntry[];
-              ctx.onChange((config) => withField(config, name, [...tools(config), ...added]));
-            }}
-          />
-        ) : (
+      {!ctx.readOnly && (
+        <>
           <Button
             variant="dashed-add"
             size="28"
@@ -400,9 +370,22 @@ function ToolsField({ name, ctx }: { name: string; ctx: FormContext }) {
             }}
           >
             <Plus aria-hidden />
-            Add from Registry
+            Add a tool
           </Button>
-        ))}
+          <ToolPicker
+            open={adding}
+            onOpenChange={setAdding}
+            instance={ctx.instance}
+            available={available}
+            offered={all.filter((entry) => entry.catalog)}
+            onPick={(entry) => {
+              if (!Array.isArray(entry.config_value)) return;
+              const added = entry.config_value as ToolEntry[];
+              ctx.onChange((config) => withField(config, name, [...tools(config), ...added]));
+            }}
+          />
+        </>
+      )}
     </div>
   );
 }

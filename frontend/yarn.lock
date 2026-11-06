@@ -680,6 +680,26 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@agnostic/module-tool-catalog@workspace:*, @agnostic/module-tool-catalog@workspace:modules/tool-catalog":
+  version: 0.0.0-use.local
+  resolution: "@agnostic/module-tool-catalog@workspace:modules/tool-catalog"
+  dependencies:
+    "@agnostic/api": "workspace:*"
+    "@agnostic/core": "workspace:*"
+    "@agnostic/testing": "workspace:*"
+    "@agnostic/ui": "workspace:*"
+    "@tanstack/react-query": "npm:5.105.0"
+    "@tanstack/react-router": "npm:1.170.46"
+    "@testing-library/jest-dom": "npm:7.0.1"
+    lucide-react: "npm:1.65.0"
+    msw: "npm:3.0.3"
+    react: "npm:19.3.1"
+    react-dom: "npm:19.3.1"
+  peerDependencies:
+    react: 19.3.1
+  languageName: unknown
+  linkType: soft
+
 "@agnostic/module-traces@workspace:*, @agnostic/module-traces@workspace:modules/traces":
   version: 0.0.0-use.local
   resolution: "@agnostic/module-traces@workspace:modules/traces"
@@ -816,6 +836,7 @@ __metadata:
     "@agnostic/module-studio-teams": "workspace:*"
     "@agnostic/module-studio-workflows": "workspace:*"
     "@agnostic/module-system": "workspace:*"
+    "@agnostic/module-tool-catalog": "workspace:*"
     "@agnostic/module-traces": "workspace:*"
     "@agnostic/testing": "workspace:*"
     "@agnostic/ui": "workspace:*"

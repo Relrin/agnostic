@@ -163,6 +163,7 @@ export function StudioEditor({
         focusedPath,
         onFocusPath: setFocusedPath,
         registry,
+        instance,
         readOnly: canWrite.allowed !== true,
         isCodeOwned: (path: string) =>
           doc.source.codeOwned.some((owned) => path === owned || path.startsWith(`${owned}.`)),

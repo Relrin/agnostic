@@ -4,7 +4,7 @@
 import { ticketRouter } from "@agnostic/testing";
 import { describe, expect, it } from "vitest";
 
-import { END, START, buildFlowGraph, celLines, layoutKey, portTypesOf, rowsOf } from "./graph";
+import { END, START, buildFlowGraph, celLines, layoutKey, portTypesOf, rowsOf, toolChip } from "./graph";
 
 describe("the flow graph", () => {
   const graph = buildFlowGraph(ticketRouter(), { inputLabel: "input" });
@@ -96,7 +96,12 @@ describe("the flow graph", () => {
     }));
     expect(rows).toContainEqual({ kind: "desc", text: "Agent · support-triage" });
     expect(rows).toContainEqual({ kind: "field", label: "Model", value: "claude-opus-5-5" });
-    expect(rows).toContainEqual({ kind: "field", label: "Tools", value: "kb_lookup, zendesk_search" });
+    expect(rows).toContainEqual({
+      kind: "chips",
+      label: "Tools",
+      items: [{ label: "kb_lookup" }, { label: "zendesk_search" }],
+    });
+    expect(toolChip("team-data-search")).toEqual({ label: "team-data-search", tone: "team" });
     expect(celLines('input.contains("a || b") || input.contains("c") ? "Billing" : "Other"')).toEqual([
       'input.contains("a || b")',
       '|| input.contains("c")',

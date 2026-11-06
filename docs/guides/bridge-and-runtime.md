@@ -50,6 +50,33 @@ agent_os = AgentOS(..., authorization=Authorization(..., audit=True),
                    cors=direct_mode_cors(["https://agnostic.example.com"]))
 ```
 
+### The tool catalog
+
+Approved MCP servers and Agno toolkits from the control plane's tool catalog (*Access › Tool catalog*) reach a runtime
+through its bridge: it pulls the entries for its instance, builds them and adds them to the registry, where Studio
+lists them as tool blocks. It is off until these are set on the runtime; *Tool catalog › Instances › Set up sync*
+shows them, with a token that only reads this instance's catalog:
+
+| Variable | Meaning |
+|---|---|
+| `AGNOSTIC_CONTROL_PLANE_URL` | The control plane's public URL (the runtime must reach it). |
+| `AGNOSTIC_INSTANCE_ID` | This instance's id in the control plane. |
+| `AGNOSTIC_TOOL_CATALOG_TOKEN` | The sync token (`agn_pat_…`, scope `tool_catalog:sync` on this instance). |
+| `AGNOSTIC_TOOL_CATALOG_ENV` | The environment variables catalog entries may read, comma-separated (`LINEAR_TOKEN,GITHUB_*`). None by default; `AGNOSTIC_*` never. |
+| `AGNOSTIC_TOOL_CATALOG_INTERVAL` | Seconds between pulls (default 60, at least 10). The control plane also asks for a pull after a change. |
+| `AGNOSTIC_TOOL_CATALOG_ALLOW_LOCAL` | `true` to build tools that run commands here: stdio MCP servers and the shell, python, file and docker toolkits. Off by default. |
+| `AGNOSTIC_TOOL_CATALOG_LOCAL_COMMANDS` | Commands stdio servers may start (default `npx,uvx`). |
+| `AGNOSTIC_TOOL_CATALOG_CACHE` | A file for the last good catalog, so a restart builds the tools while the control plane is away. |
+| `AGNOSTIC_CONTROL_PLANE_CA_BUNDLE` | A CA bundle for the control plane's certificate. |
+
+Entries never carry secrets: a credential is the name of an environment variable the runtime reads (an entry with
+`Authorization: {"env": "LINEAR_TOKEN"}` needs `LINEAR_TOKEN` set here and listed in `AGNOSTIC_TOOL_CATALOG_ENV`).
+The list is what keeps an entry from sending any other variable of the runtime to a server of its choosing. Stdio
+servers get only the variables their entry names, plus `PATH`, `HOME` and the like. Each entry's state (`connected`,
+`missing_env`, `stdio_disabled`, `failed`, `conflict`) shows on the instance's catalog status and on its Studio block.
+Toolkits that need a package (`ddgs`, `pygithub`, …) must be installed in the runtime's image. The design is in
+[ADR-034](../adr/0034-tool-catalog-pulled-by-the-bridge.md).
+
 ## The runtime template
 
 `agnostic-runtime` is the reference AgentOS app: sample agents, teams and workflows, a sync `PostgresDb` (Studio
