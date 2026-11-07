@@ -1,6 +1,6 @@
 // A connection between two ports: a curve in its port type's colour, brighter when it touches the selected node or
-// carries the test run, with a "+" in the middle that inserts a step there (click it, or drop a palette item or a
-// step's grip on it).
+// carries the test run, with a "+" in the middle that inserts a step there (click it, or drop a palette item on
+// it).
 import { InsertButton, PORT_TYPES, type PortType } from "@agnostic/ui";
 import { BaseEdge, EdgeLabelRenderer, getBezierPath, type Edge, type EdgeProps } from "@xyflow/react";
 

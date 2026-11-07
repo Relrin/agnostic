@@ -40,6 +40,8 @@ export type Actions = {
   wrap: (path: string, type: Exclude<NodeType, "Step">) => void;
   unwrap: (path: string) => void;
   copy: (path: string) => void;
+  /** Copy a step and remove it, to paste it somewhere else. */
+  cut: (path: string) => void;
   paste: (slot: Slot) => void;
   undo: () => void;
   redo: () => void;
@@ -159,6 +161,18 @@ export function useActions(doc: DraftDocument, store: BuilderStore, readOnly: bo
         const node = nodeAt(doc.config, path);
         store.getState().copy(node);
         if (node) toast.success(`Copied ${nodeName(node) || "the step"}.`);
+      },
+      cut: (path) => {
+        const node = nodeAt(doc.config, path);
+        if (!node) return;
+        store.getState().copy(node);
+        const name = nodeName(node);
+        run(`Cut ${name || "step"}`, (config) => {
+          removeNode(config, path);
+        });
+        select(undefined);
+        store.getState().pick([]);
+        toast(`Cut ${name || "the step"}: select where it goes and press Ctrl+V.`);
       },
       paste: (slot) => {
         const copied = store.getState().clipboard;

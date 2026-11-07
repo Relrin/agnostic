@@ -14,10 +14,10 @@ import {
   type WorkflowNodeStatus,
 } from "@agnostic/ui";
 import { Handle, NodeToolbar, Position, type Node, type NodeProps } from "@xyflow/react";
-import { Eye, GripVertical, Plus, X } from "lucide-react";
+import { Eye, Plus, X } from "lucide-react";
 import { memo, useCallback, useState, type CSSProperties, type DragEvent } from "react";
 
-import { DRAG_TYPE, readDragItem, useBuilderContext, type DragItem } from "./context";
+import { readDragItem, useBuilderContext } from "./context";
 import { useBuilder } from "./history";
 import type { Note } from "./notes";
 import type { StepResult } from "./run-test";
@@ -87,27 +87,6 @@ function Port({
 /** A quiet handle where a drop zone meets its connections. */
 const HIDDEN = { width: 1, height: 1, minWidth: 1, minHeight: 1, border: 0, background: "transparent" };
 
-/** Drag a node by its grip to move it somewhere else in the tree (onto a "+" or a drop zone). */
-function Grip({ path, className }: { path: string; className?: string }) {
-  const { readOnly } = useBuilderContext();
-  if (readOnly) return null;
-  return (
-    <span
-      draggable
-      role="button"
-      tabIndex={-1}
-      aria-label="Drag to move this step"
-      className={`nodrag absolute cursor-grab text-fg-faint opacity-0 transition-opacity group-hover/node:opacity-100 hover:text-fg-secondary ${className ?? ""}`}
-      onDragStart={(event) => {
-        event.dataTransfer.setData(DRAG_TYPE, JSON.stringify({ move: path } satisfies DragItem));
-        event.dataTransfer.effectAllowed = "move";
-      }}
-    >
-      <GripVertical aria-hidden className="size-4" />
-    </span>
-  );
-}
-
 function OutputPopover({
   title,
   result,
@@ -167,7 +146,6 @@ export const ComponentView = memo(function ComponentView({ data }: NodeProps<Com
   );
   return (
     <div className="group/node relative" data-path={data.path}>
-      <Grip path={data.path} className="top-3 -left-6" />
       <FlowNodeFrame
         type={data.type}
         executor={data.executor}
@@ -227,7 +205,6 @@ export const GroupView = memo(function GroupView({ data, width, height }: NodePr
   );
   return (
     <div className="group/node relative" data-path={data.path}>
-      <Grip path={data.path} className="top-3 -left-6" />
       <GroupFrame
         type={data.type}
         title={data.title}

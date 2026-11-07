@@ -409,7 +409,7 @@ export function FlowNodeFrame({
       className={cn(
         "rounded-card border bg-surface-raised shadow-[0_8px_22px_rgb(0_0_0/0.35)] transition-[border-color,box-shadow]",
         selected
-          ? "border-accent shadow-[0_0_0_3px_rgb(197_242_92/0.18),0_10px_28px_rgb(0_0_0/0.45)]"
+          ? "border-accent shadow-[0_10px_28px_rgb(0_0_0/0.45)] outline-[2.5px] outline-offset-[-1.5px] outline-accent"
           : "border-border-input hover:border-border-dashed",
         status === "running" && !selected && "border-info shadow-[0_0_0_3px_rgb(125_166_255/0.25)]",
         status === "failed" && !selected && "border-danger",
@@ -508,14 +508,15 @@ export function GroupFrame({
       data-slot="group-frame"
       data-status={status}
       className={cn(
-        "relative rounded-panel border-[1.5px] border-dashed",
-        status === "running" && "ring-[3px] ring-info/30",
+        "relative rounded-panel border-[1.5px] transition-[border-color,box-shadow]",
+        selected ? "border-solid outline-[2.5px] outline-offset-[-2px] outline-accent" : "border-dashed",
+        status === "running" && !selected && "ring-[3px] ring-info/30",
       )}
       style={{
         width,
         height,
         borderColor: selected ? "var(--accent)" : tint(color, 0.7),
-        backgroundColor: tint(color, 0.05),
+        backgroundColor: tint(color, selected ? 0.09 : 0.05),
       }}
     >
       <div className="relative flex items-center gap-2 px-3.5" style={{ height: GROUP_HEADER }}>

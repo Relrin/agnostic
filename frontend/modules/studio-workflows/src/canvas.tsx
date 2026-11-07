@@ -1,7 +1,7 @@
 // The workflow canvas: React Flow drawing the flow graph that layout.ts placed, left to right. The workflow's
 // input, its components with their typed ports, groups holding their steps, Router choices and Condition branches
-// leaving from their own ports, and the output; a "+" on every connection (click it, or drop a palette item or a
-// step's grip on it) and drops on empty space append a step. Sticky notes, the port legend, zoom controls and a
+// leaving from their own ports, and the output; a "+" on every connection (click it, or drop a palette item on
+// it) and drops on empty space append a step. Sticky notes, the port legend, zoom controls and a
 // minimap sit over it, and the test run lights nodes and connections up as it goes.
 //
 // Every node moves freely, the workflow's input and output included; a step moved inside a group stays in it and
@@ -10,8 +10,8 @@
 // the picked nodes move together, and the selection bar aligns, distributes, snaps them to the grid or deletes them.
 //
 // Keyboard: arrows move between steps, Enter opens the inspector, Delete removes the selection (with undo),
-// Ctrl+A picks every node, Escape lets go, Ctrl+C / Ctrl+V copy and paste a subtree, Ctrl+Z / Ctrl+Shift+Z undo
-// and redo.
+// Ctrl+A picks every node, Escape lets go, Ctrl+C / Ctrl+X / Ctrl+V copy, cut and paste a subtree (cut and paste
+// moves a step to another place in the workflow), Ctrl+Z / Ctrl+Shift+Z undo and redo.
 import type { Config } from "@agnostic/studio";
 import { Button, NODE_COLORS, PortLegend, toast, tokens, type WorkflowNodeStatus } from "@agnostic/ui";
 import {
@@ -147,7 +147,7 @@ function isStep(id: string): boolean {
 }
 
 /** The ring around a picked input, output or note (steps show it on their own frame). */
-const PICKED_RING = "rounded-card outline-2 outline-offset-4 outline-accent";
+const PICKED_RING = "rounded-card outline-[2.5px] outline-offset-[-1.5px] outline-accent";
 
 /** The smallest drag that draws a selection rectangle, in screen pixels. */
 const MARQUEE_MIN = 4;
@@ -878,6 +878,12 @@ export function WorkflowCanvas(props: CanvasProps) {
     if (command && event.key.toLowerCase() === "c" && selected) {
       event.preventDefault();
       actions.copy(selected);
+      return;
+    }
+    if (command && event.key.toLowerCase() === "x" && selected && !readOnly) {
+      event.preventDefault();
+      actions.cut(selected);
+      refocus();
       return;
     }
     if (command && event.key.toLowerCase() === "v") {
