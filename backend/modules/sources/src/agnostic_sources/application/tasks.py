@@ -13,6 +13,7 @@ PULL_TASK = "sources.pull_as_drafts"
 PREPARE_TASK = "sources.prepare_outgoing"
 COMMIT_TASK = "sources.commit_and_pr"
 REFRESH_TASK = "sources.refresh_pr_status"
+WRITE_BACK_TASK = "sources.write_back"
 FETCH_ALL_TASK = "sources.fetch_all"
 REFRESH_ALL_TASK = "sources.refresh_all_pr_status"
 GC_TASK = "sources.gc"
@@ -62,6 +63,27 @@ class SourceJobs:
             source_id=source_id,
             change_ids=list(change_ids),
             message=message,
+            actor_id=actor_id,
+            actor_name=actor_name,
+            actor_email=actor_email,
+        )
+
+    async def write_back(
+        self,
+        source_id: str,
+        component_id: str,
+        version: int,
+        actor_id: str | None,
+        actor_name: str,
+        actor_email: str | None,
+    ) -> int:
+        """Write a published version back to the source (after a publish)."""
+        return await self._queue.defer(
+            WRITE_BACK_TASK,
+            lock=lock(source_id),
+            source_id=source_id,
+            component_id=component_id,
+            version=version,
             actor_id=actor_id,
             actor_name=actor_name,
             actor_email=actor_email,

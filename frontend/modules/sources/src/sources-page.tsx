@@ -549,8 +549,21 @@ function IncomingSection({
   });
   const pullable = changes.filter(
     (change) =>
-      change.included && (change.outcome.action === "new_draft" || change.outcome.action === "new_component"),
+      change.included &&
+      (change.outcome.action === "new_draft" ||
+        change.outcome.action === "new_component" ||
+        change.outcome.action === "removed"),
   );
+  const unbinding = pullable.filter((change) => change.outcome.action === "removed").length;
+  const drafting = pullable.length - unbinding;
+  const pullLabel = [
+    drafting || !unbinding ? `Pull ${String(drafting)} as draft${drafting === 1 ? "" : "s"}` : "",
+    unbinding
+      ? `${drafting ? "s" : "S"}top syncing ${String(unbinding)} removed file${unbinding === 1 ? "" : "s"}`
+      : "",
+  ]
+    .filter(Boolean)
+    .join(", ");
   const pull = useMutation({
     mutationFn: async () =>
       (
@@ -562,8 +575,11 @@ function IncomingSection({
       ).data,
     onSuccess: (results) => {
       const done = results.filter((result) => typeof result.version === "number");
+      const unbound = results.length - done.length - results.filter((result) => result.error).length;
       if (done.length)
         toast.success(`Pulled ${String(done.length)} as draft${done.length === 1 ? "" : "s"}.`);
+      if (unbound > 0)
+        toast.success(`Stopped syncing ${String(unbound)} removed file${unbound === 1 ? "" : "s"}.`);
       for (const result of results) if (result.error) toast.error(`${result.path}: ${result.error}`);
       refresh();
     },
@@ -585,7 +601,7 @@ function IncomingSection({
             }}
           >
             <ArrowDown aria-hidden />
-            {`Pull ${String(pullable.length)} as draft${pullable.length === 1 ? "" : "s"}`}
+            {pullLabel}
           </Button>
         )}
       </header>

@@ -603,6 +603,200 @@ async def source_status(owner: httpx.AsyncClient, source: str, status: str) -> d
     return card if card["status"] == status else None
 
 
+async def fetched(here: World, head: str) -> None:
+    """Fetch now and wait until the source has read ``head``."""
+    assert (await here.owner.post(f"{here.source}/fetch")).status_code == 202
+
+    async def done() -> dict[str, Any] | None:
+        card = (await here.owner.get(here.source)).json()
+        return card if card["head_sha"] == head else None
+
+    _ = await eventually(done, f"the fetch of {head[:7]}")
+
+
+async def test_a_draft_edited_after_the_fetch_turns_the_change_into_a_conflict_on_the_next_fetch(
+    stack: Stack, tmp_path: Path
+) -> None:
+    here = await bound(stack, tmp_path)
+    head = here.upstream.commit(
+        {"agents/support_triage.py": SUPPORT_TRIAGE.replace("Triages incoming", "Sorts incoming")}, "Reword"
+    )
+    await fetched(here, head)
+    change = await eventually(lambda: here.incoming_for("support-triage", commit=head), "the repository's edit")
+    assert change["outcome"]["action"] == "new_draft"
+    await here.save_draft("support-triage", 1, lambda config: config.update(description="Studio's words."))
+
+    [refused] = await here.pull(change["id"])
+    assert refused["version"] is None
+    assert "fetch again" in refused["error"]
+
+    await fetched(here, head)
+
+    async def conflict() -> dict[str, Any] | None:
+        found = await here.incoming_for("support-triage", commit=head)
+        return found if found and found["outcome"]["action"] == "conflict" else None
+
+    again = await eventually(conflict, "the change worked out again")
+    assert again["id"] != change["id"]
+    assert again["outcome"]["conflict_paths"] == ["description"]
+
+
+async def test_a_version_in_an_open_pull_request_is_not_offered_again(stack: Stack, tmp_path: Path) -> None:
+    here = await bound(stack, tmp_path)
+    await here.save_draft("support-triage", 1, lambda config: config.update(description="Sorts tickets."))
+    change = await outgoing_for(here, "support-triage")
+    assert (await here.owner.post(f"{here.source}/commit", json={"change_ids": [change["id"]]})).status_code == 202
+    _ = await eventually(lambda: asyncio.sleep(0, here.gitea.pulls.get(1)), "the pull request")
+
+    outgoing = (await here.owner.post(f"{here.source}/outgoing/refresh")).json()
+    assert [item for item in outgoing if item["component_id"] == "support-triage"] == []
+    assert len(here.gitea.pulls) == 1
+
+
+async def test_two_pulls_of_one_change_make_one_draft(stack: Stack, tmp_path: Path) -> None:
+    here = await bound(stack, tmp_path)
+    head = here.upstream.commit(
+        {"agents/support_triage.py": SUPPORT_TRIAGE.replace("Triages incoming", "Sorts incoming")}, "Reword"
+    )
+    await fetched(here, head)
+    change = await eventually(lambda: here.incoming_for("support-triage", commit=head), "the repository's edit")
+    first, second = await asyncio.gather(here.pull(change["id"]), here.pull(change["id"]))
+    versions = sorted(result["version"] or 0 for result in (*first, *second))
+    assert versions == [0, 2], "one pull makes draft v2, the other is told it's taken"
+    detail = (await here.owner.get(f"{COMPONENTS}/support-triage")).json()
+    assert detail["draft"]["version"] == 2
+
+
+async def test_a_renamed_file_moves_its_binding(stack: Stack, tmp_path: Path) -> None:
+    here = await bound(stack, tmp_path)
+    head = here.upstream.commit(
+        {"agents/support_triage.py": None, "agents/triage.py": SUPPORT_TRIAGE}, "Shorter file name"
+    )
+    await fetched(here, head)
+
+    async def moved() -> dict[str, Any] | None:
+        bar = await here.component_source("support-triage")
+        return bar if bar["path"] == "agents/triage.py" else None
+
+    _ = await eventually(moved, "the binding to follow the file")
+    assert await here.incoming_for("support-triage") is None, "nothing to pull: the file only moved"
+    await here.save_draft("support-triage", 1, lambda config: config.update(description="Sorts tickets."))
+    change = await outgoing_for(here, "support-triage")
+    assert (change["path"], change["outcome"]["action"]) == ("agents/triage.py", "edit")
+
+
+async def test_a_renamed_and_edited_file_moves_its_binding_once_pulled(stack: Stack, tmp_path: Path) -> None:
+    here = await bound(stack, tmp_path)
+    head = here.upstream.commit(
+        {
+            "agents/support_triage.py": None,
+            "agents/triage.py": SUPPORT_TRIAGE.replace("Triages incoming", "Sorts incoming"),
+        },
+        "Rename and reword",
+    )
+    await fetched(here, head)
+    change = await eventually(lambda: here.incoming_for("support-triage", commit=head), "the edit at the new path")
+    assert change["path"] == "agents/triage.py"
+    assert [item["path"] for item in (await here.changes())["incoming"]] == ["agents/triage.py"]
+    [result] = await here.pull(change["id"])
+    assert (result["version"], result["error"]) == (2, None)
+    await here.save_draft("support-triage", 2, lambda config: config.update(description="Sorts every ticket."))
+    outgoing = (await here.owner.post(f"{here.source}/outgoing/refresh")).json()
+    assert [item["path"] for item in outgoing if item["component_id"] == "support-triage"] == ["agents/triage.py"]
+
+
+async def test_a_removed_file_can_be_written_again_or_stop_syncing(stack: Stack, tmp_path: Path) -> None:
+    here = await bound(stack, tmp_path)
+    head = here.upstream.commit({"agents/billing_agent.py": None}, "Billing moves to another repo")
+    await fetched(here, head)
+    removed = await eventually(lambda: here.incoming_for("billing-agent"), "the removal")
+    assert removed["outcome"]["action"] == "removed"
+
+    # Studio's side still goes out: committing writes the file again.
+    await here.save_draft("billing-agent", 1, lambda config: config.update(description="Bills."))
+    change = await outgoing_for(here, "billing-agent")
+    assert change["outcome"]["action"] != "blocked"
+
+    # Or the removal is accepted: the file stops being synced, the component stays.
+    [result] = await here.pull(removed["id"])
+    assert (result["version"], result["error"]) == (None, None)
+    assert (await here.component_source("billing-agent"))["bound"] is False
+    assert (await here.owner.get(f"{COMPONENTS}/billing-agent")).status_code == 200
+    assert await here.incoming_for("billing-agent") is None
+    outgoing = (await here.owner.post(f"{here.source}/outgoing/refresh")).json()
+    assert [item for item in outgoing if item["component_id"] == "billing-agent"] == []
+
+
+async def test_activating_after_a_newer_fetch_keeps_the_repositorys_edit_incoming(stack: Stack, tmp_path: Path) -> None:
+    here = await bound(stack, tmp_path)
+    upstream = Upstream(tmp_path / "second", branch="release")
+    _ = upstream.commit({"agents/support_triage.py": SUPPORT_TRIAGE}, "The same agent on the release branch")
+    connection_id = (await here.owner.get(here.source)).json()["connection_id"]
+    created = await here.owner.post(
+        SOURCES,
+        json={
+            "provider": "gitea",
+            "connection_id": connection_id,
+            "repo": "northwind/agent-platform",
+            "branch": "release",
+            "clone_url": upstream.url,
+        },
+    )
+    assert created.status_code == 201, created.text
+    second = f"{SOURCES}/{created.json()['id']}"
+
+    async def scanned() -> dict[str, Any] | None:
+        report = (await here.owner.get(f"{second}/scan")).json()
+        return report if report["status"] == "ready" else None
+
+    report = (await eventually(scanned, "the scan"))["report"]
+    [entry] = [item for item in report["files"] if item["path"] == "agents/support_triage.py"]
+    assert entry["components"][0]["match"] == "same"
+
+    head = upstream.commit(
+        {"agents/support_triage.py": SUPPORT_TRIAGE.replace("Triages incoming", "Sorts incoming")}, "Reword"
+    )
+    assert (await here.owner.post(f"{second}/fetch")).status_code == 202
+
+    async def read() -> dict[str, Any] | None:
+        card = (await here.owner.get(second)).json()
+        return card if card["head_sha"] == head else None
+
+    _ = await eventually(read, "the fetch before activating")
+    assert (await here.owner.post(f"{second}/activate", json={})).status_code == 200
+
+    async def incoming() -> list[dict[str, Any]] | None:
+        return (await here.owner.get(f"{second}/changes")).json()["incoming"] or None
+
+    [change] = await eventually(incoming, "the edit made after the scan")
+    assert (change["component_id"], change["commit_sha"]) == ("support-triage", head)
+
+
+async def test_a_published_version_that_never_reached_the_file_is_merged_not_overwritten(
+    stack: Stack, tmp_path: Path
+) -> None:
+    here = await bound(stack, tmp_path)
+    patched = await here.owner.patch(here.source, json={"policy": {"publish_mode": "no_write_back"}})
+    assert patched.status_code == 200, patched.text
+    assert (await here.publish("support-triage", 1)).status_code == 200
+    assert (await here.owner.post(f"{COMPONENTS}/support-triage/configs", json={})).status_code == 201
+    await here.save_draft("support-triage", 2, lambda config: config.update(description="Sorts tickets."))
+    assert (await here.publish("support-triage", 2)).status_code == 200
+
+    head = here.upstream.commit(
+        {"agents/support_triage.py": SUPPORT_TRIAGE.replace('"Ask for the order number."', '"Ask for the order id."')},
+        "Wording",
+    )
+    await fetched(here, head)
+    change = await eventually(lambda: here.incoming_for("support-triage", commit=head), "the repository's edit")
+    assert change["outcome"]["auto_merged"] == ["description"]
+    [result] = await here.pull(change["id"])
+    assert (result["version"], result["error"]) == (3, None)
+    config = (await here.config("support-triage", 3))["config"]
+    assert config["description"] == "Sorts tickets.", "v2's change survives"
+    assert "Ask for the order id." in config["instructions"]
+
+
 async def test_a_closed_pull_request_gives_back_only_its_own_changes(stack: Stack, tmp_path: Path) -> None:
     here = await bound(stack, tmp_path)
     await here.save_draft("support-triage", 1, lambda config: config.update(description="Sorts tickets."))

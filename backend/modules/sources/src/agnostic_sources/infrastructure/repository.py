@@ -7,7 +7,7 @@ from datetime import timedelta
 from typing import Any, cast
 
 import orjson
-from sqlalchemy import delete, func, select
+from sqlalchemy import CursorResult, delete, func, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -267,6 +267,15 @@ class SqlSourceStore:
     async def change(self, change_id: str) -> Change | None:
         row = await self._session.get(ChangeRow, change_id)
         return _change(row) if row is not None else None
+
+    async def claim_change(self, change_id: str, expected: ChangeStatus, status: ChangeStatus) -> bool:
+        result = await self._session.execute(
+            update(ChangeRow)
+            .where(ChangeRow.id == change_id, ChangeRow.status == expected)
+            .values(status=status)
+            .execution_options(synchronize_session="fetch")
+        )
+        return bool(cast("CursorResult[Any]", result).rowcount)
 
     async def save_change(self, change: Change) -> None:
         row = await self._session.get(ChangeRow, change.id)

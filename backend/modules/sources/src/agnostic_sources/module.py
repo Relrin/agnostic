@@ -92,6 +92,7 @@ class SourcesModule(BaseModule):
             JobSpec(name=tasks.PREPARE_TASK, func=jobs.prepare_outgoing, queue=tasks.QUEUE),
             JobSpec(name=tasks.COMMIT_TASK, func=jobs.commit_and_pr, queue=tasks.QUEUE),
             JobSpec(name=tasks.REFRESH_TASK, func=jobs.refresh_pr_status, queue=tasks.QUEUE),
+            JobSpec(name=tasks.WRITE_BACK_TASK, func=jobs.write_back, queue=tasks.QUEUE),
         ]
         periodic = (
             (tasks.FETCH_ALL_TASK, jobs.fetch_all, settings.fetch_cron),

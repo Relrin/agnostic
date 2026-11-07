@@ -64,6 +64,21 @@ async def commit_and_pr(
         )
 
 
+async def write_back(
+    context: procrastinate.JobContext,
+    source_id: str,
+    component_id: str,
+    version: int,
+    actor_id: str | None,
+    actor_name: str,
+    actor_email: str | None,
+) -> None:
+    async with job_container(context) as container:
+        await (await container.get(OnPublished)).write_back(
+            source_id, component_id, version, actor_id, actor_name, actor_email
+        )
+
+
 async def refresh_pr_status(context: procrastinate.JobContext, source_id: str, number: int | None) -> None:
     async with job_container(context) as container:
         _ = await (await container.get(PullRequestTracker)).refresh(source_id, number)

@@ -40,7 +40,7 @@ from agnostic_sources.domain.model import (
 from agnostic_sources.domain.outcomes import Outcome
 from agnostic_sources.domain.paths import MAX_FOLDER_FILES, component_target
 from agnostic_sources.domain.paths import counts as mapping_counts
-from agnostic_studio.facade import RepositoryDraft, StudioFacade
+from agnostic_studio.facade import ComponentState, RepositoryDraft, StudioFacade
 
 log = get_logger(__name__)
 
@@ -63,6 +63,11 @@ def settled_status(source: Source) -> SourceStatus:
     return "ready" if source.scanned else "scanning"
 
 
+def studio_side(state: ComponentState) -> int | None:
+    """The version an incoming file merges with: the open draft, or the newest version when no draft is open."""
+    return state.draft_version or state.latest_version
+
+
 def content_hash(code: str) -> str:
     return hashlib.sha256(code.encode()).hexdigest()
 
@@ -74,6 +79,35 @@ class PullResult:
     component_id: str | None
     version: int | None = None
     error: str | None = None
+
+
+async def unbind(store: SourceStore, studio: StudioFacade, source: Source, binding: FileBinding) -> None:
+    """Stop syncing ``binding``'s file; the component stays in Studio, bound to another file if it has one."""
+    await store.delete_binding(binding.id)
+    others = [
+        (other_source, other)
+        for other_source, other in await store.bindings_for_component(source.instance_id, binding.component_id)
+        if other.id != binding.id
+    ]
+    if others:
+        other_source, other = others[0]
+        await studio.bind(
+            source.instance_id,
+            other.component_id,
+            other.component_kind,
+            binding_id=other.id,
+            code_path=other.path,
+            convention=other_source.convention,
+        )
+    else:
+        await studio.bind(
+            source.instance_id,
+            binding.component_id,
+            binding.component_kind,
+            binding_id=None,
+            code_path=None,
+            convention=None,
+        )
 
 
 class Fetcher:
@@ -223,6 +257,14 @@ class IncomingComputer:
                     kept.add((change.path, change.component_id))
         # A folder listing stops at MAX_FOLDER_FILES: a bound file it left out isn't gone, only unread.
         truncated = source.is_local and len(snapshot.files) >= MAX_FOLDER_FILES
+        # Where each component is now: bound to a file that is there, or with a change waiting on another file.
+        present: dict[str, set[str]] = {}
+        for item in await self._store.bindings(source.id):
+            if item.path in snapshot.files:
+                present.setdefault(item.component_id, set()).add(item.path)
+        waiting: dict[str | None, set[str]] = {}
+        for changed_path, changed_component in kept:
+            waiting.setdefault(changed_component, set()).add(changed_path)
         for path, items in by_path.items():
             if path in snapshot.files:
                 continue
@@ -231,6 +273,13 @@ class IncomingComputer:
                 continue
             for binding in items:
                 key = (path, binding.component_id)
+                if present.get(binding.component_id, set()) - {path}:
+                    # Moved: the component is synced with its new file already, so the old binding goes.
+                    await unbind(self._store, self._studio, source, binding)
+                    continue
+                if waiting.get(binding.component_id, set()) - {path}:
+                    # Moved and edited: the binding moves when the change at the new file is pulled.
+                    continue
                 if key in pending:
                     kept.add(key)
                     continue
@@ -305,7 +354,12 @@ class IncomingComputer:
                 deletions=removed,
                 incoming_marks={str(line): "incoming" for line in line_marks(base_code or "", code)},
             )
-        if pending is not None and pending.blob == blob and pending.after_code == code:
+        if (
+            pending is not None
+            and pending.blob == blob
+            and pending.after_code == code
+            and await self._still_holds(instance, pending)
+        ):
             return pending
         if code is None or component_id is None:
             problem = (
@@ -369,15 +423,18 @@ class IncomingComputer:
             if pending is not None:
                 await self._supersede(pending)
             return None
-        draft = (
-            await self._studio.snapshot(SYSTEM_PRINCIPAL, instance, component_id, state.draft_version)
-            if state.draft_version
+        # Studio's side: the open draft, or with none open the newest version. A version published since the last
+        # sync that never reached the file (write-back off or failed) is merged too, not overwritten by the file.
+        ours_version = studio_side(state)
+        ours = (
+            await self._studio.snapshot(SYSTEM_PRINCIPAL, instance, component_id, ours_version)
+            if ours_version
             else None
         )
         base = synced if synced is not None else current
         result = MergeResult(merged=incoming)
-        if draft is not None and base is not None and draft.config != base:
-            result = three_way(base, draft.config, incoming)
+        if ours is not None and base is not None and ours.config != base:
+            result = three_way(base, ours.config, incoming)
         version = (state.latest_version or 0) + 1
         outcome = Outcome(
             "conflict" if result.conflicts else "new_draft",
@@ -411,13 +468,38 @@ class IncomingComputer:
                     item.theirs, change.author_name, (change.commit_sha or "")[:7] or None, item.theirs is not MISSING
                 ),
                 studio_side=Side(
-                    item.ours, state.draft_author_name, f"draft v{state.draft_version}", item.ours is not MISSING
+                    item.ours,
+                    state.draft_author_name if state.draft_version else None,
+                    f"draft v{state.draft_version}" if state.draft_version else f"v{ours_version}",
+                    item.ours is not MISSING,
                 ),
                 created_at=utcnow(),
             )
             for item in result.conflicts
         ]
         return await self._replace(pending, change, conflicts)
+
+    async def _still_holds(self, instance: Instance, pending: Change) -> bool:
+        """Whether Studio's side still merges into ``pending`` the way it did when it was worked out.
+
+        The repository's file is the same, but the draft may have moved on: another draft opened, or the open one
+        edited where the file changed too. Pulling then stops at a conflict the change doesn't know about, so it's
+        worked out again (keeping it would ask for a fetch that never helps).
+        """
+        if pending.outcome.get("action") not in {"new_draft", "conflict"} or pending.config is None:
+            return True
+        component_id = pending.component_id or ""
+        state = await self._studio.component(SYSTEM_PRINCIPAL, instance, component_id)
+        if state is None or state.draft_version != pending.draft_version:
+            return False
+        ours_version = studio_side(state)
+        if ours_version is None or pending.base_config is None:
+            return True
+        ours = await self._studio.snapshot(SYSTEM_PRINCIPAL, instance, component_id, ours_version)
+        if ours.config == pending.base_config:
+            return True
+        known = {conflict.field_path for conflict in await self._store.conflicts_for_change(pending.id)}
+        return all(item.path in known for item in three_way(pending.base_config, ours.config, pending.config).conflicts)
 
     async def _replace(self, pending: Change | None, change: Change, conflicts: Sequence[Conflict]) -> Change:
         if pending is not None:
@@ -490,12 +572,14 @@ class Puller:
         studio: StudioFacade,
         audit: AuditLog,
         jobs: SourceJobs,
+        files: SourceFiles,
     ) -> None:
         self._store = store
         self._access = access
         self._studio = studio
         self._audit = audit
         self._jobs = jobs
+        self._files = files
 
     async def pull(self, principal: Principal, ref: str, source_id: str, change_ids: Sequence[str]) -> list[PullResult]:
         instance = await self._access.instance(principal, ref, COMPONENTS_WRITE)
@@ -512,6 +596,11 @@ class Puller:
             if change is None or change.source_id != source.id or change.direction != "incoming":
                 raise NotFoundError(f"There is no incoming change {change_id} on this source.")
             try:
+                if change.outcome.get("action") == "removed":
+                    await self._accept_removal(source, change)
+                    await self._store.commit()
+                    results.append(PullResult(change.id, change.path, change.component_id))
+                    continue
                 version = await self._one(principal, source, instance, change, convention)
             except (ConflictError, ValidationFailedError, NotFoundError) as exc:
                 results.append(PullResult(change.id, change.path, change.component_id, error=str(exc)))
@@ -559,26 +648,14 @@ class Puller:
             paths = ", ".join(item.field_path for item in still_open)
             raise ConflictError(f"Resolve the conflict on {paths} first.")
         state = await self._studio.component(principal, instance, component_id)
-        merged = change.config
-        if state is not None and state.draft_version and change.base_config is not None:
-            draft = await self._studio.snapshot(principal, instance, component_id, state.draft_version)
-            if draft.config != change.base_config:
-                result = three_way(change.base_config, draft.config, change.config)
-                resolutions = {item.field_path: item.chosen() for item in conflicts if item.status == "resolved"}
-                unresolved = [item.path for item in result.conflicts if item.path not in resolutions]
-                if unresolved:
-                    raise ConflictError(
-                        f"Draft v{state.draft_version} changed since this was fetched ({', '.join(unresolved)}); "
-                        "fetch again."
-                    )
-                merged = apply_resolutions(result.merged, resolutions)
+        merged = await self._merged(principal, instance, state, change, change.config, conflicts)
         code = change.after_code
         if merged != change.config:
             edit = await self._studio.write_code(principal, instance, kind, code, merged, component_id, convention)
             if not edit.equivalent:
+                version = studio_side(state) if state else None
                 raise ValidationFailedError(
-                    f"Studio can't write draft v{state.draft_version if state else ''} changes into {change.path}; "
-                    "merge in the editor instead."
+                    f"Studio can't write v{version or ''} changes into {change.path}; merge in the editor instead."
                 )
             code = edit.code
         short = (change.commit_sha or "")[:7]
@@ -586,23 +663,32 @@ class Puller:
         notes = f"Pulled from {source.label}@{short}" + (f": {subject}" if subject else "")
         name = str(merged.get("name") or (state.name if state else component_id))
         binding = await self._binding(source, change, kind, component_id)
-        # Nothing is written before the draft exists: the instance's calls are audited in their own transactions.
-        created = await self._studio.create_draft(
-            principal,
-            instance,
-            RepositoryDraft(
-                kind=kind,
-                component_id=component_id,
-                name=name,
-                config=merged,
-                code=code,
-                notes=notes,
-                author_name=change.author_name,
-                convention=source.convention,
-                binding_id=binding.id,
-                code_path=change.path,
-            ),
-        )
+        # Claimed first, so a pull asked for in the app and one queued on push never both make a draft of it.
+        if not await self._store.claim_change(change.id, "pending", "pulled"):
+            raise ConflictError(f"{change.path} is being pulled already.")
+        await self._store.commit()
+        # Nothing else is written before the draft exists: the instance's calls are audited in their own transactions.
+        try:
+            created = await self._studio.create_draft(
+                principal,
+                instance,
+                RepositoryDraft(
+                    kind=kind,
+                    component_id=component_id,
+                    name=name,
+                    config=merged,
+                    code=code,
+                    notes=notes,
+                    author_name=change.author_name,
+                    convention=source.convention,
+                    binding_id=binding.id,
+                    code_path=change.path,
+                ),
+            )
+        except Exception:
+            _ = await self._store.claim_change(change.id, "pulled", "pending")
+            await self._store.commit()
+            raise
         await self._store.save_binding(
             replace(
                 binding,
@@ -614,7 +700,54 @@ class Puller:
             )
         )
         await self._store.save_change(replace(change, status="pulled", result_version=created.version))
+        await self._drop_moved(source, binding)
         return created.version
+
+    async def _merged(
+        self,
+        principal: Principal,
+        instance: Instance,
+        state: ComponentState | None,
+        change: Change,
+        incoming: dict[str, Any],
+        conflicts: Sequence[Conflict],
+    ) -> dict[str, Any]:
+        """The file's config merged with Studio's side (as it is now), with the resolved conflicts applied."""
+        ours_version = studio_side(state) if state is not None else None
+        if not ours_version or change.base_config is None or not change.component_id:
+            return incoming
+        ours = await self._studio.snapshot(principal, instance, change.component_id, ours_version)
+        if ours.config == change.base_config:
+            return incoming
+        result = three_way(change.base_config, ours.config, incoming)
+        resolutions = {item.field_path: item.chosen() for item in conflicts if item.status == "resolved"}
+        unresolved = [item.path for item in result.conflicts if item.path not in resolutions]
+        if unresolved:
+            which = f"Draft v{ours_version}" if state and state.draft_version else f"Version {ours_version}"
+            raise ConflictError(f"{which} changed since this was fetched ({', '.join(unresolved)}); fetch again.")
+        return apply_resolutions(result.merged, resolutions)
+
+    async def _accept_removal(self, source: Source, change: Change) -> None:
+        """The repository removed the file: stop syncing it. The component stays in Studio, unpublished changes too."""
+        if change.status != "pending":
+            raise ConflictError(f"{change.path} was already {change.status}.")
+        if not await self._store.claim_change(change.id, "pending", "pulled"):
+            raise ConflictError(f"{change.path} is being pulled already.")
+        for binding in await self._store.bindings(source.id):
+            if binding.id == change.binding_id:
+                await unbind(self._store, self._studio, source, binding)
+
+    async def _drop_moved(self, source: Source, kept: FileBinding) -> None:
+        """A file pulled from its new path: the component's bindings to files no longer there go."""
+        snapshot = await self._files.snapshot(source)
+        if snapshot is None:
+            return
+        for binding in await self._store.bindings(source.id):
+            if binding.component_id != kept.component_id or binding.id == kept.id or binding.path in snapshot.files:
+                continue
+            if source.is_local and await self._files.local_hash(source, binding.path) is not None:
+                continue  # left out of a listing that stopped early, not gone
+            await unbind(self._store, self._studio, source, binding)
 
     async def _binding(self, source: Source, change: Change, kind: ComponentKind, component_id: str) -> FileBinding:
         for binding in await self._store.bindings(source.id):

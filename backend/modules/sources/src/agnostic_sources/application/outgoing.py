@@ -108,10 +108,14 @@ class OutgoingPreparer:
             (change.path, change.component_id): change
             for change in await self._store.changes(source.id, "outgoing", ["pending"])
         }
+        # A removed file doesn't block: committing Studio's version writes the file again, which is the other answer
+        # to the removal (pulling it stops syncing the file instead).
         incoming = {
             (change.path, change.component_id)
             for change in await self._store.changes(source.id, "incoming", ["pending"])
+            if change.outcome.get("action") != "removed"
         }
+        in_flight = await self._in_flight(source)
         prepared: list[Change] = []
         for binding in await self._store.bindings(source.id):
             if component_id is not None and binding.component_id != component_id:
@@ -129,6 +133,12 @@ class OutgoingPreparer:
                 continue
             snap = await self._studio.snapshot(SYSTEM_PRINCIPAL, instance, binding.component_id, number)
             if binding.synced_config is not None and snap.config == binding.synced_config:
+                continue
+            if any(item.draft_version == number and item.config == snap.config for item in in_flight.get(key, [])):
+                # Already on its way: being committed, or in a pull request still open. Offering it again would
+                # open a second pull request for the same version.
+                if key in pending:
+                    await self._store.save_change(replace(pending[key], status="superseded"))
                 continue
             existing = pending.get(key)
             if (
@@ -181,6 +191,15 @@ class OutgoingPreparer:
         await self._store.commit()
         await self._jobs.announce(source.instance_id, "sources.changed", {"source_id": source.id})
         return prepared
+
+    async def _in_flight(self, source: Source) -> dict[tuple[str, str | None], list[Change]]:
+        """Outgoing changes being committed, or committed into a pull request that is still open."""
+        open_pulls = await self._store.pull_requests(source.id, open_only=True)
+        found: dict[tuple[str, str | None], list[Change]] = {}
+        for change in await self._store.changes(source.id, "outgoing", ["committing", "committed"]):
+            if change.status == "committing" or any(_in_pull_request(pull, change) for pull in open_pulls):
+                found.setdefault((change.path, change.component_id), []).append(change)
+        return found
 
     async def _code(
         self,
@@ -659,12 +678,17 @@ class SourcePublishHold:
 
 
 class OnPublished:
-    """After a publish, write the version back to every source that asks for it (unless a merged PR already did)."""
+    """After a publish, write the version back to every source that asks for it (unless a merged PR already did).
 
-    def __init__(self, store: SourceStore, preparer: OutgoingPreparer, committer: Committer) -> None:
+    The write-back runs as a job on the source's git queue, one at a time with its fetches, pulls and commits: it
+    fetches, commits and pushes in the same mirror.
+    """
+
+    def __init__(self, store: SourceStore, preparer: OutgoingPreparer, committer: Committer, jobs: SourceJobs) -> None:
         self._store = store
         self._preparer = preparer
         self._committer = committer
+        self._jobs = jobs
 
     async def __call__(self, payload: dict[str, Any]) -> None:
         instance_id = str(payload.get("instance_id") or "")
@@ -680,21 +704,35 @@ class OnPublished:
                 continue
             if source.policy.block_publish_until_merged:
                 continue
-            prepared = [
-                change
-                for change in await self._preparer.prepare(source.id, component_id=component_id, version=version)
-                if change.outcome.get("action") != "blocked"
-            ]
-            if not prepared:
-                continue
-            try:
-                _ = await self._committer.run(
-                    source.id,
-                    [change.id for change in prepared],
-                    None,
-                    payload.get("published_by"),
-                    str(payload.get("published_by_name") or "Studio"),
-                    payload.get("published_by_email"),
-                )
-            except (GitError, ProviderError, ConflictError) as exc:
-                log.warning("sources.write_back_failed", source_id=source.id, component_id=component_id, error=str(exc))
+            _ = await self._jobs.write_back(
+                source.id,
+                component_id,
+                version,
+                payload.get("published_by"),
+                str(payload.get("published_by_name") or "Studio"),
+                payload.get("published_by_email"),
+            )
+
+    async def write_back(
+        self,
+        source_id: str,
+        component_id: str,
+        version: int,
+        actor_id: str | None,
+        actor_name: str,
+        actor_email: str | None,
+    ) -> None:
+        """The job: prepare the published version's outgoing change and commit it."""
+        prepared = [
+            change
+            for change in await self._preparer.prepare(source_id, component_id=component_id, version=version)
+            if change.outcome.get("action") != "blocked" and change.status == "pending"
+        ]
+        if not prepared:
+            return
+        try:
+            _ = await self._committer.run(
+                source_id, [change.id for change in prepared], None, actor_id, actor_name, actor_email
+            )
+        except (GitError, ProviderError, ConflictError) as exc:
+            log.warning("sources.write_back_failed", source_id=source_id, component_id=component_id, error=str(exc))

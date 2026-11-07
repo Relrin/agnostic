@@ -261,7 +261,12 @@ class Sources:
             mapping = match(source.mappings, path)
             if mapping is None or mapping.target_kind == "ignored":
                 continue
-            entry: dict[str, Any] = {"path": path, "mapping": mapping.target_kind, "components": []}
+            entry: dict[str, Any] = {
+                "path": path,
+                "mapping": mapping.target_kind,
+                "components": [],
+                "blob": snapshot.files[path],
+            }
             target = component_target(source.mappings, path)
             if target is None:
                 report_files.append(entry)
@@ -349,7 +354,11 @@ class Sources:
                 if not chosen.get((entry["path"], component_id), default):
                     continue
                 binding = FileBinding(new_id("sfb"), source.id, entry["path"], component["kind"], component_id)
-                if component.get("match") == "same":
+                # A fetch since the scan may have changed the file: it then starts out of sync, as an incoming change,
+                # instead of its new content being taken for the version the scan matched.
+                scanned = entry.get("blob")
+                unchanged = scanned is None or snapshot_files.get(entry["path"]) == scanned
+                if component.get("match") == "same" and unchanged:
                     code = await self._files.read(source, head, entry["path"]) or ""
                     snap = await self._studio.snapshot(SYSTEM_PRINCIPAL, instance, component_id, component["version"])
                     binding = replace(

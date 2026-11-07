@@ -67,7 +67,9 @@ def sentence(outcome: Outcome, viewer_id: str | None = None) -> str:  # noqa: PL
         case "unparseable":
             return f"Can't become a draft: {_count(outcome.problems, 'problem')} in the code"
         case "removed":
-            return f"The file was removed; {name} stays in Studio"
+            return (
+                f"The file was removed; pulling stops syncing it ({name} stays in Studio), committing writes it again"
+            )
         case "read_only":
             return "Registry file: read-only, Studio reads the registry from the instance"
         case "unbound":
