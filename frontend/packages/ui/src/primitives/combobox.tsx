@@ -9,6 +9,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "./popover";
 export type ComboboxOption<T extends string = string> = {
   value: T;
   label: string;
+  /** A small mark before the label (a provider's logo). */
+  icon?: ReactNode;
   /** Muted text after the label (a provider, a version). */
   hint?: ReactNode;
   /** Extra words the search matches besides the label. */
@@ -65,6 +67,7 @@ export function Combobox<T extends string = string>({
         aria-hidden
         className={cn("!text-accent", option.value === value ? "opacity-100" : "opacity-0")}
       />
+      {option.icon}
       <span className={cn("truncate", mono && "font-mono text-[12.5px]")}>{option.label}</span>
       {option.hint && <span className="ml-auto shrink-0 text-[12px] text-fg-muted">{option.hint}</span>}
     </CommandItem>
@@ -85,8 +88,11 @@ export function Combobox<T extends string = string>({
           )}
           {...aria}
         >
-          <span className={cn("truncate", mono && selected && "font-mono text-[12.5px]")}>
-            {selected?.label ?? placeholder}
+          <span className="flex min-w-0 items-center gap-2">
+            {selected?.icon}
+            <span className={cn("truncate", mono && selected && "font-mono text-[12.5px]")}>
+              {selected?.label ?? placeholder}
+            </span>
           </span>
           <ChevronDown className="size-4 shrink-0 text-fg-muted" aria-hidden />
         </button>

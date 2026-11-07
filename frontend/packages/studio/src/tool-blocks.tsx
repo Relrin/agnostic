@@ -20,11 +20,12 @@ import {
   DialogTitle,
   Input,
   Switch,
+  ToolMark,
   cn,
   type BadgeProps,
 } from "@agnostic/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Blocks, Code2, Plug, Search, Wrench, X } from "lucide-react";
+import { ArrowLeft, Search, X } from "lucide-react";
 import { useMemo, useState, type ReactNode } from "react";
 
 type Catalog = NonNullable<RegistryEntryOut["catalog"]>;
@@ -56,16 +57,29 @@ const CATEGORY_LABEL: Record<string, string> = {
   other: "Other",
 };
 
-/** The icon of a tool: an MCP server, an Agno toolkit, or a tool from the runtime's code. */
+/**
+ * The icon of a tool: the logo of the service it talks to (the catalog entry's own pick, its Agno toolkit's
+ * service, or the brand its name points at), else a generic glyph for an MCP server, a toolkit or a tool from code.
+ */
 export function ToolIcon({
+  name,
   catalog,
   className,
 }: {
+  /** The registry name: a tool from the runtime's code has only this to go by. */
+  name?: string | undefined;
   catalog: Catalog | null | undefined;
   className?: string;
 }) {
-  const Icon = catalog?.kind === "mcp" ? Plug : catalog?.kind === "toolkit" ? Wrench : Code2;
-  return <Icon aria-hidden className={cn("size-3.5 shrink-0", className)} />;
+  return (
+    <ToolMark
+      kind={catalog?.kind ?? "code"}
+      icon={catalog?.icon}
+      toolkitKey={catalog?.toolkit_key}
+      hints={[catalog?.display_name, name]}
+      className={className}
+    />
+  );
 }
 
 /** "Organization", "Team · Data", "Custom": where a catalog tool comes from. */
@@ -115,8 +129,8 @@ export function ToolCard({
         !entry && "border-danger/45",
       )}
     >
-      <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-[6px] bg-surface-hover text-fg-secondary">
-        <ToolIcon catalog={catalog} />
+      <span className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-[7px] border border-border-subtle bg-surface-hover text-fg">
+        <ToolIcon name={name} catalog={catalog} className="size-4" />
       </span>
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <div className="flex items-center gap-1.5">
@@ -197,7 +211,7 @@ function Tile({
       onClick={onClick}
       className="flex cursor-pointer items-start gap-2.5 rounded-control border border-border-input bg-surface px-3 py-2.5 text-left hover:border-border-strong hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-60"
     >
-      <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-[6px] bg-surface-hover text-fg-secondary">
+      <span className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-[7px] border border-border-subtle bg-surface-hover text-fg">
         {icon}
       </span>
       <span className="flex min-w-0 flex-col gap-1">
@@ -307,7 +321,7 @@ export function ToolPicker({
                     {section.entries.map((entry) => (
                       <Tile
                         key={entry.name}
-                        icon={<ToolIcon catalog={entry.catalog} />}
+                        icon={<ToolIcon name={entry.name} catalog={entry.catalog} className="size-4" />}
                         title={entry.catalog?.display_name ?? entry.name}
                         subtitle={entry.description ?? kindLabel(entry.catalog)}
                         disabled={!entry.studio_available}
@@ -347,7 +361,14 @@ export function ToolPicker({
                             return (
                               <Tile
                                 key={toolkit.key}
-                                icon={<Blocks aria-hidden className="size-3.5" />}
+                                icon={
+                                  <ToolMark
+                                    kind="toolkit"
+                                    toolkitKey={toolkit.key}
+                                    category={toolkit.category}
+                                    className="size-4"
+                                  />
+                                }
                                 title={toolkit.label}
                                 subtitle={toolkit.description || toolkit.key}
                                 badges={

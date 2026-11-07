@@ -769,6 +769,7 @@ __metadata:
     "@dnd-kit/sortable": "npm:10.0.0"
     "@fontsource-variable/geist": "npm:5.3.0"
     "@fontsource-variable/geist-mono": "npm:5.3.0"
+    "@lobehub/icons-static-svg": "npm:1.102.0"
     "@storybook/addon-a11y": "npm:10.6.5"
     "@storybook/addon-vitest": "npm:10.6.5"
     "@storybook/react-vite": "npm:10.6.5"
@@ -787,6 +788,7 @@ __metadata:
     recharts: "npm:3.10.1"
     remark-gfm: "npm:4.0.1"
     shiki: "npm:4.5.0"
+    simple-icons: "npm:16.36.0"
     sonner: "npm:2.0.8"
     storybook: "npm:10.6.5"
     tailwind-merge: "npm:3.7.0"
@@ -2029,6 +2031,13 @@ __metadata:
     "@lezer/highlight": "npm:^1.0.0"
     "@lezer/lr": "npm:^1.0.0"
   checksum: 10c0/e1e337d78b161ae0754a8969f956273fbd3e3a0b8d00005dab209b585a8ccb4d8fb132960cee7571c159a75cfa9bf2609894b9cc1eec9c059593495da4d4beb0
+  languageName: node
+  linkType: hard
+
+"@lobehub/icons-static-svg@npm:1.102.0":
+  version: 1.102.0
+  resolution: "@lobehub/icons-static-svg@npm:1.102.0"
+  checksum: 10c0/e9c3fd35adb4ab26f84af11340e83a3af59b34d10ef1f3704503dd6a30db962b62f211a0d24b2c91f23e48df43243093f47df61a12a554cc8135f811f0763c10
   languageName: node
   linkType: hard
 
@@ -10183,6 +10192,13 @@ __metadata:
   version: 4.1.0
   resolution: "signal-exit@npm:4.1.0"
   checksum: 10c0/41602dce540e46d599edba9d9860193398d135f7ff72cab629db5171516cfae628d21e7bfccde1bbfdf11c48726bc2a6d1a8fb8701125852fbfda7cf19c6aa83
+  languageName: node
+  linkType: hard
+
+"simple-icons@npm:16.36.0":
+  version: 16.36.0
+  resolution: "simple-icons@npm:16.36.0"
+  checksum: 10c0/4c83c1ae015c2d3e920565f2164fc3d9ebe31820bd19dd0da2ce10921112525f1f5c1b2346140f446254a3b01ac4247d172854e3534c1aec2cb06d1489613e72
   languageName: node
   linkType: hard
 

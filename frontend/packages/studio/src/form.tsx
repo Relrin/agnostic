@@ -10,6 +10,7 @@ import {
   Input,
   JsonEditor,
   LineLinkBadge,
+  ModelMark,
   Select,
   SelectContent,
   SelectItem,
@@ -177,11 +178,28 @@ function RegistrySelect({
       group="From Registry"
       options={[
         { value: NONE, label: "None" },
-        ...entries.map((entry) => ({ value: entry.id ?? entry.name, label: entry.name, hint: entry.meta })),
+        ...entries.map((entry) => ({
+          value: entry.id ?? entry.name,
+          label: entry.name,
+          hint: entry.meta,
+          icon: type === "model" ? <EntryModelMark entry={entry} /> : undefined,
+        })),
       ]}
       onValueChange={(next) => {
         onChange(next === NONE ? undefined : entries.find((entry) => (entry.id ?? entry.name) === next));
       }}
+    />
+  );
+}
+
+/** A model entry's provider logo (its config is the stored model ref: `{id, provider}`). */
+function EntryModelMark({ entry }: { entry: RegistryEntryOut }) {
+  const ref = isRecord(entry.config_value) ? entry.config_value : {};
+  return (
+    <ModelMark
+      provider={typeof ref.provider === "string" ? ref.provider : undefined}
+      id={typeof ref.id === "string" ? ref.id : (entry.id ?? entry.name)}
+      className="text-fg-secondary"
     />
   );
 }

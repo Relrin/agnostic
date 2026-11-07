@@ -75,6 +75,21 @@ describe("ToolPicker", () => {
     expect(within(toolkits).getByText("Shell").closest("button")).toHaveTextContent("runs commands");
   });
 
+  it("shows each tool with the logo of the service it talks to", async () => {
+    picker();
+    const dialog = await screen.findByRole("dialog", { name: "Add a tool" });
+    const logo = (text: string) =>
+      within(dialog).getByText(text).closest("button")?.querySelector("[data-brand]");
+    // An MCP server by its name, a catalog toolkit and a raw toolkit by their service, a code tool generic.
+    expect(logo("Linear")).toHaveAttribute("data-brand", "linear");
+    expect(logo("Web search")).toHaveAttribute("data-brand", "duckduckgo");
+    const toolkits = within(dialog).getByRole("region", { name: "Agno toolkits" });
+    expect(
+      (await within(toolkits).findByText("GitHub")).closest("button")?.querySelector("[data-brand]"),
+    ).toHaveAttribute("data-brand", "github");
+    expect(logo("kb_lookup")).toBeNull();
+  });
+
   it("adds a catalog tool", async () => {
     const user = userEvent.setup();
     const onPick = picker();

@@ -14,7 +14,10 @@ import {
 } from "@agnostic/api";
 import { STALE_TIME, useCan, useInstances, withQueryFn } from "@agnostic/core";
 import {
+  BRAND_GLYPHS,
+  BRAND_OPTIONS,
   Badge,
+  BrandIcon,
   Button,
   Callout,
   Checkbox,
@@ -31,6 +34,8 @@ import {
   SheetDescription,
   SheetTitle,
   Switch,
+  ToolMark,
+  toolBrand,
 } from "@agnostic/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, X } from "lucide-react";
@@ -63,6 +68,8 @@ type State = {
   /** Toolkit parameters stored as environment variables: they stay environment variables. */
   envParams: string[];
   displayName: string;
+  /** A brand logo picked by hand; empty: the logo follows the toolkit, URL, command or name. */
+  icon: string;
   slug: string;
   slugTouched: boolean;
   description: string;
@@ -97,6 +104,7 @@ function initial(entry: EntryOut | undefined, level: Level): State {
       .filter(([, value]) => isEnvRef(value))
       .map(([key]) => key),
     displayName: entry?.display_name ?? "",
+    icon: entry?.icon ?? "",
     slug: entry?.slug ?? "",
     slugTouched: Boolean(entry),
     description: entry?.description ?? "",
@@ -279,6 +287,7 @@ function EditorForm({
           version: entry.version,
           display_name: state.displayName,
           description: state.description,
+          icon: state.icon || null,
           ...(entry.kind === "mcp" ? { transport: state.transport } : {}),
           config,
           instance_ids: instanceIds,
@@ -291,6 +300,7 @@ function EditorForm({
       level: state.level,
       display_name: state.displayName,
       description: state.description,
+      icon: state.icon || null,
       kind: state.kind,
       owner_group_id: state.level === "team" ? state.group || null : null,
       transport: state.kind === "mcp" ? state.transport : null,
@@ -489,6 +499,8 @@ function EditorForm({
         />
       )}
 
+      <IconField state={state} set={set} />
+
       {error && (
         <Callout tone="danger" title="Not saved">
           {describeError(error).reason}
@@ -503,6 +515,74 @@ function EditorForm({
         </Button>
       </div>
     </form>
+  );
+}
+
+const AUTOMATIC = "__automatic__";
+
+/** The logo builders see on the tool: picked here, or found from the toolkit, the URL, the command or the name. */
+function IconField({ state, set }: { state: State; set: (patch: Partial<State>) => void }) {
+  const detected = toolBrand({
+    kind: state.kind,
+    toolkitKey: state.kind === "toolkit" ? state.toolkit : undefined,
+    hints:
+      state.kind === "mcp"
+        ? [state.displayName, state.transport === "stdio" ? `${state.command} ${state.args}` : state.url]
+        : [state.displayName],
+  });
+  const mark = (icon: string) => (
+    <ToolMark
+      kind={state.kind}
+      icon={icon}
+      toolkitKey={state.kind === "toolkit" ? state.toolkit : undefined}
+      hints={[]}
+      className="size-4 text-fg"
+    />
+  );
+  return (
+    <Row
+      label="Icon"
+      hint={
+        state.icon
+          ? "Shown on the tool in Studio's editors and the workflow builder."
+          : detected
+            ? `Found from the ${state.kind === "toolkit" ? "toolkit" : "name, URL or command"}: ${BRAND_GLYPHS[detected].title}.`
+            : "Nothing names a known service: a generic icon shows. Pick a logo if the tool has one."
+      }
+    >
+      {(id) => (
+        <div className="flex items-center gap-2">
+          <span
+            aria-hidden
+            className="grid size-[34px] shrink-0 place-items-center rounded-button border border-border-input bg-surface-hover"
+          >
+            {mark(state.icon || (detected ?? ""))}
+          </span>
+          <Combobox
+            id={id}
+            aria-label="Icon"
+            value={state.icon || AUTOMATIC}
+            searchPlaceholder="Search logos…"
+            onValueChange={(value) => {
+              set({ icon: value === AUTOMATIC ? "" : value });
+            }}
+            options={[
+              {
+                value: AUTOMATIC,
+                label: "Automatic",
+                hint: detected ? BRAND_GLYPHS[detected].title : "generic",
+              },
+              ...BRAND_OPTIONS.filter((option) => option.id !== "mcp").map((option) => ({
+                value: option.id,
+                label: option.title,
+                keywords: [option.id],
+                icon: <BrandIcon brand={option.id} />,
+              })),
+            ]}
+          />
+        </div>
+      )}
+    </Row>
   );
 }
 

@@ -1,5 +1,16 @@
 // @agnostic/ui: the only place feature code gets UI primitives from (never @radix-ui directly).
 export { cn } from "./lib/cn";
+export { BrandIcon, ModelMark, ToolMark, type BrandTone, type ToolMarkProps } from "./brand/brand-icon";
+export {
+  BRAND_OPTIONS,
+  TOOLKIT_BRANDS,
+  brandInText,
+  isBrandId,
+  modelBrand,
+  toolBrand,
+  type ToolBrandInput,
+} from "./brand/brands";
+export { BRAND_GLYPHS, type BrandId } from "./brand/glyphs.gen";
 export * as tokens from "./lib/tokens";
 export { DENSITIES, DensityContext, useDensityContext, type Density } from "./lib/density";
 

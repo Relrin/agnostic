@@ -102,6 +102,27 @@ describe("the flow graph", () => {
       items: [{ label: "kb_lookup" }, { label: "zendesk_search" }],
     });
     expect(toolChip("team-data-search")).toEqual({ label: "team-data-search", tone: "team" });
+    // With the registry known, the model shows its provider's logo and each tool its service's.
+    const branded = rowsOf({ type: "Step", name: "Classify", agent_id: "support-triage" }, () => ({
+      model: "claude-opus-5-5",
+      modelBrand: "anthropic",
+      tools: ["org-linear", "kb_lookup"],
+      looks: { "org-linear": { kind: "mcp", brand: "linear" }, kb_lookup: { kind: "code" } },
+    }));
+    expect(branded).toContainEqual({
+      kind: "field",
+      label: "Model",
+      value: "claude-opus-5-5",
+      brand: "anthropic",
+    });
+    expect(branded).toContainEqual({
+      kind: "chips",
+      label: "Tools",
+      items: [
+        { label: "org-linear", tone: "org", kind: "mcp", brand: "linear" },
+        { label: "kb_lookup", kind: "code" },
+      ],
+    });
     expect(celLines('input.contains("a || b") || input.contains("c") ? "Billing" : "Other"')).toEqual([
       'input.contains("a || b")',
       '|| input.contains("c")',

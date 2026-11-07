@@ -28,10 +28,11 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
+  ToolMark,
   cn,
 } from "@agnostic/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Blocks, Plug, Plus, RefreshCw, Search, Server, Wrench } from "lucide-react";
+import { Blocks, Plus, RefreshCw, Search, Server } from "lucide-react";
 import { useState } from "react";
 
 import { LEVEL_TONE, STATE_TEXT, kindLabel, refreshCatalog, type Level } from "./catalog-api";
@@ -45,6 +46,14 @@ const TAB_HINT: Record<Level, string> = {
   custom: "Set up by builders for one instance, from the full list of Agno toolkits.",
 };
 
+/** Where an MCP server lives (its URL, or its command and arguments): it often names the service. */
+function serverHints(config: EntryOut["config"]): string[] {
+  if (typeof config.url === "string") return [config.url];
+  if (typeof config.command !== "string") return [];
+  const args: unknown[] = Array.isArray(config.args) ? config.args : [];
+  return [[config.command, ...args.map(String)].join(" ")];
+}
+
 function EntryCard({ entry, onOpen }: { entry: EntryOut; onOpen: () => void }) {
   const client = useQueryClient();
   const toggle = useMutation({
@@ -55,7 +64,6 @@ function EntryCard({ entry, onOpen }: { entry: EntryOut; onOpen: () => void }) {
     ...toolCatalogDeleteEntryMutation(),
     onSuccess: () => refreshCatalog(client),
   });
-  const Icon = entry.kind === "mcp" ? Plug : Wrench;
   return (
     <li
       className={cn(
@@ -64,8 +72,14 @@ function EntryCard({ entry, onOpen }: { entry: EntryOut; onOpen: () => void }) {
       )}
     >
       <div className="flex items-start gap-3">
-        <span className="grid size-8 shrink-0 place-items-center rounded-control bg-surface-hover text-fg-secondary">
-          <Icon aria-hidden className="size-4" />
+        <span className="grid size-8 shrink-0 place-items-center rounded-control border border-border-subtle bg-surface-hover text-fg">
+          <ToolMark
+            kind={entry.kind}
+            icon={entry.icon}
+            toolkitKey={entry.toolkit_key}
+            hints={[entry.display_name, ...serverHints(entry.config)]}
+            className="size-4"
+          />
         </span>
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <button

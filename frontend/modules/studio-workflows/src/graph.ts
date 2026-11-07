@@ -10,6 +10,7 @@ import {
   GROUP_HEADER,
   IO_NODE,
   flowNodeHeight,
+  type BrandId,
   type FlowRow,
   type PortType,
 } from "@agnostic/ui";
@@ -63,8 +64,18 @@ export type GraphEdge = {
 
 export type FlowGraph = { nodes: GraphNode[]; edges: GraphEdge[] };
 
-/** What the canvas knows about an executor beyond its id: an agent's model and tools. */
-export type ExecutorDetails = { model?: string | undefined; tools?: readonly string[] | undefined };
+/** How a tool block on a node is drawn: where the tool comes from and the logo of the service it talks to. */
+export type ToolLook = { kind: "mcp" | "toolkit" | "code"; brand?: BrandId | undefined };
+
+/** What the canvas knows about an executor beyond its id: an agent's model and tools, and how they look. */
+export type ExecutorDetails = {
+  model?: string | undefined;
+  /** The model provider's logo. */
+  modelBrand?: BrandId | undefined;
+  tools?: readonly string[] | undefined;
+  /** Tool name → its look, for the tools the registry knows. */
+  looks?: Readonly<Record<string, ToolLook>> | undefined;
+};
 export type DetailsLookup = (executor: Executor) => ExecutorDetails | undefined;
 
 const KIND_TITLE: Record<Executor["kind"], string> = {
@@ -132,10 +143,16 @@ function component(id: string, parent: string | undefined, type: NodeType, rows:
   };
 }
 
+type ToolChip = Extract<FlowRow, { kind: "chips" }>["items"][number];
+
 /** A tool block on an agent node; tool catalog names start with their level (org-, team-, custom-). */
-export function toolChip(name: string): { label: string; tone?: "org" | "team" | "custom" } {
+export function toolChip(name: string, look?: ToolLook): ToolChip {
   const level = /^(org|team|custom)-/.exec(name)?.[1] as "org" | "team" | "custom" | undefined;
-  return level ? { label: name, tone: level } : { label: name };
+  return {
+    label: name,
+    ...(level ? { tone: level } : {}),
+    ...(look ? { kind: look.kind, ...(look.brand ? { brand: look.brand } : {}) } : {}),
+  };
 }
 
 /** The rows a node shows, from its config (and what's known about its executor). */
@@ -153,9 +170,22 @@ export function rowsOf(node: WorkflowNode, details?: DetailsLookup): FlowRow[] {
         },
         input,
       ];
-      if (known?.model) rows.push({ kind: "field", label: "Model", value: known.model });
-      if (known?.tools?.length)
-        rows.push({ kind: "chips", label: "Tools", items: known.tools.map(toolChip) });
+      if (known?.model) {
+        rows.push({
+          kind: "field",
+          label: "Model",
+          value: known.model,
+          ...(known.modelBrand ? { brand: known.modelBrand } : {}),
+        });
+      }
+      if (known?.tools?.length) {
+        const looks = known.looks ?? {};
+        rows.push({
+          kind: "chips",
+          label: "Tools",
+          items: known.tools.map((tool) => toolChip(tool, looks[tool])),
+        });
+      }
       rows.push({ kind: "sep" }, { kind: "out", id: "out", label: "Response", port: "message" });
       return rows;
     }

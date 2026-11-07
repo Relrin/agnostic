@@ -26,6 +26,8 @@ import {
 } from "lucide-react";
 import { useId, type CSSProperties, type DragEvent, type ReactNode } from "react";
 
+import { BrandIcon, ToolMark } from "../brand/brand-icon";
+import type { BrandId } from "../brand/glyphs.gen";
 import { cn } from "../lib/cn";
 
 export type WorkflowNodeType = "Step" | "Steps" | "Parallel" | "Condition" | "Loop" | "Router";
@@ -148,13 +150,22 @@ export function PortLegend({ types, className }: { types: readonly PortType[]; c
 export type FlowRow =
   | { kind: "desc"; text: string }
   | { kind: "in" | "out"; id: string; label: string; port: PortType; note?: string | undefined }
-  | { kind: "field"; label: string; value: string; mono?: boolean | undefined }
+  /** `brand`: a logo before the value (a model's provider). */
+  | { kind: "field"; label: string; value: string; mono?: boolean | undefined; brand?: BrandId | undefined }
   | { kind: "area"; label: string; lines: readonly string[] }
-  /** Small blocks in one line (an agent's tools); `tone` marks where each comes from. */
+  /**
+   * Small blocks in one line (an agent's tools); `tone` marks where each comes from, `kind` and `brand` draw its
+   * mark (the service's logo, else a glyph for an MCP server, a toolkit or a tool from code).
+   */
   | {
       kind: "chips";
       label: string;
-      items: readonly { label: string; tone?: "org" | "team" | "custom" | undefined }[];
+      items: readonly {
+        label: string;
+        tone?: "org" | "team" | "custom" | undefined;
+        kind?: "mcp" | "toolkit" | "code" | undefined;
+        brand?: BrandId | undefined;
+      }[];
     }
   | { kind: "sep" };
 
@@ -301,6 +312,7 @@ function Row({ row, port }: { row: FlowRow; port?: ReactNode }) {
               row.mono !== false && "font-mono",
             )}
           >
+            {row.brand && <BrandIcon brand={row.brand} className="mr-1.5 size-3 text-fg-secondary" />}
             <span className="truncate">{row.value}</span>
           </span>
         </div>
@@ -315,13 +327,14 @@ function Row({ row, port }: { row: FlowRow; port?: ReactNode }) {
                 key={item.label}
                 title={item.label}
                 className={cn(
-                  "inline-flex h-[22px] max-w-[140px] shrink-0 items-center rounded-[5px] border px-1.5 font-mono text-[10.5px]",
+                  "inline-flex h-[22px] max-w-[140px] shrink-0 items-center gap-1 rounded-[5px] border px-1.5 font-mono text-[10.5px]",
                   item.tone === "org" && "border-accent/40 bg-accent/10 text-accent",
                   item.tone === "team" && "border-info/40 bg-[var(--info-tint)] text-info",
                   item.tone === "custom" && "border-border-strong bg-inset text-fg-secondary",
                   !item.tone && "border-border-input bg-inset text-fg",
                 )}
               >
+                {item.kind && <ToolMark kind={item.kind} icon={item.brand} className="size-3" />}
                 <span className="truncate">{item.label}</span>
               </span>
             ))}
