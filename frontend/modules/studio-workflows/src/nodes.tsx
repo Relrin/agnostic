@@ -152,7 +152,10 @@ function OutputPopover({
 
 export const ComponentView = memo(function ComponentView({ data }: NodeProps<ComponentFlowNode>) {
   const { store } = useBuilderContext();
-  const selected = useBuilder(store, (state) => state.selected === data.path);
+  const selected = useBuilder(
+    store,
+    (state) => state.selected === data.path || state.picked.includes(data.path),
+  );
   const [inspecting, setInspecting] = useState(false);
   const result = data.result;
   const inspectable = Boolean(result && (result.content || result.error));
@@ -218,7 +221,10 @@ export const ComponentView = memo(function ComponentView({ data }: NodeProps<Com
 
 export const GroupView = memo(function GroupView({ data, width, height }: NodeProps<GroupFlowNode>) {
   const { store, actions, readOnly, doc } = useBuilderContext();
-  const selected = useBuilder(store, (state) => state.selected === data.path);
+  const selected = useBuilder(
+    store,
+    (state) => state.selected === data.path || state.picked.includes(data.path),
+  );
   return (
     <div className="group/node relative" data-path={data.path}>
       <Grip path={data.path} className="top-3 -left-6" />

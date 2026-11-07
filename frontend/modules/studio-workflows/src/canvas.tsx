@@ -2,11 +2,18 @@
 // input, its components with their typed ports, groups holding their steps, Router choices and Condition branches
 // leaving from their own ports, and the output; a "+" on every connection (click it, or drop a palette item or a
 // step's grip on it) and drops on empty space append a step. Sticky notes, the port legend, zoom controls and a
-// minimap sit over it, and the test run lights nodes and connections up as it goes. Keyboard: arrows move between
-// steps, Enter opens the inspector, Delete removes (with undo), Ctrl+C / Ctrl+V copy and paste a subtree,
-// Ctrl+Z / Ctrl+Shift+Z undo and redo.
+// minimap sit over it, and the test run lights nodes and connections up as it goes.
+//
+// Every node moves freely, the workflow's input and output included; a step moved inside a group stays in it and
+// the frame grows around it. Snapping to the grid is off until it's switched on. Dragging with the right mouse
+// button draws a selection rectangle (Shift or Ctrl adds to the selection, as does Shift- or Ctrl-clicking a node);
+// the picked nodes move together, and the selection bar aligns, distributes, snaps them to the grid or deletes them.
+//
+// Keyboard: arrows move between steps, Enter opens the inspector, Delete removes the selection (with undo),
+// Ctrl+A picks every node, Escape lets go, Ctrl+C / Ctrl+V copy and paste a subtree, Ctrl+Z / Ctrl+Shift+Z undo
+// and redo.
 import type { Config } from "@agnostic/studio";
-import { Button, NODE_COLORS, PortLegend, tokens, type WorkflowNodeStatus } from "@agnostic/ui";
+import { Button, NODE_COLORS, PortLegend, toast, tokens, type WorkflowNodeStatus } from "@agnostic/ui";
 import {
   Background,
   MiniMap,
@@ -16,11 +23,56 @@ import {
   useReactFlow,
   useStoreApi,
   useViewport,
+  type NodeChange,
+  type XYPosition,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { Lock, LockOpen, Maximize, Minus, Plus, StickyNote } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent, type KeyboardEvent } from "react";
+import {
+  AlignCenterHorizontal,
+  AlignCenterVertical,
+  AlignEndHorizontal,
+  AlignEndVertical,
+  AlignHorizontalDistributeCenter,
+  AlignStartHorizontal,
+  AlignStartVertical,
+  AlignVerticalDistributeCenter,
+  Grid3x3,
+  Lock,
+  LockOpen,
+  Magnet,
+  Maximize,
+  Minus,
+  Plus,
+  StickyNote,
+  Trash2,
+  X,
+} from "lucide-react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type DragEvent,
+  type KeyboardEvent,
+  type PointerEvent as ReactPointerEvent,
+  type ReactNode,
+} from "react";
 
+import {
+  CHILD_EXTENT,
+  GRID,
+  align,
+  caught,
+  distribute,
+  fitGroups,
+  rectBetween,
+  toGrid,
+  type Alignment,
+  type Axis,
+  type Box,
+  type Moves,
+} from "./arrange";
 import { DRAG_TYPE, readDragItem, useBuilderContext } from "./context";
 import { EDGE_VIEWS, type FlowEdgeType } from "./edges";
 import {
@@ -34,9 +86,10 @@ import {
   type DetailsLookup,
   type FlowGraph,
 } from "./graph";
+import { useBuilder } from "./history";
 import { layoutGraph, type Layout } from "./layout";
 import { NODE_VIEWS, type FlowNode } from "./nodes";
-import { NOTE_PREFIX, newNote, type Note, type Offsets } from "./notes";
+import { NOTE_PREFIX, newNote, type CanvasState, type Note, type Offsets } from "./notes";
 import { seconds, type StepResult } from "./run-test";
 import { executorOf, flatten, neighbour, nodeAt, nodeName, parentOf, rootSteps } from "./tree";
 
@@ -60,13 +113,44 @@ export type CanvasProps = {
   stats: ReadonlyMap<string, number>;
   details: DetailsLookup;
   offsets: Offsets;
-  onOffsets: (offsets: Offsets) => void;
   notes: Note[];
   onNotes: (notes: Note[]) => void;
+  /** Moves of steps and notes together, as one change (moving a selection, aligning it). */
+  onArrange: (next: Partial<CanvasState>) => void;
   onOpenInspector: () => void;
   /** Bumped by "Auto-layout": drop manual offsets and fit the view. */
   layoutVersion: number;
 };
+
+/** Whether snapping to the grid is on: the viewer's own preference, remembered in this browser. */
+const SNAP_KEY = "agnostic.workflow-canvas.snap";
+
+function readSnap(): boolean {
+  try {
+    return window.localStorage.getItem(SNAP_KEY) === "on";
+  } catch {
+    return false;
+  }
+}
+
+function writeSnap(on: boolean) {
+  try {
+    window.localStorage.setItem(SNAP_KEY, on ? "on" : "off");
+  } catch {
+    // Without storage the choice lasts until the page closes.
+  }
+}
+
+/** A step's id is its config path (`steps[0].choices[1]`); the input, output, drop zones and notes are not steps. */
+function isStep(id: string): boolean {
+  return id.includes("[") && !id.includes("::");
+}
+
+/** The ring around a picked input, output or note (steps show it on their own frame). */
+const PICKED_RING = "rounded-card outline-2 outline-offset-4 outline-accent";
+
+/** The smallest drag that draws a selection rectangle, in screen pixels. */
+const MARQUEE_MIN = 4;
 
 /** A token's value, for the minimap (SVG fills don't read CSS variables everywhere). */
 function resolve(color: string): string {
@@ -98,7 +182,7 @@ function toFlow(
     const base = {
       id: item.id,
       position: { x: item.x + (offset?.x ?? 0), y: item.y + (offset?.y ?? 0) },
-      ...(item.parent ? { parentId: item.parent, extent: "parent" as const } : {}),
+      ...(item.parent ? { parentId: item.parent, extent: CHILD_EXTENT } : {}),
       width: item.width,
       height: item.height,
       selectable: false,
@@ -109,7 +193,6 @@ function toFlow(
         {
           ...base,
           type: "io",
-          draggable: false,
           data: {
             kind: graphNode.kind,
             title: input ? "Workflow input" : "Workflow output",
@@ -221,11 +304,15 @@ function toFlow(
 function CanvasControls({
   locked,
   onLock,
+  snap,
+  onSnap,
   onAddNote,
   readOnly,
 }: {
   locked: boolean;
   onLock: () => void;
+  snap: boolean;
+  onSnap: () => void;
   onAddNote: () => void;
   readOnly: boolean;
 }) {
@@ -278,6 +365,17 @@ function CanvasControls({
       >
         {locked ? <Lock aria-hidden /> : <LockOpen aria-hidden />}
       </Button>
+      <Button
+        variant="icon"
+        size="28"
+        aria-label="Snap to grid"
+        title={snap ? "Snapping to the grid: on" : "Snapping to the grid: off (nodes move freely)"}
+        aria-pressed={snap}
+        className="aria-pressed:bg-segment-active aria-pressed:text-accent"
+        onClick={onSnap}
+      >
+        <Magnet aria-hidden />
+      </Button>
       {!readOnly && (
         <Button variant="ghost" size="28" onClick={onAddNote}>
           <StickyNote aria-hidden className="text-warning" />
@@ -288,15 +386,124 @@ function CanvasControls({
   );
 }
 
+function BarButton({
+  label,
+  disabled,
+  onClick,
+  children,
+}: {
+  label: string;
+  disabled?: boolean;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <Button variant="icon" size="28" aria-label={label} title={label} disabled={disabled} onClick={onClick}>
+      {children}
+    </Button>
+  );
+}
+
+const ALIGNMENTS: { value: Alignment; label: string; icon: ReactNode }[] = [
+  { value: "left", label: "Align left", icon: <AlignStartVertical aria-hidden /> },
+  { value: "center", label: "Align centres horizontally", icon: <AlignCenterVertical aria-hidden /> },
+  { value: "right", label: "Align right", icon: <AlignEndVertical aria-hidden /> },
+  { value: "top", label: "Align top", icon: <AlignStartHorizontal aria-hidden /> },
+  { value: "middle", label: "Align middles vertically", icon: <AlignCenterHorizontal aria-hidden /> },
+  { value: "bottom", label: "Align bottom", icon: <AlignEndHorizontal aria-hidden /> },
+];
+
+/** What can be done with the picked nodes: align, distribute, snap to the grid, delete, let go. */
+function SelectionBar({
+  count,
+  movable,
+  readOnly,
+  onAlign,
+  onDistribute,
+  onGrid,
+  onDelete,
+  onClear,
+}: {
+  count: number;
+  /** How many of them can move on their own (a step inside a picked group moves with it). */
+  movable: number;
+  readOnly: boolean;
+  onAlign: (alignment: Alignment) => void;
+  onDistribute: (axis: Axis) => void;
+  onGrid: () => void;
+  onDelete: () => void;
+  onClear: () => void;
+}) {
+  return (
+    <div
+      role="toolbar"
+      aria-label="Selected nodes"
+      className="flex items-center gap-0.5 rounded-segment border border-border bg-canvas/95 p-[3px] shadow-popover"
+    >
+      <span className="px-2 text-[12px] text-fg-secondary" aria-live="polite">
+        {`${String(count)} selected`}
+      </span>
+      <span aria-hidden className="mx-0.5 h-4 w-px bg-border-input" />
+      {ALIGNMENTS.map((item) => (
+        <BarButton
+          key={item.value}
+          label={item.label}
+          disabled={readOnly || movable < 2}
+          onClick={() => {
+            onAlign(item.value);
+          }}
+        >
+          {item.icon}
+        </BarButton>
+      ))}
+      <span aria-hidden className="mx-0.5 h-4 w-px bg-border-input" />
+      <BarButton
+        label="Distribute horizontally"
+        disabled={readOnly || movable < 3}
+        onClick={() => {
+          onDistribute("horizontal");
+        }}
+      >
+        <AlignHorizontalDistributeCenter aria-hidden />
+      </BarButton>
+      <BarButton
+        label="Distribute vertically"
+        disabled={readOnly || movable < 3}
+        onClick={() => {
+          onDistribute("vertical");
+        }}
+      >
+        <AlignVerticalDistributeCenter aria-hidden />
+      </BarButton>
+      <BarButton label="Snap the selection to the grid" disabled={readOnly || movable < 1} onClick={onGrid}>
+        <Grid3x3 aria-hidden />
+      </BarButton>
+      <span aria-hidden className="mx-0.5 h-4 w-px bg-border-input" />
+      <BarButton label="Delete the selection" disabled={readOnly} onClick={onDelete}>
+        <Trash2 aria-hidden />
+      </BarButton>
+      <BarButton label="Clear the selection" onClick={onClear}>
+        <X aria-hidden />
+      </BarButton>
+    </div>
+  );
+}
+
 /** The canvas. It needs a React Flow provider around it. */
 export function WorkflowCanvas(props: CanvasProps) {
-  const { config, offsets, onOffsets, onOpenInspector, layoutVersion, notes, onNotes } = props;
+  const { config, offsets, onArrange, onOpenInspector, layoutVersion, notes, onNotes } = props;
   const { store, actions, readOnly } = useBuilderContext();
   const flow = useReactFlow();
   const flowStore = useStoreApi();
   const frame = useRef<HTMLDivElement>(null);
   const [layout, setLayout] = useState<{ key: string; layout: Layout } | undefined>(undefined);
   const [locked, setLocked] = useState(false);
+  const [snap, setSnap] = useState(readSnap);
+  const picked = useBuilder(store, (state) => state.picked);
+  // Where the nodes being dragged are right now; saved as manual moves when the drag ends.
+  const [live, setLive] = useState<Record<string, XYPosition>>({});
+  // The selection rectangle, in the frame's own pixels.
+  const [marquee, setMarquee] = useState<{ from: XYPosition; to: XYPosition } | undefined>(undefined);
   const graph = useMemo(
     () => buildFlowGraph(config, { inputLabel: props.inputLabel, details: props.details }),
     [config, props.inputLabel, props.details],
@@ -388,8 +595,206 @@ export function WorkflowCanvas(props: CanvasProps) {
     ],
   );
 
+  // The nodes as drawn: dragged ones where the pointer has them, picked ones marked (so they move together), and
+  // group frames grown around their steps.
+  const nodes = useMemo(() => {
+    const pickedIds = new Set(picked);
+    const placed = shown.nodes.map((node): FlowNode => {
+      const position = live[node.id];
+      const isPicked = pickedIds.has(node.id);
+      if (!position && !isPicked) return node;
+      const ring = isPicked && (node.type === "io" || node.type === "note") ? PICKED_RING : undefined;
+      return { ...node, ...(position ? { position } : {}), selected: isPicked, className: ring } as FlowNode;
+    });
+    return fitGroups(placed);
+  }, [shown.nodes, live, picked]);
+
+  /** Save where nodes now are: steps (and the input and output) as moves off the layout, notes as they are. */
+  const commit = useCallback(
+    (moved: { id: string; position: XYPosition }[]) => {
+      setLive({});
+      if (moved.length === 0) return;
+      const placed = new Map((layout?.layout.nodes ?? []).map((item) => [item.id, item]));
+      const nextOffsets: Offsets = { ...offsets };
+      const at = new Map(moved.map((item) => [item.id, item.position]));
+      let notesMoved = false;
+      for (const { id, position } of moved) {
+        if (id.startsWith(NOTE_PREFIX)) {
+          notesMoved = true;
+          continue;
+        }
+        const origin = placed.get(id);
+        if (origin)
+          nextOffsets[id] = { x: Math.round(position.x - origin.x), y: Math.round(position.y - origin.y) };
+      }
+      const nextNotes = notesMoved
+        ? notes.map((note) => {
+            const position = at.get(note.id);
+            return position ? { ...note, x: Math.round(position.x), y: Math.round(position.y) } : note;
+          })
+        : undefined;
+      onArrange({ positions: nextOffsets, ...(nextNotes ? { notes: nextNotes } : {}) });
+    },
+    [layout, offsets, notes, onArrange],
+  );
+
+  const onNodesChange = useCallback(
+    (changes: NodeChange<FlowNode>[]) => {
+      const moved: Record<string, XYPosition> = {};
+      const selection = new Map<string, boolean>();
+      for (const change of changes) {
+        if (change.type === "position" && change.position) moved[change.id] = change.position;
+        if (change.type === "select") selection.set(change.id, change.selected);
+      }
+      if (Object.keys(moved).length > 0) {
+        setLive((current) => ({ ...current, ...moved }));
+      }
+      // Dragging a node outside the selection lets the selection go, as on a desktop.
+      if (selection.size > 0) {
+        const current = store.getState().picked;
+        const kept = current.filter((id) => selection.get(id) !== false);
+        const added = [...selection].filter(([id, on]) => on && !kept.includes(id)).map(([id]) => id);
+        if (kept.length !== current.length || added.length > 0) store.getState().pick([...kept, ...added]);
+      }
+    },
+    [store],
+  );
+
+  /** The picked nodes that move on their own (a node inside a picked group moves with the group), as boxes. */
+  const pickedBoxes = useCallback((): Box[] => {
+    const { nodeLookup } = flowStore.getState();
+    const ids = new Set(store.getState().picked);
+    const insidePicked = (id: string): boolean => {
+      let parent = nodeLookup.get(id)?.parentId;
+      while (parent) {
+        if (ids.has(parent)) return true;
+        parent = nodeLookup.get(parent)?.parentId;
+      }
+      return false;
+    };
+    return [...ids].flatMap((id) => {
+      const node = nodeLookup.get(id);
+      if (!node || insidePicked(id)) return [];
+      const { x, y } = node.internals.positionAbsolute;
+      return [
+        {
+          id,
+          x,
+          y,
+          width: node.measured.width ?? node.width ?? 0,
+          height: node.measured.height ?? node.height ?? 0,
+        },
+      ];
+    });
+  }, [flowStore, store]);
+
+  /** Move the picked nodes by `moves` (canvas coordinates) and save it; a step stays inside its group. */
+  const arrange = useCallback(
+    (plan: (boxes: Box[]) => Moves) => {
+      if (readOnly || locked) return;
+      const { nodeLookup } = flowStore.getState();
+      const moves = plan(pickedBoxes());
+      const moved = [...moves].flatMap(([id, delta]) => {
+        const node = nodeLookup.get(id);
+        if (!node) return [];
+        let position = { x: node.position.x + delta.x, y: node.position.y + delta.y };
+        if (node.parentId) {
+          position = {
+            x: Math.max(position.x, CHILD_EXTENT[0][0]),
+            y: Math.max(position.y, CHILD_EXTENT[0][1]),
+          };
+        }
+        return [{ id, position }];
+      });
+      commit(moved);
+    },
+    [commit, flowStore, locked, pickedBoxes, readOnly],
+  );
+
+  const removePicked = useCallback(() => {
+    if (readOnly) return;
+    const ids = store.getState().picked;
+    const steps = ids.filter(isStep);
+    const noteIds = new Set(ids.filter((id) => id.startsWith(NOTE_PREFIX)));
+    if (steps.length === 0 && noteIds.size === 0) {
+      if (ids.length > 0) toast("The workflow's input and output stay: they can be moved, not removed.");
+      return;
+    }
+    if (noteIds.size > 0) onNotes(notes.filter((note) => !noteIds.has(note.id)));
+    if (steps.length > 0) actions.removeMany(steps);
+    store.getState().pick([]);
+  }, [actions, notes, onNotes, readOnly, store]);
+
+  /** Keyboard focus back on the canvas once the focused node is gone, so the next key still reaches it. */
+  const refocus = useCallback(() => {
+    requestAnimationFrame(() => {
+      if (!frame.current?.contains(document.activeElement)) frame.current?.focus({ preventScroll: true });
+    });
+  }, []);
+
+  // ------------------------------------------------ the selection rectangle (right mouse button)
+  const marqueeStart = useRef<{ from: XYPosition; additive: boolean } | undefined>(undefined);
+  const onPointerDownCapture = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (event.button !== 2 || !frame.current) return;
+    const target = event.target as Element;
+    if (!target.closest(".react-flow__pane")) return;
+    // It starts on empty canvas or inside a group frame, not on a step, a note or the controls.
+    if (
+      target.closest(
+        ".react-flow__node-component, .react-flow__node-io, .react-flow__node-note, .react-flow__panel, button, textarea, input",
+      )
+    ) {
+      return;
+    }
+    event.preventDefault();
+    const box = frame.current.getBoundingClientRect();
+    const from = { x: event.clientX - box.left, y: event.clientY - box.top };
+    marqueeStart.current = { from, additive: event.shiftKey || event.ctrlKey || event.metaKey };
+    const move = (moveEvent: PointerEvent) => {
+      const to = { x: moveEvent.clientX - box.left, y: moveEvent.clientY - box.top };
+      if (Math.abs(to.x - from.x) < MARQUEE_MIN && Math.abs(to.y - from.y) < MARQUEE_MIN) return;
+      setMarquee({ from, to });
+    };
+    const up = (upEvent: PointerEvent) => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+      const start = marqueeStart.current;
+      marqueeStart.current = undefined;
+      setMarquee(undefined);
+      const to = { x: upEvent.clientX - box.left, y: upEvent.clientY - box.top };
+      if (!start || (Math.abs(to.x - from.x) < MARQUEE_MIN && Math.abs(to.y - from.y) < MARQUEE_MIN)) return;
+      const rect = rectBetween(
+        flow.screenToFlowPosition({ x: from.x + box.left, y: from.y + box.top }),
+        flow.screenToFlowPosition({ x: upEvent.clientX, y: upEvent.clientY }),
+      );
+      const { nodeLookup } = flowStore.getState();
+      const hit: string[] = [];
+      for (const [id, node] of nodeLookup) {
+        if (node.type === "placeholder" || node.hidden) continue;
+        const { x, y } = node.internals.positionAbsolute;
+        const width = node.measured.width ?? node.width ?? 0;
+        const height = node.measured.height ?? node.height ?? 0;
+        // A group is picked when the rectangle holds all of it; anything else when the rectangle touches it.
+        if (caught({ id, x, y, width, height }, rect, node.type === "frame")) hit.push(id);
+      }
+      const state = store.getState();
+      if (start.additive) {
+        const base = state.picked.length === 0 && state.selected ? [state.selected] : state.picked;
+        state.pick([...new Set([...base, ...hit])]);
+        return;
+      }
+      state.pick(hit);
+      const steps = hit.filter(isStep);
+      state.select(steps.length === 1 && hit.length === 1 ? steps[0] : undefined);
+      frame.current?.focus({ preventScroll: true });
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+  };
+
   const selectAndShow = useCallback(
     (path: string | undefined) => {
+      store.getState().pick([]);
       store.getState().select(path);
       if (!path) return;
       const internal = flow.getInternalNode(path);
@@ -445,9 +850,29 @@ export function WorkflowCanvas(props: CanvasProps) {
       onOpenInspector();
       return;
     }
-    if ((event.key === "Delete" || event.key === "Backspace") && selected && !readOnly) {
+    if ((event.key === "Delete" || event.key === "Backspace") && !readOnly) {
+      if (store.getState().picked.length > 0) {
+        event.preventDefault();
+        removePicked();
+        refocus();
+        return;
+      }
+      if (selected) {
+        event.preventDefault();
+        actions.remove(selected);
+        refocus();
+        return;
+      }
+    }
+    if (event.key === "Escape" && store.getState().picked.length > 0) {
       event.preventDefault();
-      actions.remove(selected);
+      store.getState().pick([]);
+      return;
+    }
+    if (command && event.key.toLowerCase() === "a") {
+      event.preventDefault();
+      store.getState().pick(shown.nodes.filter((node) => node.type !== "placeholder").map((node) => node.id));
+      store.getState().select(undefined);
       return;
     }
     if (command && event.key.toLowerCase() === "c" && selected) {
@@ -494,51 +919,101 @@ export function WorkflowCanvas(props: CanvasProps) {
         if (!readOnly && event.dataTransfer.types.includes(DRAG_TYPE)) event.preventDefault();
       }}
       onDrop={onDropAtEnd}
+      onPointerDownCapture={onPointerDownCapture}
+      onContextMenu={(event) => {
+        // The right button draws the selection rectangle on the canvas; notes keep their own menu.
+        const target = event.target as Element;
+        if (target.closest(".react-flow__pane") && !target.closest("textarea, input")) event.preventDefault();
+      }}
     >
       <ReactFlow<FlowNode, FlowEdgeType>
-        nodes={shown.nodes}
+        nodes={nodes}
         edges={shown.edges}
         nodeTypes={NODE_VIEWS}
         edgeTypes={EDGE_VIEWS}
+        onNodesChange={onNodesChange}
         nodesConnectable={false}
         nodesDraggable={!readOnly && !locked}
         elementsSelectable={false}
         deleteKeyCode={null}
         selectionKeyCode={null}
         multiSelectionKeyCode={null}
+        // The left and middle buttons pan; the right one is for the selection rectangle.
+        panOnDrag={[0, 1]}
+        snapToGrid={snap}
+        snapGrid={[GRID, GRID]}
         onlyRenderVisibleElements
         minZoom={0.15}
         maxZoom={2}
         proOptions={{ hideAttribution: true }}
-        onNodeDragStop={(_, node) => {
-          if (node.id.startsWith(NOTE_PREFIX)) {
-            onNotes(
-              notes.map((item) =>
-                item.id === node.id
-                  ? { ...item, x: Math.round(node.position.x), y: Math.round(node.position.y) }
-                  : item,
-              ),
-            );
+        onNodeDragStop={(_, __, dragged) => {
+          commit(dragged.map((node) => ({ id: node.id, position: node.position })));
+        }}
+        onNodeClick={(event, node) => {
+          if (node.type === "placeholder") return;
+          const state = store.getState();
+          if (event.shiftKey || event.ctrlKey || event.metaKey) {
+            // Shift- or Ctrl-click adds a node to the selection, or takes it out.
+            const base = state.picked.length === 0 && state.selected ? [state.selected] : state.picked;
+            const without = base.filter((id) => id !== node.id);
+            state.pick(without.length === base.length ? [...base, node.id] : without);
             return;
           }
-          const placed = layout?.layout.nodes.find((item) => item.id === node.id);
-          if (!placed) return;
-          onOffsets({
-            ...offsets,
-            [node.id]: { x: node.position.x - placed.x, y: node.position.y - placed.y },
-          });
+          state.pick([]);
+          // A click anywhere on a step selects it; its buttons and fields do what they do.
+          const target = event.target as Element;
+          if (isStep(node.id) && !target.closest("button, a, input, textarea, [role=button]")) {
+            state.select(node.id);
+          }
         }}
         onPaneClick={() => {
           store.getState().select(undefined);
+          store.getState().pick([]);
         }}
       >
-        <Background gap={22} size={1.2} color="var(--border-strong)" />
+        <Background
+          gap={GRID}
+          size={snap ? 1.6 : 1.2}
+          color={snap ? "var(--fg-faint)" : "var(--border-strong)"}
+        />
+        {picked.length > 0 && (
+          <Panel position="top-center" className="!mt-3">
+            <SelectionBar
+              count={picked.length}
+              movable={picked.length > 0 ? pickedBoxes().length : 0}
+              readOnly={readOnly || locked}
+              onAlign={(alignment) => {
+                arrange((boxes) => align(boxes, alignment));
+              }}
+              onDistribute={(axis) => {
+                arrange((boxes) => distribute(boxes, axis));
+              }}
+              onGrid={() => {
+                arrange((boxes) => toGrid(boxes));
+              }}
+              onDelete={() => {
+                removePicked();
+                refocus();
+              }}
+              onClear={() => {
+                store.getState().pick([]);
+              }}
+            />
+          </Panel>
+        )}
         <Panel position="bottom-left" className="!m-3 flex flex-col items-start gap-2">
           <PortLegend types={legend} />
           <CanvasControls
             locked={locked}
             onLock={() => {
               setLocked((current) => !current);
+            }}
+            snap={snap}
+            onSnap={() => {
+              setSnap((current) => {
+                writeSnap(!current);
+                return !current;
+              });
             }}
             onAddNote={addNote}
             readOnly={readOnly}
@@ -568,6 +1043,18 @@ export function WorkflowCanvas(props: CanvasProps) {
           nodeStrokeWidth={6}
         />
       </ReactFlow>
+      {marquee && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute z-20 rounded-[3px] border border-accent bg-accent/10"
+          style={{
+            left: Math.min(marquee.from.x, marquee.to.x),
+            top: Math.min(marquee.from.y, marquee.to.y),
+            width: Math.abs(marquee.to.x - marquee.from.x),
+            height: Math.abs(marquee.to.y - marquee.from.y),
+          }}
+        />
+      )}
       {shown.nodes.length === 0 && (
         <div
           role="status"

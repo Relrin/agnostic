@@ -14,6 +14,7 @@ import {
   nodeAt,
   nodeName,
   removeNode,
+  removeNodes,
   unwrapNode,
   updateNode,
   wrapNode,
@@ -32,6 +33,8 @@ export type Actions = {
   add: (slot: Slot, type: NodeType, executor?: Executor) => string | undefined;
   drop: (slot: Slot, item: DragItem) => void;
   remove: (path: string) => void;
+  /** Remove several steps as one undoable edit. */
+  removeMany: (paths: readonly string[]) => void;
   update: (path: string, label: string, recipe: (node: WorkflowNode) => void) => void;
   updateWorkflow: (label: string, recipe: (config: Config) => void) => void;
   wrap: (path: string, type: Exclude<NodeType, "Step">) => void;
@@ -80,6 +83,22 @@ export function useActions(doc: DraftDocument, store: BuilderStore, readOnly: bo
     const select = (path: string | undefined) => {
       store.getState().select(path);
     };
+    const remove = (path: string) => {
+      const name = nodeName(nodeAt(doc.config, path));
+      run(`Remove ${name || "step"}`, (config) => {
+        removeNode(config, path);
+      });
+      select(undefined);
+      store.getState().pick([]);
+      toast(`Removed ${name || "the step"}.`, {
+        action: {
+          label: "Undo",
+          onClick: () => {
+            undo(store, doc.setConfig);
+          },
+        },
+      });
+    };
     return {
       add: (slot, type, executor) => {
         const path = run(`Add ${type}`, (config) =>
@@ -100,13 +119,19 @@ export function useActions(doc: DraftDocument, store: BuilderStore, readOnly: bo
         );
         select(path);
       },
-      remove: (path) => {
-        const name = nodeName(nodeAt(doc.config, path));
-        run(`Remove ${name || "step"}`, (config) => {
-          removeNode(config, path);
-        });
+      remove,
+      removeMany: (paths) => {
+        if (paths.length === 0) return;
+        const [only] = paths;
+        if (paths.length === 1 && only) {
+          remove(only);
+          return;
+        }
+        const removed = run(`Remove ${String(paths.length)} steps`, (config) => removeNodes(config, paths));
+        if (!removed?.length) return;
         select(undefined);
-        toast(`Removed ${name || "the step"}.`, {
+        store.getState().pick([]);
+        toast(`Removed ${String(removed.length)} step${removed.length === 1 ? "" : "s"}.`, {
           action: {
             label: "Undo",
             onClick: () => {

@@ -36,3 +36,20 @@ export function newNote(x: number, y: number, text = ""): Note {
   const id = `${NOTE_PREFIX}${Math.random().toString(36).slice(2, 10)}`;
   return { id, x, y, width: NOTE_WIDTH, text };
 }
+
+/**
+ * Manual moves after an edit: each one follows its node to the node's new path (`follow`, from `followPaths`), and
+ * the moves of removed nodes are dropped. Keys that aren't node paths (the input, the output) stay as they are.
+ * Returns `offsets` itself when nothing changed.
+ */
+export function followOffsets(offsets: Offsets, follow: (path: string) => string | undefined): Offsets {
+  const next: Offsets = {};
+  let changed = false;
+  for (const [key, offset] of Object.entries(offsets)) {
+    const isPath = key.includes("[");
+    const target = isPath ? follow(key) : key;
+    if (target !== key) changed = true;
+    if (target !== undefined) next[target] = offset;
+  }
+  return changed ? next : offsets;
+}

@@ -74,12 +74,12 @@ import { useExecutorDetails } from "./executor-details";
 import { createBuilderStore, useBuilder } from "./history";
 import { Inspector } from "./inspector";
 import { fromLangflow, toLangflow, type ImportResult } from "./langflow";
-import { readCanvasState, type CanvasState } from "./notes";
+import { followOffsets, readCanvasState, type CanvasState } from "./notes";
 import { Palette } from "./palette";
 import { ProblemsPanel, nodePathOf, problemCounts } from "./problems";
 import { PlaygroundPanel, stepResults, useTestRun } from "./run-test";
 import { useExecutors, useWorkflowSchema } from "./schema";
-import { stepCount } from "./tree";
+import { followPaths, stepCount } from "./tree";
 
 type View = "canvas" | "code";
 const VALIDATE_MS = 400;
@@ -303,6 +303,17 @@ function WorkflowBuilder({ instance, componentId }: { instance: string; componen
     setCanvasState(merged);
     saveLayout(merged);
   };
+  // Manual moves are kept by node path: after an edit each one follows its node (removing a step renumbers the
+  // steps after it), so a step never takes over the place another one was moved to.
+  const previousConfig = useRef(doc.config);
+  useEffect(() => {
+    const before = previousConfig.current;
+    previousConfig.current = doc.config;
+    if (!before || !doc.config || before === doc.config) return;
+    const positions = followOffsets(shown.positions, followPaths(before, doc.config));
+    if (positions !== shown.positions) updateCanvas({ positions });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only a new config moves the offsets
+  }, [doc.config]);
   const results = useMemo(() => stepResults(run.state?.steps), [run.state?.steps]);
   const problems = useMemo(() => problemCounts(validation.data), [validation.data]);
 
@@ -560,13 +571,11 @@ function WorkflowBuilder({ instance, componentId }: { instance: string; componen
                   stats={averages}
                   details={details}
                   offsets={shown.positions}
-                  onOffsets={(positions) => {
-                    updateCanvas({ positions });
-                  }}
                   notes={shown.notes}
                   onNotes={(notes) => {
                     updateCanvas({ notes });
                   }}
+                  onArrange={updateCanvas}
                   onOpenInspector={() => {
                     setPanel("inspector");
                     requestAnimationFrame(() => inspector.current?.focus());

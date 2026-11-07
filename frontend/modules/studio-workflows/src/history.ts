@@ -1,4 +1,5 @@
-// The builder's state outside the config: selection, the clipboard, and undo/redo. Every canvas edit is an immer
+// The builder's state outside the config: the selected step (what the inspector shows), the nodes picked together
+// on the canvas (to move, align or delete at once), the clipboard, and undo/redo. Every canvas edit is an immer
 // recipe on the config; its inverse patches go on the undo stack, so any operation (insert, move, wrap, delete,
 // an inspector change) can be undone. The config itself stays in the draft document, which autosaves it.
 import type { Config } from "@agnostic/studio";
@@ -14,10 +15,13 @@ type Entry = { undo: Patch[]; redo: Patch[]; label: string };
 
 export type BuilderState = {
   selected: string | undefined;
+  /** Canvas node ids picked together: steps by path, plus the workflow's input and output and sticky notes. */
+  picked: string[];
   clipboard: Record<string, unknown> | undefined;
   past: Entry[];
   future: Entry[];
   select: (path: string | undefined) => void;
+  pick: (ids: string[]) => void;
   copy: (node: Record<string, unknown> | undefined) => void;
 };
 
@@ -26,11 +30,15 @@ export type BuilderStore = StoreApi<BuilderState>;
 export function createBuilderStore(): BuilderStore {
   return createStore<BuilderState>()((set) => ({
     selected: undefined,
+    picked: [],
     clipboard: undefined,
     past: [],
     future: [],
     select: (path) => {
       set({ selected: path });
+    },
+    pick: (ids) => {
+      set({ picked: ids });
     },
     copy: (node) => {
       set({ clipboard: node ? structuredClone(node) : undefined });

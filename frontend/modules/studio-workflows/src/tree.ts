@@ -219,6 +219,49 @@ export function removeNode(config: Config, path: string): WorkflowNode | undefin
   return removed;
 }
 
+/**
+ * Remove several nodes in one edit. A node inside another removed node goes with it; the rest are taken out from
+ * the last in reading order to the first, so removing one never renumbers a path still to remove.
+ */
+export function removeNodes(config: Config, paths: readonly string[]): WorkflowNode[] {
+  const wanted = new Set(
+    paths.filter((path) => !paths.some((other) => other !== path && contains(other, path))),
+  );
+  const order = flatten(config)
+    .map((item) => item.path)
+    .filter((path) => wanted.has(path))
+    .reverse();
+  return order.flatMap((path) => {
+    const removed = removeNode(config, path);
+    return removed ? [removed] : [];
+  });
+}
+
+/**
+ * Where each node path of `before` is in `after`. Edits keep the nodes they don't touch as the same objects, so a
+ * node is followed by identity (a removed sibling shifts its path); a node the edit changed keeps its path unless
+ * another node moved into it. A path whose node is gone answers `undefined`.
+ */
+export function followPaths(
+  before: Config | undefined,
+  after: Config | undefined,
+): (path: string) => string | undefined {
+  const old = flatten(before);
+  const next = flatten(after);
+  const known = new Set(old.map((item) => item.node));
+  const pathOf = new Map(next.map((item) => [item.node, item.path]));
+  const nodeAtPath = new Map(next.map((item) => [item.path, item.node]));
+  const oldAt = new Map(old.map((item) => [item.path, item.node]));
+  return (path) => {
+    const node = oldAt.get(path);
+    if (!node) return nodeAtPath.has(path) ? path : undefined;
+    const moved = pathOf.get(node);
+    if (moved !== undefined) return moved;
+    const there = nodeAtPath.get(path);
+    return there && !known.has(there) ? path : undefined;
+  };
+}
+
 export function updateNode(config: Config, path: string, update: (node: WorkflowNode) => void): void {
   const node = nodeAt(config, path);
   if (node) update(node);
