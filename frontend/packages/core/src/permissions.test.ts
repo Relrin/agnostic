@@ -40,6 +40,9 @@ describe("scopeSatisfies", () => {
     expect(isControlPlaneScope("os:keys:rotate")).toBe(true);
     expect(isControlPlaneScope("service_accounts:manage")).toBe(true);
     expect(isControlPlaneScope("service_accounts:read")).toBe(false);
+    expect(isControlPlaneScope("tool_catalog:read")).toBe(true);
+    expect(isControlPlaneScope("tool_catalog:write")).toBe(true);
+    expect(isControlPlaneScope("notifications:write")).toBe(true);
     expect(isControlPlaneScope("sessions:delete")).toBe(false);
   });
 });
@@ -55,6 +58,14 @@ describe("decide", () => {
     expect(decide(operatorOnProd, "agents:billing:run").allowed).toBe(true);
     expect(decide(operatorOnProd, "org:members:write").allowed).toBe(false);
     expect(decide(operatorOnProd, "os:read").allowed).toBe(true);
+    // Org-wide scopes are read from the control-plane pool, never the instance's runtime scopes.
+    expect(decide(operatorOnProd, "tool_catalog:read").allowed).toBe(false);
+    expect(
+      decide({ ...operatorOnProd, control_plane_scopes: ["tool_catalog:read"] }, "tool_catalog:read"),
+    ).toEqual({
+      allowed: true,
+      reason: "You have tool_catalog:read",
+    });
   });
 });
 

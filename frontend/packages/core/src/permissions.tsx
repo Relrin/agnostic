@@ -49,7 +49,17 @@ export function decide(access: MyAccessOut | undefined, scope: string): Can {
   return { allowed: true, reason: grant ? `Granted by ${grant.role_name} → ${held}` : `You have ${held}` };
 }
 
-const CONTROL_PLANE_FAMILIES = new Set(["org", "os", "audit", "settings", "studio", "assistant", "queue"]);
+const CONTROL_PLANE_FAMILIES = new Set([
+  "org",
+  "os",
+  "audit",
+  "settings",
+  "studio",
+  "assistant",
+  "queue",
+  "tool_catalog",
+  "notifications",
+]);
 
 export function isControlPlaneScope(scope: string): boolean {
   const [family, middle, action] = split(scope);
