@@ -28,10 +28,10 @@ by every branch.
 | `e` | evals | `e0001_evals` | | `t` | notifications | `t0001_notifications` |
 | `g` | gateway | `g0001_gateway` | | `u` | studio | `u0001_studio` |
 | `i` | identity | `i0001_identity` | | `v` | observe | `v0001_observe` |
-| `n` | instances | `n0001_instances` | | `w` | service_accounts | `w0001_service_accounts` |
-| | | | | `x` | sources | `x0001_sources` |
+| `l` | tool_catalog | `l0001_tool_catalog` | | `w` | service_accounts | `w0001_service_accounts` |
+| `n` | instances | `n0001_instances` | | `x` | sources | `x0001_sources` |
 
-`context`, `queue` and `system` have no tables. Free letters for a new module: `f`, `h`, `j`, `l`, `m`, `y`, `z`.
+`context`, `queue` and `system` have no tables. Free letters for a new module: `f`, `h`, `j`, `m`, `y`, `z`.
 
 ## Add a revision to an existing module
 

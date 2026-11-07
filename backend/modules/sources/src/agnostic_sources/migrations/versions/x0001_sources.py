@@ -173,6 +173,7 @@ def upgrade() -> None:
         sa.Column("scan_report", JSON),
         sa.Column("webhook_id", sa.String(100)),
         sa.Column("webhook_secret_enc", sa.Text()),
+        sa.Column("activated_at", sa.DateTime(timezone=True)),
         sa.Column("created_by", sa.String(40)),
         sa.Column("version", sa.Integer(), nullable=False),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.current_timestamp()),
