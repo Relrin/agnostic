@@ -12,3 +12,8 @@ eea9d4170793f4fd792cbfba2151115f68d74916:frontend/apps/web/e2e/org-settings.spec
 # The throwaway master key of the air-gap and restore drills (bytes 0..31); the workflows now generate it per run.
 247fca7af4b0bedc959465f29b3d70b035889328:.github/workflows/airgap.yml:generic-api-key:39
 247fca7af4b0bedc959465f29b3d70b035889328:.github/workflows/upgrade.yml:generic-api-key:67
+# PEM header lines with no key in them: the deploy-key format check's list of headers, and a test's placeholder for a
+# GitHub App key. Two headers close together read as a key block; both are now built at runtime.
+928f31c68c7d7fb28e4b77e9049546d4f8255be1:backend/modules/sources/src/agnostic_sources/infrastructure/providers/deploy_key.py:private-key:21
+928f31c68c7d7fb28e4b77e9049546d4f8255be1:backend/modules/sources/src/agnostic_sources/infrastructure/providers/deploy_key.py:private-key:24
+16a8b0e7838659bc00dc4e3a3a78e0cd980155e7:frontend/modules/sources/src/sources-page.test.tsx:private-key:264

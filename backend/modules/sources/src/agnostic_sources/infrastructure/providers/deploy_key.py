@@ -19,12 +19,8 @@ from agnostic_sources.application.ports import (
 )
 from agnostic_sources.domain.remote import is_ssh_url, ssh_host
 
-_KEY_HEADERS = (
-    "-----BEGIN OPENSSH PRIVATE KEY-----",
-    "-----BEGIN RSA PRIVATE KEY-----",
-    "-----BEGIN EC PRIVATE KEY-----",
-    "-----BEGIN PRIVATE KEY-----",
-)
+# Built from their parts: written out one after another, the PEM headers read as a key block to secret scanners.
+_KEY_HEADERS = tuple(f"-----BEGIN {kind}PRIVATE KEY-----" for kind in ("OPENSSH ", "RSA ", "EC ", ""))
 NO_API = (
     "A deploy key reaches the repository over SSH only; opening pull requests needs a token or the GitHub App. "
     "Commit straight to the branch, or don't write back."

@@ -256,17 +256,19 @@ describe("connections", () => {
   });
 
   it("send a GitHub App's new private key and app ID", () => {
+    // Joined at runtime: written out, the PEM header reads as a key to secret scanners.
+    const PEM = ["-----BEGIN", "PRIVATE KEY-----"].join(" ");
     const form = {
       name: github.name,
       web_url: github.web_url ?? "",
       api_url: github.api_url ?? "",
       access: github.access,
-      secret: "-----BEGIN PRIVATE KEY-----",
+      secret: PEM,
       app_id: " 12345 ",
     };
     expect(connectionPatch(github, form)).toEqual({
       version: github.version,
-      private_key: "-----BEGIN PRIVATE KEY-----",
+      private_key: PEM,
       app_id: "12345",
     });
     expect(
@@ -278,7 +280,7 @@ describe("connections", () => {
       }),
     ).toEqual({
       version: gitlab.version,
-      token: "-----BEGIN PRIVATE KEY-----",
+      token: PEM,
     });
   });
 });
