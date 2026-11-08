@@ -3,7 +3,7 @@
 from typing import Any
 
 import pytest
-from hypothesis import given
+from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from agnostic_sources.domain.merge import MISSING, apply_resolutions, changed_paths, get_at, set_at, three_way
@@ -96,6 +96,8 @@ values = st.recursive(
 documents = st.dictionaries(st.sampled_from(["a", "b", "c", "instructions"]), values, max_size=4)
 
 
+# Pure in-memory merges: a wall-clock deadline would only measure how busy the machine is.
+@settings(deadline=None)
 @given(documents, documents)
 def test_merge_identities(base: dict[str, Any], side: dict[str, Any]) -> None:
     assert three_way(base, side, base).merged == side
