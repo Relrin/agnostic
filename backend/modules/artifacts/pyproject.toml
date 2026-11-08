@@ -1,0 +1,31 @@
+[project]
+name = "agnostic-artifacts"
+version = "0.3.0"
+description = "Artefacts: serve the files agents produce for viewing and download in an isolated preview, and share them through expiring, revocable links"
+requires-python = "==3.15.*"
+license = "BSD-3-Clause"
+dependencies = [
+  "agnostic-audit",
+  "agnostic-gateway",
+  "agnostic-instances",
+  "agnostic-kernel",
+  "alembic==1.20.1",
+  "dishka==1.10.1",
+  "fastapi==0.162.0",
+  "pydantic==2.14.2",
+  "pydantic-settings==2.16.2",
+  "sqlalchemy[asyncio]==2.1.6",
+]
+
+[project.entry-points."agnostic.modules"]
+artifacts = "agnostic_artifacts.module:ArtifactsModule"
+
+[tool.uv.sources]
+agnostic-audit = { workspace = true }
+agnostic-gateway = { workspace = true }
+agnostic-instances = { workspace = true }
+agnostic-kernel = { workspace = true }
+
+[build-system]
+requires = ["uv_build==0.13.6"]
+build-backend = "uv_build"

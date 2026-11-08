@@ -25,6 +25,7 @@ security whitepaper.
 | [Identity, access and the gateway](architecture/identity-access-gateway.md) | sign-in, sessions, org roles, bindings, effective scopes, instances and keys, the gateway pipeline, audit |
 | [Operate and realtime](architecture/operate-and-realtime.md) | RunStream, approvals and delegated elevation, Home overview, realtime events, ⌘K search |
 | [Context](architecture/context.md) | memory duplicates, provenance and optimization, knowledge content and retrieval, learnings and data deletion, file provenance |
+| [Artefacts](architecture/artefacts.md) | files agents produce: collecting them from workspaces and sandboxes, isolated previews, downloads, share links |
 | [Observe and evaluations](architecture/observe-and-evals.md) | trace comparison, span statistics, metrics and cost estimates, eval datasets, batches, version comparison, publish gates |
 | [Code sources](architecture/sources.md) | connections, sources, path mappings, pulling as drafts, field-level merges and conflicts, write-back as pull requests, webhooks, mirrors, local folders |
 | [Studio](architecture/studio.md) | typed configs and code generation, the registry and used-by index, drafts and autosave, validation, gated publish with overrides, draft test runs, teams, promotion, golden fixtures |
@@ -46,6 +47,7 @@ security whitepaper.
 | [Sign-in providers](how-to/sign-in-providers.md) | local accounts, GitHub, GitLab, Google, Okta, any OIDC or SAML provider, enforcing SSO, MFA |
 | [Okta](how-to/idp/okta.md), [Entra ID](how-to/idp/entra-id.md), [Keycloak](how-to/idp/keycloak.md), [Google Workspace](how-to/idp/google-workspace.md) | SSO with each identity provider, SCIM provisioning, group sync |
 | [SIEM streaming and the audit archive](how-to/audit-siem-and-archive.md) | webhook, syslog and OTLP destinations, retention, the S3 archive, restore, the hash chain |
+| [Collect artefacts](how-to/collect-artefacts.md) | media storage, collecting files from folders, E2B, Claude Code and Codex (also sandboxed), Pi, OpenCode, a source of your own |
 | [Testing](how-to/testing.md) | unit, integration, contract, Storybook a11y, Playwright |
 | [Dependencies](how-to/dependencies.md) | exact pinning, upgrades, Renovate, license policy |
 | [Connect a code source](how-to/connect-a-code-source.md) | GitHub Apps, tokens, path mappings and sync policies, git workers, local folders, the dev Gitea |

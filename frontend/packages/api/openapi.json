@@ -7442,6 +7442,30 @@
         "title": "CreatedOut",
         "type": "object"
       },
+      "CreatedShareOut": {
+        "properties": {
+          "path": {
+            "description": "The web app path of the link",
+            "title": "Path",
+            "type": "string"
+          },
+          "share": {
+            "$ref": "#/components/schemas/ShareOut"
+          },
+          "token": {
+            "description": "Shown once: the link is /s/{token}; only its hash is stored",
+            "title": "Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "share",
+          "token",
+          "path"
+        ],
+        "title": "CreatedShareOut",
+        "type": "object"
+      },
       "CreatorOut": {
         "properties": {
           "id": {
@@ -21551,6 +21575,238 @@
         "title": "SetCurrentOut",
         "type": "object"
       },
+      "ShareIn": {
+        "properties": {
+          "audience": {
+            "default": "org",
+            "enum": [
+              "org",
+              "link"
+            ],
+            "title": "Audience",
+            "type": "string"
+          },
+          "filename": {
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Filename",
+            "type": "string"
+          },
+          "session_id": {
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Session Id",
+            "type": "string"
+          },
+          "storage_key": {
+            "maxLength": 1024,
+            "minLength": 1,
+            "title": "Storage Key",
+            "type": "string"
+          },
+          "ttl_seconds": {
+            "default": 86400,
+            "description": "How long the link works, in seconds",
+            "minimum": 300.0,
+            "title": "Ttl Seconds",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "session_id",
+          "storage_key",
+          "filename"
+        ],
+        "title": "ShareIn",
+        "type": "object"
+      },
+      "ShareOut": {
+        "properties": {
+          "audience": {
+            "enum": [
+              "org",
+              "link"
+            ],
+            "title": "Audience",
+            "type": "string"
+          },
+          "content_type": {
+            "title": "Content Type",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "created_by": {
+            "title": "Created By",
+            "type": "string"
+          },
+          "created_by_name": {
+            "title": "Created By Name",
+            "type": "string"
+          },
+          "expires_at": {
+            "format": "date-time",
+            "title": "Expires At",
+            "type": "string"
+          },
+          "filename": {
+            "title": "Filename",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "instance_id": {
+            "title": "Instance Id",
+            "type": "string"
+          },
+          "last_opened_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Opened At"
+          },
+          "opened_count": {
+            "title": "Opened Count",
+            "type": "integer"
+          },
+          "revoked_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Revoked At"
+          },
+          "session_id": {
+            "title": "Session Id",
+            "type": "string"
+          },
+          "size": {
+            "title": "Size",
+            "type": "integer"
+          },
+          "state": {
+            "enum": [
+              "active",
+              "expired",
+              "revoked"
+            ],
+            "title": "State",
+            "type": "string"
+          },
+          "storage_key": {
+            "title": "Storage Key",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "instance_id",
+          "session_id",
+          "storage_key",
+          "filename",
+          "content_type",
+          "size",
+          "audience",
+          "state",
+          "created_by",
+          "created_by_name",
+          "created_at",
+          "expires_at",
+          "revoked_at",
+          "opened_count",
+          "last_opened_at"
+        ],
+        "title": "ShareOut",
+        "type": "object"
+      },
+      "SharedArtifactOut": {
+        "description": "What a link shows before its bytes: enough to pick the viewer.",
+        "properties": {
+          "audience": {
+            "enum": [
+              "org",
+              "link"
+            ],
+            "title": "Audience",
+            "type": "string"
+          },
+          "content_type": {
+            "title": "Content Type",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "expires_at": {
+            "format": "date-time",
+            "title": "Expires At",
+            "type": "string"
+          },
+          "filename": {
+            "title": "Filename",
+            "type": "string"
+          },
+          "shared_by": {
+            "title": "Shared By",
+            "type": "string"
+          },
+          "size": {
+            "title": "Size",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "filename",
+          "content_type",
+          "size",
+          "audience",
+          "shared_by",
+          "created_at",
+          "expires_at"
+        ],
+        "title": "SharedArtifactOut",
+        "type": "object"
+      },
+      "SharesOut": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/ShareOut"
+            },
+            "title": "Data",
+            "type": "array"
+          },
+          "public_links": {
+            "description": "Whether 'anyone with the link' shares are allowed here",
+            "title": "Public Links",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "data",
+          "public_links"
+        ],
+        "title": "SharesOut",
+        "type": "object"
+      },
       "SideOut": {
         "properties": {
           "author": {
@@ -31635,6 +31891,299 @@
         "summary": "Approve or reject a paused run's approval, then continue the run (needs approvals:write)",
         "tags": [
           "approvals"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/artifacts/shares": {
+      "get": {
+        "operationId": "artifacts_list_shares",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "session_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharesOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Your share links on an instance (everyone's with artifacts:manage)",
+        "tags": [
+          "artifacts"
+        ]
+      },
+      "post": {
+        "operationId": "artifacts_create_share",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShareIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatedShareOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Create a share link to an artefact you can read (needs artifacts:share)",
+        "tags": [
+          "artifacts"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/artifacts/shares/{share_id}": {
+      "delete": {
+        "operationId": "artifacts_revoke_share",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "share_id",
+            "required": true,
+            "schema": {
+              "title": "Share Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShareOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Revoke a share link; it stops working at once",
+        "tags": [
+          "artifacts"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/artifacts/{session_id}/content/{storage_key}": {
+      "get": {
+        "operationId": "artifacts_artifact_content",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "title": "Session Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Storage key, as the artefact list gives it",
+            "in": "path",
+            "name": "storage_key",
+            "required": true,
+            "schema": {
+              "description": "Storage key, as the artefact list gives it",
+              "title": "Storage Key",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "filename",
+            "required": false,
+            "schema": {
+              "default": "artifact",
+              "maxLength": 255,
+              "minLength": 1,
+              "title": "Filename",
+              "type": "string"
+            }
+          },
+          {
+            "description": "inline to view (isolated preview), attachment to download",
+            "in": "query",
+            "name": "disposition",
+            "required": false,
+            "schema": {
+              "default": "inline",
+              "description": "inline to view (isolated preview), attachment to download",
+              "enum": [
+                "inline",
+                "attachment"
+              ],
+              "title": "Disposition",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {}
+            },
+            "description": "The file"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "An artefact's bytes, for viewing in an isolated preview or for download (needs sessions:read)",
+        "tags": [
+          "artifacts"
         ]
       }
     },
@@ -43026,6 +43575,126 @@
         "summary": "Revoke a token now (by id or prefix)",
         "tags": [
           "service-accounts"
+        ]
+      }
+    },
+    "/api/v1/shares/{token}": {
+      "get": {
+        "operationId": "artifacts_shared_artifact",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "title": "Token",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharedArtifactOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "What a share link points to (sign-in needed unless it is shared with anyone)",
+        "tags": [
+          "artifacts"
+        ]
+      }
+    },
+    "/api/v1/shares/{token}/content": {
+      "get": {
+        "operationId": "artifacts_shared_content",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "title": "Token",
+              "type": "string"
+            }
+          },
+          {
+            "description": "inline to view (isolated preview), attachment to download",
+            "in": "query",
+            "name": "disposition",
+            "required": false,
+            "schema": {
+              "default": "inline",
+              "description": "inline to view (isolated preview), attachment to download",
+              "enum": [
+                "inline",
+                "attachment"
+              ],
+              "title": "Disposition",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {}
+            },
+            "description": "The file"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "The shared file's bytes, as they were when shared",
+        "tags": [
+          "artifacts"
         ]
       }
     },

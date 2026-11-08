@@ -5,6 +5,9 @@ The policy allows only the control plane's own origin. Exceptions, each needed b
 * ``'wasm-unsafe-eval'``: syntax highlighting compiles its grammar engine to WebAssembly;
 * ``style-src 'unsafe-inline'``: the code editor, charts and highlighted code set inline ``style`` attributes;
 * ``data:``/``blob:`` images and ``blob:`` workers: generated previews, exports and the layout worker;
+* ``blob:`` audio and video, and same-origin frames: artefact previews. Only the artefact content routes may be
+  framed (every other response sends ``frame-ancestors 'none'``), and they send a ``sandbox`` policy of their own,
+  so a previewed HTML page gets an opaque origin without the control plane's cookies or API;
 * ``connect-src`` adds the runtimes switched to direct mode, plus ``AGNOSTIC_HTTP__CSP_EXTRA_CONNECT``.
 
 ``require-trusted-types-for 'script'`` makes DOM XSS sinks (``innerHTML``, script URLs) accept only values from
@@ -82,10 +85,11 @@ def content_security_policy(connect: Iterable[str] = ()) -> str:
         "script-src 'self' 'wasm-unsafe-eval'",
         "style-src 'self' 'unsafe-inline'",
         "img-src 'self' data: blob:",
+        "media-src 'self' blob:",
         "font-src 'self' data:",
         f"connect-src {connect_src}",
         "worker-src 'self' blob:",
-        "frame-src 'none'",
+        "frame-src 'self'",
         "frame-ancestors 'none'",
         "object-src 'none'",
         "base-uri 'none'",

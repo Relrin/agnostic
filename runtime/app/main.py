@@ -4,7 +4,8 @@
     uvicorn app.main:app --port 7777        # same app, any ASGI server
 
 Recipe: sync ``PostgresDb`` (Studio needs it), tracing, scheduler with a shared internal token, durable queue with
-Redis coordination, a ``Registry``, telemetry off, and ``agnostic-bridge`` installed (``/agnostic/v1/*``).
+Redis coordination, a ``Registry``, telemetry off, local media storage (run media and artefacts, ``RUNTIME_MEDIA_DIR``)
+and ``agnostic-bridge`` installed (``/agnostic/v1/*``).
 
 JWT authorization switches on when ``JWT_VERIFICATION_KEY`` (or ``JWT_JWKS_FILE``) is set: tokens must be RS256, carry
 ``aud`` = this runtime's id (the ``os_id`` the control plane mints for) and, if ``RUNTIME_JWT_ISSUER`` is set, that
@@ -18,6 +19,9 @@ from agno.os.authz import Authorization
 from agnostic_bridge import direct_mode_cors, install
 
 from app.agents import AGENTS
+from app.agents.report_writer import report_writer
+from app.agents.sandbox_analyst import build_sandbox_analyst
+from app.media import media_storage
 from app.registry import build_registry
 from app.settings import RuntimeSettings, get_settings
 from app.teams import TEAMS
@@ -37,6 +41,12 @@ def build_authorization(settings: RuntimeSettings) -> Authorization | bool:
     )
 
 
+def artifact_agents() -> list:
+    """Agents whose files become artefacts; kept apart from AGENTS, the golden-file set."""
+    sandbox_analyst = build_sandbox_analyst()
+    return [report_writer, *([sandbox_analyst] if sandbox_analyst is not None else [])]
+
+
 def build_agent_os(settings: RuntimeSettings) -> AgentOS:
     db = PostgresDb(id=f"{settings.id}-db", db_url=settings.database_url)
     return AgentOS(
@@ -44,7 +54,7 @@ def build_agent_os(settings: RuntimeSettings) -> AgentOS:
         name=settings.name,
         description=settings.description,
         db=db,
-        agents=list(AGENTS),
+        agents=[*AGENTS, *artifact_agents()],
         teams=list(TEAMS),
         workflows=list(WORKFLOWS),
         registry=build_registry(db),
@@ -56,6 +66,7 @@ def build_agent_os(settings: RuntimeSettings) -> AgentOS:
         authorization=build_authorization(settings),
         user_isolation=settings.user_isolation_enabled,
         telemetry=False,
+        media_storage=media_storage(),
         cors=direct_mode_cors(settings.cors_origin_list) if settings.cors_origin_list else None,
     )
 

@@ -187,6 +187,7 @@ def org_role_scopes(org_role: str, control_plane_scopes: Iterable[str]) -> froze
                     "settings:read",
                     "assistant:use",
                     "tool_catalog:read",
+                    "artifacts:share",
                 }
             )
             & every

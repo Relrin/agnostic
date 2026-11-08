@@ -3,6 +3,7 @@
 import { describeError } from "@agnostic/api";
 import {
   PermissionGate,
+  SessionArtifacts,
   formatCount,
   formatDuration,
   formatWhen,
@@ -39,10 +40,11 @@ import { Link } from "@tanstack/react-router";
 import { X } from "lucide-react";
 import { useState } from "react";
 
-export type Tab = "chat" | "runs" | "summary" | "state" | "metrics";
+export type Tab = "chat" | "runs" | "files" | "summary" | "state" | "metrics";
 export const TABS: readonly { id: Tab; label: string }[] = [
   { id: "chat", label: "Chat" },
   { id: "runs", label: "Runs" },
+  { id: "files", label: "Files" },
   { id: "summary", label: "Summary" },
   { id: "state", label: "State" },
   { id: "metrics", label: "Metrics" },
@@ -450,6 +452,9 @@ export function SessionDetailPanel({
           ) : (
             <RunsTab instance={instance} runs={states} />
           )}
+        </TabsContent>
+        <TabsContent value="files" className="pt-4">
+          <SessionArtifacts instance={instance} sessionId={sessionId} />
         </TabsContent>
         <TabsContent value="summary" className="flex flex-col gap-2 pt-4">
           {summary.topics.length > 0 && (

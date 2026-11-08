@@ -71,6 +71,9 @@
       "path": "modules/files"
     },
     {
+      "path": "modules/artifacts"
+    },
+    {
       "path": "modules/approvals"
     },
     {

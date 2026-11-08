@@ -9,6 +9,9 @@
 # Dev runtime JWT verification keys written by `just seed`
 runtime/.jwt/
 
+# Reference runtime media storage and agent workspaces (artefacts)
+runtime/var/
+
 # Python
 __pycache__/
 *.py[cod]

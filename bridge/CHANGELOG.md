@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Artefacts: `agnostic_bridge.artifacts` collects the files agents write into run media, from a folder
+  (`DirectorySource`), an E2B sandbox (`E2BSource`) or an Agno sandbox checkpoint (`CheckpointSource`). Use the
+  `collect_artifacts` post-hook, the `ArtifactTools` publish tool, or `capture_artifacts` on `ClaudeAgent`/`CodexAgent`.
+  New routes: `GET /artifacts`, `GET /artifacts/recent`, `POST /artifacts/sync`; `/capabilities` reports
+  `media_storage`.
+
 - Tool catalog: with `AGNOSTIC_CONTROL_PLANE_URL`, `AGNOSTIC_INSTANCE_ID` and `AGNOSTIC_TOOL_CATALOG_TOKEN` set (or
   `install(agent_os, tool_catalog=ToolCatalogConfig(...))`), the bridge pulls its instance's approved MCP servers and
   Agno toolkits from the control plane and keeps them in the AgentOS registry. New routes: `GET /tool-catalog/status`,

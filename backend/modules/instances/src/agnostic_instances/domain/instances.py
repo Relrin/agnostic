@@ -195,6 +195,7 @@ CAPABILITIES: dict[str, str] = {
     "metrics": "Metrics",
     "mcp": "MCP server",
     "bridge": "agnostic-bridge companion",
+    "artifacts": "Artefacts: files agents produce, to view, download and share (agnostic-bridge)",
 }
 
 

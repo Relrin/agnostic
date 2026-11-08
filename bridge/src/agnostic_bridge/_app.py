@@ -21,6 +21,12 @@ from typing import TYPE_CHECKING, Any
 from fastapi import APIRouter, Request
 from starlette.routing import BaseRoute, Mount
 
+from agnostic_bridge._artifacts import (
+    ARTIFACTS_PATH,
+    RECENT_ARTIFACTS_PATH,
+    SYNC_ARTIFACTS_PATH,
+    add_artifact_routes,
+)
 from agnostic_bridge._capabilities import BridgeCapabilities, build_capabilities, default_replica_id
 from agnostic_bridge._catalog import (
     PROBE_PATH,
@@ -64,6 +70,9 @@ SCOPE_MAPPINGS: dict[str, list[str]] = {
     # Admin: probing connects to a server from this runtime with the runtime's credentials.
     f"POST {BRIDGE_PREFIX}{PROBE_PATH}": ["agent_os:admin"],
     f"GET {BRIDGE_PREFIX}{TOOLKITS_PATH}": ["registry:read"],
+    f"GET {BRIDGE_PREFIX}{ARTIFACTS_PATH}": ["sessions:read"],
+    f"GET {BRIDGE_PREFIX}{RECENT_ARTIFACTS_PATH}": ["sessions:read"],
+    f"POST {BRIDGE_PREFIX}{SYNC_ARTIFACTS_PATH}": ["sessions:write"],
 }
 
 
@@ -94,6 +103,7 @@ def create_router(
 
     add_eval_routes(router, agent_os)
     add_file_routes(router, agent_os)
+    add_artifact_routes(router, agent_os)
     add_worker_routes(router, agent_os, replica)
     add_event_routes(router, agent_os)
     add_component_routes(router, agent_os)

@@ -32,6 +32,10 @@ class RuntimeSettings(BaseSettings):
     # Failures to reproduce on purpose, e.g. "web_search=timeout" (comma-separated tool=fault pairs). Development
     # only: it is how the dev stack gets a daily-brief run that fails the way production ones do.
     faults: str = ""
+    # Where run media (artefacts included) is stored, one folder per runtime id; served by AgentOS's media route.
+    media_dir: str = "var/media"
+    # Per-session working folders of the agents that write files (the report writer's workspace).
+    workspace_dir: str = "var/workspaces"
 
     def fault(self, tool: str) -> str | None:
         """The fault configured for ``tool`` ("timeout"), if any."""

@@ -3792,6 +3792,25 @@ export type CreatedOut = {
 };
 
 /**
+ * CreatedShareOut
+ */
+export type CreatedShareOut = {
+    /**
+     * Path
+     *
+     * The web app path of the link
+     */
+    path: string;
+    share: ShareOut;
+    /**
+     * Token
+     *
+     * Shown once: the link is /s/{token}; only its hash is stored
+     */
+    token: string;
+};
+
+/**
  * CreatorOut
  */
 export type CreatorOut = {
@@ -11305,6 +11324,156 @@ export type SetCurrentOut = {
 };
 
 /**
+ * ShareIn
+ */
+export type ShareIn = {
+    /**
+     * Audience
+     */
+    audience?: 'org' | 'link';
+    /**
+     * Filename
+     */
+    filename: string;
+    /**
+     * Session Id
+     */
+    session_id: string;
+    /**
+     * Storage Key
+     */
+    storage_key: string;
+    /**
+     * Ttl Seconds
+     *
+     * How long the link works, in seconds
+     */
+    ttl_seconds?: number;
+};
+
+/**
+ * ShareOut
+ */
+export type ShareOut = {
+    /**
+     * Audience
+     */
+    audience: 'org' | 'link';
+    /**
+     * Content Type
+     */
+    content_type: string;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Created By
+     */
+    created_by: string;
+    /**
+     * Created By Name
+     */
+    created_by_name: string;
+    /**
+     * Expires At
+     */
+    expires_at: string;
+    /**
+     * Filename
+     */
+    filename: string;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Instance Id
+     */
+    instance_id: string;
+    /**
+     * Last Opened At
+     */
+    last_opened_at: string | null;
+    /**
+     * Opened Count
+     */
+    opened_count: number;
+    /**
+     * Revoked At
+     */
+    revoked_at: string | null;
+    /**
+     * Session Id
+     */
+    session_id: string;
+    /**
+     * Size
+     */
+    size: number;
+    /**
+     * State
+     */
+    state: 'active' | 'expired' | 'revoked';
+    /**
+     * Storage Key
+     */
+    storage_key: string;
+};
+
+/**
+ * SharedArtifactOut
+ *
+ * What a link shows before its bytes: enough to pick the viewer.
+ */
+export type SharedArtifactOut = {
+    /**
+     * Audience
+     */
+    audience: 'org' | 'link';
+    /**
+     * Content Type
+     */
+    content_type: string;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Expires At
+     */
+    expires_at: string;
+    /**
+     * Filename
+     */
+    filename: string;
+    /**
+     * Shared By
+     */
+    shared_by: string;
+    /**
+     * Size
+     */
+    size: number;
+};
+
+/**
+ * SharesOut
+ */
+export type SharesOut = {
+    /**
+     * Data
+     */
+    data: Array<ShareOut>;
+    /**
+     * Public Links
+     *
+     * Whether 'anyone with the link' shares are allowed here
+     */
+    public_links: boolean;
+};
+
+/**
  * SideOut
  */
 export type SideOut = {
@@ -17015,6 +17184,172 @@ export type ApprovalsDecideResponses = {
 };
 
 export type ApprovalsDecideResponse = ApprovalsDecideResponses[keyof ApprovalsDecideResponses];
+
+export type ArtifactsListSharesData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: {
+        /**
+         * Session Id
+         */
+        session_id?: string | null;
+    };
+    url: '/api/v1/instances/{instance}/artifacts/shares';
+};
+
+export type ArtifactsListSharesErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ArtifactsListSharesError = ArtifactsListSharesErrors[keyof ArtifactsListSharesErrors];
+
+export type ArtifactsListSharesResponses = {
+    /**
+     * Successful Response
+     */
+    200: SharesOut;
+};
+
+export type ArtifactsListSharesResponse = ArtifactsListSharesResponses[keyof ArtifactsListSharesResponses];
+
+export type ArtifactsCreateShareData = {
+    body: ShareIn;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/artifacts/shares';
+};
+
+export type ArtifactsCreateShareErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ArtifactsCreateShareError = ArtifactsCreateShareErrors[keyof ArtifactsCreateShareErrors];
+
+export type ArtifactsCreateShareResponses = {
+    /**
+     * Successful Response
+     */
+    201: CreatedShareOut;
+};
+
+export type ArtifactsCreateShareResponse = ArtifactsCreateShareResponses[keyof ArtifactsCreateShareResponses];
+
+export type ArtifactsRevokeShareData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Share Id
+         */
+        share_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/artifacts/shares/{share_id}';
+};
+
+export type ArtifactsRevokeShareErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ArtifactsRevokeShareError = ArtifactsRevokeShareErrors[keyof ArtifactsRevokeShareErrors];
+
+export type ArtifactsRevokeShareResponses = {
+    /**
+     * Successful Response
+     */
+    200: ShareOut;
+};
+
+export type ArtifactsRevokeShareResponse = ArtifactsRevokeShareResponses[keyof ArtifactsRevokeShareResponses];
+
+export type ArtifactsArtifactContentData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Session Id
+         */
+        session_id: string;
+        /**
+         * Storage Key
+         *
+         * Storage key, as the artefact list gives it
+         */
+        storage_key: string;
+    };
+    query?: {
+        /**
+         * Filename
+         */
+        filename?: string;
+        /**
+         * Disposition
+         *
+         * inline to view (isolated preview), attachment to download
+         */
+        disposition?: 'inline' | 'attachment';
+    };
+    url: '/api/v1/instances/{instance}/artifacts/{session_id}/content/{storage_key}';
+};
+
+export type ArtifactsArtifactContentErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ArtifactsArtifactContentError = ArtifactsArtifactContentErrors[keyof ArtifactsArtifactContentErrors];
+
+export type ArtifactsArtifactContentResponses = {
+    /**
+     * The file
+     */
+    200: Blob | File;
+};
+
+export type ArtifactsArtifactContentResponse = ArtifactsArtifactContentResponses[keyof ArtifactsArtifactContentResponses];
 
 export type AssistantListConversationsData = {
     body?: never;
@@ -23576,6 +23911,81 @@ export type ServiceAccountsRevokeTokenResponses = {
 };
 
 export type ServiceAccountsRevokeTokenResponse = ServiceAccountsRevokeTokenResponses[keyof ServiceAccountsRevokeTokenResponses];
+
+export type ArtifactsSharedArtifactData = {
+    body?: never;
+    path: {
+        /**
+         * Token
+         */
+        token: string;
+    };
+    query?: never;
+    url: '/api/v1/shares/{token}';
+};
+
+export type ArtifactsSharedArtifactErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ArtifactsSharedArtifactError = ArtifactsSharedArtifactErrors[keyof ArtifactsSharedArtifactErrors];
+
+export type ArtifactsSharedArtifactResponses = {
+    /**
+     * Successful Response
+     */
+    200: SharedArtifactOut;
+};
+
+export type ArtifactsSharedArtifactResponse = ArtifactsSharedArtifactResponses[keyof ArtifactsSharedArtifactResponses];
+
+export type ArtifactsSharedContentData = {
+    body?: never;
+    path: {
+        /**
+         * Token
+         */
+        token: string;
+    };
+    query?: {
+        /**
+         * Disposition
+         *
+         * inline to view (isolated preview), attachment to download
+         */
+        disposition?: 'inline' | 'attachment';
+    };
+    url: '/api/v1/shares/{token}/content';
+};
+
+export type ArtifactsSharedContentErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type ArtifactsSharedContentError = ArtifactsSharedContentErrors[keyof ArtifactsSharedContentErrors];
+
+export type ArtifactsSharedContentResponses = {
+    /**
+     * The file
+     */
+    200: Blob | File;
+};
+
+export type ArtifactsSharedContentResponse = ArtifactsSharedContentResponses[keyof ArtifactsSharedContentResponses];
 
 export type StudioCheckCelData = {
     body: CelCheckIn;

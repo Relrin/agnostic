@@ -167,6 +167,9 @@ See [sign-in providers](../how-to/sign-in-providers.md) for setup per identity p
 | `AGNOSTIC_CONTEXT__MAX_CONTENT_PAGES` | `10` | pages of 100 knowledge content rows filtered and counted per request |
 | `AGNOSTIC_CONTEXT__PROVENANCE_SESSIONS` | `10` | sessions searched for the run a memory came from |
 | `AGNOSTIC_CONTEXT__PROVENANCE_TRACES` | `50` | newest traces searched for file writes when the instance has no agnostic-bridge |
+| `AGNOSTIC_ARTIFACTS__MAX_CONTENT_MB` | `50` | largest artefact served for preview, download or a share link |
+| `AGNOSTIC_ARTIFACTS__MAX_SHARE_DAYS` | `30` | longest a share link may last |
+| `AGNOSTIC_ARTIFACTS__PUBLIC_LINKS` | `false` | allow share links for anyone holding the link; off, links need a signed-in member |
 | `AGNOSTIC_SEARCH__REINDEX_CRON` | `*/5 * * * *` | rebuild the ⌘K index; empty turns it off |
 | `AGNOSTIC_NOTIFICATIONS__HEARTBEAT_SECONDS` | `15` | keepalive interval on `/api/v1/events` |
 | `AGNOSTIC_NOTIFICATIONS__MAX_STREAM_SECONDS` | `1800` | streams end after this; browsers reconnect with `Last-Event-ID` |

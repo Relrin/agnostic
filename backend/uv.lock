@@ -7,6 +7,7 @@ members = [
     "agnostic-access",
     "agnostic-agentos-client",
     "agnostic-approvals",
+    "agnostic-artifacts",
     "agnostic-assistant",
     "agnostic-audit",
     "agnostic-cel",
@@ -169,6 +170,37 @@ requires-dist = [
     { name = "fastapi", specifier = "==0.162.0" },
     { name = "orjson", specifier = "==3.13.0" },
     { name = "procrastinate", specifier = "==3.10.0" },
+    { name = "pydantic", specifier = "==2.14.2" },
+    { name = "pydantic-settings", specifier = "==2.16.2" },
+    { name = "sqlalchemy", extras = ["asyncio"], specifier = "==2.1.6" },
+]
+
+[[package]]
+name = "agnostic-artifacts"
+version = "0.3.0"
+source = { editable = "modules/artifacts" }
+dependencies = [
+    { name = "agnostic-audit" },
+    { name = "agnostic-gateway" },
+    { name = "agnostic-instances" },
+    { name = "agnostic-kernel" },
+    { name = "alembic" },
+    { name = "dishka" },
+    { name = "fastapi" },
+    { name = "pydantic" },
+    { name = "pydantic-settings" },
+    { name = "sqlalchemy", extra = ["asyncio"] },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "agnostic-audit", editable = "modules/audit" },
+    { name = "agnostic-gateway", editable = "modules/gateway" },
+    { name = "agnostic-instances", editable = "modules/instances" },
+    { name = "agnostic-kernel", editable = "packages/agnostic-kernel" },
+    { name = "alembic", specifier = "==1.20.1" },
+    { name = "dishka", specifier = "==1.10.1" },
+    { name = "fastapi", specifier = "==0.162.0" },
     { name = "pydantic", specifier = "==2.14.2" },
     { name = "pydantic-settings", specifier = "==2.16.2" },
     { name = "sqlalchemy", extras = ["asyncio"], specifier = "==2.1.6" },
@@ -1049,6 +1081,7 @@ dependencies = [
     { name = "agnostic-access" },
     { name = "agnostic-agentos-client" },
     { name = "agnostic-approvals" },
+    { name = "agnostic-artifacts" },
     { name = "agnostic-assistant" },
     { name = "agnostic-audit" },
     { name = "agnostic-cel" },
@@ -1102,6 +1135,7 @@ requires-dist = [
     { name = "agnostic-access", editable = "modules/access" },
     { name = "agnostic-agentos-client", editable = "packages/agnostic-agentos-client" },
     { name = "agnostic-approvals", editable = "modules/approvals" },
+    { name = "agnostic-artifacts", editable = "modules/artifacts" },
     { name = "agnostic-assistant", editable = "modules/assistant" },
     { name = "agnostic-audit", editable = "modules/audit" },
     { name = "agnostic-cel", editable = "packages/agnostic-cel" },

@@ -41,6 +41,8 @@ def test_open_os_reports_versions_and_features() -> None:
     assert body["os_id"] == OS_ID
     assert body["replica_id"] == "replica-a"
     assert body["endpoints"] == [
+        "GET /agnostic/v1/artifacts",
+        "GET /agnostic/v1/artifacts/recent",
         f"GET {PATH}",
         "GET /agnostic/v1/events",
         "GET /agnostic/v1/files/provenance",
@@ -49,6 +51,7 @@ def test_open_os_reports_versions_and_features() -> None:
         "GET /agnostic/v1/tool-catalog/status",
         "GET /agnostic/v1/toolkits",
         "GET /agnostic/v1/workers",
+        "POST /agnostic/v1/artifacts/sync",
         "POST /agnostic/v1/cel/evaluate",
         "POST /agnostic/v1/components/normalize",
         "POST /agnostic/v1/components/validate",

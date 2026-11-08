@@ -165,3 +165,30 @@ export {
   webauthnError,
   webauthnGet,
 } from "./webauthn";
+export { ShareDialog } from "./artifacts/share-dialog";
+export {
+  ArtifactLoadError,
+  artifactContentUrl,
+  downloadUrl,
+  fetchArtifact,
+  sharedContentUrl,
+  useRecentArtifacts,
+  useRefreshArtifacts,
+  useSessionArtifacts,
+  viewerKind,
+  type Artifact,
+  type ArtifactKind,
+  type RecentFilters,
+  type ViewerKind,
+} from "./artifacts/api";
+export {
+  ArtifactChip,
+  ArtifactInspector,
+  ArtifactRows,
+  ArtifactSheet,
+  RunArtifacts,
+  SessionArtifacts,
+  artifactIcon,
+  artifactLabel,
+} from "./artifacts/panel";
+export { ArtifactPreview, type ArtifactSource } from "./artifacts/viewer";

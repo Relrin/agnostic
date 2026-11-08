@@ -10,6 +10,7 @@ export * from "./sample-org";
 export * from "./studio-workflows";
 export * from "./operate";
 export * from "./observe";
+export * from "./artifacts";
 export * from "./context";
 export * from "./approvals";
 export * from "./scheduler";

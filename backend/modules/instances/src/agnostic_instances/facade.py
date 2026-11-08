@@ -82,6 +82,15 @@ class InstancesFacade(Protocol):
         """
         ...
 
+    async def system_fetch(
+        self, instance: Instance, path: str, *, params: Mapping[str, str | int] | None = None, max_bytes: int
+    ) -> tuple[int, dict[str, str], bytes]:
+        """A GET as the control plane, read as bytes: ``(status, headers, body)``.
+
+        For stored media behind a share link the control plane has checked itself; never on behalf of a person.
+        """
+        ...
+
     async def capability(self, instance: Instance, name: str) -> CapabilityStatus:
         """The capability's status from the last probe (``unknown`` before the first one)."""
         ...
@@ -144,6 +153,13 @@ class InstancesFacadeImpl:
         return await self._client.request_json(
             Target.of(instance), method, path, headers, params=params, json=json, form=form
         )
+
+    async def system_fetch(
+        self, instance: Instance, path: str, *, params: Mapping[str, str | int] | None = None, max_bytes: int
+    ) -> tuple[int, dict[str, str], bytes]:
+        sealed = await self._instances.security_key(instance.id) if instance.has_security_key else None
+        headers = await self._auth.headers(instance, sealed_key=sealed)
+        return await self._client.get_bytes(Target.of(instance), path, headers, params=params, max_bytes=max_bytes)
 
     async def capability(self, instance: Instance, name: str) -> CapabilityStatus:
         capabilities, _ = await self._snapshots.capabilities(instance.id)

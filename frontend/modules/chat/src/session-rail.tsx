@@ -1,7 +1,8 @@
-// Right rail "Session": ids, runs, started, summary, session_state, token tiles, rename, delete.
+// Right rail "Session": ids, runs, started, summary, files, session_state, token tiles, rename, delete.
 import { describeError } from "@agnostic/api";
 import {
   PermissionGate,
+  SessionArtifacts,
   formatCount,
   formatWhen,
   useSessionActions,
@@ -92,6 +93,10 @@ export function SessionRail({
       <section className="flex flex-col gap-1.5">
         <h3 className="text-[12px] font-semibold text-fg-muted">Summary</h3>
         <p className="text-[13px] text-fg-secondary">{summary ?? "No summary yet."}</p>
+      </section>
+      <section className="flex flex-col gap-1.5" aria-label="Files">
+        <h3 className="text-[12px] font-semibold text-fg-muted">Files</h3>
+        <SessionArtifacts instance={instance} sessionId={session.session_id} />
       </section>
       <section className="flex flex-col gap-1.5">
         <h3 className="text-[12px] font-semibold text-fg-muted">session_state</h3>

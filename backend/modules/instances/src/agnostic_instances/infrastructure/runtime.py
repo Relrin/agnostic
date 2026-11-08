@@ -22,6 +22,7 @@ from agnostic_instances.application.tls import ConnectionTlsFactory
 from agnostic_instances.domain.instances import AuthMode, Discovery
 
 PROBE_TIMEOUT = 5.0
+MEDIA_TIMEOUT = 60.0
 
 
 class _HeaderAuth:
@@ -108,6 +109,36 @@ class HttpRuntimeClient:
     ) -> Any:  # noqa: ANN401
         async with self._client(target, _HeaderAuth(headers)) as client:
             return await client.request_json(method, path, params=params, json=json, form=form)
+
+    async def get_bytes(
+        self,
+        target: Target,
+        path: str,
+        headers: Mapping[str, str],
+        *,
+        params: Mapping[str, str | int] | None = None,
+        max_bytes: int,
+    ) -> tuple[int, dict[str, str], bytes]:
+        async with self._client(target) as client:
+            response = await client.open_stream(
+                "GET",
+                path,
+                params=[(key, str(value)) for key, value in (params or {}).items()],
+                headers=dict(headers),
+                request_timeout=httpx.Timeout(MEDIA_TIMEOUT),
+            )
+            try:
+                chunks: list[bytes] = []
+                size = 0
+                async for chunk in response.aiter_bytes():
+                    size += len(chunk)
+                    if size > max_bytes:
+                        msg = f"GET {path}: larger than {max_bytes} bytes"
+                        raise ValueError(msg)
+                    chunks.append(chunk)
+            finally:
+                await response.aclose()
+        return response.status_code, {key.lower(): value for key, value in response.headers.items()}, b"".join(chunks)
 
 
 def _b64(data: bytes) -> str:

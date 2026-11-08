@@ -87,6 +87,17 @@ class RuntimeClient(Protocol):
         json: Any = None,  # noqa: ANN401
         form: Mapping[str, str] | None = None,
     ) -> Any: ...  # noqa: ANN401
+    async def get_bytes(
+        self,
+        target: Target,
+        path: str,
+        headers: Mapping[str, str],
+        *,
+        params: Mapping[str, str | int] | None = None,
+        max_bytes: int,
+    ) -> tuple[int, dict[str, str], bytes]:
+        """``(status, lower-case headers, body)`` of a GET read as bytes; statuses are not mapped to errors."""
+        ...
 
 
 @dataclass(frozen=True, slots=True)

@@ -18,6 +18,7 @@
     "@agnostic/module-access-roles": "workspace:*",
     "@agnostic/module-account": "workspace:*",
     "@agnostic/module-approvals": "workspace:*",
+    "@agnostic/module-artifacts": "workspace:*",
     "@agnostic/module-assistant": "workspace:*",
     "@agnostic/module-audit": "workspace:*",
     "@agnostic/module-chat": "workspace:*",

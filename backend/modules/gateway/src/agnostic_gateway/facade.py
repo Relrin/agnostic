@@ -9,6 +9,7 @@ or :meth:`GatewayFacade.elevated_stream`.
 from __future__ import annotations
 
 from collections.abc import AsyncIterator, Mapping
+from dataclasses import dataclass
 from typing import Any, Protocol
 from urllib.parse import urlencode
 
@@ -25,8 +26,17 @@ from agnostic_gateway.application.elevation import (
 from agnostic_gateway.application.proxy import Gateway, ProxyRequest
 from agnostic_instances.facade import Instance
 from agnostic_kernel.auth import Principal
+from agnostic_kernel.errors import AppError
+
+
+class PayloadTooLargeError(AppError):
+    status = 413
+    code = "payload_too_large"
+    title = "Too large to serve"
+
 
 __all__ = [
+    "BinaryResponse",
     "ElevatedResponse",
     "ElevatedStream",
     "ElevationDisabledError",
@@ -34,6 +44,19 @@ __all__ = [
     "GatewayFacadeImpl",
     "GatewayResponse",
 ]
+
+
+@dataclass(frozen=True, slots=True)
+class BinaryResponse:
+    """A response read as bytes (stored media), with the upstream headers in lower case."""
+
+    status: int
+    headers: Mapping[str, str]
+    body: bytes
+
+    @property
+    def ok(self) -> bool:
+        return 200 <= self.status < 300  # noqa: PLR2004
 
 
 class GatewayFacade(Protocol):
@@ -56,6 +79,18 @@ class GatewayFacade(Protocol):
 
         Missing scopes raise the gateway's 403 problem; AgentOS statuses are returned as they are.
         """
+        ...
+
+    async def fetch(
+        self,
+        principal: Principal,
+        instance: Instance,
+        path: str,
+        *,
+        params: Mapping[str, str | int] | None = None,
+        max_bytes: int,
+    ) -> BinaryResponse:
+        """A GET as ``principal`` whose body is kept as bytes (media); raises past ``max_bytes``."""
         ...
 
     async def elevated(
@@ -137,6 +172,41 @@ class GatewayFacadeImpl:
         finally:
             await response.close()
         return GatewayResponse(response.status, decode_body(raw))
+
+    async def fetch(
+        self,
+        principal: Principal,
+        instance: Instance,
+        path: str,
+        *,
+        params: Mapping[str, str | int] | None = None,
+        max_bytes: int,
+    ) -> BinaryResponse:
+        response = await self._gateway.handle(
+            principal,
+            instance.id,
+            ProxyRequest(
+                method="GET",
+                path=path,
+                params=[(key, str(value)) for key, value in (params or {}).items()],
+                headers=[("accept", "*/*")],
+                body=None,
+                scheme="https",
+                host=None,
+            ),
+        )
+        chunks: list[bytes] = []
+        size = 0
+        try:
+            async for chunk in response.body:
+                size += len(chunk)
+                if size > max_bytes:
+                    raise PayloadTooLargeError(f"The file is larger than {max_bytes // (1024 * 1024)} MB")
+                chunks.append(chunk)
+        finally:
+            await response.close()
+        headers = {key.lower(): value for key, value in response.headers.items()}
+        return BinaryResponse(response.status, headers, b"".join(chunks))
 
     async def elevated(
         self,

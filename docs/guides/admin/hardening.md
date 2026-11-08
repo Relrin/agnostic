@@ -8,7 +8,7 @@ Every response carries:
 
 | Header | Value |
 |---|---|
-| `Content-Security-Policy` | `default-src 'self'`, scripts only from the app's origin (plus `'wasm-unsafe-eval'` for syntax highlighting), no frames, no plugins, `base-uri 'none'`, `connect-src` limited to the app and direct-mode runtimes |
+| `Content-Security-Policy` | `default-src 'self'`, scripts only from the app's origin (plus `'wasm-unsafe-eval'` for syntax highlighting), frames and `blob:` media only from the app's origin (artefact previews, each sandboxed by its own policy), no plugins, `base-uri 'none'`, `connect-src` limited to the app and direct-mode runtimes |
 | Trusted Types | `require-trusted-types-for 'script'`: the web app has no HTML sinks of its own; its `default` policy refuses HTML strings (except two constant style rules of the UI library) and allows script URLs only from the app's origin |
 | `Strict-Transport-Security` | `max-age=31536000` when the public URL is `https://` |
 | `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, `Cross-Origin-Opener-Policy`, `Cross-Origin-Resource-Policy` | `nosniff`, `DENY`, `no-referrer`, camera/microphone/geolocation/payment/usb off, `same-origin-allow-popups`, `same-origin` |

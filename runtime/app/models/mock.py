@@ -24,6 +24,7 @@ TOOL_TRIGGERS: dict[str, str] = {
     "order": "lookup_order",
     "search": "search_knowledge",
     "web": "web_search",
+    "report": "write_report",
 }
 
 TASK_TOOLS = {"create_task", "execute_task", "mark_all_complete"}

@@ -277,6 +277,7 @@ _PROBES: Mapping[str, tuple[str, Mapping[str, str | int] | None]] = {
     "authz_store": ("/authz/scopes", None),
     "tracing": ("/traces", {"limit": 1}),
     "bridge": ("/agnostic/v1/capabilities", None),
+    "artifacts": ("/agnostic/v1/artifacts/recent", {"sessions": 1, "limit": 1}),
 }
 _CONFIG_SECTIONS = {
     "memory": "memory",

@@ -66,6 +66,10 @@ class BridgeFeatures(BaseModel):
     interfaces: list[str] = Field(description="Interface types mounted on the OS (a2a, slack, ...)")
     cel: bool = Field(description="cel-python is installed, so workflows evaluate CEL (agno[cel])")
     tool_catalog: BridgeToolCatalogFeatures | None = Field(default=None, description="Absent on older bridges")
+    media_storage: str | None = Field(
+        default=None,
+        description="Backend of AgentOS(media_storage=...) (local, s3, gcs), which stores and serves artefacts",
+    )
 
 
 class BridgeCapabilities(BaseModel):
@@ -127,6 +131,13 @@ def _catalog_features(catalog: Any) -> BridgeToolCatalogFeatures:
     )
 
 
+def _media_backend(agent_os: AgentOS) -> str | None:
+    storage = getattr(agent_os, "media_storage", None)
+    if storage is None:
+        return None
+    return str(getattr(storage, "backend_name", None) or type(storage).__name__)
+
+
 def build_capabilities(
     agent_os: AgentOS, app: FastAPI | Any, replica_id: str, endpoints: list[str], *, catalog: Any = None
 ) -> BridgeCapabilities:
@@ -155,6 +166,7 @@ def build_capabilities(
             interfaces=_interface_types(agent_os),
             cel=agno_cel.CEL_AVAILABLE,
             tool_catalog=_catalog_features(catalog),
+            media_storage=_media_backend(agent_os),
         ),
         endpoints=endpoints,
     )

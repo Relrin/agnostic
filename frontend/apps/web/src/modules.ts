@@ -9,6 +9,7 @@ import { assistantModule } from "@agnostic/module-assistant";
 import { auditModule } from "@agnostic/module-audit";
 import { chatModule } from "@agnostic/module-chat";
 import { evalsModule } from "@agnostic/module-evals";
+import { artifactsModule, shareLinksModule } from "@agnostic/module-artifacts";
 import { filesModule } from "@agnostic/module-files";
 import { helpModule } from "@agnostic/module-help";
 import { homeModule } from "@agnostic/module-home";
@@ -35,6 +36,7 @@ import { tracesModule } from "@agnostic/module-traces";
 
 export const MODULES: readonly ModuleManifest[] = [
   identityModule,
+  shareLinksModule,
   accountModule,
   instancesModule,
   settingsModule,
@@ -61,6 +63,7 @@ export const MODULES: readonly ModuleManifest[] = [
   knowledgeModule,
   learningsModule,
   filesModule,
+  artifactsModule,
   approvalsModule,
   schedulerModule,
   queueModule,

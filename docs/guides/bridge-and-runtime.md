@@ -7,11 +7,14 @@ your AgentOS app, and **agnostic-runtime**, a template AgentOS app to start from
 
 The bridge adds routes under `/agnostic/v1` for what AgentOS doesn't expose itself: capability discovery,
 component validation and normalisation with agno's own loader, file provenance, evaluations, worker and scheduler
-details, the approval and schedule event feed, introspection of components defined in code, and CEL evaluation. Its
-routes are guarded by AgentOS's own authorization and keep no state.
+details, the approval and schedule event feed, introspection of components defined in code, CEL evaluation, and the
+list of artefacts (files agents produced) a session's runs stored. Its routes are guarded by AgentOS's own
+authorization and keep no state. Its `agnostic_bridge.artifacts` package collects the files agents write into run
+media (`collect_artifacts`, `ArtifactTools`, `capture_artifacts`; the repository's `docs/how-to/collect-artefacts.md`
+has recipes for folders, E2B, Claude Code, Codex, Pi and OpenCode).
 
 Without the bridge everything still works; some checks fall back to the control plane's own (and say so), and a few
-details are unavailable (workers per replica, the event feed, file provenance).
+details are unavailable (workers per replica, the event feed, file provenance, artefacts).
 
 The bridge isn't on a package index: build it from the Agnostic repository and install the wheel into your AgentOS
 app's image (the runtime template's `Dockerfile` does the same from the repository's `bridge/` directory):

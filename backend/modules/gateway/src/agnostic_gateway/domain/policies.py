@@ -142,7 +142,8 @@ DEFAULT_POLICIES: tuple[RoutePolicy, ...] = (
     _p("GET", "/sessions/{session_id}/runs", "sessions:read"),
     _p("GET", "/sessions/{session_id}/runs/{run_id}", "sessions:read"),
     _p("GET", "/sessions/{session_id}/run-previews", "sessions:read"),
-    _p("GET", "/sessions/{session_id}/media/{storage_key}", "sessions:read"),
+    # Storage keys carry folders (``<session>/<media id>.<ext>``), so the key takes the rest of the path.
+    _p("GET", "/sessions/{session_id}/media/{storage_key*}", "sessions:read"),
     *_crud("memories", "/memories", "memory_id"),
     _p("GET", "/memory_topics", "memories:read"),
     _p("GET", "/user_memory_stats", "memories:read"),
@@ -215,6 +216,10 @@ DEFAULT_POLICIES: tuple[RoutePolicy, ...] = (
     _p("POST", "/agnostic/v1/components/normalize", "components:read", audit="decision", bucket="read"),
     _p("GET", "/agnostic/v1/introspect/components", "components:read", ttl=60),
     _p("GET", "/agnostic/v1/registry/{resource_type}/{name}/source", "registry:read", ttl=300),
+    # Artefacts: the media a session's runs stored, and collecting them from sandbox checkpoints.
+    _p("GET", "/agnostic/v1/artifacts", "sessions:read"),
+    _p("GET", "/agnostic/v1/artifacts/recent", "sessions:read"),
+    _p("POST", "/agnostic/v1/artifacts/sync", "sessions:write", audit="decision", bucket="read"),
 )
 
 UPLOAD_ROUTES: frozenset[tuple[str, str]] = frozenset({("POST", "/knowledge/content")})

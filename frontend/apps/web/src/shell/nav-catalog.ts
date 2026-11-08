@@ -6,6 +6,7 @@ import {
   BookOpen,
   Bot,
   Boxes,
+  Files,
   Brain,
   CalendarClock,
   ChartColumn,
@@ -44,6 +45,15 @@ export const NAV_CATALOG: readonly CatalogEntry[] = [
     icon: MessageSquare,
     path: "chat",
     order: 20,
+    scope: "instance",
+  },
+  {
+    id: "artifacts",
+    group: "main",
+    label: "Files",
+    icon: Files,
+    path: "artifacts",
+    order: 30,
     scope: "instance",
   },
 

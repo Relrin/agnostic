@@ -115,6 +115,8 @@ class FakeAgentOS:
         self.audience: str | None = os_id
         self.enforce_scopes = True
         self.calls: list[dict[str, Any]] = []
+        # (session_id, storage_key) -> (bytes, content type): run media in the runtime's media storage
+        self.media: dict[tuple[str, str], tuple[bytes, str]] = {}
         self.approvals_enabled = False
         self.approvals: dict[str, dict[str, Any]] = {}
         self.resolutions: list[dict[str, Any]] = []
@@ -520,6 +522,20 @@ class FakeAgentOS:
             if not self.bridge:
                 return JSONResponse({"detail": "Not Found"}, status_code=404)
             return await run_eval(request, "/agnostic/v1/evals/run")
+
+        @app.get("/sessions/{session_id}/media/{storage_key:path}")
+        async def session_media(session_id: str, storage_key: str, request: Request) -> Response:
+            guarded = await self._guard(request, "sessions:read")
+            if isinstance(guarded, Response):
+                return guarded
+            found = self.media.get((session_id, storage_key))
+            if found is None:
+                return JSONResponse({"detail": "Media not found in this session"}, status_code=404)
+            data, content_type = found
+            if content_type in {"text/html", "image/svg+xml"}:  # AgentOS serves active types as downloads
+                headers = {"content-disposition": "attachment"}
+                return Response(data, media_type="application/octet-stream", headers=headers)
+            return Response(data, media_type=content_type)
 
         @app.get("/memories")
         async def memories(request: Request) -> Response:

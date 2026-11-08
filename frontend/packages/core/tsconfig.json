@@ -1,5 +1,15 @@
 {
   "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["vite/client"]
+  },
   "include": ["src", "src/**/*.json"],
-  "references": [{ "path": "../api" }, { "path": "../ui" }]
+  "references": [
+    {
+      "path": "../api"
+    },
+    {
+      "path": "../ui"
+    }
+  ]
 }

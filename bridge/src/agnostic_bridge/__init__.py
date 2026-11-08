@@ -15,10 +15,19 @@ events route reads the approvals and schedule runs AgentOS already stores; its c
 agno's ``from_dict`` without storing them; its introspection routes read code-defined components and registry entries;
 its CEL route evaluates a workflow expression with agno's own CEL evaluation. With the tool catalog on, it
 pulls the control plane's approved MCP servers and toolkits and keeps them in the AgentOS registry while
-the process runs; its tool catalog routes report and refresh what it built.
+the process runs; its tool catalog routes report and refresh what it built. Its artefact routes list the run media
+AgentOS stores; ``agnostic_bridge.artifacts`` collects the files agents produce into that media.
 """
 
 from agnostic_bridge._app import BRIDGE_PREFIX, SCOPE_MAPPINGS, create_router, install
+from agnostic_bridge._artifacts import (
+    ARTIFACTS_PATH,
+    RECENT_ARTIFACTS_PATH,
+    SYNC_ARTIFACTS_PATH,
+    Artifact,
+    ArtifactList,
+    SyncResult,
+)
 from agnostic_bridge._capabilities import (
     BridgeCapabilities,
     BridgeFeatures,
@@ -44,15 +53,20 @@ from agnostic_bridge._introspect import INTROSPECT_COMPONENTS_PATH, REGISTRY_SOU
 from agnostic_bridge._workers import WORKERS_PATH, WorkersQueueConfig, WorkersResponse, WorkersScheduler
 
 __all__ = [
+    "ARTIFACTS_PATH",
     "BRIDGE_PREFIX",
     "EVALUATE_CEL_PATH",
     "EVENTS_PATH",
     "INTROSPECT_COMPONENTS_PATH",
     "NORMALIZE_PATH",
+    "RECENT_ARTIFACTS_PATH",
     "REGISTRY_SOURCE_PATH",
     "SCOPE_MAPPINGS",
+    "SYNC_ARTIFACTS_PATH",
     "VALIDATE_PATH",
     "WORKERS_PATH",
+    "Artifact",
+    "ArtifactList",
     "BridgeCapabilities",
     "BridgeEvalRun",
     "BridgeEvalRunInput",
@@ -72,6 +86,7 @@ __all__ = [
     "FileProvenanceResponse",
     "NormalizedConfig",
     "RegistrySource",
+    "SyncResult",
     "ToolCatalogConfig",
     "ToolCatalogSync",
     "ValidationResult",

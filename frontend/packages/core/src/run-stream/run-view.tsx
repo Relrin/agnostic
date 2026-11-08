@@ -1,5 +1,6 @@
 // One run in the conversation: header, live tool chips, member runs (teams), tasks, workflow step timeline, the
-// response (markdown, citations), inline approvals or step HITL when paused, and the run toolbar.
+// response (markdown, citations), the files the run produced, inline approvals or step HITL when paused, and the run
+// toolbar.
 import {
   Button,
   Callout,
@@ -16,8 +17,10 @@ import {
 } from "@agnostic/ui";
 import { Link } from "@tanstack/react-router";
 import { Copy, GitFork, RotateCcw, ScanSearch } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
+import { useRefreshArtifacts } from "../artifacts/api";
+import { RunArtifacts } from "../artifacts/panel";
 import { formatCount, formatDuration } from "../format";
 import { RunApprovals } from "./approval";
 import type { StepRequirement } from "./events";
@@ -122,6 +125,12 @@ export function RunView({
     ...memberIds.flatMap((id) => state.members[id]?.tools.filter((tool) => tool.status === "paused") ?? []),
   ];
   const sources = references(state);
+  const refreshArtifacts = useRefreshArtifacts(instance);
+  const finishedLive = stream !== undefined && state.status === "completed";
+  useEffect(() => {
+    // A live run that just finished may have stored files (or left them in a sandbox checkpoint).
+    if (finishedLive) void refreshArtifacts(state.sessionId);
+  }, [finishedLive, refreshArtifacts, state.sessionId]);
 
   const confirmDirectly = (tool: ToolCall, confirmed: boolean, edited?: Record<string, unknown>) => {
     if (state.pause?.kind !== "tools") return;
@@ -249,6 +258,7 @@ export function RunView({
           </details>
         )}
         {state.content && <MarkdownView>{state.content}</MarkdownView>}
+        {!streaming && <RunArtifacts instance={instance} sessionId={state.sessionId} runId={state.runId} />}
         {sources.length > 0 && (
           <ol aria-label="Sources" className="flex flex-col gap-0.5 text-[12px] text-fg-muted">
             {sources.map((source, index) => (
