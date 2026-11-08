@@ -1,6 +1,6 @@
 {
   "name": "@agnostic/module-studio-teams",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "description": "Studio teams: the team index and the team editor (modes, pinned members, leader, publish)",

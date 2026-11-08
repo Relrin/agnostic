@@ -1,6 +1,6 @@
 [project]
 name = "agnostic-spec"
-version = "0.2.0"
+version = "0.3.0"
 description = "Typed models of Agno component configs (agents, teams) as AgentOS stores them"
 requires-python = "==3.15.*"
 license = "BSD-3-Clause"

@@ -1,6 +1,6 @@
 {
   "name": "@agnostic/studio",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "description": "Studio building blocks shared by the agent, team and workflow editors: the draft document, form, code and test panes, versions, publish and promotion",

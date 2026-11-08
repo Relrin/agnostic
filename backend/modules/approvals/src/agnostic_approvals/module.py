@@ -23,7 +23,7 @@ from agnostic_kernel.tools import ToolSpec
 
 class ApprovalsModule(BaseModule):
     name = "approvals"
-    version = "0.2.0"
+    version = "0.3.0"
     depends_on = ("access", "audit", "directory", "identity", "instances", "gateway", "notifications", "settings")
 
     def __init__(self) -> None:

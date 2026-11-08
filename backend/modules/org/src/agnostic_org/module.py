@@ -17,7 +17,7 @@ from agnostic_org.search import member_documents
 
 class OrgModule(BaseModule):
     name = "org"
-    version = "0.2.0"
+    version = "0.3.0"
     depends_on = ("identity", "settings", "audit")
 
     def provide(self) -> Iterable[Provider]:

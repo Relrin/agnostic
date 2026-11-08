@@ -19,7 +19,7 @@ from agnostic_service_accounts.settings import ServiceAccountsSettings
 
 class ServiceAccountsModule(BaseModule):
     name = "service_accounts"
-    version = "0.2.0"
+    version = "0.3.0"
     depends_on = ("access", "audit", "identity", "instances")
 
     def settings_model(self) -> type[BaseSettings] | None:

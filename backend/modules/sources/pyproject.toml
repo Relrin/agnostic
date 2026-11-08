@@ -1,6 +1,6 @@
 [project]
 name = "agnostic-sources"
-version = "0.2.0"
+version = "0.3.0"
 description = "Code sources: git repositories and local folders synced with Studio, pulled as drafts, written back as pull requests, merged per field"
 requires-python = "==3.15.*"
 license = "BSD-3-Clause"

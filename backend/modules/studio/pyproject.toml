@@ -1,6 +1,6 @@
 [project]
 name = "agnostic-studio"
-version = "0.2.0"
+version = "0.3.0"
 description = "Studio: component lifecycle over AgentOS /components, registry catalog, workflow builder, code round-trip, gated publish, promotion"
 requires-python = "==3.15.*"
 license = "BSD-3-Clause"

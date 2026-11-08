@@ -1,6 +1,6 @@
 [project]
 name = "agnostic-gateway"
-version = "0.2.0"
+version = "0.3.0"
 description = "Reverse proxy to AgentOS: route policies, scope pre-check, JWT minting, SSE passthrough, caching, audit"
 requires-python = "==3.15.*"
 license = "BSD-3-Clause"

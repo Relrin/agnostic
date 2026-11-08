@@ -1,6 +1,6 @@
 [project]
 name = "agnostic-server"
-version = "0.2.0"
+version = "0.3.0"
 description = "Agnostic control plane composition root: API, worker and the `agnostic` CLI"
 requires-python = "==3.15.*"
 license = "BSD-3-Clause"

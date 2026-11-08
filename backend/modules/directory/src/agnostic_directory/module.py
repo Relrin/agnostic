@@ -20,7 +20,7 @@ from agnostic_kernel.modules import AuditActionDecl, BaseModule, JobSpec, Router
 
 class DirectoryModule(BaseModule):
     name = "directory"
-    version = "0.2.0"
+    version = "0.3.0"
     depends_on = ("identity", "org", "audit")
 
     def settings_model(self) -> type[BaseSettings] | None:

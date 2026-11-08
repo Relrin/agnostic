@@ -32,7 +32,7 @@ log = get_logger(__name__)
 
 class AssistantModule(BaseModule):
     name = "assistant"
-    version = "0.2.0"
+    version = "0.3.0"
     depends_on = ("access", "audit", "identity", "instances", "gateway")
 
     def settings_model(self) -> type[BaseSettings] | None:

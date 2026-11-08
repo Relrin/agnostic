@@ -73,7 +73,7 @@ wheels = [
 
 [[package]]
 name = "agnostic-access"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "modules/access" }
 dependencies = [
     { name = "agnostic-audit" },
@@ -114,7 +114,7 @@ requires-dist = [
 
 [[package]]
 name = "agnostic-agentos-client"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "packages/agnostic-agentos-client" }
 dependencies = [
     { name = "httpx", extra = ["http2"] },
@@ -129,7 +129,7 @@ requires-dist = [
 
 [[package]]
 name = "agnostic-approvals"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "modules/approvals" }
 dependencies = [
     { name = "agnostic-access" },
@@ -176,7 +176,7 @@ requires-dist = [
 
 [[package]]
 name = "agnostic-assistant"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "modules/assistant" }
 dependencies = [
     { name = "agno" },
@@ -225,7 +225,7 @@ requires-dist = [
 
 [[package]]
 name = "agnostic-audit"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "modules/audit" }
 dependencies = [
     { name = "agnostic-kernel" },
@@ -256,12 +256,12 @@ requires-dist = [
 
 [[package]]
 name = "agnostic-cel"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "packages/agnostic-cel" }
 
 [[package]]
 name = "agnostic-codegen"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "packages/agnostic-codegen" }
 dependencies = [
     { name = "agnostic-cel" },
@@ -280,7 +280,7 @@ requires-dist = [
 
 [[package]]
 name = "agnostic-context"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "modules/context" }
 dependencies = [
     { name = "agnostic-agentos-client" },
@@ -311,7 +311,7 @@ requires-dist = [
 
 [[package]]
 name = "agnostic-directory"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "modules/directory" }
 dependencies = [
     { name = "agnostic-audit" },
@@ -350,7 +350,7 @@ requires-dist = [
 
 [[package]]
 name = "agnostic-evals"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "modules/evals" }
 dependencies = [
     { name = "agnostic-agentos-client" },
@@ -387,7 +387,7 @@ requires-dist = [
 
 [[package]]
 name = "agnostic-gateway"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "modules/gateway" }
 dependencies = [
     { name = "agnostic-access" },
@@ -428,7 +428,7 @@ requires-dist = [
 
 [[package]]
 name = "agnostic-identity"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "modules/identity" }
 dependencies = [
     { name = "agnostic-audit" },
@@ -471,7 +471,7 @@ requires-dist = [
 
 [[package]]
 name = "agnostic-instances"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "modules/instances" }
 dependencies = [
     { name = "agnostic-agentos-client" },
@@ -510,7 +510,7 @@ requires-dist = [
 
 [[package]]
 name = "agnostic-kernel"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "packages/agnostic-kernel" }
 dependencies = [
     { name = "aiosqlite" },
@@ -571,7 +571,7 @@ requires-dist = [
 
 [[package]]
 name = "agnostic-notifications"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "modules/notifications" }
 dependencies = [
     { name = "agnostic-access" },
@@ -612,7 +612,7 @@ requires-dist = [
 
 [[package]]
 name = "agnostic-observe"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "modules/observe" }
 dependencies = [
     { name = "agnostic-agentos-client" },
@@ -649,7 +649,7 @@ requires-dist = [
 
 [[package]]
 name = "agnostic-org"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "modules/org" }
 dependencies = [
     { name = "agnostic-audit" },
@@ -678,7 +678,7 @@ requires-dist = [
 
 [[package]]
 name = "agnostic-queue"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "modules/queue" }
 dependencies = [
     { name = "agnostic-agentos-client" },
@@ -707,7 +707,7 @@ requires-dist = [
 
 [[package]]
 name = "agnostic-scheduler"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "modules/scheduler" }
 dependencies = [
     { name = "agnostic-access" },
@@ -752,7 +752,7 @@ requires-dist = [
 
 [[package]]
 name = "agnostic-search"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "modules/search" }
 dependencies = [
     { name = "agnostic-instances" },
@@ -781,7 +781,7 @@ requires-dist = [
 
 [[package]]
 name = "agnostic-server"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "apps/agnostic-server" }
 dependencies = [
     { name = "agnostic-kernel" },
@@ -814,7 +814,7 @@ requires-dist = [
 
 [[package]]
 name = "agnostic-service-accounts"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "modules/service_accounts" }
 dependencies = [
     { name = "agnostic-access" },
@@ -849,7 +849,7 @@ requires-dist = [
 
 [[package]]
 name = "agnostic-settings"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "modules/settings" }
 dependencies = [
     { name = "agnostic-audit" },
@@ -870,7 +870,7 @@ requires-dist = [
 
 [[package]]
 name = "agnostic-sources"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "modules/sources" }
 dependencies = [
     { name = "agnostic-audit" },
@@ -917,7 +917,7 @@ requires-dist = [
 
 [[package]]
 name = "agnostic-spec"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "packages/agnostic-spec" }
 dependencies = [
     { name = "pydantic" },
@@ -928,7 +928,7 @@ requires-dist = [{ name = "pydantic", specifier = "==2.14.2" }]
 
 [[package]]
 name = "agnostic-studio"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "modules/studio" }
 dependencies = [
     { name = "agnostic-agentos-client" },
@@ -973,7 +973,7 @@ requires-dist = [
 
 [[package]]
 name = "agnostic-system"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "modules/system" }
 dependencies = [
     { name = "agnostic-audit" },
@@ -1000,7 +1000,7 @@ requires-dist = [
 
 [[package]]
 name = "agnostic-tool-catalog"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "modules/tool_catalog" }
 dependencies = [
     { name = "agnostic-access" },
@@ -1043,7 +1043,7 @@ requires-dist = [
 
 [[package]]
 name = "agnostic-workspace"
-version = "0.2.0"
+version = "0.3.0"
 source = { virtual = "." }
 dependencies = [
     { name = "agnostic-access" },

@@ -1,6 +1,6 @@
 {
   "name": "@agnostic/module-traces",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "description": "Traces: search, waterfall and tree, span attributes, comparison with the last successful run",

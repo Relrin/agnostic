@@ -1,6 +1,6 @@
 [project]
 name = "agnostic-observe"
-version = "0.2.0"
+version = "0.3.0"
 description = "Observe: Home overview, trace comparison and span statistics, metrics with price tables and cost estimates"
 requires-python = "==3.15.*"
 license = "BSD-3-Clause"

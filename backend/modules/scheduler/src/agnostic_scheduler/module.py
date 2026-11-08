@@ -21,7 +21,7 @@ from agnostic_scheduler.settings import SchedulerSettings
 
 class SchedulerModule(BaseModule):
     name = "scheduler"
-    version = "0.2.0"
+    version = "0.3.0"
     depends_on = ("access", "audit", "identity", "instances", "gateway", "notifications")
 
     def settings_model(self) -> type[BaseSettings] | None:

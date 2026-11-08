@@ -1,6 +1,6 @@
 {
   "name": "@agnostic/assistant",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "description": "Ask your OS building blocks shared by pages: availability, the answer stream and view, the Ask box, generated text and suggestions",
