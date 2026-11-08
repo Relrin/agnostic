@@ -1,11 +1,12 @@
 // Content patterns: MarkdownView (GFM, code highlighted by Shiki on demand), JsonView, JsonEditor, Toaster.
-import { useEffect, useId, useState, type CSSProperties, type ReactNode } from "react";
-import ReactMarkdown from "react-markdown";
+import { memo, useEffect, useId, useMemo, useState, type CSSProperties, type ReactNode } from "react";
+import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type { BundledLanguage } from "shiki";
 import { Toaster as Sonner, toast } from "sonner";
 
 import { cn } from "../lib/cn";
+import { useSmoothText } from "../lib/smooth-text";
 import { Button } from "../primitives/button";
 
 export { toast };
@@ -97,17 +98,108 @@ function tokenStyle(token: Token): CSSProperties {
   };
 }
 
-/** Rendered model output: GitHub-flavoured Markdown, links open in a new tab, code highlighted. */
+type LinkMapper = (href: string) => string | undefined;
+
+function markdownComponents(internalLink: LinkMapper | undefined, highlight: boolean): Components {
+  return {
+    a: ({ href, children: label }) => {
+      const inside = href ? internalLink?.(href) : undefined;
+      return inside ? (
+        <a href={inside}>{label}</a>
+      ) : (
+        <a href={href} target="_blank" rel="noreferrer noopener">
+          {label}
+        </a>
+      );
+    },
+    code: ({ className: languageClass, children: source }) => {
+      const language = /language-(\w+)/.exec(languageClass ?? "")?.[1];
+      const raw = typeof source === "string" ? source : Array.isArray(source) ? source.join("") : "";
+      const code = raw.replace(/\n$/, "");
+      if (!language) {
+        return (
+          <code className="rounded-type bg-surface-hover px-1 py-px font-mono text-[12.5px]">{code}</code>
+        );
+      }
+      if (!highlight) {
+        return (
+          <pre className="overflow-x-auto rounded-tile border border-border bg-inset px-3 py-2.5 font-mono text-[12px]">
+            <code>{code}</code>
+          </pre>
+        );
+      }
+      return <HighlightedCode code={code} language={language} />;
+    },
+    pre: ({ children: block }) => <>{block}</>,
+  };
+}
+
+const FENCE = /^\s{0,3}(```|~~~)/;
+
+/**
+ * Splits Markdown into top-level blocks at blank lines, keeping fenced code and indented continuations (a list
+ * item's second paragraph, nested code) with the block they belong to. Lets a streaming answer re-render only its
+ * last, still-growing block.
+ */
+export function markdownBlocks(source: string): string[] {
+  const blocks: string[] = [];
+  const lines = source.split("\n");
+  let current: string[] = [];
+  let fence: string | undefined;
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index] ?? "";
+    const marker = FENCE.exec(line)?.[1];
+    if (marker && (fence === undefined || marker === fence)) fence = fence === undefined ? marker : undefined;
+    current.push(line);
+    if (fence !== undefined || line.trim() !== "") continue;
+    let ahead = index + 1;
+    while (ahead < lines.length && (lines[ahead] ?? "").trim() === "") ahead += 1;
+    const following = lines[ahead];
+    if (following !== undefined && /^\s/.test(following)) continue;
+    if (current.some((item) => item.trim() !== "")) blocks.push(current.join("\n"));
+    current = [];
+  }
+  if (current.length > 0) blocks.push(current.join("\n"));
+  return blocks;
+}
+
+const MarkdownBlock = memo(function MarkdownBlock({
+  source,
+  components,
+}: {
+  source: string;
+  components: Components;
+}) {
+  return (
+    <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
+      {source}
+    </ReactMarkdown>
+  );
+});
+
+/**
+ * Rendered model output: GitHub-flavoured Markdown, links open in a new tab, code highlighted. With `streaming`,
+ * text is revealed at a steady reading pace, finished blocks stay put while the last one grows, and code in the
+ * growing block is highlighted once it is complete.
+ */
 export function MarkdownView({
   children,
   className,
   internalLink,
+  streaming = false,
 }: {
   children: string;
   className?: string;
   /** Map a link to a page of the app (opened in place), or `undefined` to open it in a new tab. */
-  internalLink?: (href: string) => string | undefined;
+  internalLink?: LinkMapper;
+  /** The text is still arriving. */
+  streaming?: boolean;
 }) {
+  const shown = useSmoothText(children, streaming);
+  const revealing = streaming || shown.length < children.length;
+  const components = useMemo(() => markdownComponents(internalLink, true), [internalLink]);
+  const growing = useMemo(() => markdownComponents(internalLink, false), [internalLink]);
+  const blocks = useMemo(() => (revealing ? markdownBlocks(shown) : undefined), [revealing, shown]);
   return (
     <div
       className={cn(
@@ -118,38 +210,20 @@ export function MarkdownView({
         "[&_blockquote]:border-l-2 [&_blockquote]:border-border-strong [&_blockquote]:pl-3 [&_blockquote]:text-fg-secondary",
         className,
       )}
+      data-streaming={revealing ? "" : undefined}
     >
-      <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        components={{
-          a: ({ href, children: label }) => {
-            const inside = href ? internalLink?.(href) : undefined;
-            return inside ? (
-              <a href={inside}>{label}</a>
-            ) : (
-              <a href={href} target="_blank" rel="noreferrer noopener">
-                {label}
-              </a>
-            );
-          },
-          code: ({ className: languageClass, children: source }) => {
-            const language = /language-(\w+)/.exec(languageClass ?? "")?.[1];
-            const raw = typeof source === "string" ? source : Array.isArray(source) ? source.join("") : "";
-            const code = raw.replace(/\n$/, "");
-            if (!language) {
-              return (
-                <code className="rounded-type bg-surface-hover px-1 py-px font-mono text-[12.5px]">
-                  {code}
-                </code>
-              );
-            }
-            return <HighlightedCode code={code} language={language} />;
-          },
-          pre: ({ children: block }) => <>{block}</>,
-        }}
-      >
-        {children}
-      </ReactMarkdown>
+      {blocks ? (
+        blocks.map((block, index) => (
+          <MarkdownBlock
+            // Blocks only ever grow at the end, so the index is a stable identity.
+            key={index}
+            source={block}
+            components={index === blocks.length - 1 ? growing : components}
+          />
+        ))
+      ) : (
+        <MarkdownBlock source={children} components={components} />
+      )}
     </div>
   );
 }

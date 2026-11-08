@@ -1,5 +1,6 @@
 import { describeError } from "@agnostic/api";
 import {
+  ChatContextMeter,
   CodingAgentBadge,
   RunView,
   SESSION_TYPE,
@@ -295,6 +296,10 @@ export function ChatPage() {
     (run) => !liveRunIds.has(run.run_id) && !("parent_run_id" in run && run.parent_run_id),
   );
   const latest = liveStreams.map((stream) => stream.getState()).find((state) => !isSettled(state));
+  const newestLive = liveStreams.at(-1);
+  const newestStored = (runs.data ?? [])
+    .filter((run) => !("parent_run_id" in run && run.parent_run_id))
+    .at(-1);
   const streaming = latest !== undefined;
 
   const groups = useMemo(() => {
@@ -547,6 +552,17 @@ export function ChatPage() {
                   disabled={!componentId}
                   attachments={family === "workflows" ? undefined : ATTACHMENTS}
                   members={family === "teams" ? component?.members : undefined}
+                  accessory={
+                    sessionId || newestLive ? (
+                      <ChatContextMeter
+                        key={sessionId ?? newestLive?.key}
+                        stream={newestLive}
+                        stored={sessionId ? newestStored : undefined}
+                        model={component?.model}
+                        metadata={component?.metadata}
+                      />
+                    ) : undefined
+                  }
                   onSend={send}
                   onStop={() => {
                     const live = liveStreams.find((stream) => !isSettled(stream.getState()));

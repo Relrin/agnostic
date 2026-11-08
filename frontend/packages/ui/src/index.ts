@@ -1,5 +1,6 @@
 // @agnostic/ui: the only place feature code gets UI primitives from (never @radix-ui directly).
 export { cn } from "./lib/cn";
+export { useSmoothText, usePrefersReducedMotion } from "./lib/smooth-text";
 export { BrandIcon, ModelMark, ToolMark, type BrandTone, type ToolMarkProps } from "./brand/brand-icon";
 export {
   BRAND_OPTIONS,
@@ -135,7 +136,7 @@ export {
   type Column,
   type KpiDelta,
 } from "./patterns/data";
-export { JsonEditor, JsonView, MarkdownView, Toaster, toast } from "./patterns/content";
+export { JsonEditor, JsonView, MarkdownView, markdownBlocks, Toaster, toast } from "./patterns/content";
 export {
   ArgsDiff,
   CRON_FIELDS,
@@ -213,7 +214,14 @@ export {
   type WorkflowNodeStatus,
   type WorkflowNodeType,
 } from "./domain/workflow";
-export { Composer, SessionList, type AttachmentRule, type SessionListItem } from "./domain/chat";
+export {
+  Composer,
+  ContextMeter,
+  SessionList,
+  type AttachmentRule,
+  type ContextMeterShare,
+  type SessionListItem,
+} from "./domain/chat";
 export {
   SpanAttributes,
   SpanTree,

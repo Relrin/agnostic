@@ -12,4 +12,6 @@ summarizer = Agent(
     instructions="Summarise in at most five bullet points.",
     markdown=True,
     store_events=True,
+    # The mock model has no window of its own: a small one makes the chat's context meter show a share of it.
+    metadata={"context_window": 4096},
 )

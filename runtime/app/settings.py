@@ -48,6 +48,9 @@ class RuntimeSettings(BaseSettings):
     # The model the sample coding agents think with: "mock" (offline), or "<provider>:<model id>" such as
     # "ollama:qwen3:8b", "openai:gpt-5.2" or "anthropic:claude-sonnet-4-6" (keys from the provider's usual env var).
     coding_model: str = "mock"
+    # Average pause between the words the mock model streams, in milliseconds. 0 (the default) streams a reply at
+    # once; a few dozen make it arrive in uneven bursts like a provider's stream, to try how chat renders it.
+    mock_stream_delay_ms: int = 0
 
     def fault(self, tool: str) -> str | None:
         """The fault configured for ``tool`` ("timeout"), if any."""

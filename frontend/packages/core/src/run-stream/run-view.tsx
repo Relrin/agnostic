@@ -258,7 +258,11 @@ export function RunView({
                     style={{ paddingLeft: (member.depth - 1) * 12 }}
                   >
                     <span className="font-medium">{member.name}</span>
-                    {member.content && <MarkdownView className="text-[13px]">{member.content}</MarkdownView>}
+                    {member.content && (
+                      <MarkdownView className="text-[13px]" streaming={member.status === "running"}>
+                        {member.content}
+                      </MarkdownView>
+                    )}
                   </div>
                 );
               })}
@@ -285,7 +289,7 @@ export function RunView({
             ))}
           </div>
         )}
-        {state.content && <MarkdownView>{state.content}</MarkdownView>}
+        {state.content && <MarkdownView streaming={streaming}>{state.content}</MarkdownView>}
         {!streaming && <RunArtifacts instance={instance} sessionId={state.sessionId} runId={state.runId} />}
         {sources.length > 0 && (
           <ol aria-label="Sources" className="flex flex-col gap-0.5 text-[12px] text-fg-muted">

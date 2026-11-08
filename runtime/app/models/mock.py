@@ -11,13 +11,16 @@ With ``persona="coder"`` it plays a coding harness's model: it thinks briefly, w
 harness's own ``write`` tool, lists the folder with ``bash`` and then summarises.
 """
 
+import asyncio
 import hashlib
 import json
 import re
+import time
 from collections.abc import AsyncIterator, Iterator
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
+from agno.metrics import MessageMetrics
 from agno.models.base import Model
 from agno.models.message import Message
 from agno.models.response import ModelResponse
@@ -45,8 +48,60 @@ PHRASES = (
 )
 
 
+# Asking for a long or detailed answer gets a multi-paragraph Markdown reply (headings, a list, code), so long
+# streamed output can be tried without a real model.
+LONG_ANSWER_TRIGGER = re.compile(r"\b(long|detailed) answer\b", re.IGNORECASE)
+LONG_ANSWER = """## How the {persona} handles a request
+
+Every request goes through the same three stages. The model reads the conversation so far, decides whether it \
+needs a tool, and then writes the answer you are reading now.
+
+1. **Understand** the request and the context it arrives with.
+2. **Act** by calling the tools attached to the agent, when the request needs data it does not have.
+3. **Answer** in plain language, citing what the tools returned.
+
+### An example
+
+A refund request names an order and an amount. The agent looks the order up, checks the amount against the \
+order total and asks for approval before money moves:
+
+```python
+order = lookup_order("ord_1001")
+if amount <= order.total:
+    refund_customer(order.customer_id, amount)
+```
+
+> Approvals keep a person in the loop for anything that cannot be undone.
+
+That is all there is to it: read, act when needed, and answer clearly."""
+
+# Rough size of text in tokens, about four characters each, like the tokenizers of the common providers.
+CHARS_PER_TOKEN = 4
+
+
 def _digest(text: str) -> int:
     return int(hashlib.sha256(text.encode()).hexdigest()[:8], 16)
+
+
+def _tokens(value: Any) -> int:
+    if value is None:
+        return 0
+    text = value if isinstance(value, str) else json.dumps(value, default=str)
+    return -(-len(text) // CHARS_PER_TOKEN)
+
+
+def _usage(messages: list[Message], tools: list[dict[str, Any]] | None, response: ModelResponse) -> MessageMetrics:
+    """Token counts a provider would report for this request: everything sent in, and the reply."""
+    sent = sum(_tokens(message.get_content_string()) + _tokens(message.tool_calls) for message in messages)
+    sent += _tokens(tools)
+    written = _tokens(response.content) + _tokens(response.tool_calls) + _tokens(response.reasoning_content)
+    return MessageMetrics(input_tokens=sent, output_tokens=written, total_tokens=sent + written)
+
+
+def _configured_stream_delay() -> float:
+    from app.settings import get_settings
+
+    return max(0, get_settings().mock_stream_delay_ms) / 1000
 
 
 def _tool_names(tools: list[dict[str, Any]] | None) -> set[str]:
@@ -166,6 +221,8 @@ class MockModel(Model):
     persona: str = "assistant"
     # Sampling setting a real model would take, so presets can differ by it; the mock ignores it.
     temperature: float | None = None
+    # Average pause between streamed words, in seconds (RUNTIME_MOCK_STREAM_DELAY_MS); 0 streams at once.
+    stream_delay: float = field(default_factory=_configured_stream_delay)
 
     def _respond(self, messages: list[Message], tools: list[dict[str, Any]] | None) -> ModelResponse:
         user_text = next((m.get_content_string() for m in reversed(messages) if m.role == "user"), "")
@@ -195,30 +252,61 @@ class MockModel(Model):
                     ],
                 )
 
+        if LONG_ANSWER_TRIGGER.search(user_text):
+            return ModelResponse(role="assistant", content=LONG_ANSWER.format(persona=self.persona))
+
         phrase = PHRASES[_digest(user_text) % len(PHRASES)]
         echo = " ".join(user_text.split())[:80] or "(no input)"
         return ModelResponse(role="assistant", content=f"[{self.persona}] {phrase}: {echo}")
 
     def invoke(self, *args: Any, **kwargs: Any) -> ModelResponse:
-        return self._respond(kwargs.get("messages", []), kwargs.get("tools"))
+        messages = kwargs.get("messages", [])
+        tools = kwargs.get("tools")
+        response = self._respond(messages, tools)
+        response.response_usage = _usage(messages, tools, response)
+        return response
 
     async def ainvoke(self, *args: Any, **kwargs: Any) -> ModelResponse:
         return self.invoke(*args, **kwargs)
 
-    def invoke_stream(self, *args: Any, **kwargs: Any) -> Iterator[ModelResponse]:
+    def _chunks(self, *args: Any, **kwargs: Any) -> Iterator[tuple[ModelResponse, float]]:
+        """The reply word by word, each with the pause before it; the last chunk carries the usage."""
         response = self.invoke(*args, **kwargs)
+        usage = response.response_usage
+        response.response_usage = None
         if response.reasoning_content:
             for index, word in enumerate(response.reasoning_content.split(" ")):
-                yield ModelResponse(role="assistant", reasoning_content=word if index == 0 else f" {word}")
+                chunk = ModelResponse(role="assistant", reasoning_content=word if index == 0 else f" {word}")
+                yield chunk, self._pause(word, index)
             response.reasoning_content = None
         if response.tool_calls or not isinstance(response.content, str):
-            yield response
+            response.response_usage = usage
+            yield response, self.stream_delay
             return
-        for index, word in enumerate(response.content.split(" ")):
-            yield ModelResponse(role="assistant", content=word if index == 0 else f" {word}")
+        words = response.content.split(" ")
+        for index, word in enumerate(words):
+            chunk = ModelResponse(role="assistant", content=word if index == 0 else f" {word}")
+            if index == len(words) - 1:
+                chunk.response_usage = usage
+            yield chunk, self._pause(word, index)
+
+    def _pause(self, word: str, index: int) -> float:
+        """Uneven gaps between words, the way a provider's stream arrives: mostly quick, now and then a stall."""
+        if self.stream_delay <= 0:
+            return 0.0
+        spread = _digest(f"{word}{index}") % 10
+        return self.stream_delay * (6 if spread == 0 else 0.3 + spread / 6)
+
+    def invoke_stream(self, *args: Any, **kwargs: Any) -> Iterator[ModelResponse]:
+        for chunk, pause in self._chunks(*args, **kwargs):
+            if pause:
+                time.sleep(pause)
+            yield chunk
 
     async def ainvoke_stream(self, *args: Any, **kwargs: Any) -> AsyncIterator[ModelResponse]:
-        for chunk in self.invoke_stream(*args, **kwargs):
+        for chunk, pause in self._chunks(*args, **kwargs):
+            if pause:
+                await asyncio.sleep(pause)
             yield chunk
 
     def _parse_provider_response(self, response: Any, **kwargs: Any) -> ModelResponse:

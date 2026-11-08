@@ -1,10 +1,12 @@
-// Chat widgets: Composer (attachments, mentions, Enter to send, Stop while streaming) and SessionList.
+// Chat widgets: Composer (attachments, mentions, Enter to send, Stop while streaming), SessionList and ContextMeter.
 import { AtSign, Paperclip, Search, Send, Square, X } from "lucide-react";
 import { useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 
 import { cn } from "../lib/cn";
+import { groupDigits } from "../lib/format";
 import { StatusPill } from "../primitives/badge";
 import { Button } from "../primitives/button";
+import { Popover, PopoverContent, PopoverTrigger } from "../primitives/popover";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,6 +44,7 @@ export function Composer({
   disabledReason,
   attachments,
   members,
+  accessory,
 }: {
   /** "Message support-triage". */
   label: string;
@@ -55,6 +58,8 @@ export function Composer({
   attachments?: AttachmentRule | undefined;
   /** Team members for "@ Mention member"; undefined disables it with a reason. */
   members?: readonly string[] | undefined;
+  /** Shown at the end of the action row, before Send (the context meter). */
+  accessory?: ReactNode;
 }) {
   const id = useId();
   const [text, setText] = useState("");
@@ -210,7 +215,11 @@ export function Composer({
             </span>
           </Tooltip>
         )}
-        <span className="ml-auto hidden text-[11.5px] text-fg-faint sm:inline">
+        {accessory}
+        <span
+          className="ml-auto hidden min-w-0 truncate text-[11.5px] text-fg-faint sm:inline"
+          title="Enter to send · Shift+Enter for a new line"
+        >
           Enter to send · Shift+Enter for a new line
         </span>
         {streaming ? (
@@ -307,5 +316,200 @@ export function SessionList({
         {footer}
       </div>
     </nav>
+  );
+}
+
+export type ContextMeterShare = { key: string; label: string; tokens: number };
+
+const SHARE_COLORS: Record<string, string> = {
+  conversation: "var(--chart-1)",
+  tools: "var(--chart-2)",
+  definitions: "var(--chart-3)",
+  system: "var(--warning)",
+  output: "var(--info)",
+};
+
+function compact(tokens: number): string {
+  if (tokens >= 1_000_000) {
+    const millions = tokens / 1_000_000;
+    return `${Number.isInteger(millions) ? String(millions) : millions.toFixed(1)}M`;
+  }
+  if (tokens >= 1_000) return `${(tokens / 1_000).toFixed(1)}k`;
+  return String(tokens);
+}
+
+function exact(tokens: number): string {
+  return groupDigits(tokens);
+}
+
+/** A share of the window, to one decimal: "18.2%". */
+function share(tokens: number, window: number): string {
+  return `${((tokens / window) * 100).toFixed(1)}%`;
+}
+
+type Level = "ok" | "warning" | "danger";
+
+/** Below 70% the meter stays quiet, then it warns, and past 90% the next turns may not fit. */
+function level(percent: number | undefined): Level {
+  if (percent === undefined || percent < 70) return "ok";
+  return percent < 90 ? "warning" : "danger";
+}
+
+const LEVEL_COLOR: Record<Level, string> = {
+  ok: "var(--fg-secondary)",
+  warning: "var(--warning)",
+  danger: "var(--danger)",
+};
+
+function Ring({ percent, tone }: { percent: number | undefined; tone: Level }) {
+  const radius = 6;
+  const circumference = 2 * Math.PI * radius;
+  const filled = percent === undefined ? 0 : Math.min(100, percent) / 100;
+  return (
+    <svg viewBox="0 0 16 16" className="size-4 shrink-0 -rotate-90" aria-hidden>
+      <circle cx="8" cy="8" r={radius} fill="none" stroke="var(--border-strong)" strokeWidth="2.5" />
+      <circle
+        cx="8"
+        cy="8"
+        r={radius}
+        fill="none"
+        stroke={LEVEL_COLOR[tone]}
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeDasharray={`${String(filled * circumference)} ${String(circumference)}`}
+        className="transition-[stroke-dasharray] duration-500 ease-out motion-reduce:transition-none"
+      />
+    </svg>
+  );
+}
+
+function percentText(used: number, percent: number | undefined): string | undefined {
+  if (percent === undefined) return undefined;
+  if (percent < 1 && used > 0) return "<1%";
+  return `${String(Math.round(percent))}%`;
+}
+
+function Swatch({ color, faint = false }: { color: string; faint?: boolean }) {
+  return (
+    <span
+      aria-hidden
+      className="size-2.5 shrink-0 rounded-[2px]"
+      style={{ backgroundColor: color, opacity: faint ? 0.35 : 1 }}
+    />
+  );
+}
+
+/**
+ * How full the model's context window is after the latest request: a ring with the share used and, on click, the
+ * tokens against the window and what they are spent on, largest first, with the free space last.
+ */
+export function ContextMeter({
+  used,
+  window,
+  shares,
+  model,
+  cachedTokens = 0,
+  reasoningTokens = 0,
+  estimated = false,
+  updating = false,
+}: {
+  /** Tokens the conversation occupies (the latest request's input plus its output). */
+  used: number;
+  /** The model's context window; omit when unknown, and only the count is shown. */
+  window?: number | undefined;
+  shares: readonly ContextMeterShare[];
+  model?: string | undefined;
+  cachedTokens?: number;
+  reasoningTokens?: number;
+  /** The split by source is estimated from message lengths. */
+  estimated?: boolean;
+  /** A run is in progress: the numbers are from its latest model request. */
+  updating?: boolean;
+}) {
+  const percent = window ? (used / window) * 100 : undefined;
+  const tone = level(percent);
+  const headline = percentText(used, percent);
+  const scale = Math.max(1, window ?? used);
+  const visible = shares.filter((item) => item.tokens > 0).sort((a, b) => b.tokens - a.tokens);
+  const toneStyle = tone === "ok" ? undefined : { color: LEVEL_COLOR[tone] };
+  const summary = window
+    ? `Context ${headline ?? ""} used: ${exact(used)} of ${exact(window)} tokens`
+    : `Context: ${exact(used)} tokens used`;
+  const notes = [
+    cachedTokens > 0 ? `${compact(cachedTokens)} input tokens read from cache` : undefined,
+    reasoningTokens > 0 ? `${compact(reasoningTokens)} reasoning tokens` : undefined,
+  ].filter(Boolean);
+  const row = "grid grid-cols-[auto_1fr_auto_3.5rem] items-center gap-x-2.5";
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          aria-label={summary}
+          title={summary}
+          className="inline-flex h-7 shrink-0 cursor-pointer items-center gap-1.5 rounded-control px-2 text-[12px] whitespace-nowrap text-fg-muted tabular-nums transition-colors hover:bg-surface-hover hover:text-fg"
+          style={toneStyle}
+        >
+          <Ring percent={percent} tone={tone} />
+          {headline ? `${headline} used` : `${compact(used)} tokens`}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="start" side="top" className="w-80 p-3.5" aria-label="Context usage">
+        <div className="flex flex-col gap-3 text-[13px]">
+          <div className="flex items-baseline justify-between gap-3 tabular-nums">
+            <span className="font-semibold text-fg" style={toneStyle}>
+              {headline ?? `${compact(used)} tokens`}
+            </span>
+            <span className="text-fg-muted">
+              {window ? `${compact(used)} / ${compact(window)}` : "window size unknown"}
+            </span>
+          </div>
+          <div
+            role="img"
+            aria-label={visible.map((item) => `${item.label} ${exact(item.tokens)}`).join(", ")}
+            className="flex h-1.5 w-full overflow-hidden rounded-full bg-surface-hover"
+          >
+            {visible.map((item) => (
+              <span
+                key={item.key}
+                className="h-full transition-[width] duration-500 ease-out motion-reduce:transition-none"
+                style={{
+                  width: `${String((item.tokens / scale) * 100)}%`,
+                  backgroundColor: SHARE_COLORS[item.key] ?? "var(--fg-muted)",
+                }}
+              />
+            ))}
+          </div>
+          <ul className="flex flex-col gap-1.5 tabular-nums">
+            {visible.map((item) => (
+              <li key={item.key} className={row}>
+                <Swatch color={SHARE_COLORS[item.key] ?? "var(--fg-muted)"} />
+                <span className="truncate text-fg-secondary">{item.label}</span>
+                <span className="text-right text-fg-secondary">{compact(item.tokens)}</span>
+                <span className="text-right text-fg-muted">{share(item.tokens, scale)}</span>
+              </li>
+            ))}
+            {window !== undefined && (
+              <li className={row}>
+                <Swatch color="var(--fg-muted)" faint />
+                <span className="text-fg-secondary">Free space</span>
+                <span className="text-right text-fg-secondary">{compact(Math.max(0, window - used))}</span>
+                <span className="text-right text-fg-muted">{share(Math.max(0, window - used), window)}</span>
+              </li>
+            )}
+          </ul>
+          {notes.length > 0 && (
+            <p className="border-t border-border pt-2 text-[11.5px] text-fg-muted">{notes.join(" · ")}</p>
+          )}
+          <p className="text-[11.5px] leading-snug text-fg-faint">
+            {model ? <span className="font-mono">{model}</span> : null}
+            {model ? " · " : null}
+            {updating ? "updating as the run makes model requests." : "as of the latest model request."}
+            {estimated ? " The split by source is estimated from message lengths." : null}
+            {tone === "danger" ? " Start a new session to free up room." : null}
+          </p>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }

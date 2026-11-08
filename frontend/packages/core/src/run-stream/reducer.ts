@@ -57,6 +57,20 @@ export type Pause =
   | { kind: "requirements"; requirements: Record<string, unknown>[] }
   | { kind: "steps"; event: string; stepRequirements: StepRequirement[] };
 
+/**
+ * Token counts of the run's latest model request. Its input is everything the model was sent (instructions, tool
+ * definitions, history, this turn), so it is how much of the context window the conversation fills right now.
+ */
+export type ContextUsage = {
+  inputTokens: number;
+  outputTokens: number;
+  cacheReadTokens: number;
+  cacheWriteTokens: number;
+  reasoningTokens: number;
+  model?: string | undefined;
+  provider?: string | undefined;
+};
+
 export type RunState = {
   kind?: ComponentKind | undefined;
   runId?: string | undefined;
@@ -80,6 +94,7 @@ export type RunState = {
   error?: { message: string; type?: string | undefined } | undefined;
   cancelReason?: string | undefined;
   metrics?: Record<string, unknown> | undefined;
+  context?: ContextUsage | undefined;
   citations?: unknown;
   references?: unknown[] | undefined;
   sessionState?: Record<string, unknown> | undefined;
@@ -125,6 +140,24 @@ function text(value: unknown): string {
 
 function isStructured(value: unknown): value is object {
   return typeof value === "object" && value !== null;
+}
+
+function count(value: unknown): number {
+  return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+
+function contextFrom(event: RunEvent, previous: ContextUsage | undefined): ContextUsage | undefined {
+  const inputTokens = count(event.input_tokens);
+  if (inputTokens === 0) return previous;
+  return {
+    inputTokens,
+    outputTokens: count(event.output_tokens),
+    cacheReadTokens: count(event.cache_read_tokens),
+    cacheWriteTokens: count(event.cache_write_tokens),
+    reasoningTokens: count(event.reasoning_tokens),
+    model: event.model ?? previous?.model,
+    provider: event.model_provider ?? previous?.provider,
+  };
 }
 
 function seconds(event: RunEvent): number | undefined {
@@ -447,7 +480,6 @@ const IGNORED = new Set([
   "RunContentCompleted",
   "RunIntermediateContent",
   "ModelRequestStarted",
-  "ModelRequestCompleted",
   "PreHookStarted",
   "PreHookCompleted",
   "PostHookStarted",
@@ -568,6 +600,12 @@ function apply(state: RunState, event: RunEvent): RunState {
         reasoning: state.reasoning + (event.reasoning_content ?? ""),
         citations: event.citations ?? state.citations,
         references: event.references ?? state.references,
+      };
+    case "ModelRequestCompleted":
+      return {
+        ...state,
+        context: contextFrom(event, state.context),
+        model: state.model ?? event.model ?? undefined,
       };
     case "ReasoningContentDelta":
     case "ReasoningStep":

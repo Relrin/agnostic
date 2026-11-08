@@ -43,6 +43,24 @@ def test_streaming_reassembles_the_reply() -> None:
     assert streamed == model.invoke(messages=messages).content
 
 
+def test_reports_token_usage_like_a_provider() -> None:
+    model = MockModel(stream_delay=0)
+    messages = [Message(role="system", content="x" * 400), Message(role="user", content="hello")]
+    usage = model.invoke(messages=messages).response_usage
+    assert usage is not None
+    assert usage.input_tokens > 100
+    assert usage.total_tokens == usage.input_tokens + usage.output_tokens
+    chunks = list(model.invoke_stream(messages=messages))
+    assert [chunk.response_usage is not None for chunk in chunks].count(True) == 1
+    assert chunks[-1].response_usage == usage
+
+
+def test_a_long_answer_is_markdown() -> None:
+    content = str(MockModel().invoke(messages=[Message(role="user", content="give me a long answer")]).content)
+    assert content.startswith("## ")
+    assert "```python" in content
+
+
 @pytest.mark.parametrize(
     ("text", "amount"),
     [

@@ -111,7 +111,7 @@ function BulkBar({
       aria-label="Bulk actions"
       className="flex flex-wrap items-center gap-2 rounded-tile border border-border bg-surface px-3 py-2"
     >
-      <span className="text-[13px] font-medium">{count}</span>
+      <span className="shrink-0 text-[13px] font-medium whitespace-nowrap tabular-nums">{count}</span>
       <Button variant="ghost" size="28" onClick={onDone}>
         Clear
       </Button>

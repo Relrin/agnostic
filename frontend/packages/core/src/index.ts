@@ -102,6 +102,7 @@ export {
   reduceAll,
   reduceRun,
   type ComponentKind,
+  type ContextUsage,
   type MemberRun,
   type Pause,
   type RunState,
@@ -135,6 +136,16 @@ export {
 export { RunApprovals } from "./run-stream/approval";
 export { resolveRequirement, toHitlRequest } from "./run-stream/hitl";
 export { RunView, type RunViewProps } from "./run-stream/run-view";
+export { ChatContextMeter } from "./run-stream/context-meter";
+export {
+  contextShares,
+  contextWindow,
+  declaredWindow,
+  inputTokens,
+  storedContext,
+  usedTokens,
+  type ContextShare,
+} from "./run-stream/context";
 export { RealtimeClient, type RealtimeListener, type RealtimeMessage } from "./realtime/events-client";
 export {
   RealtimeProvider,

@@ -17,6 +17,8 @@ export type ComponentSummary = {
   members?: string[] | undefined;
   /** The component's metadata as the runtime reports it (`sdk` for external agents, Agnostic's markers). */
   metadata?: Record<string, unknown> | undefined;
+  /** The model the component runs on (`gpt-4.1`, `claude-sonnet-4-5`), when the runtime says. */
+  model?: string | undefined;
 };
 
 export type SessionsQuery = {
@@ -72,6 +74,7 @@ export function useComponents(instance: string | undefined, family: RunFamily) {
               description?: string | null;
               members?: { name?: string | null; id?: string | null }[] | null;
               metadata?: Record<string, unknown> | null;
+              model?: { model?: string | null } | null;
             };
             return [
               {
@@ -86,6 +89,7 @@ export function useComponents(instance: string | undefined, family: RunFamily) {
                   return name ? [name] : [];
                 }),
                 metadata: extra.metadata ?? undefined,
+                model: extra.model?.model ?? undefined,
               },
             ];
           });

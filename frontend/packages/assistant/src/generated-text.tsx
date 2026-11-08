@@ -73,7 +73,11 @@ export function GeneratedText({
               <ToolChips tools={state.tools} />
             </div>
           )}
-          {state.content && <MarkdownView className="text-[13px]">{state.content}</MarkdownView>}
+          {state.content && (
+            <MarkdownView className="text-[13px]" streaming={writing}>
+              {state.content}
+            </MarkdownView>
+          )}
           {state.status === "failed" && <Callout tone="danger">{state.error}</Callout>}
           {explanation.error && <Callout tone="danger">{explanation.error}</Callout>}
           <SourceList sources={state.sources} />

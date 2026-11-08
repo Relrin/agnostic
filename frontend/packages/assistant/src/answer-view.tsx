@@ -126,7 +126,7 @@ export function AnswerView({
       {state.status === "queued" || (state.status === "idle" && !state.content) ? (
         <p className="text-[13px] text-fg-muted">Looking into it…</p>
       ) : null}
-      {state.content && <MarkdownView>{state.content}</MarkdownView>}
+      {state.content && <MarkdownView streaming={writing}>{state.content}</MarkdownView>}
       {state.status === "failed" && <Callout tone="danger">{state.error}</Callout>}
       {state.status === "cancelled" && <p className="text-[12px] text-fg-muted">Stopped.</p>}
       <SourceList sources={state.sources} />

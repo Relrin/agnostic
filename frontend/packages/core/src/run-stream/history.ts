@@ -3,6 +3,7 @@
 // through the reducer; otherwise the state is rebuilt from the run's fields.
 import type { AgentOS } from "@agnostic/api";
 
+import { storedContext } from "./context";
 import type { RunEvent, StepRequirement, ToolExecution } from "./events";
 import {
   initialRunState,
@@ -63,6 +64,12 @@ function storedTools(run: StoredRun): ToolCall[] {
   });
 }
 
+/** The model messages a stored run kept (agent and team runs; workflow runs keep none). */
+export function storedMessages(run: StoredRun): unknown[] | undefined {
+  const messages = "messages" in run ? run.messages : undefined;
+  return Array.isArray(messages) ? messages : undefined;
+}
+
 export function fromStoredRun(run: StoredRun, sessionId?: string): RunState {
   const kind = kindOf(run);
   const base = initialRunState({
@@ -81,6 +88,7 @@ export function fromStoredRun(run: StoredRun, sessionId?: string): RunState {
     const replayed = reduceAll(events, { ...base, status: "running" });
     return {
       ...replayed,
+      context: replayed.context ?? storedContext(storedMessages(run), run.metrics),
       status: runStatus(run.status),
       input: base.input,
       startedAt: replayed.startedAt ?? epochMs(run.created_at),
@@ -100,6 +108,7 @@ export function fromStoredRun(run: StoredRun, sessionId?: string): RunState {
     reasoning: run.reasoning_content ?? "",
     tools,
     metrics: run.metrics ?? undefined,
+    context: storedContext(storedMessages(run), run.metrics),
     citations: run.citations ?? undefined,
     references: run.references ?? undefined,
     startedAt: epochMs(run.created_at),

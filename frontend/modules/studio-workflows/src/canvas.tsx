@@ -355,7 +355,7 @@ function CanvasControls({
       <Button variant="ghost" size="28" onClick={() => void flow.zoomTo(1, { duration: 150 })}>
         100%
       </Button>
-      <span aria-hidden className="mx-0.5 h-4 w-px bg-border-input" />
+      <span aria-hidden className="mx-0.5 h-4 w-px shrink-0 bg-border-input" />
       <Button
         variant="icon"
         size="28"
@@ -438,12 +438,15 @@ function SelectionBar({
     <div
       role="toolbar"
       aria-label="Selected nodes"
-      className="flex items-center gap-0.5 rounded-segment border border-border bg-canvas/95 p-[3px] shadow-popover"
+      className="flex w-max max-w-[calc(100vw-2rem)] flex-nowrap items-center gap-0.5 overflow-x-auto rounded-segment border border-border bg-canvas/95 p-[3px] shadow-popover"
     >
-      <span className="px-2 text-[12px] text-fg-secondary" aria-live="polite">
+      <span
+        className="shrink-0 px-2 text-[12px] whitespace-nowrap text-fg-secondary tabular-nums"
+        aria-live="polite"
+      >
         {`${String(count)} selected`}
       </span>
-      <span aria-hidden className="mx-0.5 h-4 w-px bg-border-input" />
+      <span aria-hidden className="mx-0.5 h-4 w-px shrink-0 bg-border-input" />
       {ALIGNMENTS.map((item) => (
         <BarButton
           key={item.value}
@@ -456,7 +459,7 @@ function SelectionBar({
           {item.icon}
         </BarButton>
       ))}
-      <span aria-hidden className="mx-0.5 h-4 w-px bg-border-input" />
+      <span aria-hidden className="mx-0.5 h-4 w-px shrink-0 bg-border-input" />
       <BarButton
         label="Distribute horizontally"
         disabled={readOnly || movable < 3}
@@ -478,7 +481,7 @@ function SelectionBar({
       <BarButton label="Snap the selection to the grid" disabled={readOnly || movable < 1} onClick={onGrid}>
         <Grid3x3 aria-hidden />
       </BarButton>
-      <span aria-hidden className="mx-0.5 h-4 w-px bg-border-input" />
+      <span aria-hidden className="mx-0.5 h-4 w-px shrink-0 bg-border-input" />
       <BarButton label="Delete the selection" disabled={readOnly} onClick={onDelete}>
         <Trash2 aria-hidden />
       </BarButton>
