@@ -12,4 +12,7 @@ summarizer = Agent(
     num_history_runs=3,
     markdown=True,
     store_events=True,
+    metadata={
+        "context_window": 4096,
+    },
 )

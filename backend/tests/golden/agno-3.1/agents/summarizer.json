@@ -4,6 +4,9 @@
   "id": "summarizer",
   "instructions": "Summarise in at most five bullet points.",
   "markdown": true,
+  "metadata": {
+    "context_window": 4096
+  },
   "model": {
     "id": "agnostic-mock",
     "name": "MockModel",

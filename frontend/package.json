@@ -54,6 +54,7 @@
   },
   "resolutions": {
     "@hey-api/json-schema-ref-parser/js-yaml": "4.3.2",
-    "@joshwooding/vite-plugin-react-docgen-typescript/glob": "14.0.3"
+    "@joshwooding/vite-plugin-react-docgen-typescript/glob": "14.0.3",
+    "micromark-extension-math/katex": "0.19.1"
   }
 }
