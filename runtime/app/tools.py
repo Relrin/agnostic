@@ -3,6 +3,7 @@
 from agno.approval import approval
 from agno.tools import tool
 
+from app.models.scenarios import SEARCH_RESULTS
 from app.settings import get_settings
 
 
@@ -27,6 +28,8 @@ def web_search(query: str) -> str:
     if get_settings().fault("web_search") == "timeout":
         msg = f"web_search exceeded the {WEB_SEARCH_TIMEOUT_SECONDS} s tool timeout"
         raise TimeoutError(msg)
+    if canned := SEARCH_RESULTS.get(query):
+        return canned
     return f"3 results for '{query}' (offline stub; no network calls are made)."
 
 

@@ -1,6 +1,6 @@
 [project]
 name = "agnostic-queue"
-version = "0.3.0"
+version = "0.4.0"
 description = "Queue: durable-queue health, workers, jobs and checkpoint recovery over AgentOS /queue with delegated elevation"
 requires-python = "==3.15.*"
 license = "BSD-3-Clause"

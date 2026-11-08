@@ -1,6 +1,6 @@
 {
   "name": "@agnostic/module-artifacts",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "description": "Files: what agents produced across sessions, previews, downloads and share links",

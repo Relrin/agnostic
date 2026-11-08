@@ -1,59 +1,73 @@
 # Agnostic
 
-A self-hosted control plane for [Agno](https://github.com/agno-agi/agno) AgentOS runtime. identity and access,
-instance management, operations, observability, and a UI for agents, teams and workflows. It runs inside your
-network and communicated to AgentOS over REST API.
+A self-hosted control plane for [Agno](https://github.com/agno-agi/agno)
+
+![Version](https://img.shields.io/badge/version-0.4.0-c6f25a?style=flat-square)
+![Python](https://img.shields.io/badge/python-3.15-3776ab?style=flat-square&logo=python&logoColor=white)
+![Agno](https://img.shields.io/badge/agno-3.1.12-222?style=flat-square)
+[![License](https://img.shields.io/badge/license-BSD--3--Clause-blue?style=flat-square)](LICENSE)
+
+[Quick start](#quick-start) · [Development](#development) · [Documentation](docs/README.md)
+
+![A general example how does the UI look like](docs/images/chat-research.png)
 
 ## Features
 
-- **Operate**: Home with attention items and KPIs; chat with agents, teams and workflows (streaming, tool calls,
-  inline approvals); sessions; the ⌘K palette; realtime updates
-- **Observe**: traces compared with the last successful run, metrics and cost from your price table, evaluations
-  with datasets, version comparison and publish gates
-- **Context**: Memory, knowledge (content, retrieval tests, uploads), learnings and the file system of an instance.
-- **Control**: an approvals inbox with routing, reminders and expiry; notifications in the app, by email, Slack and
-  webhooks
-- **Access**: people and groups (SCIM, Google Workspace, IdP group sync), editable roles, service accounts, temporary
-  access; OIDC, SAML and GitHub sign-in, MFA and SSO enforcement
-- **Build**: an editor for agents, teams and workflows (form, code and canvas), a registry, versions with eval
-  gates and promotion, and code sources synced from GitHub, GitLab, Gitea, Forgejo or local folders.
-- **Ask your OS**: plain-language questions about an instance, answered from its data with read-only tools (off
-  until a model provider is configured)
+- Chat with agents, teams and workflows, with streaming tool calls, inline approvals and durable runs
+- Coding agents (Pi, OpenCode) that run in a Docker or E2B sandbox per session
+- Traces, metrics, cost from your own price table, and evaluations that gate publishing
+- Sign-in through your IdP (OIDC, SAML, GitHub), roles per instance, SCIM, service accounts and temporary access
+- An editor for agents, teams and workflows, synced with git as pull requests
+- An audit log with a hash chain, SIEM streaming and an archive
+- One container image. No telemetry, no SaaS, and air-gapped installs are supported
 
-## Prerequisites
+### Prerequisites
 
 | Tool | Version | Notes |
 |---|---|---|
-| [uv](https://docs.astral.sh/uv/) | 0.13.6 | installs Python 3.15.2 (control plane) and 3.13 (reference runtime) for you |
-| Node.js | 26.13.0 (Active LTS; `.nvmrc`) | 24.11+ works for local development |
-| Yarn | 4.18.1 | bundled in `frontend/.yarn/releases`; any global `yarn` delegates to it |
-| Docker | with Compose v2 | for PostgreSQL, Redis and Mailpit; optional if you use SQLite |
+| [uv](https://docs.astral.sh/uv/) | 0.13.6 | installs Python 3.15.2 (control plane) and 3.13 (reference runtime) |
+| Node.js | 26.13.0 (Active LTS, `.nvmrc`) | 24.11+ works for local development |
+| Yarn | 4.18.1 | bundled in `frontend/.yarn/releases` |
+| Docker | Compose v2 | PostgreSQL, Redis, Mailpit and coding sandboxes; optional with SQLite |
 | [just](https://just.systems) | 1.59.0 | `uv tool install rust-just==1.59.0` |
-| Git | any | on Windows, Git for Windows provides the `sh` that `just` uses |
 
-## Build and run from scratch
+## Quick start
 
 ```bash
-git clone <this repository> agnostic && cd agnostic
-just setup      # .env from .env.example; uv sync (backend, runtime, bridge); yarn install (all from lockfiles)
-just up         # PostgreSQL 18 (+pgvector), Redis 8, Mailpit and a Slack mock (deploy/dev/compose.yml)
-just migrate    # kernel and every installed module
-just bootstrap  # org "Localhost Company" and its Owner (AGNOSTIC_DEV_OWNER_EMAIL / _PASSWORD in .env)
+git clone https://github.com/Relrin/agnostic.git && cd agnostic
+
+just setup      # .env, then Python and Node dependencies from the lockfiles
+just up         # PostgreSQL 18 (+pgvector), Redis 8, Mailpit and a Slack mock
+just migrate    # the kernel and every installed module
+just bootstrap  # the org "Localhost Company" and its Owner (credentials in .env)
 just dev        # API + worker on :8000, web app on :5173
 ```
 
-Open <http://localhost:5173> and sign in as the Owner. To create a different Owner, run
-`cd backend && uv run agnostic bootstrap --org-name "…" --owner-email you@example.com`, or leave out
-`--owner-email` and open the one-time setup link it prints.
+Open <http://localhost:5173> and sign in as the Owner. Then give it something to manage:
 
-`just runtimes` starts two reference AgentOS instances (`dev-prod` on :7777, `dev-staging` on :7778) and `just seed`
-connects them ([reference runtimes](docs/how-to/reference-runtimes.md)). Sign-in with GitHub, GitLab, Google, Okta,
-any OIDC or SAML provider: [sign-in providers](docs/how-to/sign-in-providers.md).
+```bash
+just runtimes   # two reference AgentOS instances: dev-prod (:7777) and dev-staging (:7778)
+just seed       # connect them; restart `just runtimes` once, then run `just seed --test`
+```
 
-No Docker? Set `AGNOSTIC_DATABASE__URL=sqlite:///agnostic.db` in `.env`, then `just migrate && just bootstrap &&
-just dev`. Jobs run inside the API process in that mode ([configuration](docs/how-to/configuration.md)).
+The reference runtimes think with an offline mock model, so chat, tool calls and approvals work without an API key.
+Ask the web researcher to *research* something, or the Pi coder to *fix* a bug, to see a longer run.
 
-## Checks
+### No Docker? Run on SQLite
+
+Set `AGNOSTIC_DATABASE__URL=sqlite:///agnostic.db` in `.env`, then `just migrate && just bootstrap && just dev`. Jobs
+run inside the API process in this mode ([configuration](docs/how-to/configuration.md)).
+
+### A different org or Owner
+
+```bash
+cd backend && uv run agnostic bootstrap --org-name "Home lab" --owner-email you@example.com
+```
+
+Without `--owner-email` it prints a one-time setup link instead. For GitHub, GitLab, Google, Okta or any OIDC or SAML
+provider, see [sign-in providers](docs/how-to/sign-in-providers.md).
+
+## Development
 
 ```bash
 just check      # lint, types, unit + integration tests, API client drift, licenses
@@ -61,20 +75,19 @@ just test-ui    # Storybook a11y tests and Playwright e2e
 just --list     # everything else
 ```
 
-## Repository layout
+Every dependency is pinned exactly, both sides type-check in strict mode, and module boundaries are checked in CI.
+See [CONTRIBUTING](CONTRIBUTING.md), [testing](docs/how-to/testing.md) and
+[troubleshooting](docs/how-to/troubleshooting.md).
 
 | Path | What it is |
 |---|---|
-| `backend/packages/` | `agnostic-kernel` (settings, db, jobs, modules, auth), `agnostic-agentos-client`, `agnostic-cel`, `agnostic-codegen`, `agnostic-spec` |
-| `backend/modules/` | one uv package per feature module (`identity`, `org`, `access`, `instances`, `gateway`, `audit`, `studio`, `sources`, `assistant`, …) |
-| `backend/apps/agnostic-server/` | composition root: the `agnostic` CLI, API and worker |
-| `frontend/` | Yarn workspaces: `apps/web` shell, `packages/*` (`ui`, `core`, `api`, `testing`, `assistant`, `editor`, `studio`), feature modules in `modules/*` |
-| `runtime/` | `agnostic-runtime`, the reference AgentOS app (contract tests, demos, customer template) |
-| `bridge/` | `agnostic-bridge`, the optional package customers install in their AgentOS |
-| `deploy/` | `dev/` (development Compose, never shipped), `compose/` |
-| `scripts/` | dev seed, fixture recording, license checks, upgrade and restore drills |
-| `docs/` | architecture, how-to guides, reference: [start here](docs/README.md) |
+| `backend/` | uv workspace: `packages/` (kernel, AgentOS client, CEL, codegen, spec), `modules/` (one per feature), `apps/agnostic-server` |
+| `frontend/` | Yarn workspaces: the `apps/web` shell, shared `packages/`, feature `modules/` |
+| `runtime/` | `agnostic-runtime`, the reference AgentOS: demos, contract tests, a template to start from |
+| `bridge/` | `agnostic-bridge`, the optional package for your AgentOS |
+| `deploy/`, `scripts/` | Compose files; seed, license, upgrade and restore tooling |
+| `docs/` | architecture, decisions, how-to and admin guides, reference |
 
 ## License
 
-BSD 3-Clause, see [LICENSE](LICENSE).
+BSD 3-Clause. See [LICENSE](LICENSE).

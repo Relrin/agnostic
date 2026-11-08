@@ -21,7 +21,7 @@ from agnostic_kernel.tools import ToolSpec
 
 class GatewayModule(BaseModule):
     name = "gateway"
-    version = "0.3.0"
+    version = "0.4.0"
     depends_on = ("access", "instances", "settings", "audit")
 
     def settings_model(self) -> type[BaseSettings] | None:

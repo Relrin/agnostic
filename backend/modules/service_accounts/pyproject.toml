@@ -1,6 +1,6 @@
 [project]
 name = "agnostic-service-accounts"
-version = "0.3.0"
+version = "0.4.0"
 description = "Service accounts: org-level machine identities, native AgentOS tokens per instance and gateway tokens with rotation"
 requires-python = "==3.15.*"
 license = "BSD-3-Clause"

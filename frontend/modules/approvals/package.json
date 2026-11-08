@@ -1,6 +1,6 @@
 {
   "name": "@agnostic/module-approvals",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "description": "Approvals: the inbox of paused runs, routing rules, expiry, decisions with edited arguments",

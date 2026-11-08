@@ -78,6 +78,7 @@ RAW_SQL_OBJECTS = {
     "tsv",  # search_documents: generated tsvector column
     "ix_search_documents_tsv",
     "ix_search_documents_title_trgm",
+    "ix_audit_events_search_trgm",  # audit_events: trigram index over the text search's columns
 }
 
 

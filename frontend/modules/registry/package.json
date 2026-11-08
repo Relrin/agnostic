@@ -1,6 +1,6 @@
 {
   "name": "@agnostic/module-registry",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "description": "Registry: everything Studio can compose with, where each entry is used, and why it is (not) available",

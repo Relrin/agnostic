@@ -1,6 +1,6 @@
 {
   "name": "@agnostic/module-system",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "description": "System: versions, endpoint checks, job queues and failed jobs, delivery backlogs, instance polling",

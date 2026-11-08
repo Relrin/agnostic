@@ -74,7 +74,8 @@ def test_master_key_loading() -> None:
     assert len(load_master_key(SecretsSettings(), environment="development")) == 32
 
 
-def test_settings_derivations() -> None:
+def test_settings_derivations(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("AGNOSTIC_HTTP__PUBLIC_URL", raising=False)  # a developer's .env may set it
     sqlite = make_settings("sqlite:///x.db")
     assert sqlite.cache_backend() == "memory"
     assert make_settings("postgresql://h/db").cache_backend() == "redis"

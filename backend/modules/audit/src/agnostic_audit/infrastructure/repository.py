@@ -7,7 +7,7 @@ from dataclasses import replace
 from datetime import datetime, timedelta
 from typing import Any, cast
 
-from sqlalchemy import ColumnElement, Select, and_, delete, func, insert, or_, select, text
+from sqlalchemy import ColumnElement, Select, Text, and_, delete, func, insert, literal_column, or_, select, text
 from sqlalchemy.ext.asyncio import AsyncConnection, AsyncEngine, AsyncSession, async_sessionmaker
 
 from agnostic_audit.application.ports import ActorSummary, EventQuery, Position
@@ -122,6 +122,32 @@ async def _linked(executor: Executor, dialect: str, event: AuditEvent) -> AuditE
     return replace(linked, hash=chain_hash(linked.prev_hash, linked))
 
 
+SEARCH_SEPARATOR = "\x1f"
+"""Joins the searched columns; a needle can't match across two of them unless it contains this character."""
+
+
+def _search_text() -> ColumnElement[str]:
+    """The searched columns as one string, exactly as the trigram index (``a0001_audit_events``) is built.
+
+    PostgreSQL uses the index only when the expression matches it, so keep the columns, their order, the
+    ``coalesce`` and the separator in step with the migration.
+    """
+    searched = (
+        AuditEventRow.resource_id,
+        AuditEventRow.resource_display,
+        AuditEventRow.request_id,
+        AuditEventRow.ip,
+        AuditEventRow.actor_display,
+    )
+    parts = [func.coalesce(column, literal_column("''"), type_=Text) for column in searched]
+    joined: ColumnElement[str] = parts[0]
+    for part in parts[1:]:
+        joined = joined.op("||", return_type=Text)(literal_column(f"'{SEARCH_SEPARATOR}'")).op("||", return_type=Text)(
+            part
+        )
+    return joined
+
+
 def _conditions(query: EventQuery) -> list[ColumnElement[bool]]:  # noqa: C901  (one branch per filter)
     conditions: list[ColumnElement[bool]] = []
     if query.actor_id:
@@ -142,15 +168,7 @@ def _conditions(query: EventQuery) -> list[ColumnElement[bool]]:  # noqa: C901  
     if query.source:
         conditions.append(AuditEventRow.source == query.source)
     if query.q and query.q.strip():
-        needle = query.q.strip()
-        searched = (
-            AuditEventRow.resource_id,
-            AuditEventRow.resource_display,
-            AuditEventRow.request_id,
-            AuditEventRow.ip,
-            AuditEventRow.actor_display,
-        )
-        conditions.append(or_(*(column.icontains(needle, autoescape=True) for column in searched)))
+        conditions.append(_search_text().icontains(query.q.strip(), autoescape=True))
     if query.since:
         conditions.append(AuditEventRow.occurred_at >= query.since)
     if query.until:

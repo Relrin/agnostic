@@ -165,3 +165,88 @@ def test_coder_streams_its_reasoning_first() -> None:
         MockModel(persona="coder").invoke_stream(messages=[Message(role="user", content="x")], tools=PI_TOOLS)
     )
     assert chunks[0].reasoning_content and chunks[-1].tool_calls
+
+
+PI_FIX_TOOLS = [
+    *PI_TOOLS,
+    {"type": "function", "function": {"name": "edit", "parameters": {"properties": {"path": {}, "edits": {}}}}},
+]
+OPENCODE_FIX_TOOLS = [
+    *OPENCODE_TOOLS,
+    {
+        "type": "function",
+        "function": {"name": "edit", "parameters": {"properties": {"filePath": {}, "oldString": {}, "newString": {}}}},
+    },
+]
+
+
+def _run_script(model: MockModel, request: str, tools: list) -> list[ModelResponse]:
+    """Play a scripted run to its answer, feeding back one tool result per call."""
+    messages = [Message(role="user", content=request)]
+    replies: list[ModelResponse] = []
+    while len(replies) < 10:
+        reply = model.invoke(messages=messages, tools=tools)
+        replies.append(reply)
+        if not reply.tool_calls:
+            return replies
+        messages.append(Message(role="assistant", tool_calls=reply.tool_calls))
+        messages.extend(Message(role="tool", content="ok") for _ in reply.tool_calls)
+    raise AssertionError("the script never answered")
+
+
+@pytest.mark.parametrize("tools", [PI_FIX_TOOLS, OPENCODE_FIX_TOOLS])
+def test_coder_fixes_a_bug_test_first(tools: list) -> None:
+    from app.models import scenarios
+
+    replies = _run_script(MockModel(persona="coder"), "Please fix this invoice bug", tools)
+    names = [[call["function"]["name"] for call in reply.tool_calls or []] for reply in replies]
+    assert names == [["write", "write"], ["bash"], ["edit"], ["bash"], []]
+    assert replies[0].reasoning_content and replies[2].reasoning_content
+
+    edit = json.loads(replies[2].tool_calls[0]["function"]["arguments"])
+    old, new = (
+        (edit["edits"][0]["oldText"], edit["edits"][0]["newText"])
+        if "edits" in edit
+        else (edit["oldString"], edit["newString"])
+    )
+    assert old in scenarios.INVOICE_BUGGY and new == scenarios.INVOICE_FIXED_LINE
+    assert "outputs/" in json.loads(replies[3].tool_calls[0]["function"]["arguments"])["command"]
+    assert "applied twice" in str(replies[-1].content)
+
+
+def test_the_scripted_fix_is_right() -> None:
+    from app.models import scenarios
+
+    namespace: dict[str, object] = {}
+    exec(scenarios.INVOICE_BUGGY, namespace)
+    items = [{"price": 50.0, "qty": 2}]
+    assert namespace["invoice_total"](items, discount_pct=10, tax_pct=20) == 98.0  # type: ignore[operator]
+    exec(scenarios.INVOICE_BUGGY.replace(scenarios.INVOICE_BUGGY_LINE, scenarios.INVOICE_FIXED_LINE), namespace)
+    assert namespace["invoice_total"](items, discount_pct=10, tax_pct=20) == 108.0  # type: ignore[operator]
+
+
+def test_a_plain_coding_request_still_writes_hello() -> None:
+    first = MockModel(persona="coder").invoke(
+        messages=[Message(role="user", content="write a note")], tools=PI_FIX_TOOLS
+    )
+    assert json.loads(first.tool_calls[0]["function"]["arguments"])["path"] == "outputs/hello.md"
+
+
+def test_web_researcher_searches_then_cites() -> None:
+    from app.models import scenarios
+
+    tools = [{"type": "function", "function": {"name": "web_search", "parameters": {}}}]
+    replies = _run_script(MockModel(persona="web-researcher"), "Research pgvector index types", tools)
+    queries = [json.loads(call["function"]["arguments"])["query"] for call in replies[0].tool_calls or []]
+    assert queries == list(scenarios.RESEARCH_QUERIES)
+    assert len(replies) == 2 and scenarios.PGVECTOR_README in str(replies[1].content)
+
+
+def test_web_search_answers_the_research_queries() -> None:
+    from app.models import scenarios
+    from app.tools import web_search
+
+    entrypoint = web_search.entrypoint
+    assert entrypoint is not None
+    for query in scenarios.RESEARCH_QUERIES:
+        assert "pgvector README" in entrypoint(query=query)

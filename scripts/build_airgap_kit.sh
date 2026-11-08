@@ -3,7 +3,7 @@
 # connected machine after building the image (docs/guides/admin/build-images.md); nothing is downloaded from a
 # release.
 #
-#   scripts/build_airgap_kit.sh 0.3.0 [image-ref]     # image-ref defaults to the local tag agnostic:0.3.0
+#   scripts/build_airgap_kit.sh 0.4.0 [image-ref]     # image-ref defaults to the local tag agnostic:0.4.0
 #
 # Contents: the `agnostic` image (`docker save` archive), the Compose example, the guides, LICENSE and
 # THIRD_PARTY_LICENSES, the image SBOM when syft is installed, and SHA256SUMS. Needs docker.

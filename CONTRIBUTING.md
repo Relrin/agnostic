@@ -4,7 +4,7 @@ The workflow for changes; the [docs](docs/README.md) explain the code.
 
 ## Set up
 
-Follow the [README](README.md#build-and-run-from-scratch), then install the git hooks:
+Follow the [README](README.md#quick-start), then install the git hooks:
 
 ```bash
 just hooks

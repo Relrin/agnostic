@@ -1,6 +1,6 @@
 """audit: append-only events, saved views, exports, retention and archive policy, archives, SIEM sinks, cursors.
 
-Events are partitioned by month on PostgreSQL.
+Events are partitioned by month on PostgreSQL, with a trigram index for the text search.
 
 Revision ID: a0001_audit_events
 Revises:
@@ -24,6 +24,10 @@ depends_on: str | Sequence[str] | None = "k0001_kernel_base"
 JSON = sa.JSON().with_variant(postgresql.JSONB(), "postgresql")
 NOW = sa.func.current_timestamp()
 SOURCE_INDEX = "ix_audit_events_source_source_event_id"
+SEARCH_INDEX = "ix_audit_events_search_trgm"
+SEARCH_TEXT = " || '\x1f' || ".join(  # joined by the unit separator, U+001F
+    f"coalesce({column}, '')" for column in ("resource_id", "resource_display", "request_id", "ip", "actor_display")
+)
 
 COLUMNS = """
     id varchar(40) NOT NULL,
@@ -127,6 +131,12 @@ def upgrade() -> None:
         # A unique index on a partitioned table must include the partition key, which would make it useless for
         # de-duplication; ingestion de-duplicates by looking ingested ids up instead.
         op.create_index(SOURCE_INDEX, "audit_events", ["source", "source_event_id"], schema="agnostic")
+        # The text search matches a needle anywhere in these columns. A leading-wildcard ILIKE can't use a b-tree,
+        # so one trigram index over the columns joined by a unit separator serves it. The repository filters on
+        # exactly this expression (``_search_text`` in infrastructure/repository.py), or the index isn't used.
+        # pg_trgm is required (the kernel creates it); checked anyway, as the search module does.
+        if op.get_bind().execute(sa.text("SELECT 1 FROM pg_extension WHERE extname = 'pg_trgm'")).first():
+            op.execute(f"CREATE INDEX {SEARCH_INDEX} ON agnostic.audit_events USING gin (({SEARCH_TEXT}) gin_trgm_ops)")
     else:
         op.create_index(
             SOURCE_INDEX,

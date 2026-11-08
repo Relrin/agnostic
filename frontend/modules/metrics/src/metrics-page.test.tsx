@@ -1,4 +1,12 @@
-import { API, observeHandlers, sampleOrgHandlers, operateHandlers, renderPage } from "@agnostic/testing";
+import { formatRelative } from "@agnostic/core";
+import {
+  API,
+  observeHandlers,
+  sampleMetricsSummary,
+  sampleOrgHandlers,
+  operateHandlers,
+  renderPage,
+} from "@agnostic/testing";
 import { TooltipProvider } from "@agnostic/ui";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -48,7 +56,10 @@ describe("MetricsPage", () => {
       "href",
       expect.stringContaining("/metrics/export.csv?from="),
     );
-    expect(screen.getByText(/^Aggregated .+ ago$/)).toBeInTheDocument();
+    // Relative to today, so the wording ("2 hours ago", "last week") depends on when the test runs.
+    expect(
+      screen.getByText(`Aggregated ${formatRelative(sampleMetricsSummary.last_aggregated_at ?? "")}`),
+    ).toBeInTheDocument();
   });
 
   it("recomputes costs as prices change and saves the table", async () => {

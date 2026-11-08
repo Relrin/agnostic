@@ -48,6 +48,7 @@ Everything an agent produced is untrusted, so nothing it wrote runs on the app's
 | Images, SVG | `<img>`: an SVG loaded as an image runs no script |
 | Audio, video | `<audio>` / `<video>` from the artefact route |
 | PDF | drawn to canvases by pdf.js; no text or annotation layers, which would write HTML |
+| Jupyter notebooks (`.ipynb`) | read-only: Markdown cells, code cells and their saved outputs (text, HTML, images, tracebacks), with Python highlighting and KaTeX math. No kernel is attached, so nothing in the notebook runs; every HTML string the renderer produces is sanitized by DOMPurify first (no scripts, forms, frames, styles or external loads) and only that result gets past the Trusted Types policy. Notebooks up to 25 MiB are read whole |
 | HTML | a frame with `sandbox="allow-scripts allow-popups"` (never `allow-same-origin`) |
 
 The artefact route sets the response's real type, worked out from the bytes and not from the name a tool gave.

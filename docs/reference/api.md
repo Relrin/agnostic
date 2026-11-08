@@ -53,6 +53,17 @@ they're described by the runtime's own OpenAPI document and not repeated here.
 | `GET` | `/api/v1/instances/{instance}/approvals/{approval_id}` | One approval with its context and timeline; records that you viewed it (needs approvals:read) |
 | `POST` | `/api/v1/instances/{instance}/approvals/{approval_id}/decide` | Approve or reject a paused run's approval, then continue the run (needs approvals:write) |
 
+## artifacts
+
+| Method | Path | Does |
+|---|---|---|
+| `GET` | `/api/v1/instances/{instance}/artifacts/shares` | Your share links on an instance (everyone's with artifacts:manage) |
+| `POST` | `/api/v1/instances/{instance}/artifacts/shares` | Create a share link to an artefact you can read (needs artifacts:share) |
+| `DELETE` | `/api/v1/instances/{instance}/artifacts/shares/{share_id}` | Revoke a share link; it stops working at once |
+| `GET` | `/api/v1/instances/{instance}/artifacts/{session_id}/content/{storage_key}` | An artefact's bytes, for viewing in an isolated preview or for download (needs sessions:read) |
+| `GET` | `/api/v1/shares/{token}` | What a share link points to (sign-in needed unless it is shared with anyone) |
+| `GET` | `/api/v1/shares/{token}/content` | The shared file's bytes, as they were when shared |
+
 ## assistant
 
 | Method | Path | Does |

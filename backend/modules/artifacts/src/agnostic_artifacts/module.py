@@ -24,7 +24,7 @@ from agnostic_kernel.modules import AuditActionDecl, BaseModule, RouterSpec, Sco
 
 class ArtifactsModule(BaseModule):
     name = "artifacts"
-    version = "0.3.0"
+    version = "0.4.0"
     depends_on = ("access", "audit", "instances", "gateway")
 
     def settings_model(self) -> type[BaseSettings] | None:

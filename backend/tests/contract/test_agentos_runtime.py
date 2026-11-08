@@ -16,6 +16,9 @@ pytestmark = pytest.mark.contract
 RUNTIME_URL = os.environ.get("AGNOSTIC_CONTRACT_RUNTIME_URL")
 
 SAMPLE_AGENTS = {"support-triage", "billing-agent", "kb-researcher", "qa-reviewer", "web-researcher", "summarizer"}
+# Artefact agents, served next to the samples: report-writer always, the others when their sandbox is available
+# (Docker or E2B), so the set depends on the machine the runtime runs on.
+ARTIFACT_AGENTS = {"report-writer", "sandbox-analyst", "pi-coder", "opencode-coder"}
 SAMPLE_TEAMS = {"research-team", "escalation-team", "onboarding-team"}
 SAMPLE_WORKFLOWS = {"ticket-router", "daily-brief", "refund-review"}
 
@@ -36,12 +39,17 @@ async def test_info_matches_pinned_version(runtime: AgentOSClient) -> None:
     info = await runtime.info()
     assert info.agno_version == AGENTOS_VERSION
     assert info.auth_mode in {"none", "security_key", "jwt"}
-    assert (info.agent_count, info.team_count, info.workflow_count) == (6, 3, 3)
+    assert info.agent_count is not None
+    assert len(SAMPLE_AGENTS) + 1 <= info.agent_count <= len(SAMPLE_AGENTS) + len(ARTIFACT_AGENTS)
+    assert (info.team_count, info.workflow_count) == (3, 3)
 
 
 async def test_config_lists_sample_components(runtime: AgentOSClient) -> None:
     config = await runtime.config()
-    assert {a.id for a in config.agents} == SAMPLE_AGENTS
+    agents = {a.id for a in config.agents}
+    assert agents >= SAMPLE_AGENTS
+    assert "report-writer" in agents
+    assert agents - SAMPLE_AGENTS <= ARTIFACT_AGENTS
     assert {t.id for t in config.teams} == SAMPLE_TEAMS
     assert {w.id for w in config.workflows} == SAMPLE_WORKFLOWS
     assert config.queue is not None  # durable queue enabled by the recipe

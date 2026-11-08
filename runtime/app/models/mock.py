@@ -8,7 +8,8 @@ As the leader of a ``TeamMode.tasks`` team it works the task list: one task per 
 then ``mark_all_complete``.
 
 With ``persona="coder"`` it plays a coding harness's model: it thinks briefly, writes ``outputs/hello.md`` with the
-harness's own ``write`` tool, lists the folder with ``bash`` and then summarises.
+harness's own ``write`` tool, lists the folder with ``bash`` and then summarises. Two longer runs are scripted in
+``app.models.scenarios``: a bug fix for the coder and a cited research answer for the web researcher.
 """
 
 import asyncio
@@ -25,6 +26,8 @@ from agno.models.base import Model
 from agno.models.message import Message
 from agno.models.response import ModelResponse
 
+from app.models import scenarios
+
 TOOL_TRIGGERS: dict[str, str] = {
     "refund": "refund_customer",
     "order": "lookup_order",
@@ -34,6 +37,8 @@ TOOL_TRIGGERS: dict[str, str] = {
 }
 
 TASK_TOOLS = {"create_task", "execute_task", "mark_all_complete"}
+BUG_FIX = re.compile(scenarios.BUG_FIX_TRIGGER, re.IGNORECASE)
+RESEARCH = re.compile(scenarios.RESEARCH_TRIGGER, re.IGNORECASE)
 # A refund amount right after "refund" (optionally "of"/"for" and "$") or after "$"; then any standalone number.
 REFUND_AMOUNT = re.compile(r"(?:\brefund(?:\s+(?:of|for))?\s+\$?|\$\s*)(\d+(?:\.\d{1,2})?)\b", re.IGNORECASE)
 NUMBER = re.compile(r"\b(\d+(?:\.\d{1,2})?)\b")
@@ -198,6 +203,70 @@ def _coder_step(messages: list[Message], tools: list[dict[str, Any]] | None, use
     )
 
 
+def _steps_taken(messages: list[Message]) -> int:
+    """How many tool-calling replies the model has made since the latest user message."""
+    last_user = max((index for index, message in enumerate(messages) if message.role == "user"), default=-1)
+    return sum(1 for message in messages[last_user + 1 :] if message.role == "assistant" and message.tool_calls)
+
+
+def _bug_fix_step(messages: list[Message], tools: list[dict[str, Any]] | None, user_text: str) -> ModelResponse | None:
+    """The scripted bug fix (``scenarios``), or None when the harness lacks a tool it needs."""
+    schemas = _tool_schemas(tools)
+    if not {"write", "bash", "edit"} <= schemas.keys():
+        return None
+
+    def write(path: str, content: str) -> dict[str, Any]:
+        schema = schemas["write"]
+        arguments = {_pick(schema, "path", "filePath", "file_path"): path, _pick(schema, "content", "text"): content}
+        return _tool_call("write", _fill_required(schema, arguments, f"Write {path}"), user_text)
+
+    def bash(command: str, note: str) -> dict[str, Any]:
+        schema = schemas["bash"]
+        arguments = {_pick(schema, "command", "cmd"): command}
+        return _tool_call("bash", _fill_required(schema, arguments, note), user_text + command)
+
+    def edit(path: str, old: str, new: str) -> dict[str, Any]:
+        schema = schemas["edit"]
+        if "edits" in (schema.get("properties") or {}):  # Pi: one or more exact replacements
+            arguments: dict[str, Any] = {"path": path, "edits": [{"oldText": old, "newText": new}]}
+        else:  # OpenCode and the like
+            arguments = {
+                _pick(schema, "filePath", "path", "file_path"): path,
+                _pick(schema, "oldString", "old_string", "oldText"): old,
+                _pick(schema, "newString", "new_string", "newText"): new,
+            }
+        return _tool_call("edit", _fill_required(schema, arguments, f"Fix {path}"), user_text)
+
+    tests = "python -m unittest"
+    match _steps_taken(messages):
+        case 0:
+            calls = [
+                write("invoice.py", scenarios.INVOICE_BUGGY),
+                write("test_invoice.py", scenarios.INVOICE_TEST),
+            ]
+            return ModelResponse(role="assistant", tool_calls=calls, reasoning_content=scenarios.BUG_FIX_REASONING)
+        case 1:
+            return ModelResponse(role="assistant", tool_calls=[bash(tests, "Run the tests")])
+        case 2:
+            fix = edit("invoice.py", scenarios.INVOICE_BUGGY_LINE, scenarios.INVOICE_FIXED_LINE)
+            return ModelResponse(role="assistant", tool_calls=[fix], reasoning_content=scenarios.BUG_FIX_EDIT_REASONING)
+        case 3:
+            command = f"{tests} && mkdir -p outputs && cp invoice.py test_invoice.py outputs/"
+            return ModelResponse(role="assistant", tool_calls=[bash(command, "Run the tests and save the fix")])
+        case _:
+            return ModelResponse(role="assistant", content=scenarios.BUG_FIX_SUMMARY)
+
+
+def _research_step(messages: list[Message], tools: list[dict[str, Any]] | None, user_text: str) -> ModelResponse | None:
+    """The scripted research (``scenarios``): three searches at once, then a cited answer."""
+    if "web_search" not in _tool_names(tools):
+        return None
+    if _steps_taken(messages) == 0:
+        calls = [_tool_call("web_search", {"query": query}, user_text) for query in scenarios.RESEARCH_QUERIES]
+        return ModelResponse(role="assistant", tool_calls=calls)
+    return ModelResponse(role="assistant", content=scenarios.RESEARCH_ANSWER)
+
+
 def _next_task_step(messages: list[Message], user_text: str) -> list[dict[str, Any]] | None:
     """The leader's next task-tool calls, or None once the goal is marked complete."""
     members = [m for msg in messages if msg.role == "system" for m in MEMBER.findall(msg.get_content_string())]
@@ -239,10 +308,18 @@ class MockModel(Model):
     def _respond(self, messages: list[Message], tools: list[dict[str, Any]] | None) -> ModelResponse:
         user_text = next((m.get_content_string() for m in reversed(messages) if m.role == "user"), "")
         if self.persona == "coder":
+            if BUG_FIX.search(user_text) and (step := _bug_fix_step(messages, tools, user_text)):
+                return step
             return _coder_step(messages, tools, user_text)
         available = _tool_names(tools)
         if available >= TASK_TOOLS and (calls := _next_task_step(messages, user_text)):
             return ModelResponse(role="assistant", tool_calls=calls)
+        if (
+            self.persona == "web-researcher"
+            and RESEARCH.search(user_text)
+            and (step := _research_step(messages, tools, user_text))
+        ):
+            return step
 
         last = messages[-1] if messages else None
         if last is not None and last.role == "tool":

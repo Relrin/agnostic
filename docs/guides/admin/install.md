@@ -40,13 +40,13 @@ reference shipped with the repository, `docs/reference/configuration.md`).
 | `AGNOSTIC_TLS__CA_FILE` | your organization's CA, if runtimes or IdPs use certificates from it |
 
 Build the image first ([Build the images](build-images.md)); the commands below use the local tag
-`agnostic:0.3.0`.
+`agnostic:0.4.0`.
 
 Generate the master key once and store a copy somewhere safe (a password manager or your secret store). Without it,
 every stored secret is lost:
 
 ```bash
-docker run --rm agnostic:0.3.0 secrets generate-key
+docker run --rm agnostic:0.4.0 secrets generate-key
 ```
 
 ### Pre-flight checklist
@@ -77,7 +77,7 @@ docker compose up -d
 
 The containers run with a read-only root filesystem, a tmpfs at `/tmp` and a volume at `/var/lib/agnostic` (git
 mirrors of code sources). The API listens on port 8000 in plain HTTP: put your TLS-terminating reverse proxy in
-front of it. `AGNOSTIC_IMAGE` picks the image: the local tag (`agnostic:0.3.0`) or its reference in your registry.
+front of it. `AGNOSTIC_IMAGE` picks the image: the local tag (`agnostic:0.4.0`) or its reference in your registry.
 
 ## Create the first Owner
 

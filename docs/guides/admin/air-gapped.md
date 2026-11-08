@@ -7,7 +7,7 @@ connection it opens goes to an endpoint you configured.
 ## The kit
 
 No kit is published: build the image on a connected machine ([Build the images](build-images.md)), then the kit
-with `bash scripts/build_airgap_kit.sh 0.3.0` (`just airgap-kit 0.3.0`). It writes `dist/agnostic-airgap-<version>.tar.gz`:
+with `bash scripts/build_airgap_kit.sh 0.4.0` (`just airgap-kit 0.4.0`). It writes `dist/agnostic-airgap-<version>.tar.gz`:
 
 | Path | What |
 |---|---|
@@ -22,14 +22,14 @@ with `bash scripts/build_airgap_kit.sh 0.3.0` (`just airgap-kit 0.3.0`). It writ
 ## Bring it in and mirror it
 
 ```bash
-tar -xzf agnostic-airgap-0.3.0.tar.gz && cd agnostic-airgap-0.3.0
+tar -xzf agnostic-airgap-0.4.0.tar.gz && cd agnostic-airgap-0.4.0
 sha256sum -c SHA256SUMS
-docker load -i image/agnostic-0.3.0.tar
-docker tag agnostic:0.3.0 registry.internal/agnostic:0.3.0
-docker push registry.internal/agnostic:0.3.0
+docker load -i image/agnostic-0.4.0.tar
+docker tag agnostic:0.4.0 registry.internal/agnostic:0.4.0
+docker push registry.internal/agnostic:0.4.0
 ```
 
-Then install as in [Install Agnostic](install.md) with `AGNOSTIC_IMAGE=registry.internal/agnostic:0.3.0`.
+Then install as in [Install Agnostic](install.md) with `AGNOSTIC_IMAGE=registry.internal/agnostic:0.4.0`.
 
 ## What to configure
 
@@ -44,6 +44,6 @@ Then install as in [Install Agnostic](install.md) with `AGNOSTIC_IMAGE=registry.
 
 ## Check it yourself
 
-`bash scripts/check_airgap.sh agnostic:0.3.0` (`just airgap-check`) runs the image on a Docker network with no route
+`bash scripts/check_airgap.sh agnostic:0.4.0` (`just airgap-check`) runs the image on a Docker network with no route
 out: migrations, bootstrap, the API and a worker, sign-in, the web app and the bundled guides must all work, and the
 logs must show no attempt to resolve or reach an outside host. Run it on the build machine before making the kit.

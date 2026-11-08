@@ -14,7 +14,10 @@ for customers. It isn't shipped with Agnostic. `just runtimes` starts two ([guid
   `web-researcher`, `summarizer`; teams `research-team`, `escalation-team`, `onboarding-team`; workflows
   `ticket-router`, `daily-brief`, `refund-review`. `refund_customer` is an `@approval` tool.
 - `app/models/mock.py` is deterministic: the same input gives the same answer, a message naming a tool calls it with
-  parsed arguments (`refund 19.99 to cus_42`), and streaming yields the text word by word.
+  parsed arguments (`refund 19.99 to cus_42`), and streaming yields the text word by word. Two longer runs are
+  scripted in `app/models/scenarios.py` for demos and screenshots: ask the Pi or OpenCode coder to *fix* a bug and
+  it reproduces it with a test, edits the code and re-runs the tests in its sandbox; ask `web-researcher` to
+  *research* or *compare* pgvector indexes and it searches three times, then answers with sources.
 - `app = install(agent_os)` installs the bridge.
 
 ## `agnostic-bridge`

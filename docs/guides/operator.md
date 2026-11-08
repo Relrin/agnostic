@@ -16,6 +16,12 @@ Pick an agent, team or workflow (and a version), and send a message. Runs stream
 their arguments and durations, team members, workflow steps. Runs belong to the instance's durable queue, so a closed
 tab, a dropped connection or a restarted API doesn't stop them; reopening the session resumes the stream.
 
+The composer shows how much of the model's context window the session uses, and an *Effort* menu sets how hard the
+model thinks for the next run. It lists only the levels the component's model accepts, and appears only when the
+runtime's bridge knows the model ([reasoning effort](bridge-and-runtime.md#reasoning-effort)).
+Files the agent writes appear as artefacts under the run: preview them (Markdown, code, images, PDF, HTML in a
+sandbox, read-only Jupyter notebooks), download them, or create a share link that expires.
+
 When a run pauses for a person (a tool that needs approval, a workflow review step), the approval appears inline.
 Approve, reject with a note, or edit the arguments, and the run continues.
 

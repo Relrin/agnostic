@@ -2,7 +2,7 @@
 # Every dependency is pinned to an exact version (see docs/how-to/dependencies.md).
 [project]
 name = "agnostic-workspace"
-version = "0.3.0"
+version = "0.4.0"
 description = "Agnostic control plane: uv workspace root (not published)"
 requires-python = "==3.15.*"
 license = "BSD-3-Clause"

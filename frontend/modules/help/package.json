@@ -1,6 +1,6 @@
 {
   "name": "@agnostic/module-help",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "description": "Help: the user guides bundled with the installation, rendered in the app (works offline)",

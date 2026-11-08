@@ -1,6 +1,6 @@
 {
   "name": "@agnostic/module-studio-workflows",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "description": "Studio workflows: the workflow index and the visual builder (canvas, palette, inspector, CEL, code, test runs)",
