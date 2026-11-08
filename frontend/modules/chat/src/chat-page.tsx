@@ -37,6 +37,7 @@ import {
   type StoredRun,
 } from "@agnostic/core";
 import {
+  BREAKPOINTS,
   Button,
   Composer,
   EmptyState,
@@ -50,13 +51,18 @@ import {
   SelectTrigger,
   SelectValue,
   SessionList,
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetTitle,
   Tour,
+  useMinWidth,
   type AttachmentRule,
   type TourStep,
 } from "@agnostic/ui";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams, useSearch } from "@tanstack/react-router";
-import { PanelRight, Plus } from "lucide-react";
+import { History, PanelRight, Plus } from "lucide-react";
 import { useDeferredValue, useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
 
 import { SessionRail } from "./session-rail";
@@ -266,6 +272,12 @@ export function ChatPage() {
   const versionLabel = selectedVersion?.label.replace(" · current", "");
 
   const [showDetails, setShowDetails] = useState(true);
+  // Narrower than xl, the session details open in a Sheet (closed until asked for); narrower than lg, so does the
+  // session list. Side by side there, the conversation would be left a sliver.
+  const detailsBeside = useMinWidth(BREAKPOINTS.xl);
+  const sessionsBeside = useMinWidth(BREAKPOINTS.lg);
+  const [detailsSheet, setDetailsSheet] = useState(false);
+  const [sessionsSheet, setSessionsSheet] = useState(false);
   const [sessionSearch, setSessionSearch] = useState("");
   const deferredSearch = useDeferredValue(sessionSearch);
   const sessions = useSessions(
@@ -374,6 +386,34 @@ export function ChatPage() {
     ? codingSandbox(component, codingAgents.byId.get(component.id)?.sandbox)
     : undefined;
 
+  const sessionList = (
+    <>
+      {sessions.isPending && componentId ? (
+        <LoadingRows rows={6} label="Loading sessions" />
+      ) : (
+        <SessionList
+          label={`Sessions for ${componentId ?? ""}`}
+          groups={groups}
+          selectedId={sessionId}
+          search={sessionSearch}
+          onSearch={setSessionSearch}
+          onSelect={(id) => {
+            setPendingKey(undefined);
+            setSessionsSheet(false);
+            if (componentId) void navigate({ to: chatPath(instanceRef, family, componentId, id) });
+          }}
+          footer={
+            groups.length === 0 ? (
+              <p className="px-2 text-[12.5px] text-fg-muted">
+                {deferredSearch ? "No sessions match." : "No sessions yet. Send a message to start one."}
+              </p>
+            ) : undefined
+          }
+        />
+      )}
+    </>
+  );
+
   return (
     <div className="flex h-full min-h-0 flex-col">
       <h1 className="sr-only">{componentName ? `Chat with ${componentName}` : "Chat"}</h1>
@@ -384,6 +424,18 @@ export function ChatPage() {
         data-tour="chat-target"
         className="flex flex-wrap items-center gap-2 border-b border-border-subtle px-6 py-2.5"
       >
+        {!sessionsBeside && (
+          <Button
+            variant="outline"
+            size="32"
+            onClick={() => {
+              setSessionsSheet(true);
+            }}
+          >
+            <History aria-hidden />
+            Sessions
+          </Button>
+        )}
         <SegmentedControl
           label="Component type"
           value={family}
@@ -443,10 +495,11 @@ export function ChatPage() {
           <Button
             variant="outline"
             size="32"
-            aria-pressed={showDetails}
+            aria-pressed={detailsBeside ? showDetails : detailsSheet}
             disabled={!sessionId}
             onClick={() => {
-              setShowDetails(!showDetails);
+              if (detailsBeside) setShowDetails(!showDetails);
+              else setDetailsSheet(!detailsSheet);
             }}
           >
             <PanelRight aria-hidden />
@@ -487,35 +540,24 @@ export function ChatPage() {
         </div>
       ) : (
         <div className="flex min-h-0 flex-1">
-          <div
-            data-tour="chat-sessions"
-            className="flex w-64 shrink-0 flex-col border-r border-border-subtle px-3 py-3"
-          >
-            {sessions.isPending && componentId ? (
-              <LoadingRows rows={6} label="Loading sessions" />
-            ) : (
-              <SessionList
-                label={`Sessions for ${componentId ?? ""}`}
-                groups={groups}
-                selectedId={sessionId}
-                search={sessionSearch}
-                onSearch={setSessionSearch}
-                onSelect={(id) => {
-                  setPendingKey(undefined);
-                  if (componentId) void navigate({ to: chatPath(instanceRef, family, componentId, id) });
-                }}
-                footer={
-                  groups.length === 0 ? (
-                    <p className="px-2 text-[12.5px] text-fg-muted">
-                      {deferredSearch
-                        ? "No sessions match."
-                        : "No sessions yet. Send a message to start one."}
-                    </p>
-                  ) : undefined
-                }
-              />
-            )}
-          </div>
+          {sessionsBeside ? (
+            <div
+              data-tour="chat-sessions"
+              className="flex w-64 shrink-0 flex-col border-r border-border-subtle px-3 py-3"
+            >
+              {sessionList}
+            </div>
+          ) : (
+            <Sheet open={sessionsSheet} onOpenChange={setSessionsSheet}>
+              <SheetContent side="left" className="w-[min(320px,100%)]">
+                <SheetTitle className="text-[14px] font-semibold">Sessions</SheetTitle>
+                <SheetDescription className="sr-only">
+                  Earlier conversations with {componentName}
+                </SheetDescription>
+                {sessionList}
+              </SheetContent>
+            </Sheet>
+          )}
 
           <div className="flex min-w-0 flex-1 flex-col">
             <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
@@ -601,7 +643,7 @@ export function ChatPage() {
             </div>
           </div>
 
-          {showDetails && sessionId && session.data && (
+          {detailsBeside && showDetails && sessionId && session.data && (
             <SessionRail
               instance={instanceRef}
               session={session.data}
@@ -613,6 +655,26 @@ export function ChatPage() {
                 if (componentId) void navigate({ to: chatPath(instanceRef, family, componentId) });
               }}
             />
+          )}
+          {!detailsBeside && sessionId && session.data && (
+            <Sheet open={detailsSheet} onOpenChange={setDetailsSheet}>
+              <SheetContent side="right" className="w-[min(380px,100%)]">
+                <SheetDescription className="sr-only">Details of this session</SheetDescription>
+                <SessionRail
+                  presentation="sheet"
+                  instance={instanceRef}
+                  session={session.data}
+                  runs={runs.data ?? []}
+                  onClose={() => {
+                    setDetailsSheet(false);
+                  }}
+                  onDeleted={() => {
+                    setDetailsSheet(false);
+                    if (componentId) void navigate({ to: chatPath(instanceRef, family, componentId) });
+                  }}
+                />
+              </SheetContent>
+            </Sheet>
           )}
         </div>
       )}

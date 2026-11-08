@@ -20,6 +20,8 @@ import {
   Input,
   JsonView,
   KeyValueList,
+  SheetTitle,
+  cn,
 } from "@agnostic/ui";
 import { X } from "lucide-react";
 import { useState } from "react";
@@ -47,12 +49,15 @@ export function SessionRail({
   runs,
   onClose,
   onDeleted,
+  presentation = "rail",
 }: {
   instance: string;
   session: SessionDetail;
   runs: readonly StoredRun[];
   onClose: () => void;
   onDeleted: () => void;
+  /** "rail": a column beside the conversation. "sheet": the body of a Sheet, which brings its own title and close. */
+  presentation?: "rail" | "sheet";
 }) {
   const actions = useSessionActions(instance);
   const [renaming, setRenaming] = useState(false);
@@ -70,14 +75,21 @@ export function SessionRail({
   return (
     <aside
       aria-label="Session"
-      className="flex w-80 shrink-0 flex-col gap-4 overflow-y-auto border-l border-border-subtle px-4 py-4"
+      className={cn(
+        "flex flex-col gap-4 overflow-y-auto",
+        presentation === "rail" ? "w-80 shrink-0 border-l border-border-subtle px-4 py-4" : "min-h-0 flex-1",
+      )}
     >
-      <header className="flex items-center justify-between">
-        <h2 className="text-[14px] font-semibold">Session</h2>
-        <Button variant="icon" size="28" aria-label="Close session details" onClick={onClose}>
-          <X aria-hidden />
-        </Button>
-      </header>
+      {presentation === "rail" ? (
+        <header className="flex items-center justify-between">
+          <h2 className="text-[14px] font-semibold">Session</h2>
+          <Button variant="icon" size="28" aria-label="Close session details" onClick={onClose}>
+            <X aria-hidden />
+          </Button>
+        </header>
+      ) : (
+        <SheetTitle className="text-[14px] font-semibold">Session</SheetTitle>
+      )}
       <KeyValueList
         items={[
           { key: "session_id", label: "session_id", value: session.session_id, mono: true },

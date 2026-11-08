@@ -57,6 +57,9 @@ function SendHint() {
   );
 }
 
+/** A secondary action's label, visually hidden when the composer is narrow (it stays the accessible name). */
+const COLLAPSIBLE_LABEL = "@max-[40rem]/composer:sr-only";
+
 function ReasoningPicker({ reasoning, disabled }: { reasoning: ComposerReasoning; disabled: boolean }) {
   const { levels, value, onChange, configured, parameter } = reasoning;
   const current = value ? REASONING_LEVELS[value].label : "Default";
@@ -73,7 +76,7 @@ function ReasoningPicker({ reasoning, disabled }: { reasoning: ComposerReasoning
             className={cn(value && "text-fg")}
           >
             <Brain aria-hidden />
-            <span className="hidden sm:inline">Effort:</span> {current}
+            <span className="@max-[40rem]/composer:hidden">Effort:</span> {current}
           </Button>
         </DropdownMenuTrigger>
       </Tooltip>
@@ -213,7 +216,7 @@ export function Composer({
   };
 
   return (
-    <div className="flex flex-col gap-2 rounded-card border border-border-input bg-surface px-3 py-2.5 focus-within:border-border-strong">
+    <div className="@container/composer flex flex-col gap-2 rounded-card border border-border-input bg-surface px-3 py-2.5 focus-within:border-border-strong">
       {files.length > 0 && (
         <ul className="flex flex-wrap gap-1.5" aria-label="Attachments">
           {files.map((file) => (
@@ -260,7 +263,9 @@ export function Composer({
           {problem}
         </p>
       )}
-      <div className="flex items-center gap-1">
+      {/* In a narrow composer the secondary actions keep only their icons (the name stays for screen readers and
+          in a tooltip); the row wraps rather than push Send past the edge if even that does not fit. */}
+      <div className="flex flex-wrap items-center gap-1">
         {attachments && (
           <>
             <input
@@ -274,27 +279,31 @@ export function Composer({
                 event.target.value = "";
               }}
             />
-            <Button
-              variant="ghost"
-              size="28"
-              disabled={disabled}
-              onClick={() => {
-                fileInput.current?.click();
-              }}
-            >
-              <Paperclip aria-hidden />
-              Attach files
-            </Button>
+            <Tooltip content="Attach files">
+              <Button
+                variant="ghost"
+                size="28"
+                disabled={disabled}
+                onClick={() => {
+                  fileInput.current?.click();
+                }}
+              >
+                <Paperclip aria-hidden />
+                <span className={COLLAPSIBLE_LABEL}>Attach files</span>
+              </Button>
+            </Tooltip>
           </>
         )}
         {members && members.length > 0 ? (
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="28" disabled={disabled}>
-                <AtSign aria-hidden />
-                Mention member
-              </Button>
-            </DropdownMenuTrigger>
+            <Tooltip content="Mention member">
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="28" disabled={disabled}>
+                  <AtSign aria-hidden />
+                  <span className={COLLAPSIBLE_LABEL}>Mention member</span>
+                </Button>
+              </DropdownMenuTrigger>
+            </Tooltip>
             <DropdownMenuContent align="start">
               {members.map((member) => (
                 <DropdownMenuItem
@@ -313,7 +322,7 @@ export function Composer({
             <span>
               <Button variant="ghost" size="28" disabled title="Available when chatting with an agent team">
                 <AtSign aria-hidden />
-                Mention member
+                <span className={COLLAPSIBLE_LABEL}>Mention member</span>
               </Button>
             </span>
           </Tooltip>

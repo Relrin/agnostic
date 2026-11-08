@@ -1,8 +1,9 @@
 // Operate widgets with a sample run: support-triage paused on refund_customer, the Home
 // tiles and attention cards, a workflow paused on a HumanReview step.
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { expect, within } from "storybook/test";
 
-import { Composer, SessionList } from "../domain/chat";
+import { Composer, ContextMeter, SessionList } from "../domain/chat";
 import {
   ApprovalCard,
   RunBlock,
@@ -200,4 +201,59 @@ export const HomeWidgets: Story = {
       <ShareList items={[{ key: "m", label: "gpt-5.2-mini", value: "3,920 · 80%", share: 0.8 }]} />
     </>
   ),
+};
+
+/** Every composer action at once: attachments, mentions, the context meter, reasoning effort and Send. */
+function FullComposer() {
+  return (
+    <Composer
+      label="Message web-researcher"
+      placeholder="Message web-researcher code…"
+      onSend={noop}
+      attachments={{ maxBytes: 20 * 1024 * 1024, maxFiles: 5, accept: ["application/pdf"] }}
+      accessory={<ContextMeter used={902} shares={[{ key: "messages", label: "Messages", tokens: 902 }]} />}
+      reasoning={{ levels: ["low", "medium", "high"], value: undefined, onChange: noop }}
+    />
+  );
+}
+
+/** Send stays inside the composer's border, and a narrow composer keeps the actions on one row. */
+async function sendFits(canvasElement: HTMLElement, { labels }: { labels: boolean }) {
+  const send = within(canvasElement).getByRole("button", { name: "Send" });
+  const composer = send.closest<HTMLElement>("[class*='@container/composer']");
+  if (!composer) throw new Error("no composer");
+  await expect(send.getBoundingClientRect().right).toBeLessThanOrEqual(
+    composer.getBoundingClientRect().right,
+  );
+  // One row: every visible action overlaps Send vertically.
+  const row = send.getBoundingClientRect();
+  const actions = within(composer)
+    .getAllByRole("button")
+    .map((button) => button.getBoundingClientRect())
+    .filter((box) => box.width > 0);
+  await expect(actions.every((box) => box.top < row.bottom && box.bottom > row.top)).toBe(true);
+  const attach = within(composer).getByRole("button", { name: "Attach files" });
+  await expect(attach.getBoundingClientRect().width > 60).toBe(labels);
+}
+
+export const ComposerNarrow: Story = {
+  render: () => (
+    <div style={{ width: 500 }}>
+      <FullComposer />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    await sendFits(canvasElement, { labels: false });
+  },
+};
+
+export const ComposerWide: Story = {
+  render: () => (
+    <div style={{ width: 760 }}>
+      <FullComposer />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    await sendFits(canvasElement, { labels: true });
+  },
 };

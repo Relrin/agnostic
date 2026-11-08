@@ -356,6 +356,15 @@ export function useDraftDocument(instance: string, componentId: string): DraftDo
   const loaded = useRef<number | undefined>(undefined);
   const [source, setSource] = useState<SourceCode>(GENERATED);
   const dropCode = useRef(false);
+  // Pending edits are flushed when the editor unmounts (useDebouncedCallback), so a save or parse can settle after it
+  // is gone; its results then only reach the server and the toasts, never this component's state.
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
   /** The config the person's code reads as: what the form falls back to when an edit can't reach the code. */
   const codeConfig = useRef<Config | undefined>(undefined);
   const latest = useRef<{ config: Config | undefined; pins: Record<string, number>; source: SourceCode }>({
@@ -408,16 +417,21 @@ export function useDraftDocument(instance: string, componentId: string): DraftDo
       return saved;
     },
     onMutate: () => {
-      setState("saving");
+      if (mounted.current) setState("saving");
     },
     onSuccess: (saved) => {
       if (!saved) return;
       revision.current = saved.revision;
+      void queryClient.invalidateQueries({ queryKey: detailOptions.queryKey });
+      if (!mounted.current) return;
       setSavedAt(new Date());
       setState((current) => (current === "saving" ? "saved" : current));
-      void queryClient.invalidateQueries({ queryKey: detailOptions.queryKey });
     },
     onError: (error) => {
+      if (!mounted.current) {
+        toast.error(describeError(error).reason);
+        return;
+      }
       if (problemCode(error) === "version_conflict") {
         const body = error as unknown as Record<string, unknown>;
         setConflict({
@@ -454,7 +468,7 @@ export function useDraftDocument(instance: string, componentId: string): DraftDo
       throwOnError: true,
     })
       .then(({ data }) => {
-        if (latest.current.source.code !== code) return;
+        if (!mounted.current || latest.current.source.code !== code) return;
         setSource((current) => ({
           ...current,
           state: data.ok && data.config ? "synced" : "invalid",
@@ -470,6 +484,7 @@ export function useDraftDocument(instance: string, componentId: string): DraftDo
         }
       })
       .catch((error: unknown) => {
+        if (!mounted.current) return;
         setSource((current) => ({ ...current, state: "invalid" }));
         toast.error(describeError(error).reason);
       });
@@ -484,6 +499,7 @@ export function useDraftDocument(instance: string, componentId: string): DraftDo
       throwOnError: true,
     })
       .then(({ data }) => {
+        if (!mounted.current) return;
         if (data.equivalent) {
           codeConfig.current = data.config ?? next;
           setSource((current) => ({
@@ -505,6 +521,7 @@ export function useDraftDocument(instance: string, componentId: string): DraftDo
       })
       .catch((error: unknown) => {
         toast.error(describeError(error).reason);
+        if (!mounted.current) return;
         if (codeConfig.current) setConfigState(codeConfig.current);
         setSource((current) => ({ ...current, state: "synced" }));
       });

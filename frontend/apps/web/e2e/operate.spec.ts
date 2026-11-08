@@ -1,6 +1,6 @@
 // Operate flows against a stubbed gateway (the mock model's support-triage on prod): chat, a tool that pauses for
 // approval, an approval with an edited amount, the run completing, the Sessions timeline, user isolation, ⌘K.
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 import { session, stubGateway } from "./fixtures/chat";
 import { access, instances, stubApi } from "./stubs";
@@ -44,6 +44,48 @@ test("chat: a refund pauses for approval, Maya approves with an edited amount, t
   await detail.getByRole("tab", { name: "Runs" }).click();
   await expect(detail.getByText("Completed after 2 tool calls.")).toBeVisible();
 });
+
+test("chat: below 1280px session details open in a sheet, below 1024px so does the session list", async ({
+  page,
+}) => {
+  await stubApi(page);
+  await stubGateway(page);
+  await page.setViewportSize({ width: 1100, height: 900 });
+  await page.goto("/i/prod-agentos/chat/agents/support-triage");
+  await page.getByRole("textbox", { name: "Message Support triage" }).fill("Please refund order 4471");
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(/\/chat\/agents\/support-triage\/ses_7f3a91c2/);
+
+  // The conversation keeps its width: no details column beside it, and Send stays inside the composer.
+  const run = page.getByRole("article", { name: "Run run_9f2c41" });
+  await expect(run).toBeVisible();
+  await expect(page.getByRole("complementary", { name: "Session" })).toHaveCount(0);
+  expect((await run.boundingBox())?.width).toBeGreaterThan(480);
+  await expectSendInsideComposer(page);
+
+  await page.getByRole("button", { name: "Session details" }).click();
+  const details = page.getByRole("dialog", { name: "Session" });
+  await expect(details.getByText("ses_7f3a91c2")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(details).toBeHidden();
+
+  // Narrower still, the session list moves into a sheet too; picking a session closes it.
+  await page.setViewportSize({ width: 800, height: 900 });
+  await expect(page.getByRole("navigation", { name: "Sessions for support-triage" })).toHaveCount(0);
+  await page.getByRole("button", { name: "Sessions", exact: true }).click();
+  const sessions = page.getByRole("dialog", { name: "Sessions" });
+  await expect(sessions.getByRole("navigation", { name: "Sessions for support-triage" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(sessions).toBeHidden();
+  await expectSendInsideComposer(page);
+});
+
+async function expectSendInsideComposer(page: Page) {
+  const send = page.getByRole("button", { name: "Send" });
+  const composer = page.locator("[class*='@container/composer']");
+  const [sendBox, composerBox] = await Promise.all([send.boundingBox(), composer.boundingBox()]);
+  expect(sendBox && composerBox && sendBox.x + sendBox.width <= composerBox.x + composerBox.width).toBe(true);
+}
 
 test("sessions: the Owner sees every user with the isolation callout", async ({ page }) => {
   await stubApi(page);

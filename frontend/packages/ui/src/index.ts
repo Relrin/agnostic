@@ -1,6 +1,7 @@
 // @agnostic/ui: the only place feature code gets UI primitives from (never @radix-ui directly).
 export { cn } from "./lib/cn";
 export { useSmoothText, usePrefersReducedMotion } from "./lib/smooth-text";
+export { BREAKPOINTS, useMinWidth } from "./lib/media";
 export { BrandIcon, ModelMark, ToolMark, type BrandTone, type ToolMarkProps } from "./brand/brand-icon";
 export {
   BRAND_OPTIONS,
