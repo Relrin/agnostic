@@ -43,10 +43,11 @@ export function sha7(sha: string | null | undefined): string {
 }
 
 /** The component's source binding (`bound: false` when no repository syncs it). */
-export function useComponentSource(instance: string, componentId: string) {
+export function useComponentSource(instance: string, componentId: string, enabled = true) {
   return useQuery({
     ...withQueryFn(sourcesComponentSourceOptions({ path: { instance, component_id: componentId } })),
     staleTime: 15_000,
+    enabled,
   });
 }
 

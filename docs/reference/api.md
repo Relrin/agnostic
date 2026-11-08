@@ -400,6 +400,7 @@ they're described by the runtime's own OpenAPI document and not repeated here.
 | Method | Path | Does |
 |---|---|---|
 | `POST` | `/api/v1/instances/{instance}/studio/cel/evaluate` | Try a CEL expression on a sample: agno evaluates it through the bridge, else Agnostic does |
+| `GET` | `/api/v1/instances/{instance}/studio/code-components/{kind}/{component_id}` | An agent, team or workflow defined in the runtime's code, with its config (read-only) |
 | `POST` | `/api/v1/instances/{instance}/studio/codegen` | Generated Python with span map, gutter marks, notes and ruff |
 | `GET` | `/api/v1/instances/{instance}/studio/components` | Agents, teams or workflows: stored in Studio and defined in code |
 | `POST` | `/api/v1/instances/{instance}/studio/components` | Create a component with draft v1 (blank, from a template, duplicated or imported) |

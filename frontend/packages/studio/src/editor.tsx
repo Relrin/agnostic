@@ -1,5 +1,6 @@
-// The editor frame shared by agents and teams: header (draft chip, Versions, Run evals, Save draft, Publish vN,
-// Promote), the Form / Split / Code layout with the diff summary, and the form, code and test panes.
+// The editor frame shared by agents and teams: header (draft chip, Duplicate, Versions, Run evals, Save draft,
+// Publish vN, Promote), the Form / Split / Code layout with the diff summary, and the form, code and test panes.
+// A component defined in code opens in the same frame, read-only, with "Duplicate to edit" as the way to change it.
 import {
   describeError,
   studioDiffVersionsOptions,
@@ -20,14 +21,31 @@ import {
 } from "@agnostic/ui";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
-import { ArrowLeftRight, CheckCircle2, Code2, Columns2, History, Rows3, Upload } from "lucide-react";
+import {
+  ArrowLeftRight,
+  CheckCircle2,
+  Code2,
+  Columns2,
+  Copy,
+  History,
+  Lock,
+  Rows3,
+  Upload,
+} from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 
 import { CodePane } from "./code-pane";
 import { ExplainConfig } from "./explain-config";
 import { changedFields, type Config, type EditableKind } from "./config";
+import {
+  DefinedInCodeCallout,
+  DefinedInCodeChip,
+  DuplicateDialog,
+  useDefinedInCode,
+  type DuplicateSource,
+} from "./defined-in-code";
 import { ConflictDialog, DiffDialog, PromoteDialog, PublishDialog, VersionsDrawer } from "./dialogs";
-import { useDraftDocument, useRegistry, type DraftDocument } from "./document";
+import { useCodeDocument, useDraftDocument, useRegistry, type DraftDocument } from "./document";
 import { IncomingChip, SourceBar, incomingMarks, useComponentSource } from "./source-bar";
 import { fieldId, type FormContext } from "./form";
 import { TestPane } from "./test-pane";
@@ -99,21 +117,40 @@ export function unpublished(base: Config | null | undefined, config: Config | un
     : `↑ ${String(fields.length)} unpublished`;
 }
 
-export function StudioEditor({
-  instance,
-  componentId,
-  kind,
-  renderForm,
-  toolbarExtra,
-}: {
+type EditorProps = {
   instance: string;
   componentId: string;
   kind: EditableKind;
   /** The form for this kind; it gets the shared form context (config, registry, spans, focus). */
   renderForm: (ctx: FormContext, doc: DraftDocument) => ReactNode;
   toolbarExtra?: (doc: DraftDocument) => ReactNode;
-}) {
-  const doc = useDraftDocument(instance, componentId);
+};
+
+/** The editor of a component stored in Studio, or the read-only view of one defined in code (`?source=code`). */
+export function StudioEditor(props: EditorProps) {
+  return useDefinedInCode() ? <CodeDefinedEditor {...props} /> : <StoredEditor {...props} />;
+}
+
+function StoredEditor(props: EditorProps) {
+  const doc = useDraftDocument(props.instance, props.componentId);
+  return <EditorFrame {...props} doc={doc} />;
+}
+
+function CodeDefinedEditor(props: EditorProps) {
+  const doc = useCodeDocument(props.instance, props.kind, props.componentId);
+  return <EditorFrame {...props} doc={doc} />;
+}
+
+function EditorFrame({
+  instance,
+  componentId,
+  kind,
+  renderForm,
+  toolbarExtra,
+  doc,
+}: EditorProps & { doc: DraftDocument }) {
+  const locked = doc.origin === "code";
+  const [duplicating, setDuplicating] = useState<DuplicateSource | undefined>(undefined);
   const registry = useRegistry(instance);
   const instances = useInstances();
   const found = findInstance(instances.data, instance);
@@ -133,7 +170,7 @@ export function StudioEditor({
     query: { from: base?.version ?? 0, to: draft?.version ?? 0 },
   });
   const diff = useQuery({ ...withQueryFn(diffOptions), enabled: Boolean(base && draft) });
-  const source = useComponentSource(instance, componentId);
+  const source = useComponentSource(instance, componentId, !locked);
 
   useEffect(() => {
     if (!focusedPath) return;
@@ -164,7 +201,7 @@ export function StudioEditor({
         onFocusPath: setFocusedPath,
         registry,
         instance,
-        readOnly: canWrite.allowed !== true,
+        readOnly: canWrite.allowed !== true || locked,
         isCodeOwned: (path: string) =>
           doc.source.codeOwned.some((owned) => path === owned || path.startsWith(`${owned}.`)),
         onEditInCode: (path: string) => {
@@ -175,8 +212,33 @@ export function StudioEditor({
     : undefined;
   const component = detail.component;
   const counts = diff.data?.counts;
+  // A stored component is copied from its current (or newest) version; one in code only when its config is known.
+  const canDuplicate = canWrite.allowed === true && (!locked || Boolean(doc.config));
+  const duplicate = () => {
+    setDuplicating({ id: component.id, name: component.name, origin: locked ? "code" : "studio" });
+  };
 
-  const header = (
+  const header = locked ? (
+    <div className="flex flex-wrap items-center gap-3 border-b border-border-subtle px-6 py-2.5">
+      <Breadcrumb
+        items={[
+          { label: "Studio" },
+          { label: FAMILY_LABEL[kind], href: `${scoped}/studio/${kind}s` },
+          { label: component.id, mono: true },
+        ]}
+        renderLink={(crumb) => <Link to={crumb.href}>{crumb.label}</Link>}
+      />
+      <DefinedInCodeChip definition={doc.definedInCode} />
+      <span className="flex-1" />
+      <ExplainConfig instance={instance} componentId={componentId} config={doc.config} />
+      {canDuplicate && (
+        <Button variant="primary" size="32" onClick={duplicate}>
+          <Copy aria-hidden />
+          Duplicate to edit
+        </Button>
+      )}
+    </div>
+  ) : (
     <div className="flex flex-wrap items-center gap-3 border-b border-border-subtle px-6 py-2.5">
       <Breadcrumb
         items={[
@@ -190,6 +252,12 @@ export function StudioEditor({
       <IncomingChip instance={instance} componentId={componentId} />
       <span className="flex-1" />
       <ExplainConfig instance={instance} componentId={componentId} config={doc.config} />
+      {canDuplicate && (
+        <Button variant="outline" size="32" onClick={duplicate}>
+          <Copy aria-hidden />
+          Duplicate
+        </Button>
+      )}
       <Button
         variant="outline"
         size="32"
@@ -265,8 +333,17 @@ export function StudioEditor({
           preloadCodeEditor();
         }}
       >
-        <ArrowLeftRight aria-hidden className="size-3.5 text-accent" />
-        Form and code are one source: edits in either show in the other.
+        {locked ? (
+          <>
+            <Lock aria-hidden className="size-3.5 text-fg-muted" />
+            Read-only: the form and the code show the config this runtime defines in code.
+          </>
+        ) : (
+          <>
+            <ArrowLeftRight aria-hidden className="size-3.5 text-accent" />
+            Form and code are one source: edits in either show in the other.
+          </>
+        )}
       </span>
       <span className="flex-1" />
       {toolbarExtra?.(doc)}
@@ -291,7 +368,15 @@ export function StudioEditor({
     </div>
   );
 
-  const noDraft = !draft && (
+  const lockedNote = locked && (
+    <DefinedInCodeCallout
+      kind={kind}
+      definition={doc.definedInCode}
+      canDuplicate={canDuplicate}
+      onDuplicate={duplicate}
+    />
+  );
+  const noDraft = !draft && !locked && (
     <Callout
       tone="info"
       title="No open draft"
@@ -314,7 +399,9 @@ export function StudioEditor({
     </Callout>
   );
 
-  const form = ctx ? renderForm(ctx, doc) : noDraft || <EmptyState title="Nothing to edit" />;
+  const form = ctx
+    ? renderForm(ctx, doc)
+    : noDraft || <EmptyState title={locked ? "Nothing to show" : "Nothing to edit"} />;
   const code = (
     <CodePane
       code={doc.code}
@@ -328,11 +415,13 @@ export function StudioEditor({
       registryHref={(entry) => `${scoped}/studio/registry/tool/${encodeURIComponent(entry)}`}
       uncommitted={unpublished(base?.config, doc.config)}
       pending={doc.state === "dirty"}
-      readOnly={canWrite.allowed !== true}
+      readOnly={canWrite.allowed !== true || locked}
       sourceBar={
-        <SourceBar instance={instance} componentId={componentId} canWrite={canWrite.allowed === true} />
+        locked ? undefined : (
+          <SourceBar instance={instance} componentId={componentId} canWrite={canWrite.allowed === true} />
+        )
       }
-      incomingMarks={incomingMarks(source.data, draft?.version)}
+      incomingMarks={locked ? undefined : incomingMarks(source.data, draft?.version)}
     />
   );
   const test = (
@@ -354,6 +443,7 @@ export function StudioEditor({
     <div className="flex flex-1 flex-col">
       {header}
       {toolbar}
+      {lockedNote && <div className="px-6 pb-3">{lockedNote}</div>}
       {!draft && ctx === undefined && <div className="px-6">{noDraft}</div>}
       <div className="flex flex-1 flex-wrap gap-4 px-6 pb-6">
         {layout !== "code" && (
@@ -367,14 +457,16 @@ export function StudioEditor({
           </div>
         )}
         {layout !== "form" && <div className="flex min-w-[440px] flex-[2_1_440px] flex-col">{code}</div>}
-        <div
-          className={cn(
-            "flex min-w-[300px] flex-col",
-            layout === "split" ? "max-w-[380px] flex-[1_1_300px]" : "max-w-[520px] flex-[1_1_380px]",
-          )}
-        >
-          {test}
-        </div>
+        {!locked && (
+          <div
+            className={cn(
+              "flex min-w-[300px] flex-col",
+              layout === "split" ? "max-w-[380px] flex-[1_1_300px]" : "max-w-[520px] flex-[1_1_380px]",
+            )}
+          >
+            {test}
+          </div>
+        )}
       </div>
 
       {base && draft && (
@@ -389,14 +481,24 @@ export function StudioEditor({
           to={draft.version}
         />
       )}
-      <VersionsDrawer
-        open={dialog === "versions"}
-        onOpenChange={(open) => {
-          setDialog(open ? "versions" : undefined);
-        }}
+      {!locked && (
+        <VersionsDrawer
+          open={dialog === "versions"}
+          onOpenChange={(open) => {
+            setDialog(open ? "versions" : undefined);
+          }}
+          instance={instance}
+          instanceName={instanceName}
+          detail={detail}
+        />
+      )}
+      <DuplicateDialog
         instance={instance}
-        instanceName={instanceName}
-        detail={detail}
+        kind={kind}
+        source={duplicating}
+        onOpenChange={(open) => {
+          if (!open) setDuplicating(undefined);
+        }}
       />
       {draft && (
         <PublishDialog

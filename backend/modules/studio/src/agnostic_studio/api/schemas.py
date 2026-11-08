@@ -13,7 +13,7 @@ from agnostic_evals.facade import GateCheck
 from agnostic_observe.facade import WorkflowStepStats
 from agnostic_spec import Diagnostic
 from agnostic_studio.application.codegen import CodeView, marks_dict, spans_dict
-from agnostic_studio.application.components import ComponentDetail, IndexRow, VersionView
+from agnostic_studio.application.components import CodeDefinition, ComponentDetail, IndexRow, VersionView
 from agnostic_studio.application.drafts import Diff, revision
 from agnostic_studio.application.publishing import PublishCheck, PublishResult
 from agnostic_studio.application.source import DocumentView, SourceView, TransformView
@@ -331,6 +331,25 @@ class ComponentDetailOut(BaseModel):
         )
 
 
+class CodeComponentOut(BaseModel):
+    """A component defined in the runtime's code: shown read-only, and duplicated into Studio to edit."""
+
+    component: StudioComponentOut
+    config: dict[str, Any] | None = Field(description="agno's to_dict() of the component; null when unavailable")
+    source: SourceOut | None = Field(description="The module-level assignment that defines it, when known")
+    unavailable: str | None = Field(description="Why the config can't be shown or duplicated")
+
+    @classmethod
+    def of(cls, found: CodeDefinition) -> CodeComponentOut:
+        located = found.module or found.file
+        return cls(
+            component=studio_component_out(found.component),
+            config=found.config,
+            source=SourceOut(module=found.module, file=found.file, line=found.line) if located else None,
+            unavailable=found.unavailable,
+        )
+
+
 class CreateIn(BaseModel):
     kind: KindIn
     name: str = Field(min_length=1, max_length=200)
@@ -340,6 +359,9 @@ class CreateIn(BaseModel):
     template_id: str | None = None
     source_id: str | None = None
     source_version: int | None = Field(default=None, ge=1)
+    source_origin: Literal["studio", "code"] = Field(
+        default="studio", description="Duplicate a component stored in Studio, or one defined in the runtime's code."
+    )
     config: dict[str, Any] | None = None
     model: dict[str, Any] | None = None
     notes: str | None = Field(default=None, max_length=2000)

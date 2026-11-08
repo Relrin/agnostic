@@ -2532,6 +2532,33 @@ export type CheckpointOut = {
 };
 
 /**
+ * CodeComponentOut
+ *
+ * A component defined in the runtime's code: shown read-only, and duplicated into Studio to edit.
+ */
+export type CodeComponentOut = {
+    component: StudioComponentOut;
+    /**
+     * Config
+     *
+     * agno's to_dict() of the component; null when unavailable
+     */
+    config: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * The module-level assignment that defines it, when known
+     */
+    source: AgnosticStudioApiSchemasSourceOut | null;
+    /**
+     * Unavailable
+     *
+     * Why the config can't be shown or duplicated
+     */
+    unavailable: string | null;
+};
+
+/**
  * CodeDiagnosticOut
  */
 export type CodeDiagnosticOut = {
@@ -3737,6 +3764,12 @@ export type CreateIn = {
      * Source Id
      */
     source_id?: string | null;
+    /**
+     * Source Origin
+     *
+     * Duplicate a component stored in Studio, or one defined in the runtime's code.
+     */
+    source_origin?: 'studio' | 'code';
     /**
      * Source Version
      */
@@ -19638,6 +19671,48 @@ export type StudioEvaluateCelResponses = {
 };
 
 export type StudioEvaluateCelResponse = StudioEvaluateCelResponses[keyof StudioEvaluateCelResponses];
+
+export type StudioGetCodeComponentData = {
+    body?: never;
+    path: {
+        /**
+         * Instance
+         */
+        instance: string;
+        /**
+         * Kind
+         */
+        kind: 'agent' | 'team' | 'workflow';
+        /**
+         * Component Id
+         */
+        component_id: string;
+    };
+    query?: never;
+    url: '/api/v1/instances/{instance}/studio/code-components/{kind}/{component_id}';
+};
+
+export type StudioGetCodeComponentErrors = {
+    /**
+     * Client error
+     */
+    '4XX': Problem;
+    /**
+     * Server error
+     */
+    '5XX': Problem;
+};
+
+export type StudioGetCodeComponentError = StudioGetCodeComponentErrors[keyof StudioGetCodeComponentErrors];
+
+export type StudioGetCodeComponentResponses = {
+    /**
+     * Successful Response
+     */
+    200: CodeComponentOut;
+};
+
+export type StudioGetCodeComponentResponse = StudioGetCodeComponentResponses[keyof StudioGetCodeComponentResponses];
 
 export type StudioCodegenData = {
     body: CodegenIn;

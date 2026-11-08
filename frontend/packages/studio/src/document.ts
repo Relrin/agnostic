@@ -9,6 +9,7 @@ import {
   describeError,
   problemCode,
   studioCodegen,
+  studioGetCodeComponentOptions,
   studioGetCodeDocumentOptions,
   studioGetComponentOptions,
   studioNewDraft,
@@ -17,6 +18,7 @@ import {
   studioSaveDraft,
   studioSchemaOptions,
   studioTransformCode,
+  type CodeComponentOut,
   type CodeDiagnosticOut,
   type CodegenOut,
   type ComponentDetailOut,
@@ -179,7 +181,97 @@ export type DraftDocument = {
   generateFromForm: () => void;
   /** Field paths → spans of the code the pane shows. */
   spans: Record<string, SpanOut>;
+  /** Where the component lives: stored in Studio (editable), or defined in the runtime's code (read-only). */
+  origin: "studio" | "code";
+  /** For a component defined in code: its config and where it is defined, once loaded. */
+  definedInCode?: CodeComponentOut | undefined;
 };
+
+/** Python generated for a config, with the lines that differ from `base` marked (250 ms after the last edit). */
+function useGeneratedCode(
+  instance: string,
+  kind: EditableKind,
+  config: Config | undefined,
+  base: Config | null | undefined,
+) {
+  const settled = useDebouncedValue(config, CODEGEN_MS);
+  return useQuery({
+    queryKey: [instance, "studio", "codegen", kind, settled, base ?? null],
+    queryFn: settled
+      ? async () =>
+          (
+            await studioCodegen({
+              path: { instance },
+              body: { kind, config: settled, base_config: base ?? null },
+              throwOnError: true,
+            })
+          ).data
+      : skipToken,
+    placeholderData: keepPreviousData,
+    staleTime: Infinity,
+    retry: false,
+  });
+}
+
+const ignore = () => undefined;
+
+/**
+ * A component defined in the runtime's code, as a document that can't change: its config fills the form and the
+ * generated code, and nothing is ever saved. Duplicating it is how it becomes editable.
+ */
+export function useCodeDocument(instance: string, kind: EditableKind, componentId: string): DraftDocument {
+  const found = useQuery({
+    ...withQueryFn(studioGetCodeComponentOptions({ path: { instance, kind, component_id: componentId } })),
+    staleTime: STALE_TIME.config,
+    enabled: Boolean(instance && componentId),
+    retry: false,
+  });
+  const definition = found.data;
+  const config = definition?.config ?? undefined;
+  const code = useGeneratedCode(instance, kind, config, undefined);
+  const detail = useMemo<ComponentDetailOut | undefined>(
+    () =>
+      definition
+        ? {
+            component: definition.component,
+            editable: false,
+            versions: [],
+            draft: null,
+            current: null,
+            owner_group_id: null,
+            labels: [],
+          }
+        : undefined,
+    [definition],
+  );
+  return {
+    detail,
+    isPending: found.isPending,
+    error: found.error,
+    kind,
+    draft: undefined,
+    base: undefined,
+    config,
+    setConfig: ignore,
+    pins: {},
+    setPin: ignore,
+    state: "saved",
+    savedAt: undefined,
+    save: () => Promise.resolve(false),
+    conflict: undefined,
+    resolveConflict: ignore,
+    startDraft: () => Promise.resolve(),
+    startingDraft: false,
+    code: code.data,
+    codeError: code.error,
+    source: GENERATED,
+    setCode: ignore,
+    generateFromForm: ignore,
+    spans: code.data?.spans ?? {},
+    origin: "code",
+    definedInCode: definition,
+  };
+}
 
 export function useDraftDocument(instance: string, componentId: string): DraftDocument {
   const queryClient = useQueryClient();
@@ -455,23 +547,7 @@ export function useDraftDocument(instance: string, componentId: string): DraftDo
     onError: (error) => toast.error(describeError(error).reason),
   });
 
-  const settled = useDebouncedValue(config, CODEGEN_MS);
-  const code = useQuery({
-    queryKey: [instance, "studio", "codegen", kind, settled, base?.config ?? null],
-    queryFn: settled
-      ? async () =>
-          (
-            await studioCodegen({
-              path: { instance },
-              body: { kind, config: settled, base_config: base?.config ?? null },
-              throwOnError: true,
-            })
-          ).data
-      : skipToken,
-    placeholderData: keepPreviousData,
-    staleTime: Infinity,
-    retry: false,
-  });
+  const code = useGeneratedCode(instance, kind, config, base?.config);
 
   return {
     detail: detail.data,
@@ -499,5 +575,6 @@ export function useDraftDocument(instance: string, componentId: string): DraftDo
     setCode,
     generateFromForm,
     spans: source.codeBacked ? source.spans : (code.data?.spans ?? {}),
+    origin: "studio",
   };
 }

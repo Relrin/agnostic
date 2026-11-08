@@ -2,7 +2,8 @@
 // Share, Save draft, Publish), toolbar (Canvas / Code, undo and redo, auto-layout, the validation sentence), then the
 // component palette, the canvas (or the code) and the inspector or the Playground, with the problems below. The
 // canvas and the code are one document: the selected step highlights its lines, and the cursor in the code selects
-// a step. Share exports the workflow as a Langflow flow and imports one.
+// a step. Share exports the workflow as a Langflow flow and imports one. A workflow defined in code (`?source=code`)
+// opens on the same canvas, locked, with "Duplicate to edit" as the way to change it.
 import {
   describeError,
   studioGetCanvasLayoutOptions,
@@ -14,7 +15,10 @@ import { findInstance, useCan, useDebouncedCallback, useInstances, withQueryFn }
 import {
   CodePane,
   ConflictDialog,
+  DefinedInCodeCallout,
+  DefinedInCodeChip,
   DraftChip,
+  DuplicateDialog,
   FAMILY_LABEL,
   IncomingChip,
   PublishDialog,
@@ -22,12 +26,15 @@ import {
   VersionsDrawer,
   incomingMarks,
   unpublished,
+  useCodeDocument,
   useComponentSource,
   useConfigSchema,
   useDebouncedValue,
+  useDefinedInCode,
   useDraftDocument,
   useRegistry,
   type DraftDocument,
+  type DuplicateSource,
   type FormContext,
 } from "@agnostic/studio";
 import {
@@ -56,6 +63,7 @@ import {
   CircleAlert,
   CircleCheck,
   Code2,
+  Copy,
   Download,
   History,
   LayoutGrid,
@@ -112,11 +120,27 @@ function useBuilderSearch(): [
 /** `/i/:instance/studio/workflows/:componentId`. */
 export function WorkflowBuilderPage() {
   const params = useParams({ strict: false }) as unknown as Record<string, string | undefined>;
+  const instance = params.instance ?? "";
+  const componentId = params.componentId ?? "";
   return (
     <CanvasProvider>
-      <WorkflowBuilder instance={params.instance ?? ""} componentId={params.componentId ?? ""} />
+      {useDefinedInCode() ? (
+        <CodeDefinedWorkflow instance={instance} componentId={componentId} />
+      ) : (
+        <StoredWorkflow instance={instance} componentId={componentId} />
+      )}
     </CanvasProvider>
   );
+}
+
+function StoredWorkflow({ instance, componentId }: { instance: string; componentId: string }) {
+  const doc = useDraftDocument(instance, componentId);
+  return <WorkflowBuilder instance={instance} componentId={componentId} doc={doc} />;
+}
+
+function CodeDefinedWorkflow({ instance, componentId }: { instance: string; componentId: string }) {
+  const doc = useCodeDocument(instance, "workflow", componentId);
+  return <WorkflowBuilder instance={instance} componentId={componentId} doc={doc} />;
 }
 
 function useValidation(instance: string, doc: DraftDocument) {
@@ -209,12 +233,21 @@ function ImportDialog({
   );
 }
 
-function WorkflowBuilder({ instance, componentId }: { instance: string; componentId: string }) {
-  const doc = useDraftDocument(instance, componentId);
-  const source = useComponentSource(instance, componentId);
+function WorkflowBuilder({
+  instance,
+  componentId,
+  doc,
+}: {
+  instance: string;
+  componentId: string;
+  doc: DraftDocument;
+}) {
+  const locked = doc.origin === "code";
+  const source = useComponentSource(instance, componentId, !locked);
   const [store] = useState(createBuilderStore);
   const canWrite = useCan("components:write", instance);
   const readOnly = canWrite.allowed !== true || !doc.draft;
+  const [duplicating, setDuplicating] = useState<DuplicateSource | undefined>(undefined);
   const actions = useActions(doc, store, readOnly);
   const schema = useWorkflowSchema();
   const workflowSchema = useConfigSchema("workflow");
@@ -270,6 +303,7 @@ function WorkflowBuilder({ instance, componentId }: { instance: string; componen
     ),
     staleTime: 5 * 60_000,
     retry: false,
+    enabled: !locked,
   });
   const averages = useMemo(
     () => new Map((stats.data?.steps ?? []).map((item) => [item.name, item.avg_ms])),
@@ -334,6 +368,11 @@ function WorkflowBuilder({ instance, componentId }: { instance: string; componen
   const inputSchema = doc.config?.input_schema;
   const inputLabel =
     typeof inputSchema === "string" ? inputSchema : inputSchema ? "structured input" : "input";
+  // A stored workflow is copied from its current (or newest) version; one in code only when its config is known.
+  const canDuplicate = canWrite.allowed === true && (!locked || Boolean(doc.config));
+  const duplicate = () => {
+    setDuplicating({ id: component.id, name: component.name, origin: locked ? "code" : "studio" });
+  };
 
   const exportFlow = async () => {
     const exported = await toLangflow({
@@ -404,19 +443,33 @@ function WorkflowBuilder({ instance, componentId }: { instance: string; componen
             ]}
             renderLink={(crumb) => <Link to={crumb.href}>{crumb.label}</Link>}
           />
-          <DraftChip doc={doc} />
-          <IncomingChip instance={instance} componentId={componentId} />
+          {locked ? (
+            <DefinedInCodeChip definition={doc.definedInCode} />
+          ) : (
+            <>
+              <DraftChip doc={doc} />
+              <IncomingChip instance={instance} componentId={componentId} />
+            </>
+          )}
           <span className="flex-1" />
-          <Button
-            variant="outline"
-            size="32"
-            onClick={() => {
-              setDialog("versions");
-            }}
-          >
-            <History aria-hidden />
-            Versions
-          </Button>
+          {canDuplicate && (
+            <Button variant={locked ? "primary" : "outline"} size="32" onClick={duplicate}>
+              <Copy aria-hidden />
+              {locked ? "Duplicate to edit" : "Duplicate"}
+            </Button>
+          )}
+          {!locked && (
+            <Button
+              variant="outline"
+              size="32"
+              onClick={() => {
+                setDialog("versions");
+              }}
+            >
+              <History aria-hidden />
+              Versions
+            </Button>
+          )}
           {draft && canWrite.allowed && (
             <Button
               variant="outline"
@@ -485,7 +538,17 @@ function WorkflowBuilder({ instance, componentId }: { instance: string; componen
             </Button>
           )}
         </div>
-        {!draft && (
+        {locked && (
+          <div className="mx-6 mt-3">
+            <DefinedInCodeCallout
+              kind="workflow"
+              definition={doc.definedInCode}
+              canDuplicate={canDuplicate}
+              onDuplicate={duplicate}
+            />
+          </div>
+        )}
+        {!draft && !locked && (
           <Callout tone="info" className="mx-6 mt-3" title="No open draft">
             {`The current version is v${String(component.current_version ?? "")}. Start a draft from Versions to edit it.`}
           </Callout>
@@ -603,8 +666,12 @@ function WorkflowBuilder({ instance, componentId }: { instance: string; componen
                 uncommitted={undefined}
                 pending={doc.state === "dirty"}
                 readOnly={readOnly}
-                sourceBar={<SourceBar instance={instance} componentId={componentId} canWrite={!readOnly} />}
-                incomingMarks={incomingMarks(source.data, doc.draft?.version)}
+                sourceBar={
+                  locked ? undefined : (
+                    <SourceBar instance={instance} componentId={componentId} canWrite={!readOnly} />
+                  )
+                }
+                incomingMarks={locked ? undefined : incomingMarks(source.data, doc.draft?.version)}
               />
             </div>
           )}
@@ -648,14 +715,24 @@ function WorkflowBuilder({ instance, componentId }: { instance: string; componen
           }}
           onApply={applyImport}
         />
-        <VersionsDrawer
-          open={dialog === "versions"}
-          onOpenChange={(open) => {
-            setDialog(open ? "versions" : undefined);
-          }}
+        {!locked && (
+          <VersionsDrawer
+            open={dialog === "versions"}
+            onOpenChange={(open) => {
+              setDialog(open ? "versions" : undefined);
+            }}
+            instance={instance}
+            instanceName={instanceName}
+            detail={detail}
+          />
+        )}
+        <DuplicateDialog
           instance={instance}
-          instanceName={instanceName}
-          detail={detail}
+          kind="workflow"
+          source={duplicating}
+          onOpenChange={(open) => {
+            if (!open) setDuplicating(undefined);
+          }}
         />
         {draft && (
           <PublishDialog

@@ -21,8 +21,18 @@ export {
   type TeamMode,
   type ToolEntry,
 } from "./config";
+export {
+  DefinedInCodeCallout,
+  DefinedInCodeChip,
+  DuplicateDialog,
+  definedAt,
+  useDefinedInCode,
+  type ComponentOrigin,
+  type DuplicateSource,
+} from "./defined-in-code";
 export { ConflictDialog, DiffDialog, PromoteDialog, PublishDialog, VersionsDrawer } from "./dialogs";
 export {
+  useCodeDocument,
   useComponent,
   useConfigSchema,
   useDebouncedValue,

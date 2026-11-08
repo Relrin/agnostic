@@ -1,6 +1,7 @@
 // Studio sample data and handlers: the registry of staging-agentos, support-triage (v3 current, draft v4) and
 // research-team, with a codegen stand-in that maps fields to lines the way the server does.
 import type {
+  CodeComponentOut,
   CodegenOut,
   ComponentDetailOut,
   ComponentRowOut,
@@ -335,6 +336,23 @@ export const studioRows: ComponentRowOut[] = [
   },
 ];
 
+/** kb-researcher, defined in the runtime's code, as Studio reads it through the bridge. */
+export function kbResearcherCode(): CodeComponentOut {
+  const row = studioRows[1];
+  if (!row) throw new Error("no code row");
+  return {
+    component: row.component,
+    config: {
+      id: "kb-researcher",
+      name: "kb-researcher",
+      model: { id: "mock-precise", provider: "Agnostic" },
+      instructions: ["Search the knowledge base first."],
+    },
+    source: { module: "app.agents.kb_researcher", file: "/srv/app/agents/kb_researcher.py", line: 7 },
+    unavailable: null,
+  };
+}
+
 /** Requests the Studio handlers saw, for assertions. */
 export type StudioCalls = {
   saves: Record<string, unknown>[];
@@ -380,6 +398,11 @@ export function studioHandlers(calls: StudioCalls = { saves: [], publishes: [], 
       const kind = new URL(request.url).searchParams.get("kind") ?? "agent";
       return HttpResponse.json(kind === "agent" ? studioRows : []);
     }),
+    http.get(`${base}/code-components/:kind/:id`, ({ params }) =>
+      params.kind === "agent" && params.id === "kb-researcher"
+        ? HttpResponse.json(kbResearcherCode())
+        : HttpResponse.json({ title: "Not found", status: 404, detail: "Not in code" }, { status: 404 }),
+    ),
     http.get(`${base}/components/:id`, ({ params }) =>
       params.id === "research-team"
         ? HttpResponse.json(teamDetail())

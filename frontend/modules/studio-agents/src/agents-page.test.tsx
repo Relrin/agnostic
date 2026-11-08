@@ -67,7 +67,73 @@ describe("AgentsPage", () => {
     expect(await within(table).findByRole("link", { name: "support-triage" })).toBeInTheDocument();
     expect(within(table).getByText("v4 draft")).toBeInTheDocument();
     expect(within(table).getByText("Defined in code")).toBeInTheDocument();
-    expect(within(table).queryByRole("link", { name: "kb-researcher" })).not.toBeInTheDocument();
+    // Defined in code: it opens read-only.
+    expect(within(table).getByRole("link", { name: "kb-researcher" })).toHaveAttribute(
+      "href",
+      "/i/staging-agentos/studio/agents/kb-researcher?source=code",
+    );
+    expect(within(table).getByLabelText("Read-only: defined in code")).toBeInTheDocument();
+  });
+
+  it("duplicates an agent defined in code into a new one stored in Studio", async () => {
+    const user = userEvent.setup();
+    const created: Record<string, unknown>[] = [];
+    server.use(
+      http.post(`${API}/instances/:instance/studio/components`, async ({ request }) => {
+        created.push((await request.json()) as Record<string, unknown>);
+        return HttpResponse.json(
+          { ...triageDetail(), component: { ...triageDetail().component, id: "kb-copy", name: "kb-copy" } },
+          { status: 201 },
+        );
+      }),
+    );
+    renderPage(AgentsPage, { path: "/i/$instance/studio/agents", url: "/i/staging-agentos/studio/agents" });
+    await user.click(await screen.findByRole("button", { name: "Duplicate kb-researcher" }));
+    const dialog = await screen.findByRole("dialog", { name: "Duplicate kb-researcher" });
+    const name = within(dialog).getByRole("textbox", { name: "Name of the copy" });
+    expect(name).toHaveValue("kb-researcher-copy");
+    await user.clear(name);
+    await user.type(name, "kb-copy");
+    await user.click(within(dialog).getByRole("button", { name: "Duplicate agent" }));
+    await waitFor(() => {
+      expect(created).toHaveLength(1);
+    });
+    expect(created[0]).toMatchObject({
+      kind: "agent",
+      name: "kb-copy",
+      mode: "duplicate",
+      source_id: "kb-researcher",
+      source_origin: "code",
+    });
+  });
+});
+
+describe("AgentEditorPage defined in code", () => {
+  const CODE = {
+    path: "/i/$instance/studio/agents/$componentId",
+    url: "/i/staging-agentos/studio/agents/kb-researcher?source=code",
+  };
+
+  it("shows the config read-only, with where it is defined and no way to save or publish", async () => {
+    renderPage(AgentEditorPage, CODE);
+    expect(await screen.findByText("Locked: defined in code")).toBeInTheDocument();
+    expect(screen.getByText("Defined in code · app.agents.kb_researcher:7 · read-only")).toBeInTheDocument();
+    const instruction = await screen.findByRole("textbox", { name: "Instruction 1" });
+    expect(instruction).toHaveValue("Search the knowledge base first.");
+    expect(instruction).toHaveAttribute("readonly");
+    for (const name of ["Save draft", "Versions", /^Publish/, "Add instruction"]) {
+      expect(screen.queryByRole("button", { name })).not.toBeInTheDocument();
+    }
+  });
+
+  it("duplicates it to edit", async () => {
+    const user = userEvent.setup();
+    renderPage(AgentEditorPage, CODE);
+    const [first] = await screen.findAllByRole("button", { name: "Duplicate to edit" });
+    if (!first) throw new Error("no Duplicate to edit button");
+    await user.click(first);
+    const dialog = await screen.findByRole("dialog", { name: "Duplicate kb-researcher" });
+    expect(within(dialog).getByText(/The original stays defined in code, unchanged/)).toBeInTheDocument();
   });
 });
 

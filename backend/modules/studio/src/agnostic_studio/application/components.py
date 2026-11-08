@@ -16,6 +16,7 @@ from agnostic_kernel.errors import ConflictError, NotFoundError, ValidationFaile
 from agnostic_spec.v3_1 import ComponentConfig, StepNode, TeamConfig, WorkflowConfig, parse, shape_errors
 from agnostic_spec.v3_1.workflow import Node
 from agnostic_studio.application.access import (
+    BRIDGE_INTROSPECT,
     CONFLICT,
     DELETE_SCOPE,
     NOT_FOUND,
@@ -42,6 +43,7 @@ from agnostic_studio.domain.model import (
 from agnostic_studio.domain.templates import start_config, template
 
 type CreateMode = Literal["blank", "template", "duplicate", "import"]
+type SourceOrigin = Literal["studio", "code"]
 
 _SLUG = re.compile(r"[^a-z0-9]+")
 
@@ -129,9 +131,31 @@ class CreateRequest:
     template_id: str | None = None
     source_id: str | None = None
     source_version: int | None = None
+    source_origin: SourceOrigin = "studio"
+    """Where the component to duplicate lives: stored in Studio, or defined in the runtime's code."""
     config: dict[str, Any] | None = None
     model: dict[str, Any] | None = None
     notes: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class CodeDefinition:
+    """A component defined in the runtime's code, as Studio shows it: read-only, and a starting point to duplicate."""
+
+    instance: Instance
+    component: Component
+    config: dict[str, Any] | None
+    module: str | None = None
+    file: str | None = None
+    line: int | None = None
+    unavailable: str | None = None
+    """Why the config can't be shown (no bridge on the runtime, or agno couldn't serialize it)."""
+
+
+NO_BRIDGE = (
+    "This runtime doesn't run agnostic-bridge, so Studio can't read the config of components defined in its code. "
+    "Install the bridge to view and duplicate them."
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -333,6 +357,73 @@ class Components:
             editable=component.source == "studio",
         )
 
+    async def code_definition(self, principal: Principal, ref: str, kind: Kind, component_id: str) -> CodeDefinition:
+        instance = await self._access.instance(principal, ref, READ_SCOPE)
+        return await self._code_definition(principal, instance, kind, component_id)
+
+    async def _code_definition(
+        self, principal: Principal, instance: Instance, kind: Kind, component_id: str
+    ) -> CodeDefinition:
+        listed = await self._code_listed(principal, instance, kind, component_id)
+        if BRIDGE_INTROSPECT in await self._access.bridge(instance):
+            body = await self._access.json(principal, instance, "GET", "/agnostic/v1/introspect/components")
+            found = next(
+                (
+                    item
+                    for item in page_items(body)
+                    if item.get("kind") == kind and str(item.get("id") or "") == component_id
+                ),
+                None,
+            )
+            if found is not None:
+                raw = found.get("config")
+                config = _stored_shape(kind, cast("dict[str, Any]", raw)) if isinstance(raw, dict) else None
+                described = {**(config or {}), **(listed or {})}
+                component = component_of(
+                    {
+                        **described,
+                        "id": component_id,
+                        "name": found.get("name") or described.get("name") or component_id,
+                        "component_type": kind,
+                    },
+                    source="code",
+                )
+                return CodeDefinition(
+                    instance=instance,
+                    component=component,
+                    config=config,
+                    module=found.get("module"),
+                    file=found.get("file"),
+                    line=found.get("line"),
+                    unavailable=None
+                    if config is not None
+                    else f"agno couldn't serialize {component.name}, so its config can't be shown or duplicated.",
+                )
+        if listed is None:
+            raise NotFoundError(f"There is no {kind} {component_id!r} defined in the code of {instance.display_name}.")
+        return CodeDefinition(
+            instance=instance,
+            component=component_of({**listed, "component_type": kind}, source="code"),
+            config=None,
+            unavailable=NO_BRIDGE,
+        )
+
+    async def _code_listed(
+        self, principal: Principal, instance: Instance, kind: Kind, component_id: str
+    ) -> dict[str, Any] | None:
+        """The agent, team or workflow as AgentOS lists it, when it is defined in code (not stored)."""
+        response = await self._access.call(principal, instance, "GET", f"/{FAMILY[kind]}")
+        if not response.ok:
+            return None
+        return next(
+            (
+                item
+                for item in page_items(response.body)
+                if not item.get("is_component") and str(item.get("id") or "") == component_id
+            ),
+            None,
+        )
+
     async def create(self, principal: Principal, ref: str, request: CreateRequest) -> ComponentDetail:
         instance = await self._access.instance(principal, ref, WRITE_SCOPE)
         component_id = slug(request.component_id or request.name)
@@ -474,7 +565,13 @@ class Components:
             case "duplicate":
                 if not request.source_id:
                     raise ValidationFailedError("Pick the component to duplicate.")
-                source = await self._source_config(principal, instance, request.source_id, request.source_version)
+                if request.source_origin == "code":
+                    found = await self._code_definition(principal, instance, request.kind, request.source_id)
+                    if found.config is None:
+                        raise ValidationFailedError(found.unavailable or f"{request.source_id} has no config to copy.")
+                    source = dict(found.config)
+                else:
+                    source = await self._source_config(principal, instance, request.source_id, request.source_version)
                 return {**source, "id": component_id, "name": request.name}
             case "import":
                 if not isinstance(request.config, dict):
@@ -497,6 +594,13 @@ class Components:
         return dict(found.config or {})
 
 
+def _stored_shape(kind: Kind, config: dict[str, Any]) -> dict[str, Any]:
+    """A config from agno's ``to_dict()`` in the shape Studio stores (what the editor reads), else as is."""
+    if shape_errors(kind, config):
+        return config
+    return parse(kind, config).dump()
+
+
 def _created_summary(request: CreateRequest) -> str:
     match request.mode:
         case "blank":
@@ -505,6 +609,8 @@ def _created_summary(request: CreateRequest) -> str:
             chosen = template(request.template_id or "")
             return f"Created from the {chosen.label} template" if chosen else "Created from a template"
         case "duplicate":
+            if request.source_origin == "code":
+                return f"Duplicated from {request.source_id} (defined in code)"
             version = f" v{request.source_version}" if request.source_version else ""
             return f"Duplicated from {request.source_id}{version}"
         case "import":

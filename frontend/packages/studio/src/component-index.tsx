@@ -1,5 +1,6 @@
 // Studio › Agents / Teams / Workflows: what is stored in Studio and what is defined in code, with the live version,
-// the open draft and the owner; "New" starts from blank, a template, a duplicate or imported JSON.
+// the open draft and the owner; "New" starts from blank, a template, a duplicate or imported JSON. Every row opens
+// (those defined in code read-only) and can be duplicated into a new component stored in Studio.
 import {
   describeError,
   studioCreateComponent,
@@ -35,10 +36,11 @@ import {
 } from "@agnostic/ui";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Plus } from "lucide-react";
+import { Copy, Lock, Plus } from "lucide-react";
 import { useState } from "react";
 
 import { isRecord, type EditableKind } from "./config";
+import { DuplicateDialog, type ComponentOrigin, type DuplicateSource } from "./defined-in-code";
 import { useRegistry } from "./document";
 
 type Kind = "agent" | "team" | "workflow";
@@ -56,20 +58,32 @@ const TITLES: Record<Kind, { title: string; noun: string; blurb: string }> = {
     title: "Agents",
     noun: "agent",
     blurb:
-      "Agents stored in Studio are versioned on the instance; agents defined in code are listed read-only.",
+      "Agents stored in Studio are versioned on the instance; agents defined in code open read-only, and a duplicate of one is yours to edit.",
   },
   team: {
     title: "Agent teams",
     noun: "team",
-    blurb: "Teams stored in Studio pin their members' versions; teams defined in code are listed read-only.",
+    blurb:
+      "Teams stored in Studio pin their members' versions; teams defined in code open read-only, and a duplicate of one is yours to edit.",
   },
   workflow: {
     title: "Workflows",
     noun: "workflow",
     blurb:
-      "Workflows stored in Studio are built on the canvas and versioned on the instance; workflows defined in code are listed read-only.",
+      "Workflows stored in Studio are built on the canvas and versioned on the instance; workflows defined in code open read-only, and a duplicate of one is yours to edit.",
   },
 };
+
+function sourceKey(origin: ComponentOrigin, id: string): string {
+  return `${origin}:${id}`;
+}
+
+function parseSourceKey(key: string | undefined): { origin: ComponentOrigin; id: string } | undefined {
+  if (!key) return undefined;
+  const at = key.indexOf(":");
+  const origin = key.slice(0, at);
+  return origin === "studio" || origin === "code" ? { origin, id: key.slice(at + 1) } : undefined;
+}
 
 function NewComponentDialog({
   instance,
@@ -94,7 +108,9 @@ function NewComponentDialog({
   const [source, setSource] = useState<string | undefined>(undefined);
   const [json, setJson] = useState("");
   const models = registry.byType("model").filter((entry) => entry.studio_available);
-  const stored = rows.filter((row) => row.component.source === "studio");
+  // Anything listed can be copied: stored components and those defined in code (`origin:id`).
+  const copyable = rows.map((row) => ({ key: sourceKey(row.component.source, row.component.id), row }));
+  const picked = parseSourceKey(source ?? copyable[0]?.key);
   let imported: Record<string, unknown> | undefined;
   let importError: string | undefined;
   if (mode === "import" && json.trim()) {
@@ -117,7 +133,8 @@ function NewComponentDialog({
             name: name.trim(),
             mode,
             template_id: mode === "template" ? (templateId ?? templates.data?.[0]?.id ?? null) : null,
-            source_id: mode === "duplicate" ? (source ?? stored[0]?.component.id ?? null) : null,
+            source_id: mode === "duplicate" ? (picked?.id ?? null) : null,
+            source_origin: mode === "duplicate" ? (picked?.origin ?? "studio") : "studio",
             config: mode === "import" ? (imported ?? null) : null,
             model:
               mode === "blank" || mode === "template"
@@ -139,7 +156,7 @@ function NewComponentDialog({
   const ready =
     name.trim().length > 0 &&
     (mode !== "import" || imported !== undefined) &&
-    (mode !== "duplicate" || stored.length > 0);
+    (mode !== "duplicate" || picked !== undefined);
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
@@ -206,21 +223,23 @@ function NewComponentDialog({
             </Select>
           )}
           {mode === "duplicate" &&
-            (stored.length ? (
-              <Select value={source ?? stored[0]?.component.id ?? ""} onValueChange={setSource}>
+            (copyable.length ? (
+              <Select value={source ?? copyable[0]?.key ?? ""} onValueChange={setSource}>
                 <SelectTrigger aria-label={`${TITLES[kind].noun} to duplicate`} className="h-8 font-mono">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {stored.map((row) => (
-                    <SelectItem key={row.component.id} value={row.component.id}>
-                      {row.component.id}
+                  {copyable.map(({ key, row }) => (
+                    <SelectItem key={key} value={key}>
+                      {row.component.source === "code"
+                        ? `${row.component.id} · defined in code`
+                        : row.component.id}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             ) : (
-              <Callout tone="info">{`There is no ${TITLES[kind].noun} stored in Studio to duplicate yet.`}</Callout>
+              <Callout tone="info">{`There is no ${TITLES[kind].noun} to duplicate yet.`}</Callout>
             ))}
           {mode === "import" && (
             <>
@@ -261,6 +280,7 @@ export function ComponentIndex({ instance, kind }: { instance: string; kind: Kin
   const [query, setQuery] = useState("");
   const [source, setSource] = useState<SourceFilter>("all");
   const [creating, setCreating] = useState(false);
+  const [duplicating, setDuplicating] = useState<DuplicateSource | undefined>(undefined);
   const list = useQuery(withQueryFn(studioListComponentsOptions({ path: { instance }, query: { kind } })));
   const scoped = `/i/${encodeURIComponent(instance)}`;
   const needle = query.trim().toLowerCase();
@@ -342,12 +362,17 @@ export function ComponentIndex({ instance, kind }: { instance: string; kind: Kin
               <th scope="col" className="px-3 py-2 font-normal">
                 Last edited
               </th>
+              {canWrite.allowed && (
+                <th scope="col" className="w-0 px-3 py-2 font-normal">
+                  <span className="sr-only">Actions</span>
+                </th>
+              )}
             </tr>
           </thead>
           <tbody>
             {rows.map((row) => {
               const href = `${scoped}/studio/${kind}s/${encodeURIComponent(row.component.id)}`;
-              const linked = row.editable && row.component.source === "studio";
+              const inCode = row.component.source === "code";
               return (
                 <tr
                   key={row.component.id}
@@ -356,12 +381,18 @@ export function ComponentIndex({ instance, kind }: { instance: string; kind: Kin
                   <td className="px-3 py-2">
                     <div className="flex items-center gap-2">
                       <EntitySquare kind={kind} />
-                      {linked ? (
-                        <Link to={href} className="font-medium hover:underline">
-                          {row.component.name}
-                        </Link>
-                      ) : (
-                        <span className="font-medium">{row.component.name}</span>
+                      <Link
+                        to={href}
+                        search={inCode ? { source: "code" } : {}}
+                        className="font-medium hover:underline"
+                      >
+                        {row.component.name}
+                      </Link>
+                      {inCode && (
+                        <Lock
+                          aria-label="Read-only: defined in code"
+                          className="size-3.5 shrink-0 text-fg-muted"
+                        />
                       )}
                     </div>
                     <div className="mt-0.5 font-mono text-[11.5px] text-fg-muted">{row.component.id}</div>
@@ -389,6 +420,26 @@ export function ComponentIndex({ instance, kind }: { instance: string; kind: Kin
                   <td className={cn("px-3 py-2 text-[12px] text-fg-muted")}>
                     {formatWhen(row.draft_updated_at ?? row.component.updated_at ?? row.component.created_at)}
                   </td>
+                  {canWrite.allowed && (
+                    <td className="px-3 py-2 text-right">
+                      <Button
+                        variant="ghost"
+                        size="28"
+                        aria-label={`Duplicate ${row.component.name}`}
+                        title="Duplicate into a new component stored in Studio"
+                        onClick={() => {
+                          setDuplicating({
+                            id: row.component.id,
+                            name: row.component.name,
+                            origin: row.component.source,
+                          });
+                        }}
+                      >
+                        <Copy aria-hidden />
+                        Duplicate
+                      </Button>
+                    </td>
+                  )}
                 </tr>
               );
             })}
@@ -427,6 +478,14 @@ export function ComponentIndex({ instance, kind }: { instance: string; kind: Kin
         rows={list.data ?? []}
         open={creating}
         onOpenChange={setCreating}
+      />
+      <DuplicateDialog
+        instance={instance}
+        kind={kind}
+        source={duplicating}
+        onOpenChange={(open) => {
+          if (!open) setDuplicating(undefined);
+        }}
       />
     </div>
   );

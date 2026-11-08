@@ -406,3 +406,87 @@ async def test_team_members_are_pinned_and_archive_lists_dependents(stack: Stack
     archived = await owner.delete(f"{STAGING}/studio/components/kb-researcher")
     assert archived.status_code == 409
     assert archived.json()["dependents"] == ["research-team"]
+
+
+async def test_code_defined_agent_is_viewable_and_duplicable(stack: Stack) -> None:
+    owner = await stack.owner()
+    staging, _, _ = await two_instances(stack, owner)
+    model = {"id": "mock-precise", "provider": "Agnostic"}
+    config = {
+        "id": "billing-agent",
+        "name": "billing-agent",
+        "description": "Handles billing questions.",
+        "model": model,
+        "instructions": "Resolve billing questions.",
+        "markdown": True,
+    }
+    staging.agent_items = [
+        {"id": "billing-agent", "name": "billing-agent", "description": "Handles billing questions."}
+    ]
+
+    # Without the bridge: listed and viewable, but its config can't be read.
+    bare = await owner.get(f"{STAGING}/studio/code-components/agent/billing-agent")
+    assert bare.status_code == 200, bare.text
+    assert bare.json()["component"]["source"] == "code"
+    assert bare.json()["config"] is None
+    assert "agnostic-bridge" in bare.json()["unavailable"]
+    refused = await owner.post(
+        f"{STAGING}/studio/components",
+        json={
+            "kind": "agent",
+            "name": "billing-copy",
+            "mode": "duplicate",
+            "source_id": "billing-agent",
+            "source_origin": "code",
+        },
+    )
+    assert refused.status_code == 422
+
+    staging.bridge = True
+    staging.bridge_studio = True
+    staging.code_components = [
+        {
+            "id": "billing-agent",
+            "kind": "agent",
+            "name": "billing-agent",
+            "config": config,
+            "module": "app.agents.billing_agent",
+            "file": "/srv/app/agents/billing_agent.py",
+            "line": 8,
+        }
+    ]
+    await owner.post(f"{STAGING}/studio/registry/refresh")
+    viewed = await owner.get(f"{STAGING}/studio/code-components/agent/billing-agent")
+    assert viewed.status_code == 200, viewed.text
+    body = viewed.json()
+    assert body["config"] == config
+    assert body["unavailable"] is None
+    assert body["source"] == {
+        "module": "app.agents.billing_agent",
+        "file": "/srv/app/agents/billing_agent.py",
+        "line": 8,
+    }
+    assert body["component"]["description"] == "Handles billing questions."
+    missing = await owner.get(f"{STAGING}/studio/code-components/team/billing-agent")
+    assert missing.status_code == 404
+
+    copied = await owner.post(
+        f"{STAGING}/studio/components",
+        json={
+            "kind": "agent",
+            "name": "billing-copy",
+            "mode": "duplicate",
+            "source_id": "billing-agent",
+            "source_origin": "code",
+        },
+    )
+    assert copied.status_code == 201, copied.text
+    draft = copied.json()["draft"]
+    assert copied.json()["component"]["source"] == "studio"
+    assert draft["version"] == 1
+    assert draft["config"]["id"] == "billing-copy"
+    assert draft["config"]["name"] == "billing-copy"
+    assert draft["config"]["instructions"] == "Resolve billing questions."
+    assert draft["config"]["model"] == model
+    assert draft["change_summary"] == "Duplicated from billing-agent (defined in code)"
+    assert "billing-agent" not in staging.components

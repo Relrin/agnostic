@@ -5042,6 +5042,58 @@
         "title": "CheckpointOut",
         "type": "object"
       },
+      "CodeComponentOut": {
+        "description": "A component defined in the runtime's code: shown read-only, and duplicated into Studio to edit.",
+        "properties": {
+          "component": {
+            "$ref": "#/components/schemas/StudioComponentOut"
+          },
+          "config": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "agno's to_dict() of the component; null when unavailable",
+            "title": "Config"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/agnostic_studio__api__schemas__SourceOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The module-level assignment that defines it, when known"
+          },
+          "unavailable": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Why the config can't be shown or duplicated",
+            "title": "Unavailable"
+          }
+        },
+        "required": [
+          "component",
+          "config",
+          "source",
+          "unavailable"
+        ],
+        "title": "CodeComponentOut",
+        "type": "object"
+      },
       "CodeDiagnosticOut": {
         "properties": {
           "code": {
@@ -7328,6 +7380,16 @@
               }
             ],
             "title": "Source Id"
+          },
+          "source_origin": {
+            "default": "studio",
+            "description": "Duplicate a component stored in Studio, or one defined in the runtime's code.",
+            "enum": [
+              "studio",
+              "code"
+            ],
+            "title": "Source Origin",
+            "type": "string"
           },
           "source_version": {
             "anyOf": [
@@ -36317,6 +36379,83 @@
           }
         },
         "summary": "Try a CEL expression on a sample: agno evaluates it through the bridge, else Agnostic does",
+        "tags": [
+          "studio"
+        ]
+      }
+    },
+    "/api/v1/instances/{instance}/studio/code-components/{kind}/{component_id}": {
+      "get": {
+        "operationId": "studio_get_code_component",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "instance",
+            "required": true,
+            "schema": {
+              "title": "Instance",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "kind",
+            "required": true,
+            "schema": {
+              "enum": [
+                "agent",
+                "team",
+                "workflow"
+              ],
+              "title": "Kind",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "component_id",
+            "required": true,
+            "schema": {
+              "title": "Component Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CodeComponentOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "An agent, team or workflow defined in the runtime's code, with its config (read-only)",
         "tags": [
           "studio"
         ]

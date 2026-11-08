@@ -18,6 +18,7 @@ from agnostic_studio.api.schemas import (
     CelContextsOut,
     CelEvaluateIn,
     CelEvaluateOut,
+    CodeComponentOut,
     CodeDocumentOut,
     CodegenIn,
     CodegenOut,
@@ -151,12 +152,23 @@ async def create_component(
             template_id=body.template_id,
             source_id=body.source_id,
             source_version=body.source_version,
+            source_origin=body.source_origin,
             config=body.config,
             model=body.model,
             notes=body.notes,
         ),
     )
     return ComponentDetailOut.of(detail)
+
+
+@router.get(
+    "/{instance}/studio/code-components/{kind}/{component_id}",
+    summary="An agent, team or workflow defined in the runtime's code, with its config (read-only)",
+)
+async def get_code_component(
+    instance: str, kind: KindIn, component_id: str, principal: FromDishka[Principal], components: FromDishka[Components]
+) -> CodeComponentOut:
+    return CodeComponentOut.of(await components.code_definition(principal, instance, kind, component_id))
 
 
 @router.get(COMPONENT, summary="A component with its versions, its open draft and its current version")
