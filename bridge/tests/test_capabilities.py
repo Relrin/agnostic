@@ -48,6 +48,7 @@ def test_open_os_reports_versions_and_features() -> None:
         "GET /agnostic/v1/events",
         "GET /agnostic/v1/files/provenance",
         "GET /agnostic/v1/introspect/components",
+        "GET /agnostic/v1/reasoning/{family}/{component_id}",
         "GET /agnostic/v1/registry/{type}/{name}/source",
         "GET /agnostic/v1/tool-catalog/status",
         "GET /agnostic/v1/toolkits",

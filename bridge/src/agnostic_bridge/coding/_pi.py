@@ -21,6 +21,9 @@ from agnostic_bridge.coding._agent import TOKEN_ENV, CodingAgent, EventTranslato
 from agnostic_bridge.coding._llm import MODEL_ALIAS
 from agnostic_bridge.coding._providers import ProcessStream, SandboxLease, SandboxProvider, write_file
 
+# Pi's --thinking levels for the shared ones; the levels it lacks go to the nearest it has.
+PI_THINKING = {"off": "off", "minimal": "low", "low": "low", "medium": "medium", "high": "high", "max": "high"}
+
 PROVIDER = "agnostic"
 _SESSION_ID = re.compile(r"[^A-Za-z0-9_-]")
 
@@ -179,7 +182,9 @@ class PiAgent(CodingAgent):
             "PI_SKIP_VERSION_CHECK": "1",
         }
 
-    def _command(self, prompt: str, state: dict[str, Any], lease: SandboxLease, has_tools: bool) -> list[str]:
+    def _command(
+        self, prompt: str, state: dict[str, Any], lease: SandboxLease, has_tools: bool, reasoning: str | None = None
+    ) -> list[str]:
         session_id = state.get("native_session") or pi_session_id(lease.session_id)
         state["native_session"] = session_id
         argv = [
@@ -203,8 +208,9 @@ class PiAgent(CodingAgent):
         ]
         if not has_tools:
             argv.append("--no-mcp")
-        if self.spec.thinking:
-            argv.extend(["--thinking", self.spec.thinking])
+        thinking = PI_THINKING.get(reasoning, self.spec.thinking) if reasoning else self.spec.thinking
+        if thinking:
+            argv.extend(["--thinking", thinking])
         instructions = self.instructions_text()
         if instructions:
             argv.extend(["--append-system-prompt", instructions])

@@ -1,5 +1,5 @@
 // Chat widgets: Composer (attachments, mentions, Enter to send, Stop while streaming), SessionList and ContextMeter.
-import { AtSign, Paperclip, Search, Send, Square, X } from "lucide-react";
+import { AtSign, Brain, Paperclip, Search, Send, Square, X } from "lucide-react";
 import { useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 
 import { cn } from "../lib/cn";
@@ -11,11 +11,110 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../primitives/dropdown-menu";
+import { Kbd } from "../primitives/small";
 import { Tooltip } from "../primitives/tooltip";
 
 export type AttachmentRule = { maxBytes: number; maxFiles: number; accept: readonly string[] };
+
+/** How hard the model thinks before answering, in the runtime's provider-neutral vocabulary. */
+export type ReasoningLevel = "off" | "minimal" | "low" | "medium" | "high" | "max";
+
+export const REASONING_LEVELS: Record<ReasoningLevel, { label: string; description: string }> = {
+  off: { label: "Off", description: "Answer without a thinking step." },
+  minimal: { label: "Minimal", description: "Barely think: fastest and cheapest." },
+  low: { label: "Low", description: "Think briefly: quick answers to simple asks." },
+  medium: { label: "Medium", description: "Balance speed and depth." },
+  high: { label: "High", description: "Think it through: slower, more tokens." },
+  max: { label: "Max", description: "The deepest thinking the model offers." },
+};
+
+/** The effort picker: the levels the component's model supports and the person's pick (undefined: as configured). */
+export type ComposerReasoning = {
+  levels: readonly ReasoningLevel[];
+  value: ReasoningLevel | undefined;
+  onChange: (value: ReasoningLevel | undefined) => void;
+  /** The level the component is configured with, when the runtime reports it ("Default · Medium"). */
+  configured?: ReasoningLevel | undefined;
+  /** "OpenAI reasoning_effort": what the level is sent as, for the picker's footnote. */
+  parameter?: string | undefined;
+};
+
+function SendHint() {
+  return (
+    <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-fg-secondary">
+      <Kbd>Enter</Kbd> to send
+      <span aria-hidden className="text-fg-faint">
+        ·
+      </span>
+      <Kbd>Shift</Kbd>+<Kbd>Enter</Kbd> for a new line
+    </span>
+  );
+}
+
+function ReasoningPicker({ reasoning, disabled }: { reasoning: ComposerReasoning; disabled: boolean }) {
+  const { levels, value, onChange, configured, parameter } = reasoning;
+  const current = value ? REASONING_LEVELS[value].label : "Default";
+  const defaultLabel = configured ? `Default · ${REASONING_LEVELS[configured].label}` : "Default";
+  return (
+    <DropdownMenu>
+      <Tooltip content="How hard the model thinks before it answers, for the messages you send next">
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            size="28"
+            disabled={disabled}
+            aria-label={`Reasoning effort: ${current}`}
+            className={cn(value && "text-fg")}
+          >
+            <Brain aria-hidden />
+            <span className="hidden sm:inline">Effort:</span> {current}
+          </Button>
+        </DropdownMenuTrigger>
+      </Tooltip>
+      <DropdownMenuContent align="end" side="top" className="w-72">
+        <DropdownMenuLabel>Reasoning effort</DropdownMenuLabel>
+        <DropdownMenuRadioGroup
+          value={value ?? "default"}
+          onValueChange={(next) => {
+            onChange(next === "default" ? undefined : (next as ReasoningLevel));
+          }}
+        >
+          <DropdownMenuRadioItem value="default">
+            <span className="flex flex-col">
+              <span>{defaultLabel}</span>
+              <span className="text-[11.5px] text-fg-muted">What the component is configured with.</span>
+            </span>
+          </DropdownMenuRadioItem>
+          {levels.map((level) => (
+            <DropdownMenuRadioItem key={level} value={level}>
+              <span className="flex flex-col">
+                <span>{REASONING_LEVELS[level].label}</span>
+                <span className="text-[11.5px] text-fg-muted">{REASONING_LEVELS[level].description}</span>
+              </span>
+            </DropdownMenuRadioItem>
+          ))}
+        </DropdownMenuRadioGroup>
+        <DropdownMenuSeparator />
+        <p className="px-2 pt-0.5 pb-1.5 text-[11.5px] leading-snug text-fg-faint">
+          The levels depend on the model&apos;s provider
+          {parameter ? (
+            <>
+              {" "}
+              (sent as <span className="font-mono">{parameter}</span>)
+            </>
+          ) : null}
+          .
+        </p>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 function sizeLabel(bytes: number): string {
   if (bytes < 1024) return `${String(bytes)} B`;
@@ -45,6 +144,7 @@ export function Composer({
   attachments,
   members,
   accessory,
+  reasoning,
 }: {
   /** "Message support-triage". */
   label: string;
@@ -60,6 +160,8 @@ export function Composer({
   members?: readonly string[] | undefined;
   /** Shown at the end of the action row, before Send (the context meter). */
   accessory?: ReactNode;
+  /** The reasoning effort picker; omit when the component's model has no effort to choose. */
+  reasoning?: ComposerReasoning | undefined;
 }) {
   const id = useId();
   const [text, setText] = useState("");
@@ -150,6 +252,7 @@ export function Composer({
           setText(event.target.value);
         }}
         onKeyDown={onKeyDown}
+        aria-keyshortcuts="Enter Shift+Enter"
         className="max-h-60 min-h-12 resize-none bg-transparent text-[14px] text-fg outline-none placeholder:text-fg-faint"
       />
       {problem && (
@@ -216,22 +319,31 @@ export function Composer({
           </Tooltip>
         )}
         {accessory}
-        <span
-          className="ml-auto hidden min-w-0 truncate text-[11.5px] text-fg-faint sm:inline"
-          title="Enter to send · Shift+Enter for a new line"
-        >
-          Enter to send · Shift+Enter for a new line
-        </span>
+        <span className="ml-auto" />
+        {reasoning && reasoning.levels.length > 0 && (
+          <ReasoningPicker reasoning={reasoning} disabled={disabled} />
+        )}
         {streaming ? (
           <Button variant="outline" size="30" onClick={onStop}>
             <Square aria-hidden />
             Stop
           </Button>
         ) : (
-          <Button variant="primary" size="30" disabled={disabled || !text.trim()} onClick={send}>
-            <Send aria-hidden />
-            Send
-          </Button>
+          <Tooltip content={<SendHint />} side="top">
+            {/* A span keeps the hint on hover while the button is disabled (disabled buttons get no pointer events). */}
+            <span className="inline-flex">
+              <Button
+                variant="primary"
+                size="30"
+                disabled={disabled || !text.trim()}
+                aria-keyshortcuts="Enter"
+                onClick={send}
+              >
+                <Send aria-hidden />
+                Send
+              </Button>
+            </span>
+          </Tooltip>
         )}
       </div>
     </div>

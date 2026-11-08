@@ -43,6 +43,7 @@ from agnostic_bridge._evals import RUN_EVAL_PATH, add_eval_routes
 from agnostic_bridge._events import EVENTS_PATH, add_event_routes
 from agnostic_bridge._files import PROVENANCE_PATH, add_file_routes
 from agnostic_bridge._introspect import INTROSPECT_COMPONENTS_PATH, REGISTRY_SOURCE_PATH, add_introspect_routes
+from agnostic_bridge._reasoning import REASONING_PATH, add_reasoning_hooks, add_reasoning_routes
 from agnostic_bridge._workers import WORKERS_PATH, add_worker_routes
 from agnostic_bridge.coding._callback import CallbackMiddleware
 from agnostic_bridge.coding._materialize import CodingAgentSync
@@ -79,6 +80,7 @@ SCOPE_MAPPINGS: dict[str, list[str]] = {
     f"POST {BRIDGE_PREFIX}{SYNC_ARTIFACTS_PATH}": ["sessions:write"],
     f"GET {BRIDGE_PREFIX}{CODING_AGENTS_PATH}": ["agents:read"],
     f"POST {BRIDGE_PREFIX}{REFRESH_CODING_AGENTS_PATH}": ["config:write"],
+    f"GET {BRIDGE_PREFIX}{REASONING_PATH}": ["agents:read"],
 }
 
 
@@ -118,6 +120,7 @@ def create_router(
     add_cel_routes(router, agent_os)
     add_catalog_routes(router, holder)
     add_coding_routes(router, agent_os, coding_sync)
+    add_reasoning_routes(router, agent_os)
     return router
 
 
@@ -145,8 +148,12 @@ def install(
         coding: coding agents (Pi, OpenCode in sandboxes): where sandboxes call back on and whether Studio agents
             marked as coding agents are served; defaults to :meth:`CodingConfig.from_env`. The callback routes
             answer only the run tokens this process mints, ahead of the AgentOS auth layer.
+
+    It also gives the code-defined agents and teams the pre-hook that applies a run's ``reasoning_effort`` to their
+    model (see :mod:`agnostic_bridge.reasoning`).
     """
     app = agent_os.get_app()
+    add_reasoning_hooks(agent_os)
     replica = replica_id or default_replica_id()
     holder = CatalogHolder(agent_os, tool_catalog or ToolCatalogConfig.from_env(), replica)
     coding_runtime = configure_coding(coding or CodingConfig.from_env())

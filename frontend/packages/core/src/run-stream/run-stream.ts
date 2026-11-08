@@ -25,6 +25,8 @@ export type SubmitInput = {
   sessionId?: string | undefined;
   version?: number | undefined;
   files?: readonly File[] | undefined;
+  /** How hard the model thinks (`reasoning_effort`); omit to run as the component is configured. */
+  reasoningEffort?: string | undefined;
 };
 
 export type RunStreamOptions = {
@@ -160,9 +162,15 @@ export class RunStream {
       background: "true",
       session_id: input.sessionId,
       version: input.version === undefined ? undefined : String(input.version),
+      reasoning_effort: input.reasoningEffort,
     };
     if (this.submitUrl) {
-      const json = { message: input.message, version: input.version, session_id: input.sessionId };
+      const json = {
+        message: input.message,
+        version: input.version,
+        session_id: input.sessionId,
+        reasoning_effort: input.reasoningEffort,
+      };
       await this.open({ url: this.submitUrl }, JSON.stringify(json), {
         "Content-Type": "application/json",
         "Idempotency-Key": this.key,

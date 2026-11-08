@@ -201,6 +201,63 @@ data: ${JSON.stringify(event)}
     expect(await within(run).findByText("report.md")).toBeInTheDocument();
   });
 
+  it("sends the reasoning effort picked in the composer, and remembers it", async () => {
+    const sent: (string | null)[] = [];
+    const run = { run_id: "run_effort", session_id: "ses_effort", agent_id: "support-triage" };
+    const events = [
+      { event: "RunStarted", event_index: 0, ...run },
+      { event: "RunContent", event_index: 1, ...run, content: "Thought about it." },
+      { event: "RunCompleted", event_index: 2, ...run },
+    ]
+      .map((event) => `event: ${event.event}\ndata: ${JSON.stringify(event)}\n\n`)
+      .join("");
+    server.use(
+      http.get(`${GATEWAY}/agnostic/v1/capabilities`, () =>
+        HttpResponse.json({
+          bridge_version: "1.0.0",
+          endpoints: ["GET /agnostic/v1/capabilities", "GET /agnostic/v1/reasoning/{family}/{component_id}"],
+        }),
+      ),
+      http.get(`${GATEWAY}/agnostic/v1/reasoning/agents/support-triage`, () =>
+        HttpResponse.json({
+          levels: ["low", "medium", "high"],
+          configured: "medium",
+          parameter: "reasoning_effort",
+        }),
+      ),
+      http.post(`${GATEWAY}/agents/support-triage/runs`, async ({ request }) => {
+        sent.push((await request.formData()).get("reasoning_effort") as string | null);
+        return new HttpResponse(events, { headers: { "Content-Type": "text/event-stream" } });
+      }),
+    );
+    const user = userEvent.setup();
+    renderPage(ChatPage, { path: PATH, url: SESSION_URL });
+
+    const picker = await screen.findByRole("button", { name: "Reasoning effort: Default" });
+    await user.click(picker);
+    expect(await screen.findByRole("menuitemradio", { name: /Default · Medium/ })).toBeChecked();
+    await user.click(screen.getByRole("menuitemradio", { name: /^High/ }));
+    expect(screen.getByRole("button", { name: "Reasoning effort: High" })).toBeInTheDocument();
+
+    await user.type(screen.getByRole("textbox", { name: "Message Support triage" }), "think hard{Enter}");
+    await waitFor(() => {
+      expect(sent).toEqual(["high"]);
+    });
+    expect(localStorage.getItem("agnostic.reasoning.prod-agentos.support-triage")).toBe("high");
+    localStorage.clear();
+  });
+
+  it("hints the send keys on the Send button instead of beside it", async () => {
+    const user = userEvent.setup();
+    renderPage(ChatPage, { path: PATH, url: SESSION_URL });
+    const box = await screen.findByRole("textbox", { name: "Message Support triage" });
+    expect(screen.queryByText(/for a new line/)).not.toBeInTheDocument();
+    await user.type(box, "hi");
+    await user.hover(screen.getByRole("button", { name: "Send" }));
+    expect((await screen.findAllByText(/for a new line/)).length).toBeGreaterThan(0);
+    expect(screen.queryByRole("button", { name: /^Reasoning effort/ })).not.toBeInTheDocument();
+  });
+
   it("keeps plain chips for an ordinary agent", async () => {
     server.use(...codingHandlers());
     renderPage(ChatPage, { path: PATH, url: SESSION_URL });

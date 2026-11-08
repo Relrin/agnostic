@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Reasoning effort: a run's `reasoning_effort` (`off` … `max`) is translated for the model's provider (OpenAI, Azure
+  OpenAI, xAI, Claude, Gemini, or a profile added with `register_reasoning_profile`) and applied to a copy of the model
+  for that run. `install()` adds the pre-hook to code-defined agents and teams; coding agents apply it to their model
+  proxy (and Pi's `--thinking`). New route: `GET /reasoning/{family}/{component_id}`.
+
 - Coding agents: `agnostic_bridge.coding.PiAgent` and `OpenCodeAgent` run Pi and OpenCode in a sandbox per session
   (`DockerProvider`, or `E2BProvider` with the `e2b` extra) on an Agno model. The model and the agent's tools are
   served to the sandbox by the runtime (`/agnostic/v1/coding/llm/v1`, `/agnostic/v1/coding/mcp`) with a token per

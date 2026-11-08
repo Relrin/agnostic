@@ -80,6 +80,35 @@ servers get only the variables their entry names, plus `PATH`, `HOME` and the li
 Toolkits that need a package (`ddgs`, `pygithub`, …) must be installed in the runtime's image. The design is in
 [ADR-034](../adr/0034-tool-catalog-pulled-by-the-bridge.md).
 
+### Reasoning effort
+
+People can pick how hard a model thinks from the chat composer (*Effort*). The run carries the pick as the form
+field `reasoning_effort`, one of `off`, `minimal`, `low`, `medium`, `high` and `max`, and the bridge translates it for
+the model's provider:
+
+| Models | Levels | Sent as |
+|---|---|---|
+| OpenAI and Azure OpenAI reasoning models (o-series, `gpt-5*`, `gpt-oss`) | low, medium, high | `reasoning_effort` |
+| xAI Grok mini models | low, high | `reasoning_effort` |
+| Claude that takes a thinking budget | off, low, medium, high | `thinking.budget_tokens` (2k / 8k / 16k) |
+| Claude with adaptive thinking | off, low, medium, high, max | `thinking` adaptive + `output_config.effort` |
+| Gemini 3 | low, high | `thinking_level` |
+| Gemini 2.5 (Pro always thinks) | off, low, medium, high | `thinking_budget` |
+
+`install()` gives the code-defined agents and teams a pre-hook that runs each turn on a copy of the configured model
+with the level applied (a team's level applies to its leader's model). Coding agents apply it to the model behind
+their proxy, and Pi also gets `--thinking`. `GET /agnostic/v1/reasoning/{family}/{component_id}` lists the levels a
+component accepts; the composer shows the picker only when there are some, so components stored in Studio and models
+without a known profile run as configured. For another provider, register a profile:
+
+```python
+from agnostic_bridge import register_reasoning_profile
+
+register_reasoning_profile(MyProviderReasoning())  # matches(model), options(model), apply(model, level)
+```
+
+A custom model class can instead declare `reasoning_levels = ("low", "high")` and a `reasoning_effort` field.
+
 ## The runtime template
 
 `agnostic-runtime` is the reference AgentOS app: sample agents, teams and workflows, a sync `PostgresDb` (Studio

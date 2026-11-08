@@ -218,3 +218,10 @@ export {
   type SandboxProvider,
 } from "./coding/api";
 export { CodingAgentBadge, HARNESS_LABEL, SANDBOX_LABEL, sandboxSummary } from "./coding/badge";
+export {
+  REASONING_ENDPOINT,
+  reasoningEnabled,
+  useReasoningChoice,
+  useReasoningOptions,
+  type ReasoningOptions,
+} from "./reasoning";

@@ -141,7 +141,10 @@ class OpenCodeAgent(CodingAgent):
             "OPENCODE_DISABLE_EXTERNAL_SKILLS": "1",
         }
 
-    def _command(self, prompt: str, state: dict[str, Any], lease: SandboxLease, has_tools: bool) -> list[str]:
+    def _command(
+        self, prompt: str, state: dict[str, Any], lease: SandboxLease, has_tools: bool, reasoning: str | None = None
+    ) -> list[str]:
+        # OpenCode has no effort flag: the run's level is applied to the model behind the proxy.
         argv = ["opencode", "run", "--format", "json", "--thinking", "--model", f"{PROVIDER}/{MODEL_ALIAS}"]
         if state.get("harness_session_id"):
             argv.extend(["--session", str(state["harness_session_id"])])

@@ -45,6 +45,33 @@ export function DropdownMenuItem({
   );
 }
 
+export const DropdownMenuRadioGroup = MenuPrimitive.RadioGroup;
+
+/** A choice in a `DropdownMenuRadioGroup`: a dot marks the selected one; children may span two lines. */
+export function DropdownMenuRadioItem({
+  className,
+  children,
+  ...props
+}: ComponentProps<typeof MenuPrimitive.RadioItem>) {
+  return (
+    <MenuPrimitive.RadioItem
+      data-slot="dropdown-menu-radio-item"
+      className={cn(
+        "relative flex min-h-8 cursor-pointer items-start gap-2 rounded-control py-1.5 pr-2 pl-7 text-[13px] outline-none select-none data-[disabled]:text-fg-disabled data-[highlighted]:bg-surface-hover",
+        className,
+      )}
+      {...props}
+    >
+      <span className="absolute top-[11px] left-2.5 flex size-2 items-center justify-center" aria-hidden>
+        <MenuPrimitive.ItemIndicator>
+          <span className="block size-2 rounded-full bg-fg" />
+        </MenuPrimitive.ItemIndicator>
+      </span>
+      {children}
+    </MenuPrimitive.RadioItem>
+  );
+}
+
 export function DropdownMenuLabel({ className, ...props }: ComponentProps<typeof MenuPrimitive.Label>) {
   return <MenuPrimitive.Label className={cn("eyebrow px-2 pt-2 pb-1", className)} {...props} />;
 }

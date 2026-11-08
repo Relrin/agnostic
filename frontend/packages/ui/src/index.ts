@@ -47,6 +47,8 @@ export {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./primitives/dropdown-menu";
@@ -217,9 +219,12 @@ export {
 export {
   Composer,
   ContextMeter,
+  REASONING_LEVELS,
   SessionList,
   type AttachmentRule,
+  type ComposerReasoning,
   type ContextMeterShare,
+  type ReasoningLevel,
   type SessionListItem,
 } from "./domain/chat";
 export {

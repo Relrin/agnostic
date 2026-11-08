@@ -28,7 +28,11 @@ function fakeGateway(responses: readonly (() => Response)[]) {
         body instanceof URLSearchParams
           ? body.toString()
           : body instanceof FormData
-            ? "multipart"
+            ? `multipart:${new URLSearchParams(
+                [...body.entries()].filter(
+                  (entry): entry is [string, string] => typeof entry[1] === "string",
+                ),
+              ).toString()}`
             : typeof body === "string"
               ? body
               : "",
@@ -72,7 +76,21 @@ describe("RunStream", () => {
     expect(gateway.calls[0]?.url).toBe(
       "http://agnostic.test/api/v1/instances/prod-agentos/os/agents/support-triage/runs",
     );
-    expect(gateway.calls[0]?.body).toBe("multipart");
+    expect(gateway.calls[0]?.body).toMatch(/^multipart:/);
+  });
+
+  it("sends the reasoning effort with the run, and nothing when it is unset", async () => {
+    const gateway = fakeGateway([() => streamResponse(sse(agentCompleted))]);
+    const stream = new RunStream(TARGET, {}, { fetch: gateway.fetch, retryDelays: [] });
+    await stream.submit({ message: "think hard", reasoningEffort: "high" });
+    const fields = new URLSearchParams(gateway.calls[0]?.body.replace(/^multipart:/, ""));
+    expect(fields.get("reasoning_effort")).toBe("high");
+
+    const plain = new RunStream(TARGET, {}, { fetch: gateway.fetch, retryDelays: [] });
+    await plain.submit({ message: "as configured" });
+    expect(
+      new URLSearchParams(gateway.calls[1]?.body.replace(/^multipart:/, "")).has("reasoning_effort"),
+    ).toBe(false);
   });
 
   it("resumes from the last event index when the stream drops mid-run", async () => {
@@ -158,13 +176,19 @@ describe("RunStream", () => {
       {},
       { fetch: gateway.fetch, retryDelays: [], resumable: false, endpoint: { submit: url } },
     );
-    await stream.submit({ message: "where is my order?", version: 4, sessionId: "ses_7f3a91c2" });
+    await stream.submit({
+      message: "where is my order?",
+      version: 4,
+      sessionId: "ses_7f3a91c2",
+      reasoningEffort: "low",
+    });
     expect(gateway.calls[0]?.url).toBe(url);
     expect(gateway.calls[0]?.headers.get("Content-Type")).toBe("application/json");
     expect(JSON.parse(gateway.calls[0]?.body ?? "")).toEqual({
       message: "where is my order?",
       version: 4,
       session_id: "ses_7f3a91c2",
+      reasoning_effort: "low",
     });
     expect(stream.getState()).toMatchObject({
       status: "completed",

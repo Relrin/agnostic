@@ -224,6 +224,8 @@ DEFAULT_POLICIES: tuple[RoutePolicy, ...] = (
     # callbacks authenticated by run grants, not people: they stay unmapped so the gateway refuses them.
     _p("GET", "/agnostic/v1/coding-agents", "agents:read", ttl=30),
     _p("POST", "/agnostic/v1/coding-agents/refresh", "config:write", audit="full", bucket="write"),
+    # The reasoning effort levels a component's model accepts, for the chat composer's picker.
+    _p("GET", "/agnostic/v1/reasoning/{family}/{component_id}", "agents:read", ttl=30),
 )
 
 UPLOAD_ROUTES: frozenset[tuple[str, str]] = frozenset({("POST", "/knowledge/content")})

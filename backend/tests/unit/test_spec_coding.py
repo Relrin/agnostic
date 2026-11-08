@@ -134,6 +134,7 @@ def test_the_coding_agent_template() -> None:
     [
         ("GET", "/agnostic/v1/coding-agents", ("agents:read",), 30, "decision", "read"),
         ("POST", "/agnostic/v1/coding-agents/refresh", ("config:write",), 0, "full", "write"),
+        ("GET", "/agnostic/v1/reasoning/agents/coder", ("agents:read",), 30, "decision", "read"),
     ],
 )
 def test_gateway_maps_the_coding_agent_routes(

@@ -18,7 +18,7 @@ import re
 import time
 from collections.abc import AsyncIterator, Iterator
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, ClassVar
 
 from agno.metrics import MessageMetrics
 from agno.models.base import Model
@@ -39,6 +39,13 @@ REFUND_AMOUNT = re.compile(r"(?:\brefund(?:\s+(?:of|for))?\s+\$?|\$\s*)(\d+(?:\.
 NUMBER = re.compile(r"\b(\d+(?:\.\d{1,2})?)\b")
 MEMBER = re.compile(r'<member id="([^"]+)"')
 TASK_ID = re.compile(r"^Task (?:created|already exists): \[([^\]]+)\]")
+
+REASONING_STEPS = (
+    "Reading the request and what came before it.",
+    "Checking which tools could help.",
+    "Weighing a short answer against a detailed one.",
+    "Drafting the answer and checking it against the request.",
+)
 
 PHRASES = (
     "Here is what I found",
@@ -221,6 +228,11 @@ class MockModel(Model):
     persona: str = "assistant"
     # Sampling setting a real model would take, so presets can differ by it; the mock ignores it.
     temperature: float | None = None
+    # How hard to "think": with a level set, each answer starts with a short reasoning trace that names it, so a
+    # run's reasoning effort can be tried end to end without a real model.
+    reasoning_effort: str | None = None
+    # The levels agnostic-bridge offers for this model (``agnostic_bridge.reasoning``).
+    reasoning_levels: ClassVar[tuple[str, ...]] = ("off", "low", "medium", "high")
     # Average pause between streamed words, in seconds (RUNTIME_MOCK_STREAM_DELAY_MS); 0 streams at once.
     stream_delay: float = field(default_factory=_configured_stream_delay)
 
@@ -259,10 +271,22 @@ class MockModel(Model):
         echo = " ".join(user_text.split())[:80] or "(no input)"
         return ModelResponse(role="assistant", content=f"[{self.persona}] {phrase}: {echo}")
 
+    def _thinking(self, messages: list[Message]) -> str | None:
+        """A reasoning trace as long as the effort asks for; none when it is unset or off, or after a tool result."""
+        if not self.reasoning_effort or self.reasoning_effort == "off":
+            return None
+        if messages and messages[-1].role == "tool":
+            return None
+        steps = REASONING_STEPS[: {"low": 1, "medium": 2, "high": 4}.get(self.reasoning_effort, 1)]
+        return f"Thinking at {self.reasoning_effort} effort. " + " ".join(steps)
+
     def invoke(self, *args: Any, **kwargs: Any) -> ModelResponse:
         messages = kwargs.get("messages", [])
         tools = kwargs.get("tools")
         response = self._respond(messages, tools)
+        thinking = self._thinking(messages)
+        if thinking and not response.reasoning_content:
+            response.reasoning_content = thinking
         response.response_usage = _usage(messages, tools, response)
         return response
 

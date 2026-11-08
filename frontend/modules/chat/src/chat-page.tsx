@@ -20,6 +20,8 @@ import {
   useComponentVersions,
   useComponents,
   useInstances,
+  useReasoningChoice,
+  useReasoningOptions,
   useRunStream,
   useRunStreams,
   useSession,
@@ -320,9 +322,22 @@ export function ChatPage() {
     return [...byGroup.entries()].map(([label, items]) => ({ label, items }));
   }, [sessions.data]);
 
+  const reasoningOptions = useReasoningOptions(instanceRef, family, componentId);
+  const [reasoningEffort, setReasoningEffort] = useReasoningChoice(
+    instanceRef,
+    componentId,
+    reasoningOptions,
+  );
+
   const send = (message: string, files: File[]) => {
     if (!target) return;
-    const stream = startRun(target, { message, sessionId, version: selectedVersion?.version, files });
+    const stream = startRun(target, {
+      message,
+      sessionId,
+      version: selectedVersion?.version,
+      files,
+      reasoningEffort,
+    });
     if (!sessionId) setPendingKey(stream.key);
   };
 
@@ -554,6 +569,17 @@ export function ChatPage() {
                   disabled={!componentId}
                   attachments={family === "workflows" ? undefined : ATTACHMENTS}
                   members={family === "teams" ? component?.members : undefined}
+                  reasoning={
+                    reasoningOptions
+                      ? {
+                          levels: reasoningOptions.levels,
+                          value: reasoningEffort,
+                          onChange: setReasoningEffort,
+                          configured: reasoningOptions.configured ?? undefined,
+                          parameter: reasoningOptions.parameter,
+                        }
+                      : undefined
+                  }
                   accessory={
                     sessionId || newestLive ? (
                       <ChatContextMeter

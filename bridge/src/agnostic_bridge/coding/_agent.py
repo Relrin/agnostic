@@ -33,6 +33,7 @@ from agnostic_bridge.coding._mcp import flatten_tools
 from agnostic_bridge.coding._providers import HarnessExited, ProcessStream, SandboxLease, SandboxProvider
 from agnostic_bridge.coding._runtime import CodingRuntime, coding_runtime
 from agnostic_bridge.coding._spec import CodingAgentSpec, spec_to_metadata
+from agnostic_bridge.reasoning import RUN_KWARG, with_reasoning
 
 STATE_KEY = "agnostic_coding"
 TOKEN_ENV = "AGNOSTIC_RUN_TOKEN"
@@ -286,7 +287,10 @@ class CodingAgent(BaseExternalAgent):
         """Write the harness's configuration into the sandbox."""
         raise NotImplementedError
 
-    def _command(self, prompt: str, state: dict[str, Any], lease: SandboxLease, has_tools: bool) -> list[str]:
+    def _command(
+        self, prompt: str, state: dict[str, Any], lease: SandboxLease, has_tools: bool, reasoning: str | None = None
+    ) -> list[str]:
+        """The harness command line. ``reasoning`` is the run's ``reasoning_effort``, for harnesses with a flag."""
         raise NotImplementedError
 
     def _stdin(self, prompt: str) -> bytes:
@@ -347,6 +351,9 @@ class CodingAgent(BaseExternalAgent):
         callback = runtime.callback_url
         functions = await self.functions()
         assert self.model is not None
+        reasoning = kwargs.get(RUN_KWARG) or None
+        # The proxy calls the model the grant holds, so the run's level reaches the provider whatever the harness.
+        model = with_reasoning(self.model, reasoning)
 
         async with runtime.pool.lease(self.get_id(), session_id, sandbox) as lease:
             if lease.fresh or state.get("ref") != lease.ref:
@@ -358,14 +365,14 @@ class CodingAgent(BaseExternalAgent):
                 agent_id=self.get_id(),
                 session_id=session_id,
                 run_id=run_id,
-                model=self.model,
+                model=model,
                 functions=functions,
                 ttl=sandbox.turn_timeout_s + 60,
             )
             process: ProcessStream | None = None
             try:
                 await self._prepare(provider, lease, callback, functions)
-                argv = self._command(prompt, state, lease, bool(functions))
+                argv = self._command(prompt, state, lease, bool(functions), reasoning=reasoning)
                 env = {TOKEN_ENV: token, CALLBACK_ENV: callback, **self._env(lease)}
                 await araise_if_cancelled(run_id)
                 process = await provider.stream(

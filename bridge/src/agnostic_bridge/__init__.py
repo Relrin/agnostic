@@ -16,7 +16,9 @@ agno's ``from_dict`` without storing them; its introspection routes read code-de
 its CEL route evaluates a workflow expression with agno's own CEL evaluation. With the tool catalog on, it
 pulls the control plane's approved MCP servers and toolkits and keeps them in the AgentOS registry while
 the process runs; its tool catalog routes report and refresh what it built. Its artefact routes list the run media
-AgentOS stores; ``agnostic_bridge.artifacts`` collects the files agents produce into that media.
+AgentOS stores; ``agnostic_bridge.artifacts`` collects the files agents produce into that media. Its reasoning route
+reports the effort levels a component's model accepts, and ``agnostic_bridge.reasoning`` applies a run's
+``reasoning_effort`` to the model, translated for its provider.
 """
 
 from agnostic_bridge._app import BRIDGE_PREFIX, SCOPE_MAPPINGS, create_router, install
@@ -50,7 +52,9 @@ from agnostic_bridge._evals import BridgeEvalRun, BridgeEvalRunInput
 from agnostic_bridge._events import EVENTS_PATH, BridgeEvent, EventsResponse
 from agnostic_bridge._files import FileEvent, FileProvenanceResponse
 from agnostic_bridge._introspect import INTROSPECT_COMPONENTS_PATH, REGISTRY_SOURCE_PATH, CodeComponent, RegistrySource
+from agnostic_bridge._reasoning import REASONING_PATH
 from agnostic_bridge._workers import WORKERS_PATH, WorkersQueueConfig, WorkersResponse, WorkersScheduler
+from agnostic_bridge.reasoning import ReasoningOptions, register_reasoning_profile, with_reasoning
 
 __all__ = [
     "ARTIFACTS_PATH",
@@ -59,6 +63,7 @@ __all__ = [
     "EVENTS_PATH",
     "INTROSPECT_COMPONENTS_PATH",
     "NORMALIZE_PATH",
+    "REASONING_PATH",
     "RECENT_ARTIFACTS_PATH",
     "REGISTRY_SOURCE_PATH",
     "SCOPE_MAPPINGS",
@@ -85,6 +90,7 @@ __all__ = [
     "FileEvent",
     "FileProvenanceResponse",
     "NormalizedConfig",
+    "ReasoningOptions",
     "RegistrySource",
     "SyncResult",
     "ToolCatalogConfig",
@@ -97,4 +103,6 @@ __all__ = [
     "create_router",
     "direct_mode_cors",
     "install",
+    "register_reasoning_profile",
+    "with_reasoning",
 ]
