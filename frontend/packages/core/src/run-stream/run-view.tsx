@@ -4,6 +4,7 @@
 import {
   Button,
   Callout,
+  CodingToolCall,
   MarkdownView,
   RunBlock,
   RunToolbar,
@@ -37,13 +38,23 @@ function chipStatus(tool: ToolCall): ToolChipStatus {
   return tool.status;
 }
 
+function duration(tool: ToolCall): string | undefined {
+  return tool.durationMs !== undefined ? `${(tool.durationMs / 1000).toFixed(1)}s` : undefined;
+}
+
 function chip(tool: ToolCall) {
+  return <ToolCallChip key={tool.id} name={tool.name} status={chipStatus(tool)} duration={duration(tool)} />;
+}
+
+/** A coding agent's tool call, drawn as what it did (the command and its output, the file, the diff). */
+function codingCard(tool: ToolCall) {
   return (
-    <ToolCallChip
-      key={tool.id}
+    <CodingToolCall
       name={tool.name}
+      args={tool.args}
+      result={tool.result}
       status={chipStatus(tool)}
-      duration={tool.durationMs !== undefined ? `${(tool.durationMs / 1000).toFixed(1)}s` : undefined}
+      duration={duration(tool)}
     />
   );
 }
@@ -85,6 +96,8 @@ export type RunViewProps = {
   versionLabel?: string | undefined;
   onRetry?: (() => void) | undefined;
   onFork?: (() => void) | undefined;
+  /** The component is a coding agent: its tool calls show as cards (shell, files, diffs) instead of chips. */
+  coding?: { harness: string } | undefined;
 };
 
 export function RunView({
@@ -96,6 +109,7 @@ export function RunView({
   versionLabel,
   onRetry,
   onFork,
+  coding,
 }: RunViewProps) {
   const [copied, setCopied] = useState(false);
   const instance = target.instance;
@@ -162,7 +176,7 @@ export function RunView({
         status={state.status}
         streaming={streaming}
         tools={
-          state.tools.length > 0 || memberIds.length > 0 ? (
+          !coding && (state.tools.length > 0 || memberIds.length > 0) ? (
             <>
               {state.tools.map(chip)}
               {memberIds.flatMap((id) => state.members[id]?.tools.map(chip) ?? [])}
@@ -256,6 +270,20 @@ export function RunView({
             <summary className="cursor-pointer">Reasoning</summary>
             <p className="pt-1 whitespace-pre-wrap">{state.reasoning}</p>
           </details>
+        )}
+        {coding && state.tools.length > 0 && (
+          <div
+            role="list"
+            aria-label="Tool calls"
+            data-coding-harness={coding.harness}
+            className="flex flex-col gap-1.5"
+          >
+            {state.tools.map((tool) => (
+              <div role="listitem" key={tool.id} className="flex min-w-0 flex-col">
+                {codingCard(tool)}
+              </div>
+            ))}
+          </div>
         )}
         {state.content && <MarkdownView>{state.content}</MarkdownView>}
         {!streaming && <RunArtifacts instance={instance} sessionId={state.sessionId} runId={state.runId} />}

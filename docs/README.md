@@ -43,6 +43,7 @@ security whitepaper.
 | [Background jobs](how-to/background-jobs.md) | Procrastinate tasks, periodic jobs, progress |
 | [Configuration and endpoints](how-to/configuration.md) | env vars, TOML, TLS, PostgreSQL vs SQLite |
 | [Regenerate API clients](how-to/api-clients.md) | OpenAPI → TypeScript, AgentOS OpenAPI → Python models |
+| [Run coding agents in sandboxes](how-to/run-coding-agents.md) | Pi and OpenCode as agents, a Docker or E2B sandbox per session, models and tools through the runtime |
 | [Run the reference runtimes](how-to/reference-runtimes.md) | two AgentOS instances for development, JWT trust, `just seed`, the bridge (for your own runtime: [bridge and runtime](guides/bridge-and-runtime.md)) |
 | [Sign-in providers](how-to/sign-in-providers.md) | local accounts, GitHub, GitLab, Google, Okta, any OIDC or SAML provider, enforcing SSO, MFA |
 | [Okta](how-to/idp/okta.md), [Entra ID](how-to/idp/entra-id.md), [Keycloak](how-to/idp/keycloak.md), [Google Workspace](how-to/idp/google-workspace.md) | SSO with each identity provider, SCIM provisioning, group sync |

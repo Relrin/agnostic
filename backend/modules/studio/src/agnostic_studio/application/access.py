@@ -13,6 +13,7 @@ from agnostic_instances.facade import Instance, InstancesFacade
 from agnostic_kernel.auth import Authorizer, Principal
 from agnostic_kernel.ephemeral import EphemeralStore
 from agnostic_kernel.errors import AppError, ConflictError, ForbiddenError, NotFoundError, ValidationFailedError
+from agnostic_kernel.logging import get_logger
 from agnostic_studio.domain.model import StudioRuleError
 
 READ_SCOPE = "components:read"
@@ -27,6 +28,7 @@ BRIDGE_NORMALIZE = "POST /agnostic/v1/components/normalize"
 BRIDGE_INTROSPECT = "GET /agnostic/v1/introspect/components"
 BRIDGE_SOURCE = "GET /agnostic/v1/registry/{resource_type}/{name}/source"
 BRIDGE_CEL = "POST /agnostic/v1/cel/evaluate"
+BRIDGE_CODING_REFRESH = "POST /agnostic/v1/coding-agents/refresh"
 BRIDGE_TTL = 300.0
 RETRY_TTL = 30.0
 PAGE_LIMIT = 100
@@ -36,6 +38,8 @@ NOT_FOUND = 404
 FORBIDDEN = 403
 CONFLICT = 409
 UNPROCESSABLE = 422
+
+log = get_logger(__name__)
 
 
 class InstanceCallError(AppError):
@@ -207,6 +211,15 @@ class StudioAccess:
             ttl = BRIDGE_TTL
         await self._store.set(key, orjson.dumps(endpoints), ttl=ttl)
         return frozenset(endpoints)
+
+    async def refresh_coding_agents(self, instance: Instance) -> None:
+        """Ask the bridge to pick up published coding agents now. Best effort: a failure is logged, never raised."""
+        try:
+            if BRIDGE_CODING_REFRESH not in await self.bridge(instance):
+                return
+            _ = await self._instances.system_call(instance, "POST", BRIDGE_CODING_REFRESH.split(" ", 1)[1])
+        except Exception as exc:  # noqa: BLE001  (the publish already succeeded)
+            log.warning("studio.coding_refresh_failed", instance_id=instance.id, error=str(exc)[:200])
 
     async def cached(self, key: str) -> Any:  # noqa: ANN401
         raw = await self._store.get(key)

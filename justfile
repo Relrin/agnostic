@@ -90,6 +90,14 @@ runtimes:
         RUNTIME_JWT_ISSUER="${AGNOSTIC_INSTANCES__ISSUER:-${AGNOSTIC_HTTP__PUBLIC_URL:-}}" uv run python -m app.main) & \
     wait
 
+# The sandbox image coding agents (Pi, OpenCode) run in; the runtimes start one container per session from it
+sandbox-image tag="agnostic-coding:0.1.0":
+    docker build -t {{tag}} runtime/sandbox/coding
+
+# Record Pi's and OpenCode's event streams from the sandbox image into the bridge's test fixtures (after a CLI bump)
+sandbox-fixtures tag="agnostic-coding:0.1.0":
+    cd runtime && PYTHONUTF8=1 uv run python ../bridge/scripts/record_coding_fixtures.py --image {{tag}}
+
 # Create the org and the dev Owner (AGNOSTIC_DEV_OWNER_EMAIL/_PASSWORD); once per database, after `just migrate`
 bootstrap:
     printf '%s\n' "${AGNOSTIC_DEV_OWNER_PASSWORD:-localhost-dev-password}" | (cd backend && uv run agnostic bootstrap \

@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Coding agents: `agnostic_bridge.coding.PiAgent` and `OpenCodeAgent` run Pi and OpenCode in a sandbox per session
+  (`DockerProvider`, or `E2BProvider` with the `e2b` extra) on an Agno model. The model and the agent's tools are
+  served to the sandbox by the runtime (`/agnostic/v1/coding/llm/v1`, `/agnostic/v1/coding/mcp`) with a token per
+  turn, ahead of the AgentOS auth layer. Published Studio agents with `metadata.agnostic.coding_agent` are served as
+  coding agents. New routes: `GET /coding-agents`, `POST /coding-agents/refresh`; `install(coding=CodingConfig(...))`;
+  `/capabilities` reports `coding_agents`. `capture_artifacts` collects from a coding agent's live sandbox.
+
 - Artefacts: `agnostic_bridge.artifacts` collects the files agents write into run media, from a folder
   (`DirectorySource`), an E2B sandbox (`E2BSource`) or an Agno sandbox checkpoint (`CheckpointSource`). Use the
   `collect_artifacts` post-hook, the `ArtifactTools` publish tool, or `capture_artifacts` on `ClaudeAgent`/`CodexAgent`.

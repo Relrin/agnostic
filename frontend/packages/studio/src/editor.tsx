@@ -35,6 +35,7 @@ import {
 import { useEffect, useState, type ReactNode } from "react";
 
 import { CodePane } from "./code-pane";
+import { CodingAgentSection, isCodingAgent } from "./coding-agent-section";
 import { ExplainConfig } from "./explain-config";
 import { changedFields, type Config, type EditableKind } from "./config";
 import {
@@ -453,6 +454,7 @@ function EditorFrame({
               layout === "split" ? "max-w-[360px] flex-[1_1_320px]" : "max-w-[760px] flex-[2_1_520px]",
             )}
           >
+            {ctx && kind === "agent" && isCodingAgent(doc.config) && <CodingAgentSection ctx={ctx} />}
             {form}
           </div>
         )}

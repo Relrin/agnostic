@@ -20,6 +20,7 @@ docker build --build-context bridge=../bridge -t my-agentos .   # the bridge is 
 | `RUNTIME_JWT_ISSUER` | require this `iss` (the control plane's public URL) |
 | `RUNTIME_USER_ISOLATION` | each user sees only their own sessions and memories (unset: on only for the id `dev-prod`) |
 | `RUNTIME_CORS_ORIGINS` | direct mode: the control plane's origin(s), comma-separated |
+| `RUNTIME_CODING_*` | the Pi and OpenCode coding agents and their sandboxes (`docs/how-to/run-coding-agents.md`); build the image with `just sandbox-image` |
 | `RUNTIME_AUTHZ_AUDIT` | keep AgentOS's authorization decision log (the control plane ingests it) |
 
 Connecting it to Agnostic is described in the Agnostic guides: `docs/guides/bridge-and-runtime.md`.

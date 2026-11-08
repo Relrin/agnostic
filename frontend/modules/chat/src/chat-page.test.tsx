@@ -1,5 +1,16 @@
 import { releaseRun, runRegistry } from "@agnostic/core";
-import { API, GATEWAY, sampleOrgHandlers, operateHandlers, renderPage } from "@agnostic/testing";
+import {
+  API,
+  CODING_RUN_ID,
+  CODING_SESSION_ID,
+  GATEWAY,
+  codingHandlers,
+  sampleCodingArtifact,
+  sampleOrgHandlers,
+  samplePiRunEvents,
+  operateHandlers,
+  renderPage,
+} from "@agnostic/testing";
 import { TooltipProvider } from "@agnostic/ui";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -146,5 +157,55 @@ data: ${JSON.stringify(event)}
       within(approval).getByText("Waiting for someone with approvals:write on prod-agentos."),
     ).toBeInTheDocument();
     expect(within(approval).queryByRole("button", { name: "Approve" })).not.toBeInTheDocument();
+  });
+
+  it("shows a coding agent's harness and its tool calls as cards", async () => {
+    server.use(
+      ...codingHandlers(),
+      http.get(`${GATEWAY}/sessions/:session`, () =>
+        HttpResponse.json({
+          session_id: CODING_SESSION_ID,
+          session_name: "Support report",
+          agent_id: "repo-coder",
+        }),
+      ),
+      http.get(`${GATEWAY}/sessions/:session/runs`, () =>
+        HttpResponse.json([
+          {
+            run_id: CODING_RUN_ID,
+            agent_id: "repo-coder",
+            status: "COMPLETED",
+            run_input: "Write the support volume report",
+            events: samplePiRunEvents,
+            created_at: 1793534400,
+          },
+        ]),
+      ),
+      http.get(`${GATEWAY}/agnostic/v1/artifacts`, () =>
+        HttpResponse.json({ data: [sampleCodingArtifact], scanned_sessions: 1 }),
+      ),
+    );
+    renderPage(ChatPage, { path: PATH, url: `/i/prod-agentos/chat/agents/repo-coder/${CODING_SESSION_ID}` });
+    expect(await screen.findByRole("button", { name: "Coding agent: Pi on Docker" })).toBeInTheDocument();
+
+    const run = await screen.findByRole("article", { name: `Run ${CODING_RUN_ID}` });
+    const calls = within(run).getByRole("list", { name: "Tool calls" });
+    expect(within(calls).getByRole("group", { name: "write: outputs/report.md" })).toBeInTheDocument();
+    expect(within(calls).getByLabelText("Diff of outputs/report.md")).toHaveTextContent("+| Q3 | 97 |");
+    const bash = within(calls).getByRole("group", { name: /^bash: wc -l outputs\/report.md/ });
+    expect(within(bash).getByText("exit 1")).toBeInTheDocument();
+    expect(within(run).getByText("Reasoning")).toBeInTheDocument();
+    expect(
+      within(run).getByText("I wrote the report to outputs/report.md and added Q3."),
+    ).toBeInTheDocument();
+    expect(await within(run).findByText("report.md")).toBeInTheDocument();
+  });
+
+  it("keeps plain chips for an ordinary agent", async () => {
+    server.use(...codingHandlers());
+    renderPage(ChatPage, { path: PATH, url: SESSION_URL });
+    const run = await screen.findByRole("article", { name: "Run run_9f2c41" });
+    expect(within(run).queryByRole("list", { name: "Tool calls" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /^Coding agent/ })).not.toBeInTheDocument();
   });
 });

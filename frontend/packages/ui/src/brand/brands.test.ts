@@ -5,7 +5,15 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { TOOLKIT_BRANDS, brandInText, isBrandId, modelBrand, toolBrand } from "./brands";
+import {
+  CODING_BRANDS,
+  TOOLKIT_BRANDS,
+  brandInText,
+  codingBrand,
+  isBrandId,
+  modelBrand,
+  toolBrand,
+} from "./brands";
 import { BRAND_GLYPHS, BRAND_IDS } from "./glyphs.gen";
 
 /** The Agno toolkit list the control plane serves (written from the bridge, so it matches what runtimes build). */
@@ -64,5 +72,17 @@ describe("the logo set", () => {
     const list = JSON.parse(readFileSync(toolkitList ?? "", "utf8")) as { toolkits: { key: string }[] };
     const keys = new Set(list.toolkits.map((toolkit) => toolkit.key));
     for (const key of Object.keys(TOOLKIT_BRANDS)) expect(keys.has(key), key).toBe(true);
+  });
+});
+
+describe("codingBrand", () => {
+  it("names the harness and the sandbox provider", () => {
+    expect(codingBrand("pi")).toBe("pi");
+    expect(codingBrand("OpenCode")).toBe("opencode");
+    expect(codingBrand("docker")).toBe("docker");
+    expect(codingBrand("e2b")).toBe("e2b");
+    expect(codingBrand("claude")).toBeUndefined();
+    expect(codingBrand(undefined)).toBeUndefined();
+    for (const brand of Object.values(CODING_BRANDS)) expect(isBrandId(brand)).toBe(true);
   });
 });

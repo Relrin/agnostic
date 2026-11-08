@@ -5,7 +5,8 @@
 
 Recipe: sync ``PostgresDb`` (Studio needs it), tracing, scheduler with a shared internal token, durable queue with
 Redis coordination, a ``Registry``, telemetry off, local media storage (run media and artefacts, ``RUNTIME_MEDIA_DIR``)
-and ``agnostic-bridge`` installed (``/agnostic/v1/*``).
+and ``agnostic-bridge`` installed (``/agnostic/v1/*``), which also runs the Pi and OpenCode coding agents
+in a sandbox per session (``RUNTIME_CODING_*``).
 
 JWT authorization switches on when ``JWT_VERIFICATION_KEY`` (or ``JWT_JWKS_FILE``) is set: tokens must be RS256, carry
 ``aud`` = this runtime's id (the ``os_id`` the control plane mints for) and, if ``RUNTIME_JWT_ISSUER`` is set, that
@@ -17,8 +18,10 @@ from agno.db.postgres import PostgresDb
 from agno.os import AgentOS, QueueConfig
 from agno.os.authz import Authorization
 from agnostic_bridge import direct_mode_cors, install
+from agnostic_bridge.coding import CodingConfig
 
 from app.agents import AGENTS
+from app.agents.coding import build_coding_agents
 from app.agents.report_writer import report_writer
 from app.agents.sandbox_analyst import build_sandbox_analyst
 from app.media import media_storage
@@ -41,10 +44,10 @@ def build_authorization(settings: RuntimeSettings) -> Authorization | bool:
     )
 
 
-def artifact_agents() -> list:
+def artifact_agents(settings: RuntimeSettings) -> list:
     """Agents whose files become artefacts; kept apart from AGENTS, the golden-file set."""
     sandbox_analyst = build_sandbox_analyst()
-    return [report_writer, *([sandbox_analyst] if sandbox_analyst is not None else [])]
+    return [report_writer, *([sandbox_analyst] if sandbox_analyst is not None else []), *build_coding_agents(settings)]
 
 
 def build_agent_os(settings: RuntimeSettings) -> AgentOS:
@@ -54,7 +57,7 @@ def build_agent_os(settings: RuntimeSettings) -> AgentOS:
         name=settings.name,
         description=settings.description,
         db=db,
-        agents=[*AGENTS, *artifact_agents()],
+        agents=[*AGENTS, *artifact_agents(settings)],
         teams=list(TEAMS),
         workflows=list(WORKFLOWS),
         registry=build_registry(db),
@@ -73,7 +76,7 @@ def build_agent_os(settings: RuntimeSettings) -> AgentOS:
 
 settings = get_settings()
 agent_os = build_agent_os(settings)
-app = install(agent_os)  # agent_os.get_app() plus the bridge routes
+app = install(agent_os, coding=CodingConfig(callback_url=settings.coding_callback))  # get_app() plus the bridge
 
 
 if __name__ == "__main__":

@@ -141,9 +141,15 @@ def code_components(agent_os: AgentOS) -> list[CodeComponent]:
         ("team", agent_os.teams, Team),
         ("workflow", agent_os.workflows, Workflow),
     )
+    from agnostic_bridge.coding._agent import CodingAgent
+
     for kind, components, cls in groups:
         for component in components or []:
-            if not isinstance(component, cls) or is_framework_owned(component):
+            if isinstance(component, CodingAgent) and component.component_version is not None:
+                continue  # built from a Studio component, which Studio already lists
+            if not isinstance(component, (cls, CodingAgent) if kind == "agent" else cls) or is_framework_owned(
+                component
+            ):
                 continue  # remote agents and factories have no config here
             try:
                 config: dict[str, Any] | None = component.to_dict()

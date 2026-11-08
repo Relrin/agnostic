@@ -4,8 +4,12 @@ from __future__ import annotations
 
 from collections import Counter
 
+from pydantic import ValidationError
+
 from agnostic_spec.diagnostics import Diagnostic
+from agnostic_spec.v3_1.agent import AgentConfig
 from agnostic_spec.v3_1.base import ComponentConfig, SharedConfig
+from agnostic_spec.v3_1.coding import MARKER_PATH, CodingAgentSettings, coding_settings
 from agnostic_spec.v3_1.refs import ToolRef, learning_name
 from agnostic_spec.v3_1.team import DEFAULT_MAX_ITERATIONS, TeamConfig
 from agnostic_spec.v3_1.workflow import (
@@ -30,6 +34,8 @@ def check(config: ComponentConfig) -> list[Diagnostic]:
     if isinstance(config, SharedConfig):
         found.extend(_shared(config))
         found.extend(_tools(config))
+    if isinstance(config, AgentConfig):
+        found.extend(_coding(config))
     if isinstance(config, TeamConfig):
         found.extend(_team(config))
     if isinstance(config, WorkflowConfig):
@@ -101,6 +107,52 @@ def _tools(config: SharedConfig) -> list[Diagnostic]:
                     "tool_without_parameters",
                     f"`{tool.name}` has no parameters, so AgentOS can't rebuild it. Remove it and add it again from "
                     "the registry.",
+                )
+            )
+    return found
+
+
+CODING_IGNORED: dict[str, str] = {
+    "reasoning_model": "Reasoning model",
+    "memory_manager": "Memory manager",
+    "enable_agentic_memory": "Agentic memory",
+    "update_memory_on_run": "Updating memories after every run",
+    "add_memories_to_context": "Adding memories to the context",
+    "learning": "Learning",
+    "enable_session_summaries": "Session summaries",
+    "add_session_summary_to_context": "Adding the session summary to the context",
+    "input_schema": "The input schema",
+    "output_schema": "The output schema",
+}
+"""Agent fields the coding harness doesn't use: it keeps its own context in the sandbox and answers in plain text."""
+
+
+def _coding(config: AgentConfig) -> list[Diagnostic]:
+    marker = coding_settings(config.metadata)
+    if marker is None:
+        return []
+    try:
+        _ = CodingAgentSettings.model_validate(marker)
+    except ValidationError as exc:
+        return [
+            Diagnostic(
+                ".".join([MARKER_PATH, *(str(part) for part in error["loc"])]),
+                "error",
+                "coding_agent_invalid",
+                f"Coding agent settings: {error['msg']}",
+            )
+            for error in exc.errors(include_url=False)
+        ]
+    found: list[Diagnostic] = []
+    for name, label in CODING_IGNORED.items():
+        value: object = getattr(config, name)
+        if value is not None and value is not False:
+            found.append(
+                Diagnostic(
+                    name,
+                    "warning",
+                    "coding_agent_ignores",
+                    f"{label} has no effect on a coding agent: the harness in the sandbox doesn't use it.",
                 )
             )
     return found

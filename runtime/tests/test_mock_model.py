@@ -97,3 +97,53 @@ def test_tasks_leader_creates_executes_then_completes() -> None:
     final = model.invoke(messages=messages, tools=TASK_TOOLS)
     assert not final.tool_calls
     assert final.content == "Done. Goal marked as complete."
+
+
+PI_TOOLS = [
+    {"type": "function", "function": {"name": "write", "parameters": {"properties": {"path": {}, "content": {}}}}},
+    {"type": "function", "function": {"name": "bash", "parameters": {"properties": {"command": {}}}}},
+]
+OPENCODE_TOOLS = [
+    {
+        "type": "function",
+        "function": {"name": "write", "parameters": {"properties": {"filePath": {}, "content": {}}}},
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "bash",
+            "parameters": {
+                "properties": {"command": {}, "description": {"type": "string"}},
+                "required": ["command", "description"],
+            },
+        },
+    },
+]
+
+
+@pytest.mark.parametrize(("tools", "path_key"), [(PI_TOOLS, "path"), (OPENCODE_TOOLS, "filePath")])
+def test_coder_writes_lists_then_summarises(tools: list, path_key: str) -> None:
+    model = MockModel(persona="coder")
+    user = Message(role="user", content="write a hello file")
+
+    first = model.invoke(messages=[user], tools=tools)
+    write = first.tool_calls[0]["function"]
+    assert write["name"] == "write" and json.loads(write["arguments"])[path_key] == "outputs/hello.md"
+    assert first.reasoning_content
+
+    after_write = [user, Message(role="assistant", tool_calls=first.tool_calls), Message(role="tool", content="ok")]
+    second = model.invoke(messages=after_write, tools=tools)
+    bash = json.loads(second.tool_calls[0]["function"]["arguments"])
+    assert bash["command"] == "ls -la outputs"
+    if path_key == "filePath":
+        assert bash["description"]  # required fields are filled in, as a model would
+
+    done = model.invoke(messages=[*after_write, Message(role="tool", content="hello.md")], tools=tools)
+    assert "outputs/hello.md" in str(done.content) and not done.tool_calls
+
+
+def test_coder_streams_its_reasoning_first() -> None:
+    chunks = list(
+        MockModel(persona="coder").invoke_stream(messages=[Message(role="user", content="x")], tools=PI_TOOLS)
+    )
+    assert chunks[0].reasoning_content and chunks[-1].tool_calls

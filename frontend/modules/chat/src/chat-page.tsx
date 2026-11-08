@@ -1,8 +1,11 @@
 import { describeError } from "@agnostic/api";
 import {
+  CodingAgentBadge,
   RunView,
   SESSION_TYPE,
   agentosKeys,
+  codingHarnessOf,
+  codingMarker,
   dayGroup,
   findInstance,
   formatRelative,
@@ -12,6 +15,7 @@ import {
   startRun,
   toDate,
   useCan,
+  useCodingAgents,
   useComponentVersions,
   useComponents,
   useInstances,
@@ -22,6 +26,7 @@ import {
   useSessionRuns,
   useSessions,
   useTourFromSearch,
+  type CodingSandbox,
   type ComponentSummary,
   type RunFamily,
   type RunStream,
@@ -143,6 +148,21 @@ function useVersionOptions(instance: string, component: ComponentSummary | undef
   }, [canSeeDrafts, component, versions.data]);
 }
 
+/** Where a coding agent runs: the bridge's list, else the sandbox its marker names. */
+function codingSandbox(
+  component: ComponentSummary,
+  listed: CodingSandbox | undefined,
+): CodingSandbox | undefined {
+  if (listed) return listed;
+  const marker = codingMarker(component.metadata);
+  if (!marker) return undefined;
+  const sandbox = marker.sandbox;
+  // The marker's defaults: a Docker sandbox unless it says otherwise.
+  if (typeof sandbox !== "object" || sandbox === null) return { provider: "docker" };
+  const value = sandbox as Partial<CodingSandbox>;
+  return { ...value, provider: value.provider === "e2b" ? "e2b" : "docker" };
+}
+
 /** A live run of this conversation: re-renders on every event, and tells the page when it learns its session. */
 function LiveRun({
   stream,
@@ -153,6 +173,7 @@ function LiveRun({
   onSession,
   onSettled,
   onRetry,
+  coding,
 }: {
   stream: RunStream;
   target: RunTarget;
@@ -162,6 +183,7 @@ function LiveRun({
   onSession: (sessionId: string) => void;
   onSettled: () => void;
   onRetry: (message: string) => void;
+  coding: { harness: string } | undefined;
 }) {
   const state = useRunStream(stream);
   const sessionId = state?.sessionId;
@@ -183,6 +205,7 @@ function LiveRun({
         instanceName={instanceName}
         componentName={componentName}
         versionLabel={versionLabel}
+        coding={coding}
         onRetry={
           input
             ? () => {
@@ -322,6 +345,12 @@ export function ChatPage() {
   };
 
   const componentName = component?.name ?? componentId ?? "";
+  const codingAgents = useCodingAgents(family === "agents" ? instanceRef : undefined);
+  const harness = codingHarnessOf(component, codingAgents.byId);
+  const coding = useMemo(() => (harness ? { harness } : undefined), [harness]);
+  const sandbox = component
+    ? codingSandbox(component, codingAgents.byId.get(component.id)?.sandbox)
+    : undefined;
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -387,6 +416,7 @@ export function ChatPage() {
             </SelectContent>
           </Select>
         )}
+        {harness && <CodingAgentBadge harness={harness} sandbox={sandbox} />}
         <div className="ml-auto flex items-center gap-2">
           <Button
             variant="outline"
@@ -480,6 +510,7 @@ export function ChatPage() {
                       instanceName={instanceName}
                       componentName={componentName}
                       versionLabel={versionLabel}
+                      coding={coding}
                       onFork={family === "workflows" ? undefined : fork}
                     />
                   ))}
@@ -494,6 +525,7 @@ export function ChatPage() {
                       versionLabel={versionLabel}
                       onSession={onSession}
                       onSettled={onSettled}
+                      coding={coding}
                       onRetry={(message) => {
                         send(message, []);
                       }}

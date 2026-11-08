@@ -15,7 +15,7 @@ Where the routes go, and why:
 from __future__ import annotations
 
 from collections.abc import AsyncIterator
-from contextlib import asynccontextmanager
+from contextlib import AsyncExitStack, asynccontextmanager
 from typing import TYPE_CHECKING, Any
 
 from fastapi import APIRouter, Request
@@ -44,6 +44,10 @@ from agnostic_bridge._events import EVENTS_PATH, add_event_routes
 from agnostic_bridge._files import PROVENANCE_PATH, add_file_routes
 from agnostic_bridge._introspect import INTROSPECT_COMPONENTS_PATH, REGISTRY_SOURCE_PATH, add_introspect_routes
 from agnostic_bridge._workers import WORKERS_PATH, add_worker_routes
+from agnostic_bridge.coding._callback import CallbackMiddleware
+from agnostic_bridge.coding._materialize import CodingAgentSync
+from agnostic_bridge.coding._routes import CODING_AGENTS_PATH, REFRESH_CODING_AGENTS_PATH, add_coding_routes
+from agnostic_bridge.coding._runtime import CodingConfig, CodingRuntime, configure_coding
 
 if TYPE_CHECKING:
     from agno.os import AgentOS
@@ -73,6 +77,8 @@ SCOPE_MAPPINGS: dict[str, list[str]] = {
     f"GET {BRIDGE_PREFIX}{ARTIFACTS_PATH}": ["sessions:read"],
     f"GET {BRIDGE_PREFIX}{RECENT_ARTIFACTS_PATH}": ["sessions:read"],
     f"POST {BRIDGE_PREFIX}{SYNC_ARTIFACTS_PATH}": ["sessions:write"],
+    f"GET {BRIDGE_PREFIX}{CODING_AGENTS_PATH}": ["agents:read"],
+    f"POST {BRIDGE_PREFIX}{REFRESH_CODING_AGENTS_PATH}": ["config:write"],
 }
 
 
@@ -82,6 +88,7 @@ def create_router(
     replica_id: str | None = None,
     include_in_schema: bool = True,
     catalog: CatalogHolder | None = None,
+    coding_sync: CodingAgentSync | None = None,
 ) -> APIRouter:
     """The bridge routes as a router. :func:`install` is the usual entry point; use this to include the routes
     yourself (then also merge :data:`SCOPE_MAPPINGS` into ``app.state.scope_mappings`` after ``get_app()``, and
@@ -99,7 +106,7 @@ def create_router(
         response_model=BridgeCapabilities,
     )
     async def get_capabilities(request: Request) -> BridgeCapabilities:
-        return build_capabilities(agent_os, request.app, replica, endpoints, catalog=holder)
+        return build_capabilities(agent_os, request.app, replica, endpoints, catalog=holder, coding_sync=coding_sync)
 
     add_eval_routes(router, agent_os)
     add_file_routes(router, agent_os)
@@ -110,6 +117,7 @@ def create_router(
     add_introspect_routes(router, agent_os)
     add_cel_routes(router, agent_os)
     add_catalog_routes(router, holder)
+    add_coding_routes(router, agent_os, coding_sync)
     return router
 
 
@@ -119,6 +127,7 @@ def install(
     replica_id: str | None = None,
     include_in_schema: bool = True,
     tool_catalog: ToolCatalogConfig | None = None,
+    coding: CodingConfig | None = None,
 ) -> FastAPI:
     """Build the AgentOS app (``agent_os.get_app()``), add the bridge routes and their scopes, and return the app.
 
@@ -133,11 +142,22 @@ def install(
         tool_catalog: pull the control plane's tool catalog and register its entries; defaults to
             :meth:`ToolCatalogConfig.from_env` (off unless ``AGNOSTIC_CONTROL_PLANE_URL``,
             ``AGNOSTIC_INSTANCE_ID`` and ``AGNOSTIC_TOOL_CATALOG_TOKEN`` are set).
+        coding: coding agents (Pi, OpenCode in sandboxes): where sandboxes call back on and whether Studio agents
+            marked as coding agents are served; defaults to :meth:`CodingConfig.from_env`. The callback routes
+            answer only the run tokens this process mints, ahead of the AgentOS auth layer.
     """
     app = agent_os.get_app()
     replica = replica_id or default_replica_id()
     holder = CatalogHolder(agent_os, tool_catalog or ToolCatalogConfig.from_env(), replica)
-    router = create_router(agent_os, replica_id=replica, include_in_schema=include_in_schema, catalog=holder)
+    coding_runtime = configure_coding(coding or CodingConfig.from_env())
+    coding_sync = (
+        CodingAgentSync(agent_os, interval=coding_runtime.config.sync_interval)
+        if coding_runtime.config.materialize and agent_os.db is not None
+        else None
+    )
+    router = create_router(
+        agent_os, replica_id=replica, include_in_schema=include_in_schema, catalog=holder, coding_sync=coding_sync
+    )
 
     existing = {id(route) for route in app.router.routes}
     app.include_router(router)
@@ -150,20 +170,29 @@ def install(
     else:  # get_app() always sets it in 3.1.x; keep the table discoverable if a later agno stops doing so
         app.state.scope_mappings = dict(SCOPE_MAPPINGS)
 
-    _wrap_lifespan(app, holder)
+    # Outermost, so sandbox callbacks are answered before AgentOS's own auth sees them.
+    app.add_middleware(CallbackMiddleware, grants=coding_runtime.grants)
+    _wrap_lifespan(app, holder, coding_runtime, coding_sync)
     app.openapi_schema = None  # drop a cached document so /openapi.json lists the new routes
     return app
 
 
-def _wrap_lifespan(app: FastAPI, holder: CatalogHolder) -> None:
-    """Run the tool catalog puller inside the app's lifespan, after AgentOS's own (MCP connects, db)."""
-    if holder.config is None:
-        return
+def _wrap_lifespan(
+    app: FastAPI, holder: CatalogHolder, coding: CodingRuntime, coding_sync: CodingAgentSync | None
+) -> None:
+    """Run the tool catalog puller, the coding sandbox reaper and the Studio coding agent sync inside the app's
+    lifespan, after AgentOS's own (MCP connects, db)."""
     inner = app.router.lifespan_context
 
     @asynccontextmanager
     async def lifespan(app_: Any) -> AsyncIterator[Any]:
-        async with inner(app_) as state, holder.lifespan():
+        async with inner(app_) as state, AsyncExitStack() as stack:
+            if holder.config is not None:
+                await stack.enter_async_context(holder.lifespan())
+            await coding.start()
+            stack.push_async_callback(coding.stop)
+            if coding_sync is not None:
+                await stack.enter_async_context(coding_sync.lifespan())
             yield state
 
     app.router.lifespan_context = lifespan

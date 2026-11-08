@@ -113,6 +113,7 @@ const BRAND_WORDS: readonly (readonly [string, BrandId])[] = (
     ["docker", "docker"],
     ["duckdb", "duckdb"],
     ["duckduckgo", "duckduckgo"],
+    ["e2b", "e2b"],
     ["elevenlabs", "elevenlabs"],
     ["exa", "exa"],
     ["firecrawl", "firecrawl"],
@@ -138,6 +139,7 @@ const BRAND_WORDS: readonly (readonly [string, BrandId])[] = (
     ["notion", "notion"],
     ["notionhq", "notion"],
     ["openai", "openai"],
+    ["opencode", "opencode"],
     ["perplexity", "perplexity"],
     ["postgres", "postgres"],
     ["postgresql", "postgres"],
@@ -287,4 +289,17 @@ export function modelBrand(model: {
   // "qwen3:8b" (an Ollama tag) or "meta-llama/llama-4": the maker leads the id.
   const maker = (text: string) => MODEL_PREFIXES.find(([pattern]) => pattern.test(text))?.[1];
   return maker(id) ?? (rest ? maker(rest) : undefined);
+}
+
+/** Coding harnesses (`metadata.sdk`, the coding-agent marker's `harness`) and sandbox providers → brand. */
+export const CODING_BRANDS: Readonly<Record<string, BrandId>> = {
+  pi: "pi",
+  opencode: "opencode",
+  docker: "docker",
+  e2b: "e2b",
+};
+
+/** The brand of a coding harness or a sandbox provider, if known. */
+export function codingBrand(name: string | null | undefined): BrandId | undefined {
+  return name ? CODING_BRANDS[name.toLowerCase()] : undefined;
 }

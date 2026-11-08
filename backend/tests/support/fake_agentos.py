@@ -7,7 +7,8 @@ capabilities and version-pinned eval routes (when ``bridge`` is on), and the con
 session runs, knowledge content and config, learnings, agents and teams, and the bridge's file provenance when
 ``bridge_files`` is on), schedule CRUD with enable/disable/trigger, the durable queue (``queue_enabled``; admin
 only, like agno), run checkpoints and cancel, the bridge's workers and events feed, workflows (listing and
-streamed draft runs) and the bridge's CEL route (``bridge_cel``). Approvals answer 503 unless ``approvals_enabled``.
+streamed draft runs), the bridge's CEL route (``bridge_cel``) and its coding-agent refresh (``bridge_coding``).
+Approvals answer 503 unless ``approvals_enabled``.
 Under ``user_isolation`` non-admins get 404 for other people's approvals, runs and traces, like agno.
 """
 
@@ -144,6 +145,10 @@ class FakeAgentOS:
         self.bridge_cel_installed = True
         """``False``: the CEL route answers 503, as without cel-python."""
         self.cel_requests: list[dict[str, Any]] = []
+        self.bridge_coding = False
+        """The bridge serves ``POST /agnostic/v1/coding-agents/refresh``."""
+        self.coding_refreshes = 0
+        self.coding_refresh_status = 200
         self.workflow_items: list[dict[str, Any]] = []
         """``GET /workflows``: code-defined workflows."""
         self._clock = 0
@@ -515,7 +520,19 @@ class FakeAgentOS:
                 )
             if self.bridge_cel:
                 endpoints.append("POST /agnostic/v1/cel/evaluate")
+            if self.bridge_coding:
+                endpoints.extend(["GET /agnostic/v1/coding-agents", "POST /agnostic/v1/coding-agents/refresh"])
             return JSONResponse({"bridge_version": "0.2.0", "endpoints": endpoints})
+
+        @app.post("/agnostic/v1/coding-agents/refresh")
+        async def bridge_coding_refresh(request: Request) -> Response:
+            guarded = await self._guard(request, "config:write")
+            if isinstance(guarded, Response):
+                return guarded
+            if not (self.bridge and self.bridge_coding):
+                return JSONResponse({"detail": "Not Found"}, status_code=404)
+            self.coding_refreshes += 1
+            return JSONResponse({"agents": []}, status_code=self.coding_refresh_status)
 
         @app.post("/agnostic/v1/evals/run")
         async def bridge_eval(request: Request) -> Response:

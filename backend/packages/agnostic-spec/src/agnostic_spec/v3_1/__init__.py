@@ -10,6 +10,7 @@ from agnostic_spec.diagnostics import Diagnostic
 from agnostic_spec.fields import field_meta
 from agnostic_spec.v3_1.agent import AgentConfig
 from agnostic_spec.v3_1.base import ComponentConfig, Kind, SharedConfig
+from agnostic_spec.v3_1.coding import MARKER_PATH, CodingAgentSettings, coding_json_schema, coding_settings
 from agnostic_spec.v3_1.refs import KnowledgeRef, MemberRef, MemoryManagerRef, ModelRef, ToolRef
 from agnostic_spec.v3_1.refs_index import RefType, RefUse, iter_refs
 from agnostic_spec.v3_1.rules import check
@@ -43,6 +44,7 @@ SECTIONS: dict[Kind, tuple[tuple[str, str], ...]] = {
         ("context", "Context"),
         ("output", "Output schema"),
         ("session_state", "Session state"),
+        ("coding_agent", "Coding agent"),
         ("advanced", "Advanced"),
     ),
     "team": (
@@ -124,6 +126,8 @@ def json_schema(kind: Kind) -> dict[str, Any]:
     schema = MODELS[kind].model_json_schema(mode="validation")
     schema["x-agnostic-sections"] = layout(kind)
     schema["x-agnostic-agno"] = AGNO_MINOR
+    if kind == "agent":
+        schema["x-agnostic-coding-agent"] = coding_json_schema()
     if kind == "workflow":
         schema["x-agnostic-nodes"] = {node_type: node_layout(node_type) for node_type in NODE_MODELS}
         schema["x-agnostic-human-review"] = {
@@ -154,12 +158,14 @@ def _path(loc: tuple[int | str, ...]) -> str:
 __all__ = [
     "AGNO_MINOR",
     "HUMAN_REVIEW_SUPPORT",
+    "MARKER_PATH",
     "MODELS",
     "NODE_MODELS",
     "REVIEW_GROUPS",
     "SECTIONS",
     "TEAM_MODES",
     "AgentConfig",
+    "CodingAgentSettings",
     "ComponentConfig",
     "HumanReview",
     "Kind",
@@ -178,6 +184,7 @@ __all__ = [
     "ToolRef",
     "WorkflowConfig",
     "check",
+    "coding_settings",
     "iter_nodes",
     "iter_refs",
     "json_schema",

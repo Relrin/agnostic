@@ -8,7 +8,15 @@ import {
   studioTemplatesOptions,
   type ComponentRowOut,
 } from "@agnostic/api";
-import { findInstance, formatWhen, useCan, useInstances, withQueryFn } from "@agnostic/core";
+import {
+  CodingAgentBadge,
+  findInstance,
+  formatWhen,
+  useCan,
+  useCodingAgents,
+  useInstances,
+  withQueryFn,
+} from "@agnostic/core";
 import {
   Badge,
   Button,
@@ -282,6 +290,7 @@ export function ComponentIndex({ instance, kind }: { instance: string; kind: Kin
   const [creating, setCreating] = useState(false);
   const [duplicating, setDuplicating] = useState<DuplicateSource | undefined>(undefined);
   const list = useQuery(withQueryFn(studioListComponentsOptions({ path: { instance }, query: { kind } })));
+  const coding = useCodingAgents(kind === "agent" ? instance : undefined);
   const scoped = `/i/${encodeURIComponent(instance)}`;
   const needle = query.trim().toLowerCase();
   const rows = (list.data ?? []).filter(
@@ -373,6 +382,7 @@ export function ComponentIndex({ instance, kind }: { instance: string; kind: Kin
             {rows.map((row) => {
               const href = `${scoped}/studio/${kind}s/${encodeURIComponent(row.component.id)}`;
               const inCode = row.component.source === "code";
+              const codingAgent = coding.byId.get(row.component.id);
               return (
                 <tr
                   key={row.component.id}
@@ -393,6 +403,9 @@ export function ComponentIndex({ instance, kind }: { instance: string; kind: Kin
                           aria-label="Read-only: defined in code"
                           className="size-3.5 shrink-0 text-fg-muted"
                         />
+                      )}
+                      {codingAgent && (
+                        <CodingAgentBadge harness={codingAgent.harness} sandbox={codingAgent.sandbox} />
                       )}
                     </div>
                     <div className="mt-0.5 font-mono text-[11.5px] text-fg-muted">{row.component.id}</div>

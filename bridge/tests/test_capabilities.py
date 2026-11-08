@@ -44,6 +44,7 @@ def test_open_os_reports_versions_and_features() -> None:
         "GET /agnostic/v1/artifacts",
         "GET /agnostic/v1/artifacts/recent",
         f"GET {PATH}",
+        "GET /agnostic/v1/coding-agents",
         "GET /agnostic/v1/events",
         "GET /agnostic/v1/files/provenance",
         "GET /agnostic/v1/introspect/components",
@@ -53,6 +54,7 @@ def test_open_os_reports_versions_and_features() -> None:
         "GET /agnostic/v1/workers",
         "POST /agnostic/v1/artifacts/sync",
         "POST /agnostic/v1/cel/evaluate",
+        "POST /agnostic/v1/coding-agents/refresh",
         "POST /agnostic/v1/components/normalize",
         "POST /agnostic/v1/components/validate",
         "POST /agnostic/v1/evals/run",
@@ -79,6 +81,13 @@ def test_open_os_reports_versions_and_features() -> None:
         "interval_seconds": None,
         "last_sync_at": None,
         "entries": 0,
+    }
+    assert features["coding_agents"] == {
+        "enabled": False,
+        "agents": 0,
+        "providers": [],
+        "studio": False,
+        "callback_url_set": False,
     }
 
 

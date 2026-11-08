@@ -3,8 +3,10 @@ export { cn } from "./lib/cn";
 export { BrandIcon, ModelMark, ToolMark, type BrandTone, type ToolMarkProps } from "./brand/brand-icon";
 export {
   BRAND_OPTIONS,
+  CODING_BRANDS,
   TOOLKIT_BRANDS,
   brandInText,
+  codingBrand,
   isBrandId,
   modelBrand,
   toolBrand,
@@ -165,6 +167,17 @@ export {
   type StepView,
   type ToolChipStatus,
 } from "./domain/run";
+export {
+  BASH_TAIL_LINES,
+  CodingToolCall,
+  WRITE_PREVIEW_LINES,
+  editPairs,
+  lineDiff,
+  splitExitCode,
+  tail,
+  type CodeDiffLine,
+  type CodingToolCallProps,
+} from "./domain/coding-tools";
 export { GateResultList, LineLinkBadge, type GateResultRow, type GateState } from "./domain/studio";
 export {
   AREA_MAX_LINES,

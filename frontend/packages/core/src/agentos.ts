@@ -15,6 +15,8 @@ export type ComponentSummary = {
   isComponent: boolean;
   /** Team members (names), for "@ Mention member". */
   members?: string[] | undefined;
+  /** The component's metadata as the runtime reports it (`sdk` for external agents, Agnostic's markers). */
+  metadata?: Record<string, unknown> | undefined;
 };
 
 export type SessionsQuery = {
@@ -69,6 +71,7 @@ export function useComponents(instance: string | undefined, family: RunFamily) {
               is_component?: boolean;
               description?: string | null;
               members?: { name?: string | null; id?: string | null }[] | null;
+              metadata?: Record<string, unknown> | null;
             };
             return [
               {
@@ -82,6 +85,7 @@ export function useComponents(instance: string | undefined, family: RunFamily) {
                   const name = member.name ?? member.id;
                   return name ? [name] : [];
                 }),
+                metadata: extra.metadata ?? undefined,
               },
             ];
           });

@@ -49,6 +49,16 @@ class BridgeToolCatalogFeatures(BaseModel):
     entries: int = Field(default=0, description="Catalog entries this replica built and connected")
 
 
+class BridgeCodingFeatures(BaseModel):
+    """Coding agents (Pi, OpenCode) running in sandboxes of their own."""
+
+    enabled: bool = Field(description="This runtime serves at least one coding agent")
+    agents: int = Field(description="Coding agents served now, from code and Studio")
+    providers: list[str] = Field(description="Sandbox providers those agents use (docker, e2b)")
+    studio: bool = Field(description="Studio agents marked as coding agents are served")
+    callback_url_set: bool = Field(description="Sandboxes know where to reach this runtime")
+
+
 class BridgeFeatures(BaseModel):
     """Switches set on the AgentOS object. The control plane still probes the routes before relying on them."""
 
@@ -70,6 +80,7 @@ class BridgeFeatures(BaseModel):
         default=None,
         description="Backend of AgentOS(media_storage=...) (local, s3, gcs), which stores and serves artefacts",
     )
+    coding_agents: BridgeCodingFeatures | None = Field(default=None, description="Absent on older bridges")
 
 
 class BridgeCapabilities(BaseModel):
@@ -138,8 +149,28 @@ def _media_backend(agent_os: AgentOS) -> str | None:
     return str(getattr(storage, "backend_name", None) or type(storage).__name__)
 
 
+def _coding_features(agent_os: AgentOS, coding_sync: Any) -> BridgeCodingFeatures:
+    from agnostic_bridge.coding._agent import CodingAgent
+    from agnostic_bridge.coding._runtime import coding_runtime
+
+    agents = [agent for agent in agent_os.agents or [] if isinstance(agent, CodingAgent)]
+    return BridgeCodingFeatures(
+        enabled=bool(agents),
+        agents=len(agents),
+        providers=sorted({agent.spec.sandbox.provider for agent in agents}),
+        studio=coding_sync is not None,
+        callback_url_set=bool(coding_runtime().config.callback_url),
+    )
+
+
 def build_capabilities(
-    agent_os: AgentOS, app: FastAPI | Any, replica_id: str, endpoints: list[str], *, catalog: Any = None
+    agent_os: AgentOS,
+    app: FastAPI | Any,
+    replica_id: str,
+    endpoints: list[str],
+    *,
+    catalog: Any = None,
+    coding_sync: Any = None,
 ) -> BridgeCapabilities:
     state = app.state
     return BridgeCapabilities(
@@ -167,6 +198,7 @@ def build_capabilities(
             cel=agno_cel.CEL_AVAILABLE,
             tool_catalog=_catalog_features(catalog),
             media_storage=_media_backend(agent_os),
+            coding_agents=_coding_features(agent_os, coding_sync),
         ),
         endpoints=endpoints,
     )

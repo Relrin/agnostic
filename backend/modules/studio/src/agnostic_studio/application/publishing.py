@@ -225,6 +225,8 @@ class Publisher:
         )
         await self._store.commit()
         await self._access.forget(f"studio:indexed:{instance.id}")
+        if component.kind == "agent":
+            await self._access.refresh_coding_agents(instance)
         await self._events.publish(
             PUBLISHED_EVENT,
             {
@@ -284,6 +286,8 @@ class Publisher:
         )
         await self._store.commit()
         await self._access.forget(f"studio:indexed:{instance.id}")
+        if component.kind == "agent":
+            await self._access.refresh_coding_agents(instance)
         meta = await self._store.version_meta(instance.id, component_id, number)
         return VersionView(target, meta, current=True), outcome
 

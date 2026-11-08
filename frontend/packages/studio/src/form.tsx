@@ -36,7 +36,7 @@ import {
   type Config,
   type ToolEntry,
 } from "./config";
-import type { FieldInfo, Section } from "./document";
+import { CODING_SECTION, type FieldInfo, type Section } from "./document";
 import { sectionSummary } from "./summaries";
 import { ToolCard, ToolPicker } from "./tool-blocks";
 
@@ -642,30 +642,33 @@ export function ConfigForm({
 }) {
   return (
     <Accordion aria-label={ariaLabel}>
-      {sections.map((section) => {
-        const shown = section.fields.filter((name) => {
-          const info = fields[name];
-          return info && (!info.legacy || ctx.config[name] !== undefined);
-        });
-        return (
-          <AccordionSection
-            key={section.id}
-            id={`section-${section.id}`}
-            title={section.label}
-            summary={sectionSummary(section.id, ctx.config)}
-            defaultOpen={OPEN_BY_DEFAULT.has(section.id)}
-            contentClassName="flex flex-col gap-4"
-          >
-            {custom[section.id] ?? null}
-            {!(section.id in custom) &&
-              shown.map((name) => {
-                const info = fields[name];
-                return info ? <FieldControl key={name} name={name} info={info} ctx={ctx} /> : null;
-              })}
-            {section.id === "advanced" && !ctx.readOnly && <RawConfigEditor ctx={ctx} />}
-          </AccordionSection>
-        );
-      })}
+      {/* The coding-agent settings are a section of their own, shown by the editor for agents that carry them. */}
+      {sections
+        .filter((section) => section.id !== CODING_SECTION || section.id in custom)
+        .map((section) => {
+          const shown = section.fields.filter((name) => {
+            const info = fields[name];
+            return info && (!info.legacy || ctx.config[name] !== undefined);
+          });
+          return (
+            <AccordionSection
+              key={section.id}
+              id={`section-${section.id}`}
+              title={section.label}
+              summary={sectionSummary(section.id, ctx.config)}
+              defaultOpen={OPEN_BY_DEFAULT.has(section.id)}
+              contentClassName="flex flex-col gap-4"
+            >
+              {custom[section.id] ?? null}
+              {!(section.id in custom) &&
+                shown.map((name) => {
+                  const info = fields[name];
+                  return info ? <FieldControl key={name} name={name} info={info} ctx={ctx} /> : null;
+                })}
+              {section.id === "advanced" && !ctx.readOnly && <RawConfigEditor ctx={ctx} />}
+            </AccordionSection>
+          );
+        })}
     </Accordion>
   );
 }

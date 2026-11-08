@@ -151,6 +151,14 @@ class HarnessCapture:
         cwd = getattr(self.agent, "cwd", None) or "."
         return DirectorySource(cwd)
 
+    async def source_for(self, session: Any) -> ArtifactSource | None:
+        """Where this session's files are: the agent's own source when it has one (a coding agent's live
+        sandbox), else its ``cwd`` on this host."""
+        own = getattr(self.agent, "artifact_source", None)
+        if callable(own):
+            return await _resolve(own, session)
+        return self.local_source()
+
     def checkpoint_source(self, run_id: str) -> ArtifactSource:
         return CheckpointSource(lambda: self.agent.aopen_run_checkpoint(run_id), root=self.root)
 
@@ -174,7 +182,8 @@ def capture_artifacts(
     include: Sequence[str] | None = None,
     **collector: Any,
 ) -> Any:
-    """Collect what a harness adapter (``ClaudeAgent``, ``CodexAgent``) writes under ``root`` of its workspace.
+    """Collect what a harness adapter (``ClaudeAgent``, ``CodexAgent``, a coding agent) writes under ``root`` of its
+    workspace.
 
     On the host the workspace is the adapter's ``cwd`` and files are collected as each run is stored. With
     ``sandbox=`` they are read from the turn's checkpoint when the control plane syncs the session. Pass the same
@@ -197,7 +206,12 @@ def capture_artifacts(
         status = str(getattr(run_output, "status", "") or "").lower()
         if "completed" in status:
             try:
-                count = await capture.collect_into(run_output, capture.local_source(), _session_state(None, session))
+                source = await capture.source_for(session)
+                count = (
+                    await capture.collect_into(run_output, source, _session_state(None, session))
+                    if source is not None
+                    else 0
+                )
                 if count:
                     await _offload(run_output, media_storage, session.session_id)
             except Exception as error:  # an artefact problem must never lose the run itself

@@ -19,7 +19,7 @@ def registry(tmp_path: Path) -> Registry:
 
 def test_model_presets(registry: Registry) -> None:
     presets = {model.id: model for model in registry.models if isinstance(model, MockModel)}
-    assert set(presets) == {"agnostic-mock", "mock-precise", "mock-creative"}
+    assert set(presets) == {"agnostic-mock", "mock-precise", "mock-creative", "mock-coder"}
     assert (presets["mock-precise"].temperature, presets["mock-creative"].temperature) == (0.2, 0.9)
     assert registry.get_model("mock-creative", provider="Agnostic") is presets["mock-creative"]
 

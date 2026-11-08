@@ -192,3 +192,18 @@ export {
   artifactLabel,
 } from "./artifacts/panel";
 export { ArtifactPreview, type ArtifactSource } from "./artifacts/viewer";
+export {
+  CODING_AGENTS_ENDPOINT,
+  codingAgentsEnabled,
+  codingHarnessOf,
+  codingMarker,
+  useBridgeCapabilities,
+  useCodingAgents,
+  type BridgeCapabilities,
+  type CodingAgent,
+  type CodingAgentList,
+  type CodingHarness,
+  type CodingSandbox,
+  type SandboxProvider,
+} from "./coding/api";
+export { CodingAgentBadge, HARNESS_LABEL, SANDBOX_LABEL, sandboxSummary } from "./coding/badge";

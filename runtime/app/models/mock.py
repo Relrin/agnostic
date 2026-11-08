@@ -6,6 +6,9 @@ with a one-line summary of it. Everything else gets a canned, persona-specific a
 
 As the leader of a ``TeamMode.tasks`` team it works the task list: one task per member, executed in member order,
 then ``mark_all_complete``.
+
+With ``persona="coder"`` it plays a coding harness's model: it thinks briefly, writes ``outputs/hello.md`` with the
+harness's own ``write`` tool, lists the folder with ``bash`` and then summarises.
 """
 
 import hashlib
@@ -78,6 +81,61 @@ def _tool_call(name: str, arguments: dict[str, Any], seed: str) -> dict[str, Any
     }
 
 
+def _tool_schemas(tools: list[dict[str, Any]] | None) -> dict[str, dict[str, Any]]:
+    schemas: dict[str, dict[str, Any]] = {}
+    for tool in tools or []:
+        function = tool.get("function") if isinstance(tool.get("function"), dict) else tool
+        if name := function.get("name"):
+            schemas[str(name)] = function.get("parameters") or {}
+    return schemas
+
+
+def _pick(schema: dict[str, Any], *candidates: str) -> str:
+    properties = schema.get("properties") or {}
+    return next((name for name in candidates if name in properties), candidates[0])
+
+
+def _fill_required(schema: dict[str, Any], arguments: dict[str, Any], note: str) -> dict[str, Any]:
+    """Give every other required string field a short value, as a model would."""
+    properties = schema.get("properties") or {}
+    for name in schema.get("required") or []:
+        if name not in arguments and (properties.get(name) or {}).get("type", "string") == "string":
+            arguments[name] = note
+    return arguments
+
+
+CODER_REASONING = "The request is about files, so I will write the result under outputs/ and then check it."
+
+
+def _coder_step(messages: list[Message], tools: list[dict[str, Any]] | None, user_text: str) -> ModelResponse:
+    """A coding harness's turn without a real model: write a file, list the folder, then summarise.
+
+    The tool names and argument names come from the tools the harness offers (Pi: ``write(path, content)``,
+    OpenCode: ``write(filePath, content)``), so the same persona drives either.
+    """
+    schemas = _tool_schemas(tools)
+    last_user = max((index for index, message in enumerate(messages) if message.role == "user"), default=-1)
+    results = [message for message in messages[last_user + 1 :] if message.role == "tool"]
+    brief = " ".join(user_text.split())[:120] or "(no request)"
+    if not results and "write" in schemas:
+        schema = schemas["write"]
+        arguments = {
+            _pick(schema, "path", "filePath", "file_path"): "outputs/hello.md",
+            _pick(schema, "content", "text"): f"# Hello from the sandbox\n\nRequest: {brief}\n",
+        }
+        call = _tool_call("write", _fill_required(schema, arguments, "Write outputs/hello.md"), user_text)
+        return ModelResponse(role="assistant", tool_calls=[call], reasoning_content=CODER_REASONING)
+    if len(results) == 1 and "bash" in schemas:
+        schema = schemas["bash"]
+        arguments = {_pick(schema, "command", "cmd"): "ls -la outputs"}
+        call = _tool_call("bash", _fill_required(schema, arguments, "List the outputs folder"), user_text + "ls")
+        return ModelResponse(role="assistant", tool_calls=[call])
+    return ModelResponse(
+        role="assistant",
+        content=f"I wrote `outputs/hello.md` with a short note about your request ({brief}) and checked the folder.",
+    )
+
+
 def _next_task_step(messages: list[Message], user_text: str) -> list[dict[str, Any]] | None:
     """The leader's next task-tool calls, or None once the goal is marked complete."""
     members = [m for msg in messages if msg.role == "system" for m in MEMBER.findall(msg.get_content_string())]
@@ -111,6 +169,8 @@ class MockModel(Model):
 
     def _respond(self, messages: list[Message], tools: list[dict[str, Any]] | None) -> ModelResponse:
         user_text = next((m.get_content_string() for m in reversed(messages) if m.role == "user"), "")
+        if self.persona == "coder":
+            return _coder_step(messages, tools, user_text)
         available = _tool_names(tools)
         if available >= TASK_TOOLS and (calls := _next_task_step(messages, user_text)):
             return ModelResponse(role="assistant", tool_calls=calls)
@@ -147,6 +207,10 @@ class MockModel(Model):
 
     def invoke_stream(self, *args: Any, **kwargs: Any) -> Iterator[ModelResponse]:
         response = self.invoke(*args, **kwargs)
+        if response.reasoning_content:
+            for index, word in enumerate(response.reasoning_content.split(" ")):
+                yield ModelResponse(role="assistant", reasoning_content=word if index == 0 else f" {word}")
+            response.reasoning_content = None
         if response.tool_calls or not isinstance(response.content, str):
             yield response
             return

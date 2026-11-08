@@ -112,8 +112,73 @@ export function useConfigSchema(kind: EditableKind) {
     const sections = Array.isArray(schema["x-agnostic-sections"])
       ? (schema["x-agnostic-sections"] as Section[])
       : [];
-    return { fields, sections, isPending: query.isPending, isError: query.isError };
+    const coding = codingFields(schema["x-agnostic-coding-agent"]);
+    return { fields, sections, coding, isPending: query.isPending, isError: query.isError };
   }, [query.data, query.isPending, query.isError]);
+}
+
+/** One setting of the coding-agent marker: its path inside `metadata.agnostic.coding_agent` and its field meta. */
+export type CodingField = {
+  /** ["harness"], ["sandbox", "image"]. */
+  path: readonly string[];
+  info: FieldInfo;
+  type: "string" | "number" | "integer";
+  required: boolean;
+};
+
+export const CODING_SECTION = "coding_agent";
+
+function resolveRef(root: Record<string, unknown>, value: unknown): Record<string, unknown> | undefined {
+  if (!isRecord(value)) return undefined;
+  const ref = typeof value.$ref === "string" ? value.$ref : undefined;
+  if (!ref?.startsWith("#/$defs/")) return value;
+  const defs = isRecord(root.$defs) ? root.$defs : {};
+  const found = defs[ref.slice("#/$defs/".length)];
+  return isRecord(found) ? found : undefined;
+}
+
+function valueType(property: Record<string, unknown>): CodingField["type"] {
+  const branches = Array.isArray(property.anyOf) ? property.anyOf : [property];
+  for (const branch of branches) {
+    if (!isRecord(branch)) continue;
+    if (branch.type === "integer" || branch.type === "number") return branch.type;
+  }
+  return "string";
+}
+
+/**
+ * The coding-agent marker's settings (`x-agnostic-coding-agent` on the agent schema), flattened in form order: its
+ * own fields, then each nested object's (the sandbox). Empty when the schema has none (an older control plane).
+ */
+export function codingFields(schema: unknown): CodingField[] {
+  if (!isRecord(schema)) return [];
+  const out: CodingField[] = [];
+  const walk = (node: Record<string, unknown>, prefix: readonly string[]) => {
+    const properties = isRecord(node.properties) ? node.properties : {};
+    const required = Array.isArray(node.required) ? node.required.map(String) : [];
+    const nested: [string, Record<string, unknown>][] = [];
+    const own: CodingField[] = [];
+    for (const [name, raw] of Object.entries(properties)) {
+      const property = resolveRef(schema, raw);
+      if (!property) continue;
+      if (isRecord(property.properties)) {
+        nested.push([name, property]);
+        continue;
+      }
+      if (!isRecord(property["x-agnostic"])) continue;
+      const meta = property["x-agnostic"] as Omit<FieldInfo, "options" | "default">;
+      own.push({
+        path: [...prefix, name],
+        info: { ...meta, default: property.default ?? undefined, ...enumOptions(property) },
+        type: valueType(property),
+        required: required.includes(name),
+      });
+    }
+    out.push(...own.sort((a, b) => a.info.order - b.info.order));
+    for (const [name, property] of nested) walk(property, [...prefix, name]);
+  };
+  walk(schema, []);
+  return out;
 }
 
 function enumOptions(property: Record<string, unknown>): { options?: string[] } {

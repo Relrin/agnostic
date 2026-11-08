@@ -1831,6 +1831,11 @@
       "fields": ["session_state", "add_session_state_to_context", "enable_agentic_state"]
     },
     {
+      "id": "coding_agent",
+      "label": "Coding agent",
+      "fields": []
+    },
+    {
       "id": "advanced",
       "label": "Advanced",
       "fields": [
@@ -1863,5 +1868,255 @@
       ]
     }
   ],
-  "x-agnostic-agno": "3.1"
+  "x-agnostic-agno": "3.1",
+  "x-agnostic-coding-agent": {
+    "$defs": {
+      "SandboxSettings": {
+        "additionalProperties": false,
+        "properties": {
+          "provider": {
+            "default": "docker",
+            "description": "Where each session's sandbox runs.",
+            "enum": ["docker", "e2b"],
+            "title": "Provider",
+            "type": "string",
+            "x-agnostic": {
+              "help": "Where each session's sandbox runs.",
+              "label": "Sandbox",
+              "legacy": false,
+              "order": 1,
+              "section": "sandbox",
+              "since_agno": "3.1",
+              "widget": "select"
+            }
+          },
+          "image": {
+            "default": "agnostic-coding:0.1.0",
+            "description": "The Docker image the sandbox starts from.",
+            "title": "Image",
+            "type": "string",
+            "x-agnostic": {
+              "help": "The Docker image the sandbox starts from.",
+              "label": "Image",
+              "legacy": false,
+              "order": 2,
+              "section": "sandbox",
+              "since_agno": "3.1",
+              "widget": "text"
+            }
+          },
+          "template": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "The E2B template; only used with the E2B provider.",
+            "title": "Template",
+            "x-agnostic": {
+              "help": "The E2B template; only used with the E2B provider.",
+              "label": "E2B template",
+              "legacy": false,
+              "order": 3,
+              "section": "sandbox",
+              "since_agno": "3.1",
+              "widget": "text"
+            }
+          },
+          "cpus": {
+            "default": 2.0,
+            "exclusiveMinimum": 0,
+            "maximum": 64,
+            "title": "Cpus",
+            "type": "number",
+            "x-agnostic": {
+              "label": "CPUs",
+              "legacy": false,
+              "order": 4,
+              "section": "sandbox",
+              "since_agno": "3.1",
+              "widget": "number"
+            }
+          },
+          "memory_mb": {
+            "default": 2048,
+            "maximum": 65536,
+            "minimum": 256,
+            "title": "Memory Mb",
+            "type": "integer",
+            "x-agnostic": {
+              "label": "Memory (MB)",
+              "legacy": false,
+              "order": 5,
+              "section": "sandbox",
+              "since_agno": "3.1",
+              "widget": "number"
+            }
+          },
+          "workspace_mb": {
+            "default": 512,
+            "maximum": 65536,
+            "minimum": 64,
+            "title": "Workspace Mb",
+            "type": "integer",
+            "x-agnostic": {
+              "label": "Workspace size (MB)",
+              "legacy": false,
+              "order": 6,
+              "section": "sandbox",
+              "since_agno": "3.1",
+              "widget": "number"
+            }
+          },
+          "pids_limit": {
+            "default": 256,
+            "maximum": 65536,
+            "minimum": 32,
+            "title": "Pids Limit",
+            "type": "integer",
+            "x-agnostic": {
+              "label": "Process limit",
+              "legacy": false,
+              "order": 7,
+              "section": "sandbox",
+              "since_agno": "3.1",
+              "widget": "number"
+            }
+          },
+          "network": {
+            "default": "isolated",
+            "description": "`isolated` (internet and host ports, no other sandboxes) or a Docker network you manage.",
+            "title": "Network",
+            "type": "string",
+            "x-agnostic": {
+              "help": "`isolated` (internet and host ports, no other sandboxes) or a Docker network you manage.",
+              "label": "Network",
+              "legacy": false,
+              "order": 8,
+              "section": "sandbox",
+              "since_agno": "3.1",
+              "widget": "text"
+            }
+          },
+          "turn_timeout_s": {
+            "default": 900,
+            "maximum": 86400,
+            "minimum": 10,
+            "title": "Turn Timeout S",
+            "type": "integer",
+            "x-agnostic": {
+              "label": "Turn timeout (s)",
+              "legacy": false,
+              "order": 9,
+              "section": "sandbox",
+              "since_agno": "3.1",
+              "widget": "number"
+            }
+          },
+          "idle_pause_s": {
+            "default": 300,
+            "description": "Seconds without a turn before the sandbox pauses; memory and files are kept.",
+            "maximum": 86400,
+            "minimum": 10,
+            "title": "Idle Pause S",
+            "type": "integer",
+            "x-agnostic": {
+              "help": "Seconds without a turn before the sandbox pauses; memory and files are kept.",
+              "label": "Pause when idle (s)",
+              "legacy": false,
+              "order": 10,
+              "section": "sandbox",
+              "since_agno": "3.1",
+              "widget": "number"
+            }
+          },
+          "ttl_s": {
+            "default": 3600,
+            "description": "Seconds without a turn before the sandbox is destroyed.",
+            "maximum": 604800,
+            "minimum": 60,
+            "title": "Ttl S",
+            "type": "integer",
+            "x-agnostic": {
+              "help": "Seconds without a turn before the sandbox is destroyed.",
+              "label": "Lifetime (s)",
+              "legacy": false,
+              "order": 11,
+              "section": "sandbox",
+              "since_agno": "3.1",
+              "widget": "number"
+            }
+          }
+        },
+        "title": "SandboxSettings",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "description": "Run this agent through a coding harness in a sandbox; files it writes under ``outputs_root`` become artefacts.",
+    "properties": {
+      "harness": {
+        "description": "The coding CLI that runs each turn.",
+        "enum": ["pi", "opencode"],
+        "title": "Harness",
+        "type": "string",
+        "x-agnostic": {
+          "help": "The coding CLI that runs each turn.",
+          "label": "Harness",
+          "legacy": false,
+          "order": 1,
+          "section": "coding_agent",
+          "since_agno": "3.1",
+          "widget": "select"
+        }
+      },
+      "outputs_root": {
+        "default": "outputs",
+        "description": "Files written here, relative to the workspace, become artefacts.",
+        "title": "Outputs Root",
+        "type": "string",
+        "x-agnostic": {
+          "help": "Files written here, relative to the workspace, become artefacts.",
+          "label": "Outputs folder",
+          "legacy": false,
+          "order": 2,
+          "section": "coding_agent",
+          "since_agno": "3.1",
+          "widget": "text"
+        }
+      },
+      "thinking": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Reasoning level passed to the harness (Pi: off, low, medium, high).",
+        "title": "Thinking",
+        "x-agnostic": {
+          "help": "Reasoning level passed to the harness (Pi: off, low, medium, high).",
+          "label": "Thinking level",
+          "legacy": false,
+          "order": 3,
+          "section": "coding_agent",
+          "since_agno": "3.1",
+          "widget": "text"
+        }
+      },
+      "sandbox": {
+        "$ref": "#/$defs/SandboxSettings"
+      }
+    },
+    "required": ["harness"],
+    "title": "CodingAgentSettings",
+    "type": "object"
+  }
 }

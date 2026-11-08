@@ -76,7 +76,13 @@ coder = capture_artifacts(
 
 The same works for `CodexAgent`.
 
-### Pi, OpenCode and other harnesses
+### Pi and OpenCode as coding agents
+
+`PiAgent` and `OpenCodeAgent` (see [Run coding agents in sandboxes](run-coding-agents.md)) work with
+`capture_artifacts` too: the files under `root` are read from the session's live sandbox just before each run is
+stored, so they are kept after the sandbox is paused or destroyed.
+
+### Other harnesses
 
 Point a source at the folder the harness works in, and run the collector when its turn ends:
 

@@ -55,3 +55,13 @@ def mint(key_pair: tuple[str, str]) -> Callable[..., str]:
         )
 
     return _mint
+
+
+@pytest.fixture(autouse=True)
+def _fresh_coding_runtime() -> object:
+    """``install()`` configures the process's coding runtime; every test starts from a new one."""
+    from agnostic_bridge.coding import _runtime
+
+    _runtime._runtime = None
+    yield
+    _runtime._runtime = None

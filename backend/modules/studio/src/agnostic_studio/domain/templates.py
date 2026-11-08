@@ -49,6 +49,21 @@ TEMPLATES: tuple[Template, ...] = (
             "markdown": True,
         },
     ),
+    Template(
+        "coding-agent",
+        "agent",
+        "Coding agent",
+        "Pi in a Docker sandbox; files written to outputs/ become artefacts.",
+        {
+            "instructions": [
+                "Work in the current directory; it is a fresh sandbox for this session.",
+                "Write every file the user should get into outputs/.",
+                "End with a short summary of what you changed.",
+            ],
+            "model": {"id": "mock-coder", "name": "MockModel", "provider": "Agnostic"},
+            "metadata": {"agnostic": {"coding_agent": {"harness": "pi"}}},
+        },
+    ),
     Template("blank-team", "team", "Blank team", "A team in coordinate mode, without members.", {"mode": "coordinate"}),
     Template(
         "coordinate-team",

@@ -1,0 +1,197 @@
+[
+  {
+    "created_at": 1793534400,
+    "event": "RunStarted",
+    "run_id": "run_code_1",
+    "session_id": "ses_code_1",
+    "agent_id": "repo-coder",
+    "agent_name": "Repo coder",
+    "nested_depth": 0,
+    "model": "mock-coder",
+    "model_provider": "Agnostic",
+    "event_index": 0
+  },
+  {
+    "created_at": 1793534401,
+    "event": "RunContent",
+    "run_id": "run_code_1",
+    "session_id": "ses_code_1",
+    "agent_id": "repo-coder",
+    "agent_name": "Repo coder",
+    "nested_depth": 0,
+    "content": "",
+    "content_type": "str",
+    "reasoning_content": "The user wants a report. I'll write it to outputs/ so it becomes an artefact, then check it.",
+    "event_index": 1
+  },
+  {
+    "created_at": 1793534402,
+    "event": "ToolCallStarted",
+    "run_id": "run_code_1",
+    "session_id": "ses_code_1",
+    "agent_id": "repo-coder",
+    "agent_name": "Repo coder",
+    "nested_depth": 0,
+    "tool": {
+      "tool_call_id": "toolu_write_1",
+      "tool_name": "write",
+      "tool_args": {
+        "path": "outputs/report.md",
+        "content": "# Support volume\n\n| Quarter | Tickets |\n|---|---|\n| Q1 | 61 |\n| Q2 | 82 |\n",
+        "_harness_tool": "write"
+      }
+    },
+    "event_index": 2
+  },
+  {
+    "created_at": 1793534403,
+    "event": "ToolCallCompleted",
+    "run_id": "run_code_1",
+    "session_id": "ses_code_1",
+    "agent_id": "repo-coder",
+    "agent_name": "Repo coder",
+    "nested_depth": 0,
+    "tool": {
+      "tool_call_id": "toolu_write_1",
+      "tool_name": "write",
+      "tool_args": {
+        "path": "outputs/report.md",
+        "content": "# Support volume\n\n| Quarter | Tickets |\n|---|---|\n| Q1 | 61 |\n| Q2 | 82 |\n",
+        "_harness_tool": "write"
+      },
+      "result": "Successfully wrote 98 bytes to outputs/report.md",
+      "tool_call_error": false,
+      "metrics": {
+        "duration": 0.02
+      }
+    },
+    "event_index": 3
+  },
+  {
+    "created_at": 1793534404,
+    "event": "ToolCallStarted",
+    "run_id": "run_code_1",
+    "session_id": "ses_code_1",
+    "agent_id": "repo-coder",
+    "agent_name": "Repo coder",
+    "nested_depth": 0,
+    "tool": {
+      "tool_call_id": "toolu_edit_1",
+      "tool_name": "edit",
+      "tool_args": {
+        "path": "outputs/report.md",
+        "oldText": "| Q2 | 82 |",
+        "newText": "| Q2 | 82 |\n| Q3 | 97 |",
+        "_harness_tool": "edit"
+      }
+    },
+    "event_index": 4
+  },
+  {
+    "created_at": 1793534405,
+    "event": "ToolCallCompleted",
+    "run_id": "run_code_1",
+    "session_id": "ses_code_1",
+    "agent_id": "repo-coder",
+    "agent_name": "Repo coder",
+    "nested_depth": 0,
+    "tool": {
+      "tool_call_id": "toolu_edit_1",
+      "tool_name": "edit",
+      "tool_args": {
+        "path": "outputs/report.md",
+        "oldText": "| Q2 | 82 |",
+        "newText": "| Q2 | 82 |\n| Q3 | 97 |",
+        "_harness_tool": "edit"
+      },
+      "result": "Successfully replaced text in outputs/report.md.",
+      "tool_call_error": false,
+      "metrics": {
+        "duration": 0.01
+      }
+    },
+    "event_index": 5
+  },
+  {
+    "created_at": 1793534406,
+    "event": "ToolCallStarted",
+    "run_id": "run_code_1",
+    "session_id": "ses_code_1",
+    "agent_id": "repo-coder",
+    "agent_name": "Repo coder",
+    "nested_depth": 0,
+    "tool": {
+      "tool_call_id": "toolu_bash_1",
+      "tool_name": "bash",
+      "tool_args": {
+        "command": "wc -l outputs/report.md && cat outputs/missing.md",
+        "_harness_tool": "bash"
+      }
+    },
+    "event_index": 6
+  },
+  {
+    "created_at": 1793534407,
+    "event": "ToolCallCompleted",
+    "run_id": "run_code_1",
+    "session_id": "ses_code_1",
+    "agent_id": "repo-coder",
+    "agent_name": "Repo coder",
+    "nested_depth": 0,
+    "tool": {
+      "tool_call_id": "toolu_bash_1",
+      "tool_name": "bash",
+      "tool_args": {
+        "command": "wc -l outputs/report.md && cat outputs/missing.md",
+        "_harness_tool": "bash"
+      },
+      "result": "7 outputs/report.md\ncat: outputs/missing.md: No such file or directory\n[exit code 1]",
+      "tool_call_error": false,
+      "metrics": {
+        "duration": 0.31
+      }
+    },
+    "event_index": 7
+  },
+  {
+    "created_at": 1793534408,
+    "event": "RunContent",
+    "run_id": "run_code_1",
+    "session_id": "ses_code_1",
+    "agent_id": "repo-coder",
+    "agent_name": "Repo coder",
+    "nested_depth": 0,
+    "content": "I wrote the report to outputs/report.md",
+    "content_type": "str",
+    "event_index": 8
+  },
+  {
+    "created_at": 1793534409,
+    "event": "RunContent",
+    "run_id": "run_code_1",
+    "session_id": "ses_code_1",
+    "agent_id": "repo-coder",
+    "agent_name": "Repo coder",
+    "nested_depth": 0,
+    "content": " and added Q3.",
+    "content_type": "str",
+    "event_index": 9
+  },
+  {
+    "created_at": 1793534410,
+    "event": "RunCompleted",
+    "run_id": "run_code_1",
+    "session_id": "ses_code_1",
+    "agent_id": "repo-coder",
+    "agent_name": "Repo coder",
+    "nested_depth": 0,
+    "content": "I wrote the report to outputs/report.md and added Q3.",
+    "content_type": "str",
+    "metrics": {
+      "input_tokens": 1210,
+      "output_tokens": 214,
+      "total_tokens": 1424
+    },
+    "event_index": 10
+  }
+]

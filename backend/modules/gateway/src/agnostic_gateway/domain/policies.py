@@ -220,6 +220,10 @@ DEFAULT_POLICIES: tuple[RoutePolicy, ...] = (
     _p("GET", "/agnostic/v1/artifacts", "sessions:read"),
     _p("GET", "/agnostic/v1/artifacts/recent", "sessions:read"),
     _p("POST", "/agnostic/v1/artifacts/sync", "sessions:write", audit="decision", bucket="read"),
+    # Coding agents the bridge built from published components. Its ``/agnostic/v1/coding/*`` routes are sandbox
+    # callbacks authenticated by run grants, not people: they stay unmapped so the gateway refuses them.
+    _p("GET", "/agnostic/v1/coding-agents", "agents:read", ttl=30),
+    _p("POST", "/agnostic/v1/coding-agents/refresh", "config:write", audit="full", bucket="write"),
 )
 
 UPLOAD_ROUTES: frozenset[tuple[str, str]] = frozenset({("POST", "/knowledge/content")})

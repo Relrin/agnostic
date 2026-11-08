@@ -17,6 +17,8 @@ MODEL_PRESETS = [
     MockModel(id="agnostic-mock", persona="studio"),
     MockModel(id="mock-precise", persona="precise", temperature=0.2),
     MockModel(id="mock-creative", persona="creative", temperature=0.9),
+    # For coding agents built in Studio: writes outputs/hello.md with the harness's own tools, offline.
+    MockModel(id="mock-coder", persona="coder"),
 ]
 
 

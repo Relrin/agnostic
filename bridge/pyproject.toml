@@ -31,6 +31,10 @@ dependencies = [
   "pydantic>=2.10,<3",
 ]
 
+[project.optional-dependencies]
+# Coding agents in E2B sandboxes (agnostic_bridge.coding.E2BProvider); Docker sandboxes need only the docker CLI.
+e2b = ["e2b>=2,<3"]
+
 [project.urls]
 Homepage = "https://github.com/Relrin/agnostic"
 Documentation = "https://github.com/Relrin/agnostic/blob/master/docs/guides/bridge-and-runtime.md"

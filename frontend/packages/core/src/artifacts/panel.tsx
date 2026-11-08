@@ -183,6 +183,7 @@ export function ArtifactInspector({
 
 const SOURCES: Record<string, string> = {
   e2b: "E2B sandbox",
+  docker: "Docker sandbox",
   sandbox: "sandbox checkpoint",
   directory: "workspace",
 };

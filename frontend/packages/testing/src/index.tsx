@@ -11,6 +11,7 @@ export * from "./studio-workflows";
 export * from "./operate";
 export * from "./observe";
 export * from "./artifacts";
+export * from "./coding";
 export * from "./context";
 export * from "./approvals";
 export * from "./scheduler";
