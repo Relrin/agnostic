@@ -5,16 +5,25 @@
   "type": "module",
   "description": "Module SDK (defineModule), navigation catalog, commands, providers",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./trusted-html": "./src/trusted-html.ts"
   },
   "dependencies": {
     "@agnostic/api": "workspace:*",
     "@agnostic/ui": "workspace:*",
+    "@jupyter-kit/core": "3.0.2",
+    "@jupyter-kit/react": "3.0.2",
+    "@jupyter-kit/theme-onedork": "3.0.2",
+    "@lezer/highlight": "1.2.5",
+    "@lezer/python": "1.1.19",
     "@microsoft/fetch-event-source": "2.0.1",
     "@tanstack/react-query": "5.105.0",
     "@tanstack/react-router": "1.170.46",
+    "dompurify": "3.4.17",
+    "katex": "0.16.47",
     "lucide-react": "1.65.0",
     "pdfjs-dist": "6.4.299",
+    "remark-math": "6.0.0",
     "zustand": "5.0.15"
   },
   "peerDependencies": {

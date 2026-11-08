@@ -21,7 +21,7 @@ def session_workspace(run_context: object) -> DirectorySource:
 
 @tool
 def write_report(query: str, run_context: object = None) -> str:
-    """Write a report on a topic: Markdown, HTML, CSV, JSON, SVG and PNG charts and a PDF, under outputs/."""
+    """Write a report on a topic: Markdown, HTML, CSV, JSON, SVG and PNG charts, a PDF and a notebook, in outputs/."""
     written = write_sample_report(workspace_for(getattr(run_context, "session_id", None)), query)
     return f"Wrote {len(written)} files: {', '.join(written)}."
 

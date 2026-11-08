@@ -36,6 +36,7 @@ export type ArtifactList = { data: Artifact[]; scanned_sessions: number };
 /** How the viewer shows a file. */
 export type ViewerKind =
   | "markdown"
+  | "notebook"
   | "html"
   | "svg"
   | "image"
@@ -111,6 +112,7 @@ export function viewerKind(contentType: string, filename: string): ViewerKind {
   const type = contentType.split(";")[0]?.trim().toLowerCase() ?? "";
   const extension = extensionOf(filename);
   if (type === "text/markdown" || extension === "md" || extension === "markdown") return "markdown";
+  if (type === "application/x-ipynb+json" || extension === "ipynb") return "notebook";
   if (type === "text/html" || type === "application/xhtml+xml") return "html";
   if (type === "image/svg+xml") return "svg";
   if (type.startsWith("image/")) return "image";

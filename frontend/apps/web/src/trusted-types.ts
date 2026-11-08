@@ -2,10 +2,14 @@
 //
 // The web app renders through React and has no HTML sinks of its own, so this "default" policy is the gate for
 // whatever a dependency might do: inline scripts are refused, HTML only when it is one of the known constant style
-// rules below, script URLs (workers, lazily loaded chunks) only from this origin or a blob created by the page. Import it before anything else.
+// rules below or a string the app has just sanitized for a renderer that can only write HTML (`sanitizedHtml` in
+// `@agnostic/core/trusted-html`, used by the notebook viewer), script URLs (workers, lazily loaded chunks) only from
+// this origin or a blob created by the page. Import it before anything else.
+import { acceptsHtml } from "@agnostic/core/trusted-html";
 
 type ScriptUrlPolicy = {
-  createHTML: (input: string) => string;
+  /** `type` and `sink` are passed to the default policy only: `"TrustedHTML"` and the sink, `"Element innerHTML"`. */
+  createHTML: (input: string, type?: string, sink?: string) => string;
   createScript: (input: string) => string;
   createScriptURL: (input: string) => string;
 };
@@ -25,8 +29,8 @@ export const ALLOWED_HTML: ReadonlySet<string> = new Set(
   ),
 );
 
-export function allowedHtml(input: string): string {
-  if (ALLOWED_HTML.has(input)) return input;
+export function allowedHtml(input: string, sink?: string): string {
+  if (ALLOWED_HTML.has(input) || acceptsHtml(input, sink)) return input;
   throw new TypeError("HTML strings are refused by the Trusted Types policy; render elements instead.");
 }
 
@@ -39,7 +43,7 @@ export function sameOriginScriptUrl(input: string, origin: string = window.locat
 export function installTrustedTypes(factory: PolicyFactory | undefined): void {
   if (!factory) return; // Browsers without Trusted Types: the content security policy still applies.
   factory.createPolicy(TRUSTED_TYPES_POLICY, {
-    createHTML: (input) => allowedHtml(input),
+    createHTML: (input, _type, sink) => allowedHtml(input, sink),
     createScript: () => {
       throw new TypeError("Inline scripts are refused by the Trusted Types policy.");
     },

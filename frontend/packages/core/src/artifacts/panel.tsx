@@ -25,6 +25,7 @@ import {
   FileText,
   FileVideo,
   Globe,
+  NotebookText,
   Share2,
   type LucideIcon,
 } from "lucide-react";
@@ -46,6 +47,7 @@ import { ArtifactPreview } from "./viewer";
 
 const ICONS: Record<ViewerKind, LucideIcon> = {
   markdown: FileText,
+  notebook: NotebookText,
   html: Globe,
   svg: FileImage,
   image: FileImage,
@@ -61,6 +63,7 @@ const ICONS: Record<ViewerKind, LucideIcon> = {
 
 const LABELS: Record<ViewerKind, string> = {
   markdown: "Markdown",
+  notebook: "Notebook",
   html: "HTML",
   svg: "SVG",
   image: "Image",

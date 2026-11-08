@@ -36,6 +36,7 @@ _TEXT_TYPES = {
     ".csv": "text/csv",
     ".tsv": "text/tab-separated-values",
     ".json": "application/json",
+    ".ipynb": "application/x-ipynb+json",
     ".jsonl": "application/x-ndjson",
     ".html": "text/html",
     ".htm": "text/html",

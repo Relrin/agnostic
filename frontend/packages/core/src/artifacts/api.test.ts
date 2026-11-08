@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { resolveArtifactPath } from "./api";
+import { resolveArtifactPath, viewerKind } from "./api";
 
 describe("resolveArtifactPath", () => {
   it("resolves a link against the folder of the file it is in", () => {
@@ -25,5 +25,14 @@ describe("resolveArtifactPath", () => {
     expect(resolveArtifactPath("outputs/report.md", "//cdn.example.com/a.png")).toBeUndefined();
     expect(resolveArtifactPath("outputs/report.md", "#section")).toBeUndefined();
     expect(resolveArtifactPath("outputs/report.md", "../../etc/passwd")).toBeUndefined();
+  });
+});
+
+describe("viewerKind", () => {
+  it("shows Jupyter notebooks as notebooks, not JSON", () => {
+    expect(viewerKind("application/x-ipynb+json", "analysis.ipynb")).toBe("notebook");
+    expect(viewerKind("application/json", "analysis.ipynb")).toBe("notebook");
+    expect(viewerKind("application/octet-stream", "Analysis.IPYNB")).toBe("notebook");
+    expect(viewerKind("application/json", "data.json")).toBe("json");
   });
 });

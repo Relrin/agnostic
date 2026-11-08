@@ -55,7 +55,7 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams, useSearch } from "@tanstack/react-router";
 import { PanelRight, Plus } from "lucide-react";
-import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import { useDeferredValue, useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
 
 import { SessionRail } from "./session-rail";
 
@@ -192,9 +192,11 @@ function LiveRun({
   useEffect(() => {
     if (sessionId) onSession(sessionId);
   }, [onSession, sessionId]);
+  // Once per settle: the page hands over a new `onSettled` on every render, and the refresh it starts re-renders it.
+  const settle = useEffectEvent(onSettled);
   useEffect(() => {
-    if (settled) onSettled();
-  }, [onSettled, settled]);
+    if (settled) settle();
+  }, [settled]);
   if (!state) return null;
   const input = state.input;
   return (

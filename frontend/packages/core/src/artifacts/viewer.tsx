@@ -1,23 +1,31 @@
 // The artefact viewer: one preview per kind of file, plus its source where that helps.
 //
 // - Markdown, code, CSV, JSON and text are read as text and rendered by the app (Markdown without raw HTML).
+// - Jupyter notebooks are rendered read-only by jupyter-kit, their HTML sanitized first; nothing in them runs.
 // - Images and SVG are shown with <img>: an SVG loaded as an image cannot run script.
 // - Audio and video play from the artefact URL.
 // - PDFs are drawn to canvases by pdf.js.
 // - HTML is the only kind that runs anything: in a sandboxed frame with an opaque origin, from a response whose
 //   own policy forbids every network request, so it can neither read the app's cookies nor call its API.
 import { Callout, LoadingRows, MarkdownView, SegmentedControl, JsonView } from "@agnostic/ui";
+import type { Ipynb } from "@jupyter-kit/core";
 import { useQuery } from "@tanstack/react-query";
-import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 
 import { formatBytes } from "../format";
 import { codeLanguage, fetchArtifact, viewerKind, type ViewerKind } from "./api";
 import { parseCsv } from "./csv";
 
 const PdfView = lazy(() => import("./pdf-view").then((module) => ({ default: module.PdfView })));
+const NotebookView = lazy(() =>
+  import("./notebook-view").then((module) => ({ default: module.NotebookView })),
+);
 
 /** Text previews stop here; the full file is one click away (Download). */
 const MAX_TEXT = 2 * 1024 * 1024;
+
+/** Notebooks are read whole (a cut one is not valid JSON), up to here: saved outputs make them large. */
+const MAX_NOTEBOOK = 25 * 1024 * 1024;
 
 export type ArtifactSource = {
   /** Serves the bytes for viewing (the isolated `inline` route). */
@@ -34,7 +42,7 @@ export type ArtifactSource = {
 
 type Mode = "preview" | "source";
 
-const WITH_SOURCE: ReadonlySet<ViewerKind> = new Set(["markdown", "html", "svg", "csv", "json"]);
+const WITH_SOURCE: ReadonlySet<ViewerKind> = new Set(["markdown", "notebook", "html", "svg", "csv", "json"]);
 
 function useBlob(url: string, enabled: boolean) {
   return useQuery({
@@ -71,9 +79,42 @@ function useFromBytes<T>(
   });
 }
 
-async function readText(blob: Blob): Promise<{ text: string; truncated: boolean }> {
-  const truncated = blob.size > MAX_TEXT;
-  return { text: await (truncated ? blob.slice(0, MAX_TEXT) : blob).text(), truncated };
+async function readText(blob: Blob, limit = MAX_TEXT): Promise<{ text: string; truncated: boolean }> {
+  const truncated = blob.size > limit;
+  return { text: await (truncated ? blob.slice(0, limit) : blob).text(), truncated };
+}
+
+/** `text` as a notebook (nbformat 4, or 3 with worksheets), or `undefined` when it is not one. */
+export function parseNotebook(text: string): Ipynb | undefined {
+  let value: unknown;
+  try {
+    value = JSON.parse(text);
+  } catch {
+    return undefined;
+  }
+  if (typeof value !== "object" || value === null) return undefined;
+  const { cells, worksheets } = value as { cells?: unknown; worksheets?: unknown };
+  if (Array.isArray(cells)) return value as Ipynb;
+  if (Array.isArray(worksheets)) return { ...(value as Ipynb), cells: [] };
+  return undefined;
+}
+
+function NotebookPreview({ text, filename }: { text: string; filename: string }) {
+  const notebook = useMemo(() => parseNotebook(text), [text]);
+  if (!notebook)
+    return (
+      <>
+        <Callout tone="warning" title="This notebook could not be read">
+          It is not valid notebook JSON; showing the file as it is.
+        </Callout>
+        <Source text={text} language="json" />
+      </>
+    );
+  return (
+    <Suspense fallback={<LoadingRows rows={4} label="Loading the notebook viewer" />}>
+      <NotebookView notebook={notebook} filename={filename} />
+    </Suspense>
+  );
 }
 
 /** `blob` as an image. Its object URL is made and revoked by one effect, so a remount never leaves a dead URL. */
@@ -162,7 +203,7 @@ function TextPreview({
         ? codeLanguage(filename)
         : kind === "html" || kind === "svg"
           ? "html"
-          : kind === "json"
+          : kind === "json" || kind === "notebook"
             ? "json"
             : kind === "markdown"
               ? "markdown"
@@ -171,6 +212,7 @@ function TextPreview({
   }
   if (kind === "markdown") return <MarkdownView imageSource={resolveImage}>{text}</MarkdownView>;
   if (kind === "csv") return <CsvTable text={text} />;
+  if (kind === "notebook") return <NotebookPreview text={text} filename={filename} />;
   if (kind === "json") {
     const parsed = parsedJson(text);
     return parsed.ok ? (
@@ -220,8 +262,12 @@ function FilePreview({ source }: { source: ArtifactSource }) {
   const needsBytes =
     kind !== "audio" && kind !== "video" && kind !== "binary" && !(kind === "html" && mode === "preview");
   const blob = useBlob(source.url, needsBytes);
-  const textual = ["markdown", "csv", "json", "code", "text"].includes(kind) || mode === "source";
-  const text = useFromBytes("text", source.url, blob, textual, readText);
+  const textual = ["markdown", "notebook", "csv", "json", "code", "text"].includes(kind) || mode === "source";
+  // A notebook's source is highlighted JSON: past the usual limit that is too slow to be useful.
+  const textLimit = kind === "notebook" && mode === "preview" ? MAX_NOTEBOOK : MAX_TEXT;
+  const text = useFromBytes(`text-${String(textLimit)}`, source.url, blob, textual, (data) =>
+    readText(data, textLimit),
+  );
   const pdfBytes = useFromBytes("pdf", source.url, blob, kind === "pdf", (data) => data.arrayBuffer());
 
   let body: React.ReactNode;
@@ -233,11 +279,17 @@ function FilePreview({ source }: { source: ArtifactSource }) {
       </Callout>
     );
   else if (textual) {
-    body = text.data ? (
+    body = !text.data ? (
+      <LoadingRows rows={3} label="Reading the file" />
+    ) : kind === "notebook" && mode === "preview" && text.data.truncated ? (
+      <Callout tone="info" title="This notebook is too large to preview">
+        It is over {formatBytes(MAX_NOTEBOOK)}. Download it to open it in Jupyter, or look at its source.
+      </Callout>
+    ) : (
       <>
         {text.data.truncated && (
           <Callout tone="info">
-            Showing the first {formatBytes(MAX_TEXT)}; download the file for all of it.
+            Showing the first {formatBytes(textLimit)}; download the file for all of it.
           </Callout>
         )}
         <TextPreview
@@ -248,8 +300,6 @@ function FilePreview({ source }: { source: ArtifactSource }) {
           resolveImage={source.resolveImage}
         />
       </>
-    ) : (
-      <LoadingRows rows={3} label="Reading the file" />
     );
   } else if (kind === "html") body = <HtmlFrame url={source.url} filename={source.filename} />;
   else if ((kind === "image" || kind === "svg") && blob.data)

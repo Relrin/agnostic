@@ -105,6 +105,7 @@ def test_directory_source_refuses_a_symlink_that_leaves_the_root(tmp_path: Path)
         ("page", b"<!DOCTYPE html><html></html>", "text/html"),
         ("logo.svg", b"<svg xmlns='http://www.w3.org/2000/svg'/>", "image/svg+xml"),
         ("data.csv", b"a,b\n1,2\n", "text/csv"),
+        ("analysis.ipynb", b'{"cells": [], "nbformat": 4}', "application/x-ipynb+json"),
         ("blob.bin", b"\x00\x01\x02\xff", "application/octet-stream"),
         ("clip.mp4", b"\x00\x00\x00\x18ftypisom", "video/mp4"),
         ("sound.wav", b"RIFF\x00\x00\x00\x00WAVEfmt ", "audio/wav"),
