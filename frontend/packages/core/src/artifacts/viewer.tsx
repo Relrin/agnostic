@@ -8,7 +8,7 @@
 //   own policy forbids every network request, so it can neither read the app's cookies nor call its API.
 import { Callout, LoadingRows, MarkdownView, SegmentedControl, JsonView } from "@agnostic/ui";
 import { useQuery } from "@tanstack/react-query";
-import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 
 import { formatBytes } from "../format";
 import { codeLanguage, fetchArtifact, viewerKind, type ViewerKind } from "./api";
@@ -25,6 +25,11 @@ export type ArtifactSource = {
   filename: string;
   contentType: string;
   size?: number | null | undefined;
+  /**
+   * Where an image a Markdown file embeds by relative path lives: its URL, or `null` when the file is not there.
+   * Without it such images load from wherever the browser resolves them.
+   */
+  resolveImage?: ((src: string) => string | null | undefined) | undefined;
 };
 
 type Mode = "preview" | "source";
@@ -42,28 +47,49 @@ function useBlob(url: string, enabled: boolean) {
   });
 }
 
-function useText(blob: Blob | undefined) {
+type Bytes = ReturnType<typeof useBlob>;
+
+/**
+ * Something read out of a file's bytes (its text, its buffer). Keyed by the file's URL and when its bytes arrived:
+ * a query key is hashed as JSON, where every Blob is `{}`, so the Blob itself cannot tell two files apart.
+ */
+function useFromBytes<T>(
+  name: string,
+  url: string,
+  bytes: Bytes,
+  enabled: boolean,
+  read: (blob: Blob) => Promise<T>,
+) {
+  const blob = bytes.data;
   return useQuery({
-    queryKey: ["artifact-text", blob],
-    queryFn: async () => {
-      if (!blob) return { text: "", truncated: false };
-      const truncated = blob.size > MAX_TEXT;
-      return { text: await (truncated ? blob.slice(0, MAX_TEXT) : blob).text(), truncated };
-    },
-    enabled: blob !== undefined,
+    queryKey: ["artifact-read", name, url, bytes.dataUpdatedAt],
+    queryFn: () => (blob ? read(blob) : Promise.reject(new Error("The file is not loaded yet."))),
+    enabled: enabled && blob !== undefined,
     staleTime: Infinity,
+    gcTime: 60_000,
+    retry: false,
   });
 }
 
-function useObjectUrl(blob: Blob | undefined): string | undefined {
-  const url = useMemo(() => (blob ? URL.createObjectURL(blob) : undefined), [blob]);
-  useEffect(
-    () => () => {
-      if (url) URL.revokeObjectURL(url);
-    },
-    [url],
-  );
-  return url;
+async function readText(blob: Blob): Promise<{ text: string; truncated: boolean }> {
+  const truncated = blob.size > MAX_TEXT;
+  return { text: await (truncated ? blob.slice(0, MAX_TEXT) : blob).text(), truncated };
+}
+
+/** `blob` as an image. Its object URL is made and revoked by one effect, so a remount never leaves a dead URL. */
+function BlobImage({ blob, alt }: { blob: Blob; alt: string }) {
+  const image = useRef<HTMLImageElement>(null);
+  useEffect(() => {
+    const element = image.current;
+    if (!element) return undefined;
+    const url = URL.createObjectURL(blob);
+    element.src = url;
+    return () => {
+      element.removeAttribute("src");
+      URL.revokeObjectURL(url);
+    };
+  }, [blob]);
+  return <img ref={image} alt={alt} className="max-h-[70vh] max-w-full object-contain" />;
 }
 
 function CsvTable({ text }: { text: string }) {
@@ -122,11 +148,13 @@ function TextPreview({
   text,
   filename,
   mode,
+  resolveImage,
 }: {
   kind: ViewerKind;
   text: string;
   filename: string;
   mode: Mode;
+  resolveImage: ArtifactSource["resolveImage"];
 }) {
   if (mode === "source" || kind === "text") {
     const language =
@@ -141,7 +169,7 @@ function TextPreview({
               : undefined;
     return <Source text={text} language={language} />;
   }
-  if (kind === "markdown") return <MarkdownView>{text}</MarkdownView>;
+  if (kind === "markdown") return <MarkdownView imageSource={resolveImage}>{text}</MarkdownView>;
   if (kind === "csv") return <CsvTable text={text} />;
   if (kind === "json") {
     const parsed = parsedJson(text);
@@ -181,22 +209,20 @@ function BinaryNotice({ source }: { source: ArtifactSource }) {
   );
 }
 
-/** Preview of one artefact. `kind` defaults to what its type and name say. */
+/** Preview of one artefact, chosen by its type and name. A different file starts afresh, back on Preview. */
 export function ArtifactPreview({ source }: { source: ArtifactSource }) {
+  return <FilePreview key={source.url} source={source} />;
+}
+
+function FilePreview({ source }: { source: ArtifactSource }) {
   const kind = viewerKind(source.contentType, source.filename);
   const [mode, setMode] = useState<Mode>("preview");
   const needsBytes =
     kind !== "audio" && kind !== "video" && kind !== "binary" && !(kind === "html" && mode === "preview");
   const blob = useBlob(source.url, needsBytes);
   const textual = ["markdown", "csv", "json", "code", "text"].includes(kind) || mode === "source";
-  const text = useText(textual ? blob.data : undefined);
-  const objectUrl = useObjectUrl(kind === "image" || kind === "svg" ? blob.data : undefined);
-  const pdfBytes = useQuery({
-    queryKey: ["artifact-pdf", blob.data],
-    queryFn: () => (blob.data ? blob.data.arrayBuffer() : Promise.resolve(new ArrayBuffer(0))),
-    enabled: kind === "pdf" && blob.data !== undefined,
-    staleTime: Infinity,
-  });
+  const text = useFromBytes("text", source.url, blob, textual, readText);
+  const pdfBytes = useFromBytes("pdf", source.url, blob, kind === "pdf", (data) => data.arrayBuffer());
 
   let body: React.ReactNode;
   if (needsBytes && blob.isPending) body = <LoadingRows rows={4} label={`Loading ${source.filename}`} />;
@@ -214,16 +240,22 @@ export function ArtifactPreview({ source }: { source: ArtifactSource }) {
             Showing the first {formatBytes(MAX_TEXT)}; download the file for all of it.
           </Callout>
         )}
-        <TextPreview kind={kind} text={text.data.text} filename={source.filename} mode={mode} />
+        <TextPreview
+          kind={kind}
+          text={text.data.text}
+          filename={source.filename}
+          mode={mode}
+          resolveImage={source.resolveImage}
+        />
       </>
     ) : (
       <LoadingRows rows={3} label="Reading the file" />
     );
   } else if (kind === "html") body = <HtmlFrame url={source.url} filename={source.filename} />;
-  else if ((kind === "image" || kind === "svg") && objectUrl)
+  else if ((kind === "image" || kind === "svg") && blob.data)
     body = (
       <div className="grid place-items-center rounded-tile border border-border bg-[repeating-conic-gradient(var(--color-surface)_0%_25%,transparent_0%_50%)] bg-[length:16px_16px] p-3">
-        <img src={objectUrl} alt={source.filename} className="max-h-[70vh] max-w-full object-contain" />
+        <BlobImage blob={blob.data} alt={source.filename} />
       </div>
     );
   else if (kind === "audio")

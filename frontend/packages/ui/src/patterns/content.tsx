@@ -99,9 +99,29 @@ function tokenStyle(token: Token): CSSProperties {
 }
 
 type LinkMapper = (href: string) => string | undefined;
+/** Where an image's `src` really is: a URL to load, `null` when it cannot be found, `undefined` to keep it as is. */
+type ImageMapper = (src: string) => string | null | undefined;
 
-function markdownComponents(internalLink: LinkMapper | undefined, highlight: boolean): Components {
+function markdownComponents(
+  internalLink: LinkMapper | undefined,
+  highlight: boolean,
+  imageSource: ImageMapper | undefined,
+): Components {
   return {
+    img: ({ src, alt, title }) => {
+      const given = typeof src === "string" ? src : undefined;
+      const mapped = given === undefined ? undefined : imageSource?.(given);
+      if (mapped === null)
+        return (
+          <span
+            className="rounded-type bg-surface-hover px-1 py-px text-[12.5px] text-fg-muted"
+            title={given}
+          >
+            {alt?.trim() ? alt : given}
+          </span>
+        );
+      return <img src={mapped ?? given} alt={alt ?? ""} title={title} className="max-w-full" />;
+    },
     a: ({ href, children: label }) => {
       const inside = href ? internalLink?.(href) : undefined;
       return inside ? (
@@ -186,19 +206,28 @@ export function MarkdownView({
   children,
   className,
   internalLink,
+  imageSource,
   streaming = false,
 }: {
   children: string;
   className?: string;
   /** Map a link to a page of the app (opened in place), or `undefined` to open it in a new tab. */
   internalLink?: LinkMapper;
+  /** Map an image's `src` (a relative path, say) to the URL to load it from. */
+  imageSource?: ImageMapper | undefined;
   /** The text is still arriving. */
   streaming?: boolean;
 }) {
   const shown = useSmoothText(children, streaming);
   const revealing = streaming || shown.length < children.length;
-  const components = useMemo(() => markdownComponents(internalLink, true), [internalLink]);
-  const growing = useMemo(() => markdownComponents(internalLink, false), [internalLink]);
+  const components = useMemo(
+    () => markdownComponents(internalLink, true, imageSource),
+    [internalLink, imageSource],
+  );
+  const growing = useMemo(
+    () => markdownComponents(internalLink, false, imageSource),
+    [internalLink, imageSource],
+  );
   const blocks = useMemo(() => (revealing ? markdownBlocks(shown) : undefined), [revealing, shown]);
   return (
     <div

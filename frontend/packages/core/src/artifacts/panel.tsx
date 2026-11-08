@@ -28,13 +28,14 @@ import {
   Share2,
   type LucideIcon,
 } from "lucide-react";
-import { createElement, useState, type ReactNode } from "react";
+import { createElement, useCallback, useState, type ReactNode } from "react";
 
 import { formatBytes, formatWhen } from "../format";
 import { useCan } from "../permissions";
 import {
   artifactContentUrl,
   downloadUrl,
+  resolveArtifactPath,
   useSessionArtifacts,
   viewerKind,
   type Artifact,
@@ -122,6 +123,20 @@ export function ArtifactInspector({
 }) {
   const [sharing, setSharing] = useState(false);
   const canShare = useCan("artifacts:share", instance).allowed === true;
+  const markdown = viewerKind(artifact.content_type, artifact.filename) === "markdown";
+  const siblings = useSessionArtifacts(instance, artifact.session_id, markdown);
+  // Images a Markdown file embeds by relative path are the session's other files, served like this one.
+  const resolveImage = useCallback(
+    (src: string): string | null | undefined => {
+      const path = resolveArtifactPath(artifact.path ?? artifact.filename, src);
+      if (path === undefined) return undefined;
+      const found = siblings.data?.find(
+        (candidate) => resolveArtifactPath(undefined, candidate.path ?? candidate.filename) === path,
+      );
+      return found ? artifactContentUrl(instance, found) : null;
+    },
+    [artifact.path, artifact.filename, siblings.data, instance],
+  );
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3">
       <div className="flex flex-col gap-1 pr-8">
@@ -173,6 +188,7 @@ export function ArtifactInspector({
             filename: artifact.filename,
             contentType: artifact.content_type,
             size: artifact.size,
+            resolveImage: markdown ? resolveImage : undefined,
           }}
         />
       </div>

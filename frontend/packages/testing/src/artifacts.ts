@@ -49,7 +49,9 @@ export const sampleArtifacts = [
 
 export const sampleArtifactBodies: Record<string, { body: string | Uint8Array; type: string }> = {
   "report.md": {
-    body: "# Report: support volume\n\n| Quarter | Volume |\n|---|---|\n| Q1 | 61 |\n",
+    body:
+      "# Report: support volume\n\n| Quarter | Volume |\n|---|---|\n| Q1 | 61 |\n\n" +
+      "![Volume chart](charts/volume.png)\n\n![Missing chart](charts/gone.png)\n",
     type: "text/markdown",
   },
   "summary.html": { body: "<!doctype html><h1>Summary</h1>", type: "text/html" },

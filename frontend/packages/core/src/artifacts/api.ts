@@ -77,6 +77,36 @@ export function codeLanguage(filename: string): string | undefined {
   return CODE_LANGUAGES[extensionOf(filename)];
 }
 
+/**
+ * The workspace path a link in the file at `from` points to (`charts/a.png` in `outputs/report.md` is
+ * `outputs/charts/a.png`). `undefined` for anything that is not a path inside the workspace: a URL with a scheme,
+ * a protocol-relative URL, a bare fragment, or a path that climbs above the root.
+ */
+export function resolveArtifactPath(from: string | null | undefined, href: string): string | undefined {
+  const target = href.trim();
+  if (!target || target.startsWith("#") || target.startsWith("//") || /^[a-z][a-z0-9+.-]*:/i.test(target))
+    return undefined;
+  const bare = target.split(/[?#]/, 1)[0] ?? "";
+  const rooted = bare.startsWith("/");
+  const segments = rooted ? [] : (from ?? "").split("/").slice(0, -1);
+  for (const raw of bare.split("/")) {
+    let segment = raw;
+    try {
+      segment = decodeURIComponent(raw);
+    } catch {
+      // A stray % is part of the name.
+    }
+    if (segment === "" || segment === ".") continue;
+    if (segment === "..") {
+      if (segments.pop() === undefined) return undefined;
+      continue;
+    }
+    segments.push(segment);
+  }
+  const path = segments.filter((segment) => segment !== "" && segment !== ".").join("/");
+  return path || undefined;
+}
+
 export function viewerKind(contentType: string, filename: string): ViewerKind {
   const type = contentType.split(";")[0]?.trim().toLowerCase() ?? "";
   const extension = extensionOf(filename);
