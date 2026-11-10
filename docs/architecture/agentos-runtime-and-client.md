@@ -62,7 +62,7 @@ the `assistant` module does).
 
 ## Contract tests
 
-`backend/tests/contract/` runs against a live runtime (`just test-contract`; CI `contract.yml` on changes and
-nightly): `test_agentos_runtime.py`, `test_inline_approvals.py`, `test_studio_configs.py`. To upgrade agno: bump
+`backend/tests/contract/` runs against a live runtime (`just test-contract`; CI `contract.yml` on pull requests
+that touch it and on every merge to master): `test_agentos_runtime.py`, `test_inline_approvals.py`, `test_studio_configs.py`. To upgrade agno: bump
 `runtime/pyproject.toml`, `uv lock`, `just agentos-client-gen`, review the model diff, run the suite. Renovate holds
 agno upgrades for approval.

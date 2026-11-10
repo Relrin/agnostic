@@ -58,6 +58,17 @@ load through the bridge.
 
 Every publish is audited with the field-level diff. *Set current* rolls back to an earlier published version.
 
+## Renaming
+
+*Rename*, on a row of the Agents, Agent teams or Workflows list and in the editor's header, changes the display name
+of a component stored in Studio. Anyone with `components:write` on the instance can do it, whether the role is bound
+to them, to a group they are in, or comes with their organization role. The id never changes, so links, sessions,
+traces and evaluations keep pointing at the same component.
+
+Studio shows the new name at once and writes it into the open draft. Chat, Sessions and Traces read the name from
+the published version, so they show it after the next publish; setting an older version current brings back the name
+that version was published with. Components defined in code are renamed in the code.
+
 ## Promotion
 
 *Promote* copies a version to another instance (staging → production): a dry run first checks that every registry

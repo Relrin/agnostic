@@ -29,6 +29,7 @@ import {
   Copy,
   History,
   Lock,
+  Pencil,
   Rows3,
   Upload,
 } from "lucide-react";
@@ -49,6 +50,7 @@ import { ConflictDialog, DiffDialog, PromoteDialog, PublishDialog, VersionsDrawe
 import { useCodeDocument, useDraftDocument, useRegistry, type DraftDocument } from "./document";
 import { IncomingChip, SourceBar, incomingMarks, useComponentSource } from "./source-bar";
 import { fieldId, type FormContext } from "./form";
+import { RenameComponentDialog } from "./rename";
 import { TestPane } from "./test-pane";
 
 export type Layout = "form" | "split" | "code";
@@ -152,6 +154,7 @@ function EditorFrame({
 }: EditorProps & { doc: DraftDocument }) {
   const locked = doc.origin === "code";
   const [duplicating, setDuplicating] = useState<DuplicateSource | undefined>(undefined);
+  const [renaming, setRenaming] = useState(false);
   const registry = useRegistry(instance);
   const instances = useInstances();
   const found = findInstance(instances.data, instance);
@@ -253,6 +256,18 @@ function EditorFrame({
       <IncomingChip instance={instance} componentId={componentId} />
       <span className="flex-1" />
       <ExplainConfig instance={instance} componentId={componentId} config={doc.config} />
+      {canWrite.allowed && (
+        <Button
+          variant="outline"
+          size="32"
+          onClick={() => {
+            setRenaming(true);
+          }}
+        >
+          <Pencil aria-hidden />
+          Rename
+        </Button>
+      )}
       {canDuplicate && (
         <Button variant="outline" size="32" onClick={duplicate}>
           <Copy aria-hidden />
@@ -500,6 +515,17 @@ function EditorFrame({
         source={duplicating}
         onOpenChange={(open) => {
           if (!open) setDuplicating(undefined);
+        }}
+      />
+      <RenameComponentDialog
+        instance={instance}
+        target={renaming ? { id: component.id, name: component.name, kind } : undefined}
+        onClose={() => {
+          setRenaming(false);
+        }}
+        before={() => (doc.state === "dirty" ? doc.save() : Promise.resolve())}
+        onRenamed={(renamed) => {
+          doc.renamed(renamed.component.name, renamed.draft?.revision);
         }}
       />
       {draft && (

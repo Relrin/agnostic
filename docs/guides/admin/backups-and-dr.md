@@ -39,7 +39,7 @@ AGNOSTIC_DATABASE__URL=postgresql://… AGNOSTIC_REDIS__URL=redis://… AGNOSTIC
   bash scripts/restore_drill.sh
 ```
 
-It runs nightly in CI and is part of every release. See the [restore drill runbook](../runbooks/restore-drill.md).
+It runs in CI on every merge to master and is part of every release. See the [restore drill runbook](../runbooks/restore-drill.md).
 
 ## Disaster recovery runbook
 

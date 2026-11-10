@@ -84,6 +84,9 @@ export const Inputs: Story = {
           <SelectContent>
             <SelectItem value="v3">v3 · current</SelectItem>
             <SelectItem value="v4">v4 · draft</SelectItem>
+            <SelectItem value="long">
+              v5 · a label far longer than the control, which is cut with an ellipsis and never runs over it
+            </SelectItem>
           </SelectContent>
         </Select>
         <SegmentedControl

@@ -9,6 +9,7 @@ from typing import Any
 import httpx
 import pytest
 
+from tests.api.test_governance import invite, roles_by_slug
 from tests.api.test_instances_gateway import connect
 from tests.support.fake_agentos import FakeAgentOS
 from tests.support.stack import Stack, running_stack
@@ -492,3 +493,97 @@ async def test_code_defined_agent_is_viewable_and_duplicable(stack: Stack) -> No
     assert draft["config"]["model"] == model
     assert draft["change_summary"] == "Duplicated from billing-agent (defined in code)"
     assert "billing-agent" not in staging.components
+
+
+async def test_rename_keeps_the_id_and_survives_publishing(stack: Stack) -> None:
+    owner = await stack.owner()
+    staging, _, _ = await two_instances(stack, owner)
+    model = (await entry(owner, STAGING, "model", "mock-precise"))["entry"]["config_value"]
+    created = await owner.post(
+        f"{STAGING}/studio/components",
+        json={"kind": "agent", "name": "support-triage", "mode": "blank", "model": model},
+    )
+    assert created.status_code == 201, created.text
+    component = f"{STAGING}/studio/components/support-triage"
+
+    # ------------------------------------------------ with a draft open: the row and the draft take the name
+    renamed = await owner.patch(component, json={"name": "  Support triage  "})
+    assert renamed.status_code == 200, renamed.text
+    detail = renamed.json()
+    assert (detail["component"]["id"], detail["component"]["name"]) == ("support-triage", "Support triage")
+    assert detail["draft"]["config"]["name"] == "Support triage"
+    assert detail["draft"]["config"]["id"] == "support-triage"
+    listed = (await owner.get(f"{STAGING}/studio/components", params={"kind": "agent"})).json()
+    assert [row["component"]["name"] for row in listed] == ["Support triage"]
+
+    recorded = await events(owner, "components.renamed")
+    assert len(recorded) == 1
+    assert recorded[0]["resource_id"] == "support-triage"
+
+    published = await owner.post(f"{component}/configs/1/publish", json={})
+    assert published.status_code == 200, published.text
+    assert staging.components["support-triage"]["name"] == "Support triage"
+
+    # ------------------------------------------------ with no draft open: the next draft starts with the name
+    again = await owner.patch(component, json={"name": "Triage desk"})
+    assert again.status_code == 200, again.text
+    assert again.json()["draft"] is None
+    assert staging.configs["support-triage"][1]["config"]["name"] == "Support triage"  # published versions are kept
+    draft = await owner.post(f"{component}/configs", json={})
+    assert draft.status_code == 201, draft.text
+    assert staging.configs["support-triage"][2]["config"]["name"] == "Triage desk"
+    published = await owner.post(f"{component}/configs/2/publish", json={})
+    assert published.status_code == 200, published.text
+    assert staging.components["support-triage"]["name"] == "Triage desk"
+
+    # ------------------------------------------------ the same name again changes nothing and isn't audited
+    same = await owner.patch(component, json={"name": "Triage desk"})
+    assert same.status_code == 200, same.text
+    assert len(await events(owner, "components.renamed")) == 2
+
+    assert (await owner.patch(component, json={"name": "   "})).status_code == 422
+    assert (await owner.patch(f"{STAGING}/studio/components/nope", json={"name": "x"})).status_code == 404
+
+
+async def test_rename_needs_write_access_which_a_group_can_grant(stack: Stack) -> None:
+    owner = await stack.owner()
+    await two_instances(stack, owner)
+    model = (await entry(owner, STAGING, "model", "mock-precise"))["entry"]["config_value"]
+    created = await owner.post(
+        f"{STAGING}/studio/components",
+        json={"kind": "agent", "name": "support-triage", "mode": "blank", "model": model},
+    )
+    assert created.status_code == 201, created.text
+    component = f"{STAGING}/studio/components/support-triage"
+
+    maya, maya_id = await invite(stack, owner, "maya@localhost.company", "Maya Chen")
+    roles = await roles_by_slug(owner)
+    group = await owner.post("/api/v1/directory/groups", json={"name": "Support AI", "member_ids": [maya_id]})
+    assert group.status_code == 201, group.text
+
+    async def bind(slug: str) -> str:
+        bound = await owner.post(
+            "/api/v1/access/bindings",
+            json={
+                "principal_kind": "group",
+                "principal_id": group.json()["id"],
+                "instance": "staging-agentos",
+                "role_id": roles[slug]["id"],
+            },
+        )
+        assert bound.status_code == 201, bound.text
+        return bound.json()["id"]
+
+    # A viewer reads the component but can't rename it.
+    viewing = await bind("viewer")
+    assert (await maya.get(component)).status_code == 200
+    refused = await maya.patch(component, json={"name": "Maya's triage"})
+    assert refused.status_code == 403, refused.text
+    assert (await owner.get(component)).json()["component"]["name"] == "support-triage"
+
+    # A builder through the team's group renames a component someone else created.
+    assert (await owner.delete(f"/api/v1/access/bindings/{viewing}")).status_code in {200, 204}
+    _ = await bind("builder")
+    renamed = await maya.patch(component, json={"name": "Maya's triage"})
+    assert renamed.status_code == 200, renamed.text
+    assert renamed.json()["component"]["name"] == "Maya's triage"

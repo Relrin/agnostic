@@ -180,6 +180,7 @@ export { ShareDialog } from "./artifacts/share-dialog";
 export {
   ArtifactLoadError,
   artifactContentUrl,
+  artifactsUnavailable,
   downloadUrl,
   fetchArtifact,
   sharedContentUrl,

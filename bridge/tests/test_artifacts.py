@@ -271,6 +271,14 @@ def test_session_artifacts_lists_outputs_and_optionally_inputs(tmp_path: Path) -
     assert synced == {"session_id": "sess_1", "runs_synced": 0, "artifacts": 0}
 
 
+def test_recent_artifacts_is_empty_before_anything_is_stored(tmp_path: Path) -> None:
+    client = TestClient(install(make_os(db=SqliteDb(db_file=str(tmp_path / "os.db")))))
+
+    response = client.get("/agnostic/v1/artifacts/recent", params={"sessions": 50})
+    assert response.status_code == 200
+    assert response.json() == {"data": [], "scanned_sessions": 0}
+
+
 def test_routes_need_session_scopes() -> None:
     assert SCOPE_MAPPINGS["GET /agnostic/v1/artifacts"] == ["sessions:read"]
     assert SCOPE_MAPPINGS["POST /agnostic/v1/artifacts/sync"] == ["sessions:write"]

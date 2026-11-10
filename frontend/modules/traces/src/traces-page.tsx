@@ -677,10 +677,10 @@ export function TracesPage() {
           <SelectContent>
             <SelectItem value={ANY}>Component: Any</SelectItem>
             {components.map((item) => (
-              <SelectItem key={item.value} value={item.value}>
-                <span className="inline-flex items-center gap-1.5">
+              <SelectItem key={item.value} value={item.value} title={item.label}>
+                <span className="flex min-w-0 items-center gap-1.5">
                   <EntitySquare kind={item.kind} />
-                  {item.label}
+                  <span className="truncate">{item.label}</span>
                 </span>
               </SelectItem>
             ))}

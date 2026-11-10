@@ -1,7 +1,8 @@
-import { artifactHandlers, operateHandlers, renderPage, sampleOrgHandlers } from "@agnostic/testing";
+import { GATEWAY, artifactHandlers, operateHandlers, renderPage, sampleOrgHandlers } from "@agnostic/testing";
 import { TooltipProvider } from "@agnostic/ui";
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
@@ -87,6 +88,40 @@ describe("ArtifactsPage", () => {
       await within(preview).findByRole("heading", { name: "Report: support volume" }),
     ).toBeInTheDocument();
     expect(within(preview).getByRole("radio", { name: "Preview" })).toBeChecked();
+  });
+
+  it("says there are no files yet when the instance has stored none", async () => {
+    server.use(
+      http.get(`${GATEWAY}/agnostic/v1/artifacts/recent`, () =>
+        HttpResponse.json({ data: [], scanned_sessions: 0 }),
+      ),
+    );
+    renderPage(ArtifactsPage, { path: "/i/$instance/artifacts", url: "/i/prod-agentos/artifacts" });
+    expect(await screen.findByText("No files yet")).toBeInTheDocument();
+    expect(screen.queryByRole("alert")).toBeNull();
+  });
+
+  it("shows no error when the instance doesn't serve the file listing", async () => {
+    server.use(
+      http.get(`${GATEWAY}/agnostic/v1/artifacts/recent`, () =>
+        HttpResponse.json({ detail: "Not Found" }, { status: 404 }),
+      ),
+    );
+    renderPage(ArtifactsPage, { path: "/i/$instance/artifacts", url: "/i/prod-agentos/artifacts" });
+    expect(await screen.findByText("No files yet")).toBeInTheDocument();
+    expect(screen.getByText(/doesn't list files yet/)).toBeInTheDocument();
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(screen.queryByText("Not Found")).toBeNull();
+  });
+
+  it("still reports a listing that failed on the instance", async () => {
+    server.use(
+      http.get(`${GATEWAY}/agnostic/v1/artifacts/recent`, () =>
+        HttpResponse.json({ detail: "The database didn't answer" }, { status: 500 }),
+      ),
+    );
+    renderPage(ArtifactsPage, { path: "/i/$instance/artifacts", url: "/i/prod-agentos/artifacts" });
+    expect(await screen.findByRole("alert")).toHaveTextContent("The database didn't answer");
   });
 
   it("shows share links with their state", async () => {

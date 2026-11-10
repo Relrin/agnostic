@@ -235,6 +235,11 @@ export type DraftDocument = {
   conflict: Conflict | undefined;
   resolveConflict: (keep: "mine" | "theirs") => void;
   startDraft: (fromVersion?: number) => Promise<void>;
+  /**
+   * The component was renamed on the server, which wrote the name into the open draft too: take the draft's new
+   * revision, so the next save isn't refused, and put the name into what the editor holds.
+   */
+  renamed: (name: string, revision: string | undefined) => void;
   startingDraft: boolean;
   code: CodegenOut | undefined;
   codeError: unknown;
@@ -326,6 +331,7 @@ export function useCodeDocument(instance: string, kind: EditableKind, componentI
     conflict: undefined,
     resolveConflict: ignore,
     startDraft: () => Promise.resolve(),
+    renamed: ignore,
     startingDraft: false,
     code: code.data,
     codeError: code.error,
@@ -631,6 +637,16 @@ export function useDraftDocument(instance: string, componentId: string): DraftDo
 
   const code = useGeneratedCode(instance, kind, config, base?.config);
 
+  const renamed = useCallback(
+    (name: string, next: string | undefined) => {
+      if (next !== undefined) revision.current = next;
+      // Through the usual edit path, so a draft kept as code gets the name written into its code as well.
+      if (latest.current.config && latest.current.config.name !== name)
+        setConfig((current) => ({ ...current, name }));
+    },
+    [setConfig],
+  );
+
   return {
     detail: detail.data,
     isPending: detail.isPending,
@@ -651,6 +667,7 @@ export function useDraftDocument(instance: string, componentId: string): DraftDo
       await newDraft.mutateAsync(fromVersion).catch(() => undefined);
     },
     startingDraft: newDraft.isPending,
+    renamed,
     code: code.data,
     codeError: code.error,
     source,

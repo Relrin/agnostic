@@ -46,6 +46,7 @@ export {
   type Section,
 } from "./document";
 export { DraftChip, FAMILY_LABEL, StudioEditor, unpublished, type Layout } from "./editor";
+export { RenameComponentDialog, type RenameTarget } from "./rename";
 export { ConfigForm, FieldControl, RawConfigEditor, fieldId, type FormContext } from "./form";
 export {
   CommitComposer,

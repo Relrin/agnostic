@@ -253,7 +253,7 @@ export function NewEvaluation({
                 setVersion(CURRENT);
               }}
             >
-              <SelectTrigger id={id} className="font-mono">
+              <SelectTrigger id={id} className="font-mono" title={component?.id}>
                 <SelectValue placeholder="Pick a component" />
               </SelectTrigger>
               <SelectContent>
@@ -294,12 +294,12 @@ export function NewEvaluation({
                 else setDatasetId(value);
               }}
             >
-              <SelectTrigger id={id}>
+              <SelectTrigger id={id} title={dataset?.name}>
                 <SelectValue placeholder="No dataset yet" />
               </SelectTrigger>
               <SelectContent>
                 {(datasets.data ?? []).map((item) => (
-                  <SelectItem key={item.id} value={item.id}>
+                  <SelectItem key={item.id} value={item.id} title={item.name}>
                     {item.name} · {item.case_count} cases
                   </SelectItem>
                 ))}
@@ -311,7 +311,11 @@ export function NewEvaluation({
         <Field label="Judge model">
           {({ id }) => (
             <Select value={judge} onValueChange={setJudge} disabled={!pinned}>
-              <SelectTrigger id={id} className="font-mono">
+              <SelectTrigger
+                id={id}
+                className="font-mono"
+                title={judge === DEFAULT_JUDGE ? undefined : judge.slice(judge.indexOf(":") + 1)}
+              >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

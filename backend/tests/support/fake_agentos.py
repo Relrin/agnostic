@@ -1139,6 +1139,14 @@ class FakeAgentOS:
                 "updated_at": stamp,
             }
 
+        def make_current(component_id: str, version: int) -> None:
+            """As agno does: the version that becomes current sets the component's name from its config."""
+            component = self.components[component_id]
+            component["current_version"] = version
+            name = (self.configs[component_id][version].get("config") or {}).get("name")
+            if isinstance(name, str) and name:
+                component["name"] = name
+
         @app.get("/components")
         async def list_components(request: Request) -> Any:
             guarded = await self._guard(request, "components:read")
@@ -1269,7 +1277,7 @@ class FakeAgentOS:
             version = max(versions, default=0) + 1
             versions[version] = stored_config(component_id, version, body, now())
             if versions[version]["stage"] == "published" and body.get("set_current", True):
-                self.components[component_id]["current_version"] = version
+                make_current(component_id, version)
             return JSONResponse(versions[version], status_code=201)
 
         @app.get("/components/{component_id}/configs/current")
@@ -1315,7 +1323,7 @@ class FakeAgentOS:
                     stored[key] = body[key]
             if body.get("stage") == "published":
                 stored["stage"] = "published"
-                self.components[component_id]["current_version"] = version
+                make_current(component_id, version)
             stored["updated_at"] = now()
             self.config_patches.append({"component_id": component_id, "version": version, "body": body})
             return JSONResponse(stored)
@@ -1347,7 +1355,7 @@ class FakeAgentOS:
             failed = guard_failed(component_id, (orjson.loads(raw) if raw else {}).get("guard"), "current_version")
             if failed is not None:
                 return failed
-            self.components[component_id]["current_version"] = version
+            make_current(component_id, version)
             return JSONResponse(self.components[component_id])
 
         @app.get("/registry")

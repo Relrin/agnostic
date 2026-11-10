@@ -152,7 +152,11 @@ export function EvalsPage() {
               ]}
             />
             <Select value={component} onValueChange={setComponent}>
-              <SelectTrigger aria-label="Component" className="h-8 w-44">
+              <SelectTrigger
+                aria-label="Component"
+                className="h-8 w-44"
+                title={component === ANY ? undefined : component}
+              >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -165,7 +169,11 @@ export function EvalsPage() {
               </SelectContent>
             </Select>
             <Select value={model} onValueChange={setModel}>
-              <SelectTrigger aria-label="Model" className="h-8 w-44">
+              <SelectTrigger
+                aria-label="Model"
+                className="h-8 w-44"
+                title={model === ANY ? undefined : model}
+              >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

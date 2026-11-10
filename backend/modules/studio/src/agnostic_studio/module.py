@@ -61,6 +61,7 @@ class StudioModule(BaseModule):
         return (
             AuditActionDecl("components.configs.create", "{actor} created {version} of {component} ({how})"),
             AuditActionDecl("components.set_current", "{actor} made {to} of {component} current instead of {from}"),
+            AuditActionDecl("components.renamed", "{actor} renamed {component} from {from} to {to} on {instance}"),
             AuditActionDecl("components.archived", "{actor} archived {component} on {instance}"),
             AuditActionDecl("components.restored", "{actor} restored {component} on {instance}"),
             AuditActionDecl("studio.publish", "{actor} published {component} {version} on {instance}: {summary}"),

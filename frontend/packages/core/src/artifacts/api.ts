@@ -1,7 +1,7 @@
 // Artefacts: the files a session's runs produced. The list comes from agnostic-bridge on the instance
 // (`/agnostic/v1/artifacts`, read through the gateway as the person); the bytes come from the control plane's
 // artefact route, which serves them with an isolating policy, so previews never run on the app's own origin.
-import { apiUrl, gatewayJson, jsonBody } from "@agnostic/api";
+import { AgentOSHttpError, apiUrl, gatewayJson, jsonBody } from "@agnostic/api";
 import { skipToken, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 
@@ -142,7 +142,16 @@ function query(params: Record<string, string | number | undefined>): string {
   return text ? `?${text}` : "";
 }
 
-/** The session's artefacts (outputs only), newest run first. */
+/**
+ * Whether a listing failed because the instance has nothing to list from: it doesn't serve the artefact routes
+ * (no agnostic-bridge, or one older than them), or the session has no stored runs yet. Both answer 404, and neither
+ * is a failure the person can retry their way out of, so they read as "no files" instead of an error.
+ */
+export function artifactsUnavailable(error: unknown): boolean {
+  return error instanceof AgentOSHttpError && error.status === 404;
+}
+
+/** The session's artefacts (outputs only), newest run first; none for a session the instance hasn't stored yet. */
 export function useSessionArtifacts(
   instance: string | undefined,
   sessionId: string | undefined,
@@ -156,7 +165,13 @@ export function useSessionArtifacts(
             gatewayJson<ArtifactList>(
               instance,
               `agnostic/v1/artifacts${query({ session_id: sessionId })}`,
-            ).then((body) => body.data)
+            ).then(
+              (body) => body.data,
+              (error: unknown) => {
+                if (artifactsUnavailable(error)) return [];
+                throw error;
+              },
+            )
         : skipToken,
     staleTime: STALE_TIME.live,
     retry: false,

@@ -498,25 +498,62 @@ class Components:
 
     async def patch(self, principal: Principal, ref: str, component_id: str, patch: MetaPatch) -> ComponentDetail:
         instance = await self._access.instance(principal, ref, WRITE_SCOPE)
-        if patch.name is not None or patch.description is not None:
+        before = await self._reader.component(principal, instance, component_id)
+        name = patch.name.strip() if patch.name is not None else None
+        if name is not None and not name:
+            raise ValidationFailedError("A name can't be blank.")
+        renamed = name is not None and name != before.name
+        if name is not None or patch.description is not None:
             body = {
-                key: value
-                for key, value in (("name", patch.name), ("description", patch.description))
-                if value is not None
+                key: value for key, value in (("name", name), ("description", patch.description)) if value is not None
             }
             await self._access.json(principal, instance, "PATCH", f"/components/{component_id}", body=body)
-        component = await self._reader.component(principal, instance, component_id)
+        if renamed and name is not None:
+            await self._name_draft(principal, instance, component_id, name)
         meta = await self._store.component_meta(instance.id, component_id) or ComponentMeta(
-            instance.id, component_id, component.kind
+            instance.id, component_id, before.kind
         )
         meta = replace(
             meta,
             owner_group_id=None if patch.clear_owner else (patch.owner_group_id or meta.owner_group_id),
             labels=tuple(patch.labels) if patch.labels is not None else meta.labels,
         )
+        # Written and committed together, with no call to the instance in between: the write lock is held briefly.
         await self._store.save_component_meta(meta)
+        if renamed and name is not None:
+            _ = await self._audit.record(
+                AuditEntry(
+                    action="components.renamed",
+                    actor=actor_of(principal),
+                    resource_kind=before.kind,
+                    resource_id=component_id,
+                    resource_display=name,
+                    instance_id=instance.id,
+                    fields={
+                        "component": component_id,
+                        "instance": instance.display_name,
+                        "from": before.name,
+                        "to": name,
+                    },
+                )
+            )
         await self._store.commit()
+        if renamed:
+            await self._access.forget(f"studio:indexed:{instance.id}")
         return await self.detail(principal, instance.id, component_id)
+
+    async def _name_draft(self, principal: Principal, instance: Instance, component_id: str, name: str) -> None:
+        """Carry a new name into the open draft: publishing a version sets the component's name from its config."""
+        draft = open_draft(await self._reader.versions(principal, instance, component_id))
+        if draft is None or draft.config is None or draft.config.get("name") == name:
+            return
+        await self._access.json(
+            principal,
+            instance,
+            "PATCH",
+            f"/components/{component_id}/configs/{draft.version}",
+            body={"config": {**draft.config, "name": name}},
+        )
 
     async def archive(self, principal: Principal, ref: str, component_id: str) -> None:
         instance = await self._access.instance(principal, ref, DELETE_SCOPE)

@@ -8,6 +8,7 @@ import {
 import {
   ArtifactInspector,
   ArtifactRows,
+  artifactsUnavailable,
   formatBytes,
   formatRelative,
   useRecentArtifacts,
@@ -98,6 +99,11 @@ function FilesView({
         <div className="min-h-0 flex-1 overflow-y-auto rounded-tile border border-border bg-surface p-1.5">
           {recent.isPending ? (
             <LoadingRows rows={6} label="Loading files" />
+          ) : artifactsUnavailable(recent.error) ? (
+            <EmptyState title="No files yet">
+              This instance doesn&apos;t list files yet. They show up here once it runs agnostic-bridge with
+              media storage and an agent stores what it wrote.
+            </EmptyState>
           ) : recent.isError ? (
             <ErrorState {...describeError(recent.error)} onRetry={() => void recent.refetch()} />
           ) : rows.length === 0 ? (

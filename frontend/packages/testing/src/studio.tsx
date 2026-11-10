@@ -355,6 +355,8 @@ export function kbResearcherCode(): CodeComponentOut {
 
 /** Requests the Studio handlers saw, for assertions. */
 export type StudioCalls = {
+  /** Bodies of component PATCHes (rename, labels), with the component they went to. */
+  patches?: { id: string; body: Record<string, unknown> }[];
   saves: Record<string, unknown>[];
   publishes: Record<string, unknown>[];
   promotions: Record<string, unknown>[];
@@ -410,6 +412,19 @@ export function studioHandlers(calls: StudioCalls = { saves: [], publishes: [], 
           ? HttpResponse.json(triageDetail())
           : HttpResponse.json({ title: "Not found", status: 404, detail: "Not stored" }, { status: 404 }),
     ),
+    http.patch(`${base}/components/:id`, async ({ request, params }) => {
+      const body = (await request.json()) as Record<string, unknown>;
+      (calls.patches ??= []).push({ id: String(params.id), body });
+      const detail = params.id === "research-team" ? teamDetail() : triageDetail();
+      const name = typeof body.name === "string" ? body.name : detail.component.name;
+      return HttpResponse.json({
+        ...detail,
+        component: { ...detail.component, name },
+        draft: detail.draft
+          ? { ...detail.draft, config: { ...detail.draft.config, name }, revision: "r-renamed" }
+          : detail.draft,
+      });
+    }),
     http.get(`${base}/components/:id/diff`, () =>
       HttpResponse.json({
         component_id: "support-triage",

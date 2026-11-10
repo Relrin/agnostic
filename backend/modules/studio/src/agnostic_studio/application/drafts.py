@@ -151,7 +151,9 @@ class Drafts:
             raise ValidationFailedError(f"{component.name} has no version to start a draft from.")
         base = await self._reader.version(principal, instance, component_id, base_number)
         body: dict[str, Any] = {
-            "config": base.config or {},
+            # The component may have been renamed since the base version was written: the draft starts with the
+            # name it has now, so publishing it keeps that name.
+            "config": {**(base.config or {}), "name": component.name},
             "stage": "draft",
             "set_current": False,
             "notes": notes,

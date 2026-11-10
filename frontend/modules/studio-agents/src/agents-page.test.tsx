@@ -108,6 +108,84 @@ describe("AgentsPage", () => {
   });
 });
 
+describe("renaming an agent", () => {
+  it("renames from the list, keeping the id, and only for agents stored in Studio", async () => {
+    const user = userEvent.setup();
+    calls.patches = [];
+    renderPage(AgentsPage, { path: "/i/$instance/studio/agents", url: "/i/staging-agentos/studio/agents" });
+    await screen.findByRole("link", { name: "support-triage" });
+    expect(screen.queryByRole("button", { name: "Rename kb-researcher" })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Rename support-triage" }));
+    const dialog = await screen.findByRole("dialog", { name: "Rename support-triage" });
+    const name = within(dialog).getByRole("textbox", { name: "Name" });
+    expect(name).toHaveValue("support-triage");
+    const submit = within(dialog).getByRole("button", { name: "Rename" });
+    expect(submit).toBeDisabled(); // nothing changed yet
+    await user.clear(name);
+    expect(submit).toBeDisabled();
+    await user.type(name, "  Support triage ");
+    await user.click(submit);
+
+    await waitFor(() => {
+      expect(calls.patches).toEqual([{ id: "support-triage", body: { name: "Support triage" } }]);
+    });
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
+  });
+
+  it("shows why a rename was refused and keeps the dialog open", async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.patch(`${API}/instances/:instance/studio/components/:id`, () =>
+        HttpResponse.json(
+          {
+            type: "about:blank",
+            code: "scope_missing",
+            title: "Not allowed",
+            status: 403,
+            detail: "You need components:write on staging-agentos.",
+          },
+          { status: 403 },
+        ),
+      ),
+    );
+    renderPage(AgentsPage, { path: "/i/$instance/studio/agents", url: "/i/staging-agentos/studio/agents" });
+    await user.click(await screen.findByRole("button", { name: "Rename support-triage" }));
+    const dialog = await screen.findByRole("dialog", { name: "Rename support-triage" });
+    await user.type(within(dialog).getByRole("textbox", { name: "Name" }), "-2");
+    await user.click(within(dialog).getByRole("button", { name: "Rename" }));
+    expect(
+      await within(dialog).findByText("You need components:write on staging-agentos."),
+    ).toBeInTheDocument();
+  });
+
+  it("renames from the editor and saves the draft with the revision the rename returned", async () => {
+    const user = userEvent.setup();
+    calls.patches = [];
+    renderPage(AgentEditorPage, EDITOR);
+    await user.click(await screen.findByRole("button", { name: "Rename" }));
+    const dialog = await screen.findByRole("dialog", { name: "Rename support-triage" });
+    const name = within(dialog).getByRole("textbox", { name: "Name" });
+    await user.clear(name);
+    await user.type(name, "Support triage");
+    await user.click(within(dialog).getByRole("button", { name: "Rename" }));
+    await waitFor(() => {
+      expect(calls.patches).toEqual([{ id: "support-triage", body: { name: "Support triage" } }]);
+    });
+    // The draft the editor holds takes the name; its next save carries the revision the rename left.
+    await waitFor(
+      () => {
+        expect(calls.saves.some((item) => item.revision === "r-renamed")).toBe(true);
+      },
+      { timeout: 5_000 },
+    );
+    const saved = calls.saves.find((item) => item.revision === "r-renamed") as { config: { name: string } };
+    expect(saved.config.name).toBe("Support triage");
+  });
+});
+
 describe("AgentEditorPage defined in code", () => {
   const CODE = {
     path: "/i/$instance/studio/agents/$componentId",
@@ -121,7 +199,7 @@ describe("AgentEditorPage defined in code", () => {
     const instruction = await screen.findByRole("textbox", { name: "Instruction 1" });
     expect(instruction).toHaveValue("Search the knowledge base first.");
     expect(instruction).toHaveAttribute("readonly");
-    for (const name of ["Save draft", "Versions", /^Publish/, "Add instruction"]) {
+    for (const name of ["Save draft", "Versions", "Rename", /^Publish/, "Add instruction"]) {
       expect(screen.queryByRole("button", { name })).not.toBeInTheDocument();
     }
   });

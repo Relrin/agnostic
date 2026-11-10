@@ -52,6 +52,41 @@ describe("TeamEditorPage", () => {
     });
   });
 
+  it("renames the team from the editor", async () => {
+    const user = userEvent.setup();
+    const renames: unknown[] = [];
+    server.use(
+      http.patch(`${API}/instances/:instance/studio/components/:id`, async ({ request, params }) => {
+        renames.push({ id: params.id, body: await request.json() });
+        return HttpResponse.json(
+          {
+            type: "about:blank",
+            code: "unavailable",
+            title: "Unavailable",
+            status: 503,
+            detail: "Try again.",
+          },
+          { status: 503 },
+        );
+      }),
+    );
+    renderPage(TeamEditorPage, {
+      path: "/i/$instance/studio/teams/$componentId",
+      url: "/i/staging-agentos/studio/teams/research-team",
+    });
+    await user.click(await screen.findByRole("button", { name: "Rename" }));
+    const dialog = await screen.findByRole("dialog", { name: /^Rename / });
+    expect(within(dialog).getByText(/next version of\s+this team is published/)).toBeInTheDocument();
+    const name = within(dialog).getByRole("textbox", { name: "Name" });
+    await user.clear(name);
+    await user.type(name, "Research desk");
+    await user.click(within(dialog).getByRole("button", { name: "Rename" }));
+    await waitFor(() => {
+      expect(renames).toEqual([{ id: "research-team", body: { name: "Research desk" } }]);
+    });
+    expect(await within(dialog).findByText("Try again.")).toBeInTheDocument();
+  });
+
   it("a save flushed as the editor closes settles without touching it, even once the page is gone", async () => {
     let release: () => void = () => undefined;
     const held = new Promise<void>((resolve) => {

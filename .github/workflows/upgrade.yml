@@ -1,13 +1,12 @@
 name: upgrade & restore drills
 
 # Every database left by a released version must upgrade to the current code, and a backup restored with the
-# customer's own tooling (pg_dump/pg_restore) must come back complete. Nightly, on release branches, and by hand.
+# customer's own tooling (pg_dump/pg_restore) must come back complete. On pull requests that touch migrations or the
+# drills, on every merge to master and to release branches, and by hand.
 on:
-  schedule:
-    - cron: "41 2 * * *"
   workflow_dispatch:
   push:
-    branches: ["release/**"]
+    branches: [master, "release/**"]
   pull_request:
     paths:
       - "backend/**/migrations/**"

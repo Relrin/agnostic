@@ -86,6 +86,16 @@ gate_blocked` unless an `override_reason` comes from someone with `evals:gates:o
 `400`), audits `studio.publish` with the field-level diff, and announces `studio.published`. `…/set-current` rolls
 back to another published version, guarded by `guard.current_version`.
 
+## Renaming
+
+`PATCH …/components/{id}` with `name` needs `components:write`. AgentOS keeps a name in two places: on the component
+row, which Studio lists, and in every version's config, which it copies onto the row whenever a version becomes
+current. So the use case patches the row, sets `name` in the open draft's config, audits `components.renamed` with
+the old and new name, and drops the used-by index. With no draft open only the row changes, and `new_draft` seeds
+each draft's `name` from the row so the next publish keeps it. Published configs are immutable: the runtime, which
+builds agents from the current version, shows the name after that publish. The editor takes the draft's new revision
+from the response, so its next autosave is not a conflict. The id is never touched.
+
 ## Test runs, teams, promotion
 
 - **Test runs**: AgentOS runs a draft only for its owner or an admin, so `…/components/{id}/test-runs` uses

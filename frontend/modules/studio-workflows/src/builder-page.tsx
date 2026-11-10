@@ -20,6 +20,7 @@ import {
   DraftChip,
   DuplicateDialog,
   FAMILY_LABEL,
+  RenameComponentDialog,
   IncomingChip,
   PublishDialog,
   SourceBar,
@@ -67,6 +68,7 @@ import {
   Download,
   History,
   LayoutGrid,
+  Pencil,
   Play,
   Redo2,
   Share2,
@@ -248,6 +250,7 @@ function WorkflowBuilder({
   const canWrite = useCan("components:write", instance);
   const readOnly = canWrite.allowed !== true || !doc.draft;
   const [duplicating, setDuplicating] = useState<DuplicateSource | undefined>(undefined);
+  const [renaming, setRenaming] = useState(false);
   const actions = useActions(doc, store, readOnly);
   const schema = useWorkflowSchema();
   const workflowSchema = useConfigSchema("workflow");
@@ -452,6 +455,18 @@ function WorkflowBuilder({
             </>
           )}
           <span className="flex-1" />
+          {!locked && canWrite.allowed && (
+            <Button
+              variant="outline"
+              size="32"
+              onClick={() => {
+                setRenaming(true);
+              }}
+            >
+              <Pencil aria-hidden />
+              Rename
+            </Button>
+          )}
           {canDuplicate && (
             <Button variant={locked ? "primary" : "outline"} size="32" onClick={duplicate}>
               <Copy aria-hidden />
@@ -732,6 +747,17 @@ function WorkflowBuilder({
           source={duplicating}
           onOpenChange={(open) => {
             if (!open) setDuplicating(undefined);
+          }}
+        />
+        <RenameComponentDialog
+          instance={instance}
+          target={renaming ? { id: component.id, name: component.name, kind: "workflow" } : undefined}
+          onClose={() => {
+            setRenaming(false);
+          }}
+          before={() => (doc.state === "dirty" ? doc.save() : Promise.resolve())}
+          onRenamed={(renamed) => {
+            doc.renamed(renamed.component.name, renamed.draft?.revision);
           }}
         />
         {draft && (

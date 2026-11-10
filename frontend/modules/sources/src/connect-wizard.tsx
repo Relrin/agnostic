@@ -224,8 +224,8 @@ export function ScanReport({
           </>
         )}
         <p className="mt-2">
-          Edit the patterns under Path mapping on the source's page; Studio scans again, and you start syncing from
-          there.
+          Edit the patterns under Path mapping on the source's page; Studio scans again, and you start syncing
+          from there.
         </p>
       </Callout>
     );

@@ -106,6 +106,38 @@ describe("WorkflowBuilderPage", () => {
     ).toBeInTheDocument();
   });
 
+  it("renames the workflow from the builder", async () => {
+    const user = userEvent.setup();
+    const renames: unknown[] = [];
+    server.use(
+      http.patch("*/instances/:instance/studio/components/:id", async ({ request, params }) => {
+        renames.push({ id: params.id, body: await request.json() });
+        return HttpResponse.json(
+          {
+            type: "about:blank",
+            code: "unavailable",
+            title: "Unavailable",
+            status: 503,
+            detail: "Try again.",
+          },
+          { status: 503 },
+        );
+      }),
+    );
+    renderPage(WorkflowBuilderPage, BUILDER);
+    await canvas();
+    await user.click(screen.getByRole("button", { name: "Rename" }));
+    const dialog = await screen.findByRole("dialog", { name: /^Rename / });
+    const name = within(dialog).getByRole("textbox", { name: "Name" });
+    await user.clear(name);
+    await user.type(name, "Ticket desk");
+    await user.click(within(dialog).getByRole("button", { name: "Rename" }));
+    await waitFor(() => {
+      expect(renames).toEqual([{ id: "ticket-router", body: { name: "Ticket desk" } }]);
+    });
+    expect(await within(dialog).findByText("Try again.")).toBeInTheDocument();
+  });
+
   it("adds a step from the palette after the selected one, saves it, and undoes it", async () => {
     const user = userEvent.setup();
     renderPage(WorkflowBuilderPage, BUILDER);

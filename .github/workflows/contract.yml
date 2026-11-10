@@ -1,13 +1,12 @@
 name: contract
 
+# On pull requests that touch the runtime, the bridge, the client or the contract tests; on every merge to master,
+# whatever it touched, so a drift is caught at the merge that brought it in; and by hand.
 on:
   pull_request:
     paths: ["runtime/**", "bridge/**", "backend/packages/agnostic-agentos-client/**", "backend/tests/contract/**", "backend/tests/golden/**"]
   push:
     branches: [master]
-    paths: ["runtime/**", "bridge/**", "backend/packages/agnostic-agentos-client/**", "backend/tests/contract/**", "backend/tests/golden/**"]
-  schedule:
-    - cron: "17 3 * * *"
   workflow_dispatch:
 
 permissions:

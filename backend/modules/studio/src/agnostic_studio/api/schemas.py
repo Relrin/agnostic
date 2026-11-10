@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Literal, cast
+from typing import Annotated, Any, Literal, cast
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, StringConstraints
 
 from agnostic_cel import CheckResult
 from agnostic_codegen import CodeDiagnostic, Parsed, RuffResult, Span
@@ -368,7 +368,7 @@ class CreateIn(BaseModel):
 
 
 class MetaPatchIn(BaseModel):
-    name: str | None = Field(default=None, min_length=1, max_length=200)
+    name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)] | None = None
     description: str | None = Field(default=None, max_length=2000)
     owner_group_id: str | None = None
     clear_owner: bool = False

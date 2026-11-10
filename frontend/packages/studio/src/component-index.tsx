@@ -44,12 +44,13 @@ import {
 } from "@agnostic/ui";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Copy, Lock, Plus } from "lucide-react";
+import { Copy, Lock, Pencil, Plus } from "lucide-react";
 import { useState } from "react";
 
 import { isRecord, type EditableKind } from "./config";
 import { DuplicateDialog, type ComponentOrigin, type DuplicateSource } from "./defined-in-code";
 import { useRegistry } from "./document";
+import { RenameComponentDialog, type RenameTarget } from "./rename";
 
 type Kind = "agent" | "team" | "workflow";
 
@@ -289,6 +290,7 @@ export function ComponentIndex({ instance, kind }: { instance: string; kind: Kin
   const [source, setSource] = useState<SourceFilter>("all");
   const [creating, setCreating] = useState(false);
   const [duplicating, setDuplicating] = useState<DuplicateSource | undefined>(undefined);
+  const [renaming, setRenaming] = useState<RenameTarget | undefined>(undefined);
   const list = useQuery(withQueryFn(studioListComponentsOptions({ path: { instance }, query: { kind } })));
   const coding = useCodingAgents(kind === "agent" ? instance : undefined);
   const scoped = `/i/${encodeURIComponent(instance)}`;
@@ -413,14 +415,14 @@ export function ComponentIndex({ instance, kind }: { instance: string; kind: Kin
                   <td className="px-2 py-2 font-mono text-[12.5px]">
                     {row.component.current_version ? `v${String(row.component.current_version)}` : "—"}
                   </td>
-                  <td className="px-2 py-2 text-[12.5px]">
+                  <td className="px-2 py-2 text-[12.5px] whitespace-nowrap">
                     {row.draft_version ? (
                       <span className="text-warning">{`v${String(row.draft_version)} draft`}</span>
                     ) : (
                       <span className="text-fg-muted">—</span>
                     )}
                   </td>
-                  <td className="px-2 py-2">
+                  <td className="px-2 py-2 whitespace-nowrap">
                     {row.component.source === "code" ? (
                       <Badge tone="outline">Defined in code</Badge>
                     ) : (
@@ -430,11 +432,24 @@ export function ComponentIndex({ instance, kind }: { instance: string; kind: Kin
                   <td className="px-2 py-2 text-[12.5px] text-fg-muted tabular-nums">
                     {row.runs_7d === null || row.runs_7d === undefined ? "—" : String(row.runs_7d)}
                   </td>
-                  <td className={cn("px-3 py-2 text-[12px] text-fg-muted")}>
+                  <td className={cn("px-3 py-2 text-[12px] whitespace-nowrap text-fg-muted")}>
                     {formatWhen(row.draft_updated_at ?? row.component.updated_at ?? row.component.created_at)}
                   </td>
                   {canWrite.allowed && (
-                    <td className="px-3 py-2 text-right">
+                    <td className="px-3 py-2 text-right whitespace-nowrap">
+                      {!inCode && (
+                        <Button
+                          variant="ghost"
+                          size="28"
+                          aria-label={`Rename ${row.component.name}`}
+                          onClick={() => {
+                            setRenaming({ id: row.component.id, name: row.component.name, kind });
+                          }}
+                        >
+                          <Pencil aria-hidden />
+                          Rename
+                        </Button>
+                      )}
                       <Button
                         variant="ghost"
                         size="28"
@@ -498,6 +513,13 @@ export function ComponentIndex({ instance, kind }: { instance: string; kind: Kin
         source={duplicating}
         onOpenChange={(open) => {
           if (!open) setDuplicating(undefined);
+        }}
+      />
+      <RenameComponentDialog
+        instance={instance}
+        target={renaming}
+        onClose={() => {
+          setRenaming(undefined);
         }}
       />
     </div>

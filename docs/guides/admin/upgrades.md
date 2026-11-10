@@ -49,7 +49,7 @@ Databases created by a pre-release build aren't upgraded: create a fresh databas
 
 ## How upgrades are tested
 
-The upgrade drill (`scripts/upgrade_drill.sh`, nightly in CI) takes every released version listed in
+The upgrade drill (`scripts/upgrade_drill.sh`, in CI on every merge to master) takes every released version listed in
 `deploy/upgrade-milestones.txt`, migrates and bootstraps a database with that version's code, upgrades it with the
 current code and checks it with `db upgrade --check`, `migrate`, `db current`, `config check --connect`,
 `audit verify` and `secrets status`. The list starts with the first release.
