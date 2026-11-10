@@ -1094,9 +1094,19 @@ class FakeAgentOS:
         def not_found(what: str) -> JSONResponse:
             return JSONResponse({"detail": f"{what} not found"}, status_code=404)
 
-        def guard_failed(component_id: str, guard: dict[str, Any] | None) -> JSONResponse | None:
+        def guard_failed(component_id: str, guard: dict[str, Any] | None, supported: str) -> JSONResponse | None:
             if not guard:
                 return None
+            # Like AgentOS, each route checks one half of the guard and refuses the other instead of ignoring it.
+            unsupported = "current_version" if supported == "latest_version" else "latest_version"
+            if guard.get(unsupported) is not None:
+                return JSONResponse(
+                    {
+                        "detail": f"This route checks guard.{supported} only; guard.{unsupported} is not honoured "
+                        "here. Remove it, or use the route that enforces it."
+                    },
+                    status_code=400,
+                )
             versions = self.configs.get(component_id, {})
             latest = guard.get("latest_version")
             if latest is not None and latest != max(versions, default=0):
@@ -1252,7 +1262,7 @@ class FakeAgentOS:
             if component_id not in self.components:
                 return not_found("Component")
             body = orjson.loads(await request.body())
-            failed = guard_failed(component_id, body.get("guard"))
+            failed = guard_failed(component_id, body.get("guard"), "latest_version")
             if failed is not None:
                 return failed
             versions = self.configs.setdefault(component_id, {})
@@ -1297,7 +1307,7 @@ class FakeAgentOS:
             if stored["stage"] == "published":
                 return JSONResponse({"detail": "Published configs are immutable"}, status_code=400)
             body = orjson.loads(await request.body())
-            failed = guard_failed(component_id, body.get("guard"))
+            failed = guard_failed(component_id, body.get("guard"), "latest_version")
             if failed is not None:
                 return failed
             for key in ("config", "label", "notes", "links"):
@@ -1334,7 +1344,7 @@ class FakeAgentOS:
             if stored["stage"] != "published":
                 return JSONResponse({"detail": "Only published versions can be current"}, status_code=400)
             raw = await request.body()
-            failed = guard_failed(component_id, (orjson.loads(raw) if raw else {}).get("guard"))
+            failed = guard_failed(component_id, (orjson.loads(raw) if raw else {}).get("guard"), "current_version")
             if failed is not None:
                 return failed
             self.components[component_id]["current_version"] = version

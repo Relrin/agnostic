@@ -43,6 +43,9 @@ from agnostic_studio.facade import StudioFacade
 
 log = get_logger(__name__)
 
+UNMAPPED_SAMPLE = 20
+"""How many Python files no path mapping takes the scan report lists, so a mapping that misses shows where it missed."""
+
 
 @dataclass(frozen=True, slots=True)
 class SourceDraft:
@@ -257,8 +260,11 @@ class Sources:
         convention = RegistryConvention.from_dict(source.convention)
         known = {state.id: state for state in await self._studio.components(SYSTEM_PRINCIPAL, instance)}
         report_files: list[dict[str, Any]] = []
+        unmapped: list[str] = []
         for path in sorted(snapshot.files):
             mapping = match(source.mappings, path)
+            if mapping is None and path.endswith(".py") and len(unmapped) < UNMAPPED_SAMPLE:
+                unmapped.append(path)
             if mapping is None or mapping.target_kind == "ignored":
                 continue
             entry: dict[str, Any] = {
@@ -312,6 +318,8 @@ class Sources:
             "files": report_files,
             "counts": totals,
             "found": sum(len(item["components"]) for item in report_files),
+            "listed": len(snapshot.files),
+            "unmapped": unmapped,
             "scanned_at": utcnow().isoformat(),
         }
         status = "active" if settled_status(source) == "active" else "ready"
@@ -338,8 +346,14 @@ class Sources:
         instance = await self._access.instance(principal, ref, SOURCES_WRITE)
         source = self._access.owned(await self._store.source(source_id), instance)
         report = source.scan_report or {}
-        if source.status not in {"ready", "active"} or not report.get("files"):
+        if source.status not in {"ready", "active"} or not report:
             raise ConflictError("The source hasn't finished its scan yet.")
+        if not report.get("files"):
+            root = "folder" if source.is_local else "repository"
+            raise ConflictError(
+                f"No file in {source.label} matches the path mappings, so there is nothing to sync. Mappings are "
+                f"relative to the {root}'s root: edit them under Path mapping and Studio scans again."
+            )
         chosen = {(item.path, item.component_id): item.bind for item in decisions or []}
         existing = {(binding.path, binding.component_id) for binding in await self._store.bindings(source.id)}
         head = str(report.get("head") or source.head_sha or "")

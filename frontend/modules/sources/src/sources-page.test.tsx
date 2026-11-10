@@ -1,6 +1,9 @@
 import {
   sampleConnections,
+  sampleEmptyScan,
   sampleOrgHandlers,
+  sampleReadySource,
+  sampleScan,
   renderPage,
   sourcesCalls,
   sourcesHandlers,
@@ -12,7 +15,7 @@ import userEvent from "@testing-library/user-event";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
-import { usable } from "./connect-wizard";
+import { conventionFor, folderPackage, usable } from "./connect-wizard";
 import { connectionPatch } from "./connections";
 import { SourcesPage as Page } from "./sources-page";
 
@@ -213,6 +216,64 @@ describe("SourcesPage", () => {
     await user.click(within(dialog).getByRole("button", { name: "Continue" }));
     expect(within(dialog).getByRole("textbox", { name: "Server URL" })).toBeInTheDocument();
     expect(within(dialog).getByRole("textbox", { name: "API URL" })).toBeInTheDocument();
+  });
+
+  it("finishes a source left at its scan from the source's page", async () => {
+    server.use(
+      ...sourcesHandlers(calls, [sampleReadySource], sampleConnections, { src_ready: sampleScan }),
+      ...sampleOrgHandlers(),
+    );
+    const user = userEvent.setup();
+    renderPage(SourcesPage, { path: PATH, url: URL });
+    await user.click(await screen.findByRole("button", { name: "Review the scan" }));
+    const dialog = await screen.findByRole("dialog", { name: "Scan report" });
+    expect(await within(dialog).findByText("agno_app/agents/__init__.py")).toBeInTheDocument();
+    await user.click(within(dialog).getByRole("button", { name: "Start syncing" }));
+    await waitFor(() => {
+      expect(calls.activations).toEqual([
+        {
+          source: "src_ready",
+          body: { bindings: [{ path: "agno_app/agents/__init__.py", component_id: "hello", bind: true }] },
+        },
+      ]);
+    });
+  });
+
+  it("says which files mappings that take nothing missed, instead of offering to start syncing", async () => {
+    server.use(
+      ...sourcesHandlers(calls, [sampleReadySource], sampleConnections, { src_ready: sampleEmptyScan }),
+      ...sampleOrgHandlers(),
+    );
+    const user = userEvent.setup();
+    renderPage(SourcesPage, { path: PATH, url: URL });
+    await user.click(await screen.findByRole("button", { name: "Review the scan" }));
+    const dialog = await screen.findByRole("dialog", { name: "Scan report" });
+    const alert = await within(dialog).findByRole("alert");
+    expect(alert).toHaveTextContent("No file matches the path mappings");
+    expect(alert).toHaveTextContent("relative to /agents, which holds 4 files");
+    expect(within(alert).getByRole("list", { name: "Unmapped files" })).toHaveTextContent(
+      "agno_app/agents/__init__.py",
+    );
+    expect(within(dialog).queryByRole("button", { name: "Start syncing" })).not.toBeInTheDocument();
+  });
+});
+
+describe("registry convention", () => {
+  it("guesses a local folder's package from its name", () => {
+    expect(folderPackage("/agents/agno_app")).toBe("agno_app");
+    expect(folderPackage("/srv/app/")).toBe("app");
+    expect(folderPackage("/srv/my-agents")).toBe("app");
+  });
+
+  it("names every module under the package, with the registry module overridable", () => {
+    expect(conventionFor("agno_app")).toEqual({
+      registry_module: "agno_app.registry",
+      agents_module: "agno_app.agents",
+      teams_module: "agno_app.teams",
+      workflows_module: "agno_app.workflows",
+      functions_module: "agno_app.functions",
+    });
+    expect(conventionFor("app", "shared.registry").registry_module).toBe("shared.registry");
   });
 });
 

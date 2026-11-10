@@ -295,6 +295,8 @@ async def test_support_triage_from_blank_to_prod(stack: Stack) -> None:  # noqa:
     assert published.json()["overridden"] is True
     assert published.json()["version"]["eval_status"] == "overridden"
     assert staging.components["support-triage"]["current_version"] == 1
+    # The config PATCH honours guard.latest_version only; AgentOS refuses guard.current_version there.
+    assert staging.config_patches[-1]["body"]["guard"] == {"latest_version": 1}
 
     override = await events(owner, "evals.gate.override")
     assert override[0]["summary"].endswith("past its eval gate: Judge disagrees on two billing cases; fixed in v2")

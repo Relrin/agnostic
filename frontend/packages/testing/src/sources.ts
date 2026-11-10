@@ -10,6 +10,7 @@ import type {
   MappingOut,
   RepoOut,
   PullResultOut,
+  ScanReportOut,
   SyncPolicyIo,
 } from "@agnostic/api";
 import { http, HttpResponse } from "msw";
@@ -95,6 +96,72 @@ export const sampleSources: CodeSourceOut[] = [
     mappings: [{ glob: "agents/*.py", target_kind: "agents", writable: true, count: 18 }],
   }),
 ];
+
+/** A local folder scanned but not syncing yet, whose package sits one folder below the root its mappings read. */
+export const sampleReadySource: CodeSourceOut = source({
+  id: "src_ready",
+  provider: "local",
+  provider_label: "Local folder",
+  repo: "/agents",
+  branch: "local",
+  local_path: "/agents",
+  connection_id: null,
+  connection_name: null,
+  auth: "Local folder · writes go straight to disk",
+  status: "ready",
+  head_sha: null,
+  incoming: 0,
+  outgoing: 0,
+  conflicts: 0,
+  webhook: false,
+  mappings: [{ glob: "agents/*.py", target_kind: "agents", writable: true, count: 0 }],
+});
+
+/** Its scan: nothing mapped, and the Python files the mappings missed. */
+export const sampleEmptyScan: ScanReportOut = {
+  status: "ready",
+  status_detail: null,
+  head_sha: "f00d",
+  report: {
+    files: [],
+    counts: [0],
+    found: 0,
+    listed: 4,
+    unmapped: ["agno_app/__init__.py", "agno_app/agents/__init__.py"],
+    scanned_at: "2026-11-10T15:07:41Z",
+  },
+};
+
+/** The same folder once its mapping reads `agno_app/agents/*.py`. */
+export const sampleScan: ScanReportOut = {
+  status: "ready",
+  status_detail: null,
+  head_sha: "f00d",
+  report: {
+    files: [
+      {
+        path: "agno_app/agents/__init__.py",
+        mapping: "agents",
+        components: [
+          {
+            id: "hello",
+            kind: "agent",
+            variable: "hello",
+            parse: "ok",
+            match: "new",
+            proposed: "create",
+            diagnostics: [],
+          },
+        ],
+      },
+    ],
+    counts: [1],
+    found: 1,
+    listed: 4,
+    unmapped: ["agno_app/__init__.py"],
+    scanned_at: "2026-11-10T15:20:00Z",
+  },
+};
 
 function change(overrides: Partial<ChangeOut>): ChangeOut {
   return {
@@ -258,6 +325,7 @@ export type SourcesCalls = {
   verified: string[];
   deletedConnections: string[];
   repoQueries: (string | null)[];
+  activations: { source: string; body: Record<string, unknown> }[];
 };
 
 export function sourcesCalls(): SourcesCalls {
@@ -272,6 +340,7 @@ export function sourcesCalls(): SourcesCalls {
     verified: [],
     deletedConnections: [],
     repoQueries: [],
+    activations: [],
   };
 }
 
@@ -279,6 +348,7 @@ export function sourcesHandlers(
   calls: SourcesCalls = sourcesCalls(),
   sources: CodeSourceOut[] = sampleSources,
   connections: ConnectionOut[] = sampleConnections,
+  scans: Record<string, ScanReportOut> = {},
 ) {
   const base = `${API}/instances/:instance/studio/sources`;
   const connectionsBase = `${API}/studio/connections`;
@@ -324,6 +394,22 @@ export function sourcesHandlers(
       return HttpResponse.json(results);
     }),
     http.post(`${base}/:sourceId/fetch`, () => HttpResponse.json({ job_id: 7 }, { status: 202 })),
+    http.get(`${base}/:sourceId/scan`, ({ params }) => {
+      const found = sources.find((item) => item.id === params.sourceId);
+      const scan: ScanReportOut = scans[String(params.sourceId)] ?? {
+        status: found?.status ?? "active",
+        status_detail: null,
+        head_sha: found?.head_sha ?? null,
+        report: null,
+      };
+      return HttpResponse.json(scan);
+    }),
+    http.post(`${base}/:sourceId/activate`, async ({ params, request }) => {
+      const body = (await request.json()) as Record<string, unknown>;
+      calls.activations.push({ source: String(params.sourceId), body });
+      const found = sources.find((item) => item.id === params.sourceId) ?? sources[0];
+      return HttpResponse.json({ ...found, status: "active" });
+    }),
     http.post(`${base}/:sourceId/outgoing/refresh`, () => HttpResponse.json(sampleChanges.outgoing)),
     http.get(`${base}/:sourceId/commit-preview`, () =>
       HttpResponse.json({

@@ -56,7 +56,7 @@ import { Link, useNavigate, useParams, useSearch } from "@tanstack/react-router"
 import { ArrowDown, ArrowUp, Folder, GitBranch, Plus, RefreshCw, TriangleAlert } from "lucide-react";
 import { useState } from "react";
 
-import { ConnectWizard } from "./connect-wizard";
+import { ConnectWizard, ScanReportDialog } from "./connect-wizard";
 import { ConnectionsCard } from "./connections";
 import {
   PUBLISH_MODES,
@@ -857,13 +857,16 @@ function ChangesPanel({
   instance,
   source,
   canWrite,
+  canConfigure,
 }: {
   instance: string;
   source: CodeSourceOut;
   canWrite: boolean;
+  canConfigure: boolean;
 }) {
   const changes = useChanges(instance, source.id);
   const refresh = useRefresh();
+  const [reviewing, setReviewing] = useState(false);
   const [merging, setMerging] = useState<ConflictOut | undefined>(undefined);
   const fetchNow = useMutation({
     mutationFn: async () =>
@@ -909,9 +912,30 @@ function ChangesPanel({
         <ErrorState {...describeError(changes.error)} onRetry={() => void changes.refetch()} />
       ) : (
         <div className="flex flex-col gap-5">
-          {source.status !== "active" && (
+          {source.status === "ready" && (
+            <Callout
+              tone="info"
+              title="Not syncing yet"
+              action={
+                canConfigure ? (
+                  <Button
+                    variant="outline"
+                    size="28"
+                    onClick={() => {
+                      setReviewing(true);
+                    }}
+                  >
+                    Review the scan
+                  </Button>
+                ) : undefined
+              }
+            >
+              Finish connecting the source: review the scan, bind its files and start syncing.
+            </Callout>
+          )}
+          {(source.status === "scanning" || source.status === "setup") && (
             <Callout tone="info" title="Not syncing yet">
-              Finish connecting the source: review the scan and bind its files (Connect source › Scan report).
+              Studio is reading the source; its scan report shows up here when it is done.
             </Callout>
           )}
           <IncomingSection instance={instance} source={source} changes={data.incoming} canWrite={canWrite} />
@@ -965,6 +989,16 @@ function ChangesPanel({
             </section>
           )}
         </div>
+      )}
+      {reviewing && (
+        <ScanReportDialog
+          instance={instance}
+          sourceId={source.id}
+          root={source.repo}
+          onClose={() => {
+            setReviewing(false);
+          }}
+        />
       )}
       {merging && (
         <MergeDialog
@@ -1067,7 +1101,7 @@ export function SourcesPage() {
           <SyncPolicyCard instance={instance} source={selected} canEdit={canConfigure} />
           {canConfigure && <ConnectionsCard canEdit={canConfigure} canDelete={canDelete} />}
         </div>
-        <ChangesPanel instance={instance} source={selected} canWrite={canWrite} />
+        <ChangesPanel instance={instance} source={selected} canWrite={canWrite} canConfigure={canConfigure} />
       </div>
     );
   }

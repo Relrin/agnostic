@@ -1,7 +1,8 @@
 // Connect source: provider → authentication → repository and branch → path mappings → registry convention → sync
 // policy → the initial scan (files found, how each reads, what it matches in Studio, the proposed binding) → start
-// syncing. A source that is created keeps scanning in the background; the wizard waits for the report. Back from
-// installing the GitHub App, the wizard picks up at the repository with the new connection.
+// syncing. A source that is created keeps scanning in the background; the wizard waits for the report, and a source
+// left at its scan finishes from its page (`ScanReportDialog`). Back from installing the GitHub App, the wizard picks
+// up at the repository with the new connection.
 import {
   describeError,
   sourcesActivateSource,
@@ -78,6 +79,25 @@ const DEFAULT_MAPPINGS: PathMappingIo[] = [
 
 const GITEA_FAMILY: readonly string[] = ["gitea", "forgejo"];
 const REPO_NAME = /^[\w.-]+(\/[\w.-]+){1,5}$/;
+const MODULE = /^[A-Za-z_]\w*(\.[A-Za-z_]\w*)*$/;
+const IDENTIFIER = /^[A-Za-z_]\w*$/;
+
+/** The package a local folder most likely is: its own name (`/srv/app` → `app`), else the reference runtime's. */
+export function folderPackage(path: string): string {
+  const name = path.replace(/\/+$/, "").split("/").pop() ?? "";
+  return IDENTIFIER.test(name) ? name : "app";
+}
+
+/** Every module the convention names, under one package (`app` → `app.agents`, `app.registry`, …). */
+export function conventionFor(pkg: string, registryModule?: string) {
+  return {
+    registry_module: registryModule ?? `${pkg}.registry`,
+    agents_module: `${pkg}.agents`,
+    teams_module: `${pkg}.teams`,
+    workflows_module: `${pkg}.workflows`,
+    functions_module: `${pkg}.functions`,
+  };
+}
 
 /** Connections a provider's source may use: its own, and Gitea's and Forgejo's for each other (same API). */
 export function usable(connection: ConnectionOut, provider: Provider): boolean {
@@ -125,13 +145,17 @@ function Progress({ stage }: { stage: Stage }) {
   );
 }
 
-function ScanReport({
+/** The initial scan of a source, and "Start syncing" with the bindings the user kept. */
+export function ScanReport({
   instance,
   sourceId,
+  root,
   onActivated,
 }: {
   instance: string;
   sourceId: string;
+  /** The folder or repository the mappings are relative to, for the message when they take no file. */
+  root: string;
   onActivated: () => void;
 }) {
   const [skipped, setSkipped] = useState<Set<string>>(new Set());
@@ -179,7 +203,33 @@ function ScanReport({
     problems?: string[];
   }[];
   const found = files.flatMap((file) => file.components.map((component) => ({ file, component })));
+  const { listed, unmapped } = data.report ?? {};
   const key = (path: string, id: string | null) => `${path}#${id ?? ""}`;
+  if (files.length === 0) {
+    return (
+      <Callout tone="warning" title="No file matches the path mappings">
+        <p>
+          {`The mappings are relative to ${root}${typeof listed === "number" ? `, which holds ${String(listed)} file${listed === 1 ? "" : "s"}` : ""}, and take none of them, so there is nothing to sync yet.`}
+        </p>
+        {Array.isArray(unmapped) && unmapped.length > 0 && (
+          <>
+            <p className="mt-2">Python files no mapping takes:</p>
+            <ul aria-label="Unmapped files" className="mt-1 flex flex-col gap-0.5">
+              {(unmapped as string[]).map((path) => (
+                <li key={path}>
+                  <code className="font-mono">{path}</code>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+        <p className="mt-2">
+          Edit the patterns under Path mapping on the source's page; Studio scans again, and you start syncing from
+          there.
+        </p>
+      </Callout>
+    );
+  }
   const MATCH: Record<string, string> = {
     new: "new in Studio",
     same: "matches Studio",
@@ -249,6 +299,47 @@ function ScanReport({
   );
 }
 
+/** The scan of a source that was connected but never started syncing, opened again from the source's page. */
+export function ScanReportDialog({
+  instance,
+  sourceId,
+  root,
+  onClose,
+}: {
+  instance: string;
+  sourceId: string;
+  root: string;
+  onClose: () => void;
+}) {
+  const refresh = useRefresh();
+  return (
+    <Dialog
+      open
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+    >
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Scan report</DialogTitle>
+          <DialogDescription>
+            Bind the files Studio found and start syncing; nothing moves until then.
+          </DialogDescription>
+        </DialogHeader>
+        <ScanReport
+          instance={instance}
+          sourceId={sourceId}
+          root={root}
+          onActivated={() => {
+            refresh();
+            onClose();
+          }}
+        />
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 /** The Connect source dialog; `onClose` gets the new source's id when one was created. */
 export function ConnectWizard({
   instance,
@@ -278,10 +369,14 @@ export function ConnectWizard({
   const [branch, setBranch] = useState("main");
   const [localPath, setLocalPath] = useState("");
   const [mappings, setMappings] = useState<PathMappingIo[]>(DEFAULT_MAPPINGS);
-  const [registryModule, setRegistryModule] = useState("app.registry");
+  // Unset, the package follows the folder's name and the registry module follows the package.
+  const [pkg, setPkg] = useState<string | undefined>(undefined);
+  const [registryModule, setRegistryModule] = useState<string | undefined>(undefined);
   const [policy, setPolicy] = useState<SyncPolicyIo>({ pull_mode: "on_demand", publish_mode: "open_pr" });
   const [sourceId, setSourceId] = useState<string | undefined>(undefined);
   const local = provider === "local";
+  const packageName = pkg ?? (local ? folderPackage(localPath) : "app");
+  const convention = conventionFor(packageName, registryModule);
   const connections = useConnections(!local);
   const matching = (connections.data ?? []).filter((item: ConnectionOut) => usable(item, provider));
   const roots = useQuery({
@@ -353,7 +448,7 @@ export function ConnectWizard({
         await sourcesCreateSource({
           path: { instance },
           body: local
-            ? { provider, local_path: localPath, mappings, policy }
+            ? { provider, local_path: localPath, mappings, policy, convention }
             : {
                 provider,
                 connection_id: connectionId ?? null,
@@ -361,7 +456,7 @@ export function ConnectWizard({
                 branch,
                 mappings,
                 policy,
-                convention: { registry_module: registryModule },
+                convention,
               },
           throwOnError: true,
         })
@@ -378,7 +473,7 @@ export function ConnectWizard({
     provider: "auth",
     auth: local ? "mapping" : "repo",
     repo: "mapping",
-    mapping: local ? "policy" : "convention",
+    mapping: "convention",
     convention: "policy",
   };
   const forward = () => {
@@ -544,40 +639,60 @@ export function ConnectWizard({
       break;
     case "mapping":
       body = (
-        <ul aria-label="Path mappings" className="flex flex-col gap-2">
-          {mappings.map((mapping, index) => (
-            <li key={String(index)} className="flex items-center gap-2">
-              <Input
-                mono
-                aria-label={`Pattern ${String(index + 1)}`}
-                value={mapping.glob}
-                onChange={(event) => {
-                  setMappings(
-                    mappings.map((row, at) => (at === index ? { ...row, glob: event.target.value } : row)),
-                  );
-                }}
-              />
-              <span className="w-32 shrink-0 text-[12.5px] text-fg-secondary">
-                {TARGET_LABEL[mapping.target_kind]}
-              </span>
-            </li>
-          ))}
-        </ul>
+        <div className="flex flex-col gap-2">
+          <p className="text-[12.5px] text-fg-secondary">
+            {`Patterns are relative to ${local ? localPath || "the folder" : "the repository's root"}.`}
+          </p>
+          <ul aria-label="Path mappings" className="flex flex-col gap-2">
+            {mappings.map((mapping, index) => (
+              <li key={String(index)} className="flex items-center gap-2">
+                <Input
+                  mono
+                  aria-label={`Pattern ${String(index + 1)}`}
+                  value={mapping.glob}
+                  onChange={(event) => {
+                    setMappings(
+                      mappings.map((row, at) => (at === index ? { ...row, glob: event.target.value } : row)),
+                    );
+                  }}
+                />
+                <span className="w-32 shrink-0 text-[12.5px] text-fg-secondary">
+                  {TARGET_LABEL[mapping.target_kind]}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
       );
       break;
     case "convention":
       body = (
-        <label className="flex flex-col gap-1 text-[12.5px] text-fg-secondary">
-          Where the repository imports registry objects from
-          <Input
-            mono
-            value={registryModule}
-            onChange={(event) => {
-              setRegistryModule(event.target.value);
-            }}
-          />
-          <span className="text-fg-muted">{`from ${registryModule} import tools, models, knowledge`}</span>
-        </label>
+        <div className="flex flex-col gap-3">
+          <label className="flex flex-col gap-1 text-[12.5px] text-fg-secondary">
+            The Python package the agents, teams and workflows live in
+            <Input
+              mono
+              value={packageName}
+              onChange={(event) => {
+                setPkg(event.target.value);
+              }}
+            />
+            <span className="text-fg-muted">
+              {`Studio writes imports like from ${convention.agents_module} import …`}
+            </span>
+          </label>
+          <label className="flex flex-col gap-1 text-[12.5px] text-fg-secondary">
+            Where the code imports registry objects from
+            <Input
+              mono
+              value={convention.registry_module}
+              onChange={(event) => {
+                setRegistryModule(event.target.value);
+              }}
+            />
+            <span className="text-fg-muted">{`from ${convention.registry_module} import tools, models, knowledge`}</span>
+          </label>
+        </div>
       );
       break;
     case "policy":
@@ -609,6 +724,7 @@ export function ConnectWizard({
         <ScanReport
           instance={instance}
           sourceId={sourceId}
+          root={local ? localPath : repo}
           onActivated={() => {
             refresh();
             onClose(sourceId);
@@ -623,7 +739,7 @@ export function ConnectWizard({
     (stage === "repo" && repo !== "" && branch !== "") ||
     stage === "provider" ||
     stage === "mapping" ||
-    stage === "convention";
+    (stage === "convention" && MODULE.test(packageName) && MODULE.test(convention.registry_module));
 
   return (
     <Dialog

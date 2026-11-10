@@ -28,15 +28,18 @@ Tokens are sealed with the master key and never shown again.
 Pick the repository and branch, then check the defaults:
 
 - **Path mappings**: `agents/*.py`, `teams/*.py`, `workflows/*.py`, `registry.py` (read-only), `tests/, utils/`
-  (ignored). Change them for other layouts (`src/**/agents/*.py`).
-- **Registry convention**: the module the repository imports registry objects from (`app.registry` for
-  `from app.registry import tools, models`).
+  (ignored), relative to the repository's (or folder's) root. Change them for other layouts (`src/**/agents/*.py`).
+- **Registry convention**: the package the agents, teams and workflows live in (`app`, so Studio writes
+  `from app.agents import …`), and the module the code imports registry objects from (`app.registry` for
+  `from app.registry import tools, models`). A local folder's package defaults to the folder's name.
 - **Sync policy**: pull on demand or on every push (as drafts); on publish, open a pull request (default), commit
   straight to the branch, or don't write back; optionally block publishing until the pull request merges.
 
 Studio fetches and reads every mapped file and shows the scan: what each file defines, whether it parses, and whether
 it is new, the same as Studio's newest version, or different. *Start syncing* binds the files as proposed; files that
-differ arrive as incoming changes to pull.
+differ arrive as incoming changes to pull. When the mappings take no file, the scan says so and lists the Python files
+they missed: edit them under *Path mapping* and Studio scans again. A source closed before *Start syncing* stays "scan
+ready · not syncing yet"; *Review the scan* on its page picks up from there.
 
 Webhooks are registered when the source starts syncing and Agnostic has a public URL; reverse proxies must route
 `/hooks/*` to the API (next to `/api`). Without webhooks, sources are fetched every 15 minutes
@@ -54,8 +57,9 @@ uv run agnostic worker -q git
 ## Local folders (development)
 
 Mount the runtime's app folder into Agnostic too, list it in `AGNOSTIC_SOURCES__LOCAL_ROOTS` (`["/app"]`), and add a
-*Local folder* source on a development instance. Changes on disk show up as incoming changes; publishes are written to
-the folder and the runtime reloads them.
+*Local folder* source on a development instance. The source may be any folder inside a root: pick the package folder
+itself (`/app`, or `/agents/my_app` when the root holds the package one level down) so the default mappings match.
+Changes on disk show up as incoming changes; publishes are written to the folder and the runtime reloads them.
 
 ## Try it with the dev Gitea
 

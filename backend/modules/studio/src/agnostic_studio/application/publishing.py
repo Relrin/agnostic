@@ -25,7 +25,7 @@ from agnostic_studio.application.components import Reader, VersionView, version_
 from agnostic_studio.application.ports import PublishHold, StudioStore
 from agnostic_studio.application.validation import ValidationReport, Validator
 from agnostic_studio.domain.diff import FieldChange, diff
-from agnostic_studio.domain.model import Component, ComponentMeta, HoldCheck, Version, VersionMeta
+from agnostic_studio.domain.model import Component, ComponentMeta, HoldCheck, Version, VersionMeta, latest
 from agnostic_studio.domain.summaries import audit_lines, change_summary, publish_outcome, rollback_outcome
 
 MAX_REASON = 1000
@@ -147,6 +147,7 @@ class Publisher:
             await self._access.require(principal, OVERRIDE_SCOPE, instance)
             overridden = True
         component = check.component
+        newest = latest(await self._reader.versions(principal, instance, component_id))
         response = await self._access.call(
             principal,
             instance,
@@ -155,12 +156,14 @@ class Publisher:
             body={
                 "stage": "published",
                 "notes": notes,
-                "guard": {"current_version": component.current_version or 0},
+                # AgentOS's config PATCH honours only guard.latest_version (and refuses current_version with a 400);
+                # publishing the same draft twice is refused anyway, as published configs are immutable.
+                "guard": {"latest_version": newest.version if newest else number},
             },
         )
         if response.status == CONFLICT:
             raise VersionConflictError(
-                f"Someone published another version of {component.name} meanwhile: {detail(response)}"
+                f"Someone changed the versions of {component.name} meanwhile: {detail(response)}"
             )
         raise_for(instance, response)
         published = version_of(cast("dict[str, Any]", response.body))

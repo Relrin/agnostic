@@ -82,8 +82,9 @@ every 10 minutes otherwise, or by "Refresh registry".
 `hold`, and the outcome sentence. `POST …/configs/{v}/publish` fails with `422` on validation errors, `409
 gate_blocked` unless an `override_reason` comes from someone with `evals:gates:override` (audited
 `evals.gate.override`), and `409 publish_held` while a `PublishHold` holds it. Otherwise it publishes with
-`guard.current_version`, audits `studio.publish` with the field-level diff, and announces `studio.published`.
-`…/set-current` rolls back to another published version.
+`guard.latest_version` (AgentOS's config PATCH checks only that half, and refuses `guard.current_version` with a
+`400`), audits `studio.publish` with the field-level diff, and announces `studio.published`. `…/set-current` rolls
+back to another published version, guarded by `guard.current_version`.
 
 ## Test runs, teams, promotion
 

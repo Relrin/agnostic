@@ -539,6 +539,51 @@ async def test_a_local_folder_syncs_with_a_development_instance(stack: Stack, tm
     _ = await eventually(synced, "the binding to follow the folder")
 
 
+async def test_mappings_that_miss_every_file_say_so_and_a_fixed_mapping_scans_again(
+    stack: Stack, tmp_path: Path
+) -> None:
+    owner = await stack.owner()
+    dev = stack.runtime("dev.agentos.test", os_id="fake-dev", name="Fake dev")
+    await connect(owner, dev, "http://dev.agentos.test:7777", display_name="dev-agentos", env_tag="development")
+    # The package sits one folder below the source's root, so the default `agents/*.py` takes nothing.
+    folder = tmp_path / "local" / "share"
+    (folder / "agno_app" / "agents").mkdir(parents=True)
+    (folder / "agno_app" / "agents" / "support_triage.py").write_text(SUPPORT_TRIAGE, encoding="utf-8")
+    sources = "/api/v1/instances/dev-agentos/studio/sources"
+    convention = {"registry_module": "agno_app.registry", "agents_module": "agno_app.agents"}
+    created = await owner.post(sources, json={"provider": "local", "local_path": str(folder), "convention": convention})
+    assert created.status_code == 201, created.text
+    source = f"{sources}/{created.json()['id']}"
+    assert created.json()["convention"]["agents_module"] == "agno_app.agents"
+
+    async def scanned() -> dict[str, Any] | None:
+        report = (await owner.get(f"{source}/scan")).json()
+        return report if report["status"] == "ready" else None
+
+    report = (await eventually(scanned, "the scan"))["report"]
+    assert report["files"] == []
+    assert (report["listed"], report["unmapped"]) == (1, ["agno_app/agents/support_triage.py"])
+    refused = await owner.post(f"{source}/activate", json={})
+    assert refused.status_code == 409
+    assert "matches the path mappings" in refused.json()["detail"]
+
+    card = (await owner.get(source)).json()
+    mappings = [{"glob": "agno_app/agents/*.py", "target_kind": "agents", "writable": True}]
+    patched = await owner.patch(source, json={"mappings": mappings, "version": card["version"]})
+    assert patched.status_code == 200, patched.text
+
+    async def rescanned() -> dict[str, Any] | None:
+        again = (await owner.get(f"{source}/scan")).json()
+        return again if again["status"] == "ready" and again["report"]["files"] else None
+
+    again = (await eventually(rescanned, "the scan with the fixed mapping"))["report"]
+    assert [entry["path"] for entry in again["files"]] == ["agno_app/agents/support_triage.py"]
+    assert again["unmapped"] == []
+    activated = await owner.post(f"{source}/activate", json={})
+    assert activated.status_code == 200, activated.text
+    assert activated.json()["status"] == "active"
+
+
 async def test_a_bound_file_the_folder_listing_left_out_is_not_removed(
     stack: Stack, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
