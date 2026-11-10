@@ -1,6 +1,6 @@
 [project]
 name = "agnostic-codegen"
-version = "0.4.0"
+version = "0.4.1"
 description = "Agno component configs to Python and back: generation, parsing and comment-preserving edits"
 requires-python = "==3.15.*"
 license = "BSD-3-Clause"

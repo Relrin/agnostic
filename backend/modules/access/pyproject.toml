@@ -1,6 +1,6 @@
 [project]
 name = "agnostic-access"
-version = "0.4.0"
+version = "0.4.1"
 description = "Scope catalog, access roles, bindings, effective-scope computation, require() and explain"
 requires-python = "==3.15.*"
 license = "BSD-3-Clause"

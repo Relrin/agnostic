@@ -1,6 +1,6 @@
 {
   "name": "@agnostic/module-scheduler",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "private": true,
   "type": "module",
   "description": "Scheduler: cron schedules with human-readable timing, DST-aware previews and run history",

@@ -23,7 +23,7 @@ from agnostic_tool_catalog.providers import ToolCatalogProvider
 
 class ToolCatalogModule(BaseModule):
     name = "tool_catalog"
-    version = "0.4.0"
+    version = "0.4.1"
     depends_on = ("access", "audit", "directory", "instances", "service_accounts", "studio")
 
     def provide(self) -> Iterable[Provider]:

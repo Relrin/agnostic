@@ -36,7 +36,9 @@ control plane  /api/v1/instances/{i}/artifacts/…  (isolated preview, download)
 - **Listing** is the bridge's `GET /agnostic/v1/artifacts?session_id=` (and `/recent` across the newest sessions):
   one row per stored object, with what the collector recorded (path, source, hash, revision). `POST
   /agnostic/v1/artifacts/sync` collects from sandbox checkpoints for harness adapters run with `sandbox=`, whose
-  turns are stored where no post-hook runs; the web app calls it when a run finishes.
+  turns are stored where no post-hook runs; the web app calls it when a run finishes. A `404` from the listing
+  means there is nothing to list from (a runtime without these routes, or a session with no stored runs yet), so the
+  web app shows no files, not an error.
 
 ## Viewing safely
 

@@ -2,7 +2,7 @@
 
 A self-hosted control plane for [Agno](https://github.com/agno-agi/agno)
 
-![Version](https://img.shields.io/badge/version-0.4.0-c6f25a?style=flat-square)
+![Version](https://img.shields.io/badge/version-0.4.1-c6f25a?style=flat-square)
 ![Python](https://img.shields.io/badge/python-3.15-3776ab?style=flat-square&logo=python&logoColor=white)
 ![Agno](https://img.shields.io/badge/agno-3.1.12-222?style=flat-square)
 [![License](https://img.shields.io/badge/license-BSD--3--Clause-blue?style=flat-square)](LICENSE)

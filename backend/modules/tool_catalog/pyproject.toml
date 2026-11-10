@@ -1,6 +1,6 @@
 [project]
 name = "agnostic-tool-catalog"
-version = "0.4.0"
+version = "0.4.1"
 description = "Tool catalog: approved MCP servers and Agno toolkits at org, team and custom level, pulled by each runtime's bridge"
 requires-python = "==3.15.*"
 license = "BSD-3-Clause"

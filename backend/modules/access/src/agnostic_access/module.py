@@ -26,7 +26,7 @@ log = get_logger(__name__)
 
 class AccessModule(BaseModule):
     name = "access"
-    version = "0.4.0"
+    version = "0.4.1"
     depends_on = ("identity", "org", "instances", "settings", "audit", "directory")
 
     def settings_model(self) -> type[BaseSettings] | None:

@@ -21,7 +21,7 @@ from agnostic_observe.settings import ObserveSettings
 
 class ObserveModule(BaseModule):
     name = "observe"
-    version = "0.4.0"
+    version = "0.4.1"
     depends_on = ("access", "audit", "instances", "gateway")
 
     def settings_model(self) -> type[BaseSettings] | None:

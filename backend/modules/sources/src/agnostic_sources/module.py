@@ -44,7 +44,7 @@ log = get_logger(__name__)
 
 class SourcesModule(BaseModule):
     name = "sources"
-    version = "0.4.0"
+    version = "0.4.1"
     depends_on = ("access", "audit", "instances", "gateway", "studio")
 
     def __init__(self) -> None:

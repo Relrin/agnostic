@@ -29,7 +29,7 @@ from agnostic_kernel.tools import ToolSpec
 
 class AuditModule(BaseModule):
     name = "audit"
-    version = "0.4.0"
+    version = "0.4.1"
     depends_on = ()
 
     def settings_model(self) -> type[BaseSettings] | None:

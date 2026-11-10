@@ -13,7 +13,7 @@ from agnostic_system.providers import SystemProvider
 
 class SystemModule(BaseModule):
     name = "system"
-    version = "0.4.0"
+    version = "0.4.1"
     depends_on = ("audit", "instances")
 
     def provide(self) -> Iterable[Provider]:

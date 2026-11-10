@@ -1,6 +1,6 @@
 [project]
 name = "agnostic-scheduler"
-version = "0.4.0"
+version = "0.4.1"
 description = "Scheduler: AgentOS cron schedules with human-readable timing, DST-aware previews, run history and failure notifications"
 requires-python = "==3.15.*"
 license = "BSD-3-Clause"

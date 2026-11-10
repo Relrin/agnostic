@@ -25,7 +25,7 @@ from agnostic_studio.settings import StudioSettings
 
 class StudioModule(BaseModule):
     name = "studio"
-    version = "0.4.0"
+    version = "0.4.1"
     depends_on = ("access", "audit", "instances", "gateway", "evals", "observe")
 
     def settings_model(self) -> type[BaseSettings] | None:

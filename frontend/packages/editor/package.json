@@ -1,6 +1,6 @@
 {
   "name": "@agnostic/editor",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "private": true,
   "type": "module",
   "description": "Code views and editors on CodeMirror 6: Python and JSON with change marks, line focus, inline notes and diagnostics, and a CEL expression editor",

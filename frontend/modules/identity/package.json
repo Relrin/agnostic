@@ -1,6 +1,6 @@
 {
   "name": "@agnostic/module-identity",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "private": true,
   "type": "module",
   "description": "Sign-in, first run, invitation acceptance and password reset (public pages)",

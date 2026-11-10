@@ -1,6 +1,6 @@
 [project]
 name = "agnostic-directory"
-version = "0.4.0"
+version = "0.4.1"
 description = "Directory: groups (manual and synced from the IdP), SCIM 2.0 provisioning, Google Workspace sync and group claims at login"
 requires-python = "==3.15.*"
 license = "BSD-3-Clause"

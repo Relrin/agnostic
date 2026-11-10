@@ -1,6 +1,6 @@
 {
   "name": "@agnostic/module-learnings",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "private": true,
   "type": "module",
   "description": "Learnings: learning store records by type, editing, per-user data deletion",

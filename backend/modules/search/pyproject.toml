@@ -1,6 +1,6 @@
 [project]
 name = "agnostic-search"
-version = "0.4.0"
+version = "0.4.1"
 description = "Search: command-palette index over control-plane entities (Postgres FTS + trigram; LIKE on SQLite)"
 requires-python = "==3.15.*"
 license = "BSD-3-Clause"

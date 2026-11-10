@@ -1,6 +1,6 @@
 [project]
 name = "agnostic-evals"
-version = "0.4.0"
+version = "0.4.1"
 description = "Evals: org-wide datasets, batches fanned out to AgentOS eval runs, case-level version comparison, publish gates"
 requires-python = "==3.15.*"
 license = "BSD-3-Clause"

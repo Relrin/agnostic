@@ -1,6 +1,6 @@
 {
   "name": "@agnostic/module-access-roles",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "private": true,
   "type": "module",
   "description": "Roles & permissions: access roles as a permission matrix, token-scope diff, versions",

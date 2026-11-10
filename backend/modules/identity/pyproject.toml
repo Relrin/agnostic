@@ -1,6 +1,6 @@
 [project]
 name = "agnostic-identity"
-version = "0.4.0"
+version = "0.4.1"
 description = "Accounts, local and SSO sign-in (OIDC / OAuth 2 / SAML 2.0), MFA, web sessions with CSRF, /me and preferences"
 requires-python = "==3.15.*"
 license = "BSD-3-Clause"
