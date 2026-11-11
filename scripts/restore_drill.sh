@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Restore drill (nightly in CI): back up a seeded control-plane database with pg_dump, restore it into a fresh
-# database, and prove the restored copy is complete and consistent: migrations current, audit hash chain intact,
-# every stored secret opens with the configured master key, archived audit months verify.
+# Restore drill (in CI on every merge to master): back up a seeded control-plane database with pg_dump, restore it
+# into a fresh database, and prove the restored copy is complete and consistent: migrations current, audit hash chain
+# intact, every stored secret opens with the configured master key, archived audit months verify.
 #
 #   AGNOSTIC_DATABASE__URL=postgresql://agnostic:agnostic@localhost:5432/agnostic \
 #   AGNOSTIC_REDIS__URL=redis://localhost:6379/0 AGNOSTIC_SECRETS__MASTER_KEY=… scripts/restore_drill.sh
